@@ -1,7 +1,8 @@
 #lang scheme/base
 
 (require scheme/match
-         compiler/zo-parse)
+         compiler/zo-parse
+         "primitive-table.ss")
 
 
 
@@ -13,11 +14,27 @@
 
 ;; extract-primitives: toplevel -> (listof symbol)
 (define (extract-primitives a-top)
+  (unique (extract-top a-top)))
+  
+(define (unique elts)
+  (define ht (make-hash))
+  (for ([x elts])
+    (hash-set! ht x #t))
+  (sort (for/list ([key (in-hash-keys ht)])
+          key)
+        symbol<?))
+
+(define (symbol<? x y)
+  (string<? (symbol->string x)
+            (symbol->string y)))
+
+(define (extract-top a-top)
   (match a-top
     [(struct compilation-top (max-let-depth prefix code))
      (append (extract-max-let-depth max-let-depth)
              (extract-prefix prefix)
              (extract-code code))]))
+  
 
 
 ;; extract-max-let-depth: number -> (listof symbol)
@@ -303,8 +320,9 @@
 (define (extract-primval a-primval)
   (match a-primval
     [(struct primval (id))
+     (list (hash-ref primitive-table id))
      ;; fixme: should correlate the integer using the primitive map.
-     (list id)]))
+     #;(list id)]))
 
 (define (extract-localref a-localref)
   (match a-localref

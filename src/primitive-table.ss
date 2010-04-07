@@ -2,6 +2,8 @@
 
 (require compiler/zo-parse)
 
+(provide primitive-table)
+
 ;; Code is copied-and-pasted from compiler/decompile.
 
 (define primitive-table
