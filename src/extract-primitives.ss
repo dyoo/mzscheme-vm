@@ -5,9 +5,6 @@
 
 
 
-(define fixme 'fixme)
-
-
 ;; Let's write a program to figure out all the primitives used in a compilation-top.
 
 ;; The structure of the code follows the type definitions in:
@@ -50,20 +47,28 @@
 (define (extract-form a-form)
   (match a-form
     [(? def-values?)
+     (printf "here 1~n")
      (extract-def-values a-form)]
     [(? def-syntaxes?)
+     (printf "here 2~n")
      (extract-def-syntaxes a-form)]
     [(? def-for-syntax?)
+     (printf "here 3~n")
      (extract-def-for-syntax a-form)]
     [(? req?)
+     (printf "here 4~n")
      (extract-req a-form)]
     [(? seq?)
+     (printf "here 5~n")
      (extract-seq a-form)]
     [(? splice?)
+     (printf "here 6~n")
      (extract-splice a-form)]
     [(? mod?)
+     (printf "here 7~n")
      (extract-mod a-form)]
     [(? expr?)
+     (printf "here 8~n")
      (extract-expr a-form)]))
 
 (define (extract-mod a-mod)
@@ -81,21 +86,22 @@
                   lang-info
                   internal-context))
      (append (extract-prefix prefix)
-             (match body 
-               [(? form?)
-                (extract-form body)]
-               [(? indirect?)
-                (extract-indirect body)]
-               [else
-                (list)])
+             (apply append (map (lambda (b)
+                                  (match b 
+                                    [(? form?)
+                                     (extract-form b)]
+                                    [(? indirect?)
+                                     (extract-indirect b)]
+                                    [else
+                                     (list)]))
+                            body))
              (apply append (map (lambda (b)
                                   (match b
                                     [(? def-syntaxes?)
                                      (extract-def-syntaxes b)]
                                     [(? def-for-syntax?)
-                                     (extract-def-for-syntax b)])))
-                    syntax-body))
-     fixme]))
+                                     (extract-def-for-syntax b)]))
+                                syntax-body)))]))
 
 (define (extract-splice a-splice)
   (match a-splice
@@ -379,7 +385,8 @@
                                     [(? indirect?)
                                      (extract-indirect r)]
                                     [else
-                                     (list r)]) rands))))]))
+                                     (list r)]))
+                                rands)))]))
      
 
 (define (extract-apply-values an-apply-values)
@@ -439,7 +446,7 @@
 (define (extract-beg0 a-big0)
   (match a-big0
     [(struct beg0 (seq))
-     (apply append map (lambda (s)
+     (apply append (map (lambda (s)
                          (match s
                            [(? expr?)
                             (extract-expr s)]
@@ -449,7 +456,7 @@
                             (extract-indirect s)]
                            [else
                             (list)]))
-            seq)]))
+                        seq))]))
 
 (define (extract-assign an-assign)
   (match an-assign
@@ -523,5 +530,5 @@
 
 (define (test)
   (define flight-lander-parsing
-    (zo-parse (open-input-file "flight-lander_ss_merged_ss.zo")))
+    (zo-parse (open-input-file "../sandbox/flight-lander/flight-lander_ss_merged_ss.zo")))
   (extract-primitives flight-lander-parsing))
