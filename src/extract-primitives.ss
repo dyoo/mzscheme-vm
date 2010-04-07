@@ -47,28 +47,20 @@
 (define (extract-form a-form)
   (match a-form
     [(? def-values?)
-     (printf "here 1~n")
      (extract-def-values a-form)]
     [(? def-syntaxes?)
-     (printf "here 2~n")
      (extract-def-syntaxes a-form)]
     [(? def-for-syntax?)
-     (printf "here 3~n")
      (extract-def-for-syntax a-form)]
     [(? req?)
-     (printf "here 4~n")
      (extract-req a-form)]
     [(? seq?)
-     (printf "here 5~n")
      (extract-seq a-form)]
     [(? splice?)
-     (printf "here 6~n")
      (extract-splice a-form)]
     [(? mod?)
-     (printf "here 7~n")
      (extract-mod a-form)]
     [(? expr?)
-     (printf "here 8~n")
      (extract-expr a-form)]))
 
 (define (extract-mod a-mod)
@@ -385,7 +377,7 @@
                                     [(? indirect?)
                                      (extract-indirect r)]
                                     [else
-                                     (list r)]))
+                                     (list)]))
                                 rands)))]))
      
 
@@ -514,10 +506,16 @@
 
      
 
+(define visit-ht (make-hasheq))
+;; avoid loops!
 (define (extract-indirect an-indirect)
   (match an-indirect
     [(struct indirect (v))
-     (extract-closure v)]))
+     (cond [(hash-ref visit-ht v #f)
+            (hash-set! visit-ht v #t)
+            (extract-closure v)]
+           [else
+            (list)])]))
 
 
 (define (extract-closure a-closure)
