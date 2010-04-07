@@ -187,12 +187,12 @@
      (extract-install-value an-expr)]
     [(? let-rec?)
      (extract-let-rec an-expr)]
-    [(? box-env?)
-     (extract-box-env an-expr)]
+    [(? boxenv?)
+     (extract-boxenv an-expr)]
     [(struct localref (unbox? pos clear? other-clears? flonum?))
      (extract-localref an-expr)]
     [(? toplevel?)
-     (extract-toplevel? an-expr)]
+     (extract-toplevel an-expr)]
     [(? topsyntax?)
      (extract-topsyntax an-expr)]
     [(? application?)
@@ -211,13 +211,119 @@
      (extract-apply-values an-expr)]
     [(? primval?)
      (extract-primval an-expr)]))
+       
+(define (extract-case-lam a-case-lam)
+  (match a-case-lam
+    [(struct case-lam (name clauses))
+     (apply append (map extract-lam clauses))]))
+
+(define (extract-install-value an-install-value)
+  (match an-install-value
+    [(struct install-value (count pos boxes? rhs body))
+     (append (match rhs
+               [(? expr?)
+                (extract-expr rhs)]
+               [(? seq?)
+                (extract-seq rhs)]
+               [(? indirect?)
+                (extract-indirect rhs)]
+               [else
+                (list)])
+             (match body
+               [(? expr?)
+                (extract-expr body)]
+               [(? seq?)
+                (extract-seq body)]
+               [(? indirect?)
+                (extract-indirect body)]
+               [else
+                (list)]))]))
+
+(define (extract-let-rec a-let-rec)
+  (match a-let-rec
+    [(struct let-rec (procs body))
+     (append (apply append (map extract-lam procs))
+             (match body
+               [(? expr?)
+                (extract-expr body)]
+               [(? seq?)
+                (extract-seq body)]
+               [(? indirect?)
+                (extract-indirect body)]
+               [else
+                (list)]))]))
+
+(define (extract-let-void a-let-void)
+  (match a-let-void
+    [(struct let-void (count boxes? body))
+     (match body
+       [(? expr?)
+        (extract-expr body)]
+       [(? seq?)
+        (extract-seq body)]
+       [(? indirect?)
+        (extract-indirect body)]
+       [else
+        (list)])]))
+
+(define (extract-let-one a-let-one)
+  (match a-let-one
+    [(struct let-one (rhs body flonum?))
+     (append (match rhs
+               [(? expr?)
+                (extract-expr rhs)]
+               [(? seq?)
+                (extract-seq rhs)]
+               [(? indirect?)
+                (extract-indirect rhs)]
+               [else
+                (list)])
+             (match body
+               [(? expr?)
+                (extract-expr body)]
+               [(? seq?)
+                (extract-seq body)]
+               [(? indirect?)
+                (extract-indirect body)]
+               [else
+                (list)]))]))
+        
              
+(define (extract-boxenv a-boxenv)
+  (match a-boxenv
+    [(struct boxenv (pos body))
+     (match body
+       [(? expr?)
+        (extract-expr body)]
+       [(? seq?)
+        (extract-seq body)]
+       [(? indirect?)
+        (extract-indirect body)]
+       [else
+        (list)])]))
 
 (define (extract-primval a-primval)
   (match a-primval
     [(struct primval (id))
      ;; fixme: should correlate the integer using the primitive map.
      (list id)]))
+
+(define (extract-localref a-localref)
+  (match a-localref
+    [(struct localref (unbox? pos clear? other-clears? flonum?))
+     (list)]))
+
+
+(define (extract-toplevel a-toplevel)
+  (match a-toplevel
+    [(struct toplevel (depth pos const? ready?))
+     (list)]))
+
+
+(define (extract-topsyntax a-topsyntax)
+  (match a-topsyntax
+    [(struct topsyntax (depth pos midpt))
+     (list)]))
 
 
 (define (extract-branch a-branch)
@@ -332,7 +438,7 @@
 
 (define (extract-beg0 a-big0)
   (match a-big0
-    [(struct big0 (seq))
+    [(struct beg0 (seq))
      (apply append map (lambda (s)
                          (match s
                            [(? expr?)
