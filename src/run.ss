@@ -1,6 +1,7 @@
 #lang scheme/base
 
 (require scheme/match
+         scheme/list
          compiler/zo-parse
          "state.ss"
          "primitive-table.ss")
@@ -79,27 +80,33 @@
                   dummy
                   lang-info
                   internal-context))
-     ;; FIXME: handle the variables here that we're not
-     ;; looking at, like prefix and max-let-depth.
-     (foldl (lambda (b state)
-              (match b 
-                [(? form?)
-                 (run-form b state)]
-                [(? indirect?)
-                 (run-indirect b state)]
-                [else
-                 (update-state-retval b)]))
-            state
-            body)
+     (let ([new-state
+            (extend-state-with-prefix state prefix)])
+       ;; FIXME: handle the variables here that we're not
+       ;; looking at, like prefix and max-let-depth.
+       (foldl (lambda (b state)
+                (match b 
+                  [(? form?)
+                   (run-form b state)]
+                  [(? indirect?)
+                   (run-indirect b state)]
+                  [else
+                   (update-state-retval b)]))
+              new-state
+              body))]))
 
-     ;; FIXME: do something with the syntax body.
-     #;(foldl (lambda (b)
-              (match b
-                [(? def-syntaxes?)
-                 (run-def-syntaxes b)]
-                [(? def-for-syntax?)
-                 (run-def-for-syntax b)]))
-            syntax-body)]))
+
+
+;; extend-state-with-prefix: state prefix -> state
+(define (extend-state-with-prefix state a-prefix)
+  (match a-prefix
+    [(struct prefix (numlifts toplevels stxs))
+     
+     (state-push state (new-array (+ (length toplevels)
+                                      (if (empty? stxs)
+                                          0
+                                          1)
+                                      numlifts)))]))
 
 
 ;; run-splice: splice state -> state
@@ -127,23 +134,34 @@
      #;(list)]))
 
 
+;; evaluate-at-expression-position: state (U expr seq indirect any) -> state
+;; evaluate the expression-like thing at x, installing it into the retvals of
+;; the current state.
+(define (evaluate-at-expression-position state x)
+  (match x
+    [(? expr?)
+     (run-expr x state)]
+    [(? seq?)
+     (run-seq x state)]
+    [(? indirect?)
+     (run-indirect x state)]
+    [else
+     (update-state-retval state x)]))
+
+
 ;; run-def-values: def-values state -> state
 (define (run-def-values a-def-values state)
   (match a-def-values
     [(struct def-values (ids rhs))
-     (match rhs
-       [(? expr?)
-        (run-expr rhs state)]
-       [(? seq?)
-        (run-seq rhs state)]
-       [(? indirect?)
-        (run-indirect rhs state)]
-       [else
-        ;; FIXME!
-        state
-        ;; literal value
-        #;(list)])]))
-
+     (let ([state-with-retvals
+            (evaluate-at-expression-position state rhs)])
+       (foldl (lambda (a-toplevel a-val a-state)
+                (match a-toplevel
+                  [(struct toplevel (depth pos const? ready?))
+                   (state-toplevel-set a-state depth pos a-val)]))
+              state-with-retvals
+              ids
+              (state-retvals state-with-retvals)))]))
 
 
 (define (run-def-syntaxes a-def-syntaxes state)
@@ -263,40 +281,40 @@
     [(struct lam (name flags num-params param-types 
                        rest? closure-map closure-types 
                        max-let-depth body))
-     ;; FIXME
-     state
-     #;(match body
-       [(? expr?)
-        (run-expr body state)]
-       [(? seq?)
-        (run-seq body state)]
-       [(? indirect?)
-        (run-indirect body state)]
-       [else
-        ;; it's a literal datum
-        (list)])]))
+     (update-state-retval state
+                          (make-closure-value name
+                                              flags
+                                              num-params
+                                              rest?
+                                              (capture-closure-map-values
+                                               closure-map state)
+                                              body))]))
+
+
+;; capture-closure-map-values: (vectorof exact-nonnegative-integer) state -> (listof any)
+;; Captures the values of the free-variables for the closure.
+(define (capture-closure-map-values closure-map state)
+  (build-list (vector-length closure-map)
+              (lambda (i)
+                (list-ref (state-stack state) (vector-ref closure-map i)))))
+
 
 
 ;; run-closure: closure state -> state
 (define (run-closure a-closure state)
-  state
-  ;; FIXME
-  #;(match a-closure 
+  (match a-closure 
     [(struct closure (lam gen-id))
-     (run-lam lam)]))
+     (let ([new-state (run-lam lam state)])
+       ;; FIXME: squirrel away the gen-id into the evaluated closure.
+       new-state)]))
 
 
 ;; run-indirect: indirect state -> state
 (define (run-indirect an-indirect state)
-  state
-  ;; FIXME
-  #;(match an-indirect
+  (match an-indirect
     [(struct indirect (v))
-     (cond [(hash-ref visit-ht v #f)
-            (hash-set! visit-ht v #t)
-            (run-closure v)]
-           [else
-            (list)])]))
+     (let ([new-state (run-closure v state)])
+       new-state)]))
 
 
 ;; run-case-lam: case-lam state -> state
@@ -642,7 +660,7 @@
 ;; exercising function
 (define (test path)
   (let ([parsed (zo-parse (open-input-file path))])
-    (list parsed
-          (run parsed new-state))))
+    (list #;parsed
+          (run parsed fresh-state))))
 
 (test "../sandbox/42/compiled/42_ss_merged_ss.zo")
