@@ -10,11 +10,21 @@
   #:transparent)
 
 
+;; state-retval: state -> any
+(define (state-retval a-state)
+  (unless (= 1 (length (state-retvals a-state)))
+    (error 'state-retval 
+           "more than one argument in retvals: ~s~n"
+           (state-retvals a-state)))
+  (first (state-retvals a-state)))
+
+
 ;; update-state-retval: state any -> state
 (define (update-state-retval a-state a-val)
   (match a-state 
     [(struct state (stack retvals))
      (make-state stack (list a-val))]))
+
 
 (define (update-state-retvals a-state vals)
   (match a-state 
@@ -67,15 +77,13 @@
 (define (state-toplevel-ref a-state depth pos)
   (match a-state
     [(struct state (stack retvals))
-     (make-state (let loop ([depth depth]
+     (let loop ([depth depth]
                             [stack (state-stack a-state)])
                    (cond
                      [(= depth 0)
                       (array-ref (first stack) pos)]
                      [else
-                      (loop (sub1 depth) (rest stack))]))
-                 retvals)]))
-
+                      (loop (sub1 depth) (rest stack))]))]))
 
 
 (define fresh-state 

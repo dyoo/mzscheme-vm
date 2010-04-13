@@ -40,7 +40,7 @@
      (run-indirect a-code state)]
     [else
      ;; literal value is self-evaluating
-     (update-state-retval a-code)]))
+     (update-state-retval state a-code)]))
 
 
 
@@ -91,7 +91,7 @@
                   [(? indirect?)
                    (run-indirect b state)]
                   [else
-                   (update-state-retval b)]))
+                   (update-state-retval state b)]))
               new-state
               body))]))
 
@@ -134,10 +134,11 @@
      #;(list)]))
 
 
-;; evaluate-at-expression-position: state (U expr seq indirect any) -> state
+;; evaluate-at-expression-position: (U expr seq indirect any) state -> state
+;;
 ;; evaluate the expression-like thing at x, installing it into the retvals of
 ;; the current state.
-(define (evaluate-at-expression-position state x)
+(define (evaluate-at-expression-position x state)
   (match x
     [(? expr?)
      (run-expr x state)]
@@ -150,11 +151,13 @@
 
 
 ;; run-def-values: def-values state -> state
+;; Accumulates the values for rhs, and then installs each value in turn
+;; into the toplevel.
 (define (run-def-values a-def-values state)
   (match a-def-values
     [(struct def-values (ids rhs))
      (let ([state-with-retvals
-            (evaluate-at-expression-position state rhs)])
+            (evaluate-at-expression-position rhs state)])
        (foldl (lambda (a-toplevel a-val a-state)
                 (match a-toplevel
                   [(struct toplevel (depth pos const? ready?))
@@ -440,11 +443,11 @@
 
 
 ;; run-toplevel: toplevel state -> state
+;; Put the toplevel reference onto the retval register.
 (define (run-toplevel a-toplevel state)
   (match a-toplevel
     [(struct toplevel (depth pos const? ready?))
-     state
-     #;(list)]))
+     (update-state-retval state (state-toplevel-ref state depth pos))]))
 
 
 ;; run-topsyntax: topsyntax state -> state
@@ -459,7 +462,12 @@
 (define (run-application an-application state)
   (match an-application
     [(struct application (rator rands))
+     (printf "I need to run an application now.~n")
      state
+     ;; FIXME: check what kind of thing is the rator.
+     ;; I expect it to be a closure-value when it has been run.
+     ;; FIXME: evaluate each rand and plug its value into the argument list
+     
      ;; FIXME
      #;(append (match rator
                [(? expr?)
@@ -603,7 +611,22 @@
 (define (run-apply-values an-apply-values state)
   (match an-apply-values
     [(struct apply-values (proc args-expr))
-     state
+     ;; fixme: what sort of thing is proc?
+     ;; fixme: what sort of values are arg-exprs? 
+
+     ;; FIXME: check what kind of thing is the rator.
+     ;; I expect it to be a closure-value when it has been run.
+     ;; FIXME: evaluate each rand and plug its value into the argument list
+     (let* ([state-with-arg-values
+             (evaluate-at-expression-position args-expr state)]
+            [arg-values (state-retvals state-with-arg-values)]
+            [state-with-operator
+             (evaluate-at-expression-position proc state-with-arg-values)]
+            [operator-val (state-retval state-with-operator)])
+       (printf "I'm supposed to call-with-values, given ~s and ~s~n"
+               operator-val arg-values)
+       state
+       #;       state-with-operator)
      ;; FIXME
      #;(append (match proc
                [(? expr?)
@@ -660,7 +683,7 @@
 ;; exercising function
 (define (test path)
   (let ([parsed (zo-parse (open-input-file path))])
-    (list #;parsed
+    (list parsed
           (run parsed fresh-state))))
 
 (test "../sandbox/42/compiled/42_ss_merged_ss.zo")
