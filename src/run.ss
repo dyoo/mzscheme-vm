@@ -6,12 +6,12 @@
          "primitive-table.ss")
 
 
-
-;; Let's write a program to figure out all the primitives used in a compilation-top.
-
 ;; The structure of the code follows the type definitions in:
 ;; http://docs.plt-scheme.org/mzc/decompile.html?q=zo-parse#(def._((lib._compiler/zo-parse..ss)._indirect~3f))
 
+
+;; This is a simple evaluator of the VM.  Afterwards, we'll be working on
+;; the actual compiler to Javascript.
 
 
 
@@ -636,18 +636,13 @@
             state
             forms)]))
 
-     
-
-
-
-
-
 
 
 ;; test: path -> state
 ;; exercising function
 (define (test path)
-  (run (zo-parse (open-input-file path))
-       (make-state (void))))
+  (let ([parsed (zo-parse (open-input-file path))])
+    (list parsed
+          (run parsed new-state))))
 
 (test "../sandbox/42/compiled/42_ss_merged_ss.zo")
