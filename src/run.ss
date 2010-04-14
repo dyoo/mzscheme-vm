@@ -488,10 +488,10 @@
                               new-evaluated-rands/rev)))]))
 
 
+
 ;; apply-operator: value (listof value) state -> state
 (define (apply-operator rator rands state)
-  (error 'apply-operator "not implemented yet.  Given operator ~s~n" rator)
-  #;(match rator
+  (match rator
     [(struct closure-value (...))
      ...]
     [(struct primval (n))
