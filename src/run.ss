@@ -462,33 +462,41 @@
 (define (run-application an-application state)
   (match an-application
     [(struct application (rator rands))
-     (printf "I need to run an application now.~n")
-     state
-     ;; FIXME: check what kind of thing is the rator.
-     ;; I expect it to be a closure-value when it has been run.
-     ;; FIXME: evaluate each rand and plug its value into the argument list
-     
-     ;; FIXME
-     #;(append (match rator
-               [(? expr?)
-                (run-expr rator)]
-               [(? seq?)
-                (run-seq rator)]
-               [(? indirect?)
-                (run-indirect rator)]
-               [else
-                (list)])
-             (apply append (map (lambda (r)
-                                  (match r
-                                    [(? expr?)
-                                     (run-expr r)]
-                                    [(? seq?)
-                                     (run-seq r)]
-                                    [(? indirect?)
-                                     (run-indirect r)]
-                                    [else
-                                     (list)]))
-                                rands)))]))
+     (let* ([state-with-rator (evaluate-at-expression-position rator)]
+            [rator (state-retval state-with-rator)]
+            [state-with-rands 
+             (foldl (lambda (rand state)
+                      (evaluate-at-expression-position rand 
+                                                       (update-state-retvals state '()))))]
+            [rands (reverse (state-retvals state-with-rands))])
+       (apply-operator rator rands state-with-rands))]))
+
+
+;; evaluate-many-at-expression-position: (listof expression-position) state -> state
+(define (evaluate-many-at-expression-position rands state)
+  (cond
+    [(empty? rands)
+     state]
+    [else
+     (let* ([evaluated-rands/rev (state-retvals state)]
+            [new-state (evaluate-at-expression-position (first rands) state)]
+            [new-evaluated-rands/rev (cons (state-retval new-state) 
+                                           evaluated-rands/rev)])
+       (evaluate-many-at-expression-position 
+        (rest rands) 
+        (update-state-retvals new-state
+                              new-evaluated-rands/rev)))]))
+
+
+;; apply-operator: value (listof value) state -> state
+(define (apply-operator rator rands state)
+  (error 'apply-operator "not implemented yet.  Given operator ~s~n" rator)
+  #;(match rator
+    [(struct closure-value (...))
+     ...]
+    [(struct primval (n))
+     ...]))
+
 
 
 ;; run-branch: branch state -> state
@@ -611,42 +619,18 @@
 (define (run-apply-values an-apply-values state)
   (match an-apply-values
     [(struct apply-values (proc args-expr))
-     ;; fixme: what sort of thing is proc?
-     ;; fixme: what sort of values are arg-exprs? 
-
      ;; FIXME: check what kind of thing is the rator.
      ;; I expect it to be a closure-value when it has been run.
      ;; FIXME: evaluate each rand and plug its value into the argument list
-     (let* ([state-with-arg-values
+     (let* ([state-with-args
              (evaluate-at-expression-position args-expr state)]
-            [arg-values (state-retvals state-with-arg-values)]
-            [state-with-operator
-             (evaluate-at-expression-position proc state-with-arg-values)]
-            [operator-val (state-retval state-with-operator)])
-       (printf "I'm supposed to call-with-values, given ~s and ~s~n"
-               operator-val arg-values)
-       state
-       #;       state-with-operator)
-     ;; FIXME
-     #;(append (match proc
-               [(? expr?)
-                (run-expr proc)]
-               [(? seq?)
-                (run-seq proc)]
-               [(? indirect?)
-                (run-indirect proc)]
-               [else
-                (list)])
-             (match args-expr
-               [(? expr?)
-                (run-expr args-expr)]
-               [(? seq?)
-                (run-seq args-expr)]
-               [(? indirect?)
-                (run-indirect args-expr)]
-               [else
-                (list)]))]))
-
+            [args (state-retvals state-with-args)]
+            [state-with-operator-thunk
+             (evaluate-at-expression-position proc state-with-args)]
+            [operator-thunk (state-retval state-with-operator-thunk)])
+       (apply-operator operator-thunk args 
+                       state-with-operator-thunk))]))
+ 
 
 ;; run-primval: primval state -> state
 (define (run-primval a-primval state)
