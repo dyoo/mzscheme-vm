@@ -3,7 +3,7 @@
 (require scheme/match
          scheme/list
          compiler/zo-parse
-         "state.ss"
+         "structs.ss"
          "primitive-table.ss")
 
 
@@ -491,7 +491,8 @@
 
 ;; apply-operator: value (listof value) state -> state
 (define (apply-operator rator rands state)
-  (match rator
+  (error 'apply-operator "Unknown operator ~s~n" rator)
+  #;(match rator
     [(struct closure-value (...))
      ...]
     [(struct primval (n))
