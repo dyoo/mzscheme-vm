@@ -435,8 +435,8 @@
 (define (run-localref a-localref state)
   (match a-localref
     [(struct localref (unbox? pos clear? other-clears? flonum?))
-     state
-     ;; FIXME
+     (printf "local reference gets back ~s~n" (state-local-ref state pos)) 
+     (update-state-retval state (state-local-ref state pos))
      #;(list)]))
 
 
@@ -465,12 +465,16 @@
             [rator-val (state-retval state-with-rator)]
             [state-with-rands 
              (foldl (lambda (rand state)
-                      (evaluate-at-expression-position 
-                       rand 
-                       (update-state-retvals state '())))
+                      (let ([new-rand-val+state
+                             (evaluate-at-expression-position 
+                              rand 
+                              state)])
+                        (state-add-value-to-rib  new-rand-val+state
+                         (state-retval 
+                          new-rand-val+state))))
                     state-with-rator
                     rands)]
-            [rands-val (reverse (state-retvals state-with-rands))])
+            [rands-val (state-value-rib state-with-rands)])
        (apply-operator rator-val rands-val state-with-rands))]))
 
 
@@ -493,6 +497,8 @@
 
 ;; apply-operator: value (listof value) state -> state
 (define (apply-operator rator rands state)
+  (printf "In apply-operator, with rator=~s~n~n and rands~s~n~n" rator rands)
+  #;(newline)
   (match rator
     [(struct closure-value (name flags num-params rest? closure-values body))
      (cond [rest?
@@ -514,7 +520,7 @@
               ;; evaluate the body
               (let ([new-state 
                      (begin
-                       (printf "Evaluating body ~s~n" body)
+                       #;(printf "Evaluating body ~s~n" body)
                        (evaluate-at-expression-position body state))])
                 ;; Pop off values from the stack.
                 (state-popn new-state (+ 1 
@@ -543,7 +549,9 @@
     ;; Otherwise, if it's a primitive, call out to the primitive.
     ;; Primitive procedures will just look at the state and the list of rands.
     [(? procedure?)
-     (printf "Calling primitive procedure~n")
+     #;(printf "Calling primitive procedure ~s, with state ~s and rands ~s~n" 
+             rator state rands)
+     #;(newline)
      (rator state rands)]))
 
 
@@ -677,7 +685,8 @@
             [state-with-operator-thunk
              (evaluate-at-expression-position proc state-with-args)]
             [operator-thunk (state-retval state-with-operator-thunk)])
-       (apply-operator operator-thunk args 
+       (apply-operator operator-thunk 
+                       args 
                        state-with-operator-thunk))]))
 
 
@@ -732,39 +741,43 @@
 ;; This is completely wrong so far...
 (define (lookup-primitive id)
   (let ([name (hash-ref primitive-table id)])
-    (printf "Trying to get primitive ~s~n" name)
+    #;(printf "Trying to get primitive ~s~n" name)
     (case name
       [(current-print)
        (lambda (state args)
          (let ([p (current-print)])
-           (lambda (state args)
-             (update-state-retval state (apply p args)))))]
-
+           #;(printf "I'm in current-print~n")
+           (update-state-retval 
+            state
+            (lambda (state args)
+              ;;(printf "I'm in print, with args=~s~n" args)
+              #;(printf "The state is ~s~n" state)
+              (update-state-retval state (p args))))))]
+      [(apply)
+       (lambda (state args)
+         #;(printf "I'm in apply~n")
+         (update-state-retval 
+          state
+          (apply-operator (first args) (rest args) state)))]
+      
       [(values)
        (lambda (state args)
+         #;(printf "I'm in values~n")
          (update-state-retval state args))]
       
       [(for-each)
         (lambda (state args)
+          #;(printf "I'm in for-each, with state=~s and args=~s~n" state args)
           (let ([proc (first args)]
                 [lists (rest args)])
-            (apply foldl 
-                   (lambda (state . list-elts)
-                     (apply-operator state proc list-elts))
-                   state
-                   lists)))]
+            (foldl 
+             (lambda (list-elts state)
+               (apply-operator proc list-elts state))
+             state
+             lists)))]
  
       [else
        (error 'lookup-primitive (format "~s not implemented yet" id))])))
-
-
-
-
-
-
-
-
-
 
 
 
@@ -779,7 +792,6 @@
 ;; exercising function
 (define (test path)
   (let ([parsed (zo-parse (open-input-file path))])
-    (list parsed
-          (run parsed fresh-state))))
+    (list (state-retvals (run parsed fresh-state)))))
 
 (test "../sandbox/42/compiled/42_ss_merged_ss.zo")
