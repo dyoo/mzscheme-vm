@@ -4,6 +4,16 @@
 
 (provide (all-defined-out))
 
+;; FIXME: the state currently isn't representing the full
+;; state of the system.  I need:
+;;
+;; the value rib
+;; the next expression to evaluate
+;;
+;; Also: rename retvals to accumulator
+;;
+
+
 ;; state represents the evaluation state.
 (define-struct state (stack  ;; a list of things
                       retvals)
@@ -51,7 +61,17 @@
   (match a-state
     [(struct state (stack retvals))
      (make-state (rest stack) retvals)]))
-  
+
+
+(define (state-popn a-state n)
+  (cond [(= n 0)
+         a-state]
+        [else
+         (match a-state
+           [(struct state (stack retvals))
+            (state-popn (make-state (rest stack) retvals)
+                        (sub1 n))])]))
+
 
 
 ;; state-install-toplevel: state number number any -> state

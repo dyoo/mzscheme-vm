@@ -3,8 +3,7 @@
 (require scheme/match
          scheme/list
          compiler/zo-parse
-         "structs.ss"
-         "primitive-table.ss")
+         "structs.ss")
 
 
 ;; The structure of the code follows the type definitions in:
@@ -20,7 +19,7 @@
 ;; run-primitives: toplevel state -> state
 (define (run a-top state)
   (run-top a-top state))
-  
+
 
 ;; run-top: top state -> state
 (define (run-top a-top state)
@@ -103,10 +102,10 @@
     [(struct prefix (numlifts toplevels stxs))
      
      (state-push state (new-array (+ (length toplevels)
-                                      (if (empty? stxs)
-                                          0
-                                          1)
-                                      numlifts)))]))
+                                     (if (empty? stxs)
+                                         0
+                                         1)
+                                     numlifts)))]))
 
 
 ;; run-splice: splice state -> state
@@ -173,13 +172,13 @@
      state
      ;; FIXME
      #;(append (match rhs
-               [(? expr?)
-                (run-expr rhs)]
-               [(? seq?)
-                (run-seq rhs)]
-               [(? indirect?)
-                (run-indirect rhs)])
-             (run-prefix prefix))]))
+                 [(? expr?)
+                  (run-expr rhs)]
+                 [(? seq?)
+                  (run-seq rhs)]
+                 [(? indirect?)
+                  (run-indirect rhs)])
+               (run-prefix prefix))]))
 
 (define (run-def-for-syntax a-def-for-syntax state)
   (match a-def-for-syntax
@@ -204,9 +203,9 @@
 
 
 #;(define (run-provided a-provided)
-  (match a-provided
-    [(struct provided (name src src-name nom-mod src-phase protected? insp))
-     (list)]))
+    (match a-provided
+      [(struct provided (name src src-name nom-mod src-phase protected? insp))
+       (list)]))
 
 
 
@@ -276,7 +275,7 @@
      (run-apply-values an-expr state)]
     [(? primval?)
      (run-primval an-expr state)]))
-       
+
 
 ;; run-lam: lam state -> state
 (define (run-lam a-lam state)
@@ -361,14 +360,14 @@
      state
      ;; FIXME
      #;(match body
-       [(? expr?)
-        (run-expr body)]
-       [(? seq?)
-        (run-seq body)]
-       [(? indirect?)
-        (run-indirect body)]
-       [else
-        (list)])]))
+         [(? expr?)
+          (run-expr body)]
+         [(? seq?)
+          (run-seq body)]
+         [(? indirect?)
+          (run-indirect body)]
+         [else
+          (list)])]))
 
 
 
@@ -378,23 +377,23 @@
     [(struct install-value (count pos boxes? rhs body))
      state
      #;(append (match rhs
-               [(? expr?)
-                (run-expr rhs)]
-               [(? seq?)
-                (run-seq rhs)]
-               [(? indirect?)
-                (run-indirect rhs)]
-               [else
-                (list)])
-             (match body
-               [(? expr?)
-                (run-expr body)]
-               [(? seq?)
-                (run-seq body)]
-               [(? indirect?)
-                (run-indirect body)]
-               [else
-                (list)]))]))
+                 [(? expr?)
+                  (run-expr rhs)]
+                 [(? seq?)
+                  (run-seq rhs)]
+                 [(? indirect?)
+                  (run-indirect rhs)]
+                 [else
+                  (list)])
+               (match body
+                 [(? expr?)
+                  (run-expr body)]
+                 [(? seq?)
+                  (run-seq body)]
+                 [(? indirect?)
+                  (run-indirect body)]
+                 [else
+                  (list)]))]))
 
 ;; run-let-rec: let-rec state -> state
 (define (run-let-rec a-let-rec state)
@@ -403,15 +402,15 @@
      state
      ;; FIXME
      #;(append (apply append (map run-lam procs))
-             (match body
-               [(? expr?)
-                (run-expr body)]
-               [(? seq?)
-                (run-seq body)]
-               [(? indirect?)
-                (run-indirect body)]
-               [else
-                (list)]))]))
+               (match body
+                 [(? expr?)
+                  (run-expr body)]
+                 [(? seq?)
+                  (run-seq body)]
+                 [(? indirect?)
+                  (run-indirect body)]
+                 [else
+                  (list)]))]))
 
 
 ;; run-boxenv: boxenv state -> state
@@ -421,14 +420,14 @@
      ;; FIXME
      state
      #;(match body
-       [(? expr?)
-        (run-expr body)]
-       [(? seq?)
-        (run-seq body)]
-       [(? indirect?)
-        (run-indirect body)]
-       [else
-        (list)])]))
+         [(? expr?)
+          (run-expr body)]
+         [(? seq?)
+          (run-seq body)]
+         [(? indirect?)
+          (run-indirect body)]
+         [else
+          (list)])]))
 
 
 
@@ -462,14 +461,17 @@
 (define (run-application an-application state)
   (match an-application
     [(struct application (rator rands))
-     (let* ([state-with-rator (evaluate-at-expression-position rator)]
-            [rator (state-retval state-with-rator)]
+     (let* ([state-with-rator (evaluate-at-expression-position rator state)]
+            [rator-val (state-retval state-with-rator)]
             [state-with-rands 
              (foldl (lambda (rand state)
-                      (evaluate-at-expression-position rand 
-                                                       (update-state-retvals state '()))))]
-            [rands (reverse (state-retvals state-with-rands))])
-       (apply-operator rator rands state-with-rands))]))
+                      (evaluate-at-expression-position 
+                       rand 
+                       (update-state-retvals state '())))
+                    state-with-rator
+                    rands)]
+            [rands-val (reverse (state-retvals state-with-rands))])
+       (apply-operator rator-val rands-val state-with-rands))]))
 
 
 ;; evaluate-many-at-expression-position: (listof expression-position) state -> state
@@ -491,12 +493,58 @@
 
 ;; apply-operator: value (listof value) state -> state
 (define (apply-operator rator rands state)
-  (error 'apply-operator "Unknown operator ~s~n" rator)
-  #;(match rator
-    [(struct closure-value (...))
-     ...]
-    [(struct primval (n))
-     ...]))
+  (match rator
+    [(struct closure-value (name flags num-params rest? closure-values body))
+     (cond [rest?
+            (let* (;; push the rest arguments
+                   [state (state-push state (list-tail rands num-params))]
+
+                   ;; push the normal arguments
+                   [state (foldl (lambda (v state)
+                                   (state-push state v))
+                                 state
+                                 (reverse rands))]
+                   ;; push the closure values
+                   [state (foldl (lambda (v state)
+                                   (state-push state v))
+                                 state 
+                                 (reverse closure-values))])
+              
+              
+              ;; evaluate the body
+              (let ([new-state 
+                     (begin
+                       (printf "Evaluating body ~s~n" body)
+                       (evaluate-at-expression-position body state))])
+                ;; Pop off values from the stack.
+                (state-popn new-state (+ 1 
+                                         (length rands)
+                                         (length closure-values)))))]
+           [else
+            (let* (;; push the normal arguments
+                   [state (foldl (lambda (v state)
+                                   (state-push state v))
+                                 state
+                                 (reverse rands))]
+                   ;; push the closure values
+                   [state (foldl (lambda (v state)
+                                   (state-push state v))
+                                 state 
+                                 (reverse closure-values))])
+                   
+                   
+                   ;; evaluate the body
+                   (let ([new-state 
+                          (evaluate-at-expression-position body state)])
+                     ;; Pop off values from the stack.
+                     (state-popn new-state (+ (length rands)
+                                              (length closure-values)))))])]
+    
+    ;; Otherwise, if it's a primitive, call out to the primitive.
+    ;; Primitive procedures will just look at the state and the list of rands.
+    [(? procedure?)
+     (printf "Calling primitive procedure~n")
+     (rator state rands)]))
 
 
 
@@ -507,32 +555,32 @@
      state
      ;; FIXME
      #;(append (match test
-             [(? expr?)
-                (run-expr test)]
-               [(? seq?)
-                (run-seq test)]
-               [(? indirect?)
-                (run-indirect test)]
-               [else
-                (list)])
-           (match then
-             [(? expr?)
-                (run-expr then)]
-               [(? seq?)
-                (run-seq then)]
-               [(? indirect?)
-                (run-indirect then)]
-               [else
-                (list)])
-           (match else
-             [(? expr?)
-                (run-expr else)]
-               [(? seq?)
-                (run-seq else)]
-               [(? indirect?)
-                (run-indirect else)]
-               [else
-                (list)]))]))
+                 [(? expr?)
+                  (run-expr test)]
+                 [(? seq?)
+                  (run-seq test)]
+                 [(? indirect?)
+                  (run-indirect test)]
+                 [else
+                  (list)])
+               (match then
+                 [(? expr?)
+                  (run-expr then)]
+                 [(? seq?)
+                  (run-seq then)]
+                 [(? indirect?)
+                  (run-indirect then)]
+                 [else
+                  (list)])
+               (match else
+                 [(? expr?)
+                  (run-expr else)]
+                 [(? seq?)
+                  (run-seq else)]
+                 [(? indirect?)
+                  (run-indirect else)]
+                 [else
+                  (list)]))]))
 
 
 
@@ -543,32 +591,32 @@
      state
      ;; FIXME
      #;(append (match key
-               [(? expr?)
-                (run-expr key)]
-               [(? seq?)
-                (run-seq key)]
-               [(? indirect?)
-                (run-indirect key)]
-               [else
-                (list)])
-             (match val
-               [(? expr?)
-                (run-expr val)]
-               [(? seq?)
-                (run-seq val)]
-               [(? indirect?)
-                (run-indirect val)]
-               [else
-                (list)])
-             (match body
-               [(? expr?)
-                (run-expr body)]
-               [(? seq?)
-                (run-seq body)]
-               [(? indirect?)
-                (run-indirect body)]
-               [else
-                (list)]))]))
+                 [(? expr?)
+                  (run-expr key)]
+                 [(? seq?)
+                  (run-seq key)]
+                 [(? indirect?)
+                  (run-indirect key)]
+                 [else
+                  (list)])
+               (match val
+                 [(? expr?)
+                  (run-expr val)]
+                 [(? seq?)
+                  (run-seq val)]
+                 [(? indirect?)
+                  (run-indirect val)]
+                 [else
+                  (list)])
+               (match body
+                 [(? expr?)
+                  (run-expr body)]
+                 [(? seq?)
+                  (run-seq body)]
+                 [(? indirect?)
+                  (run-indirect body)]
+                 [else
+                  (list)]))]))
 
 
 
@@ -578,16 +626,16 @@
     [(struct beg0 (seq))
      state
      #;(apply append (map (lambda (s)
-                         (match s
-                           [(? expr?)
-                            (run-expr s)]
-                           [(? seq?)
-                            (run-seq s)]
-                           [(? indirect?)
-                            (run-indirect s)]
-                           [else
-                            (list)]))
-                        seq))]))
+                            (match s
+                              [(? expr?)
+                               (run-expr s)]
+                              [(? seq?)
+                               (run-seq s)]
+                              [(? indirect?)
+                               (run-indirect s)]
+                              [else
+                               (list)]))
+                          seq))]))
 
 
 ;; run-varref: varref state -> state
@@ -606,14 +654,14 @@
      state
      ;; FIXME
      #;(match rhs
-       [(? expr?)
-        (run-expr rhs)]
-       [(? seq?)
-        (run-seq rhs)]
-       [(? indirect?)
-        (run-indirect rhs)]
-       [else
-        (list)])]))
+         [(? expr?)
+          (run-expr rhs)]
+         [(? seq?)
+          (run-seq rhs)]
+         [(? indirect?)
+          (run-indirect rhs)]
+         [else
+          (list)])]))
 
 
 ;; run-apply-values: apply-values state -> state
@@ -631,17 +679,13 @@
             [operator-thunk (state-retval state-with-operator-thunk)])
        (apply-operator operator-thunk args 
                        state-with-operator-thunk))]))
- 
+
 
 ;; run-primval: primval state -> state
 (define (run-primval a-primval state)
   (match a-primval
     [(struct primval (id))
-     state
-     ;; FIXME
-     #;(list (hash-ref primitive-table id))]))
-
-
+     (update-state-retval state (lookup-primitive id))]))
 
 
 ;; run-seq: seq state -> state
@@ -649,18 +693,85 @@
   (match a-seq
     [(struct seq (forms))
      (foldl (lambda (f state)
-              state
-              ;; FIXME
-              #;(match f
-                  [(? form?)
-                   (run-form f)]
-                  [(? indirect?)
-                   (run-indirect f)]
-                  [else
-                   ;; it's a literal datum
-                   (list)]))
+              (evaluate-at-expression-position f state))
             state
             forms)]))
+
+
+
+
+
+
+
+;; Code is copied-and-pasted from compiler/decompile.
+(define primitive-table
+  ;; Figure out number-to-id mapping for kernel functions in `primitive'
+  (let ([bindings
+         (let ([ns (make-base-empty-namespace)])
+           (parameterize ([current-namespace ns])
+             (namespace-require ''#%kernel)
+             (namespace-require ''#%unsafe)
+             (namespace-require ''#%flfxnum)
+             (for/list ([l (namespace-mapped-symbols)])
+               (cons l (with-handlers ([exn:fail? (lambda (x) #f)])
+                         (compile l))))))]
+        [table (make-hash)])
+    (for ([b (in-list bindings)])
+      (let ([v (and (cdr b)
+                    (zo-parse (let-values ([(in out) (make-pipe)])
+                                (write (cdr b) out)
+                                (close-output-port out)
+                                in)))])
+        (let ([n (match v
+                   [(struct compilation-top (_ prefix (struct primval (n)))) n]
+                   [else #f])])
+          (hash-set! table n (car b)))))
+    table))
+
+
+;; This is completely wrong so far...
+(define (lookup-primitive id)
+  (let ([name (hash-ref primitive-table id)])
+    (printf "Trying to get primitive ~s~n" name)
+    (case name
+      [(current-print)
+       (lambda (state args)
+         (let ([p (current-print)])
+           (lambda (state args)
+             (update-state-retval state (apply p args)))))]
+
+      [(values)
+       (lambda (state args)
+         (update-state-retval state args))]
+      
+      [(for-each)
+        (lambda (state args)
+          (let ([proc (first args)]
+                [lists (rest args)])
+            (apply foldl 
+                   (lambda (state . list-elts)
+                     (apply-operator state proc list-elts))
+                   state
+                   lists)))]
+ 
+      [else
+       (error 'lookup-primitive (format "~s not implemented yet" id))])))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
