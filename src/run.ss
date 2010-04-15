@@ -798,5 +798,5 @@
     (run parsed fresh-state)
     (void)))
 
-(test "../sandbox/42/compiled/42_ss_merged_ss.zo")
+#;(test "../sandbox/42/compiled/42_ss_merged_ss.zo")
 (test "../sandbox/square/compiled/square_ss_merged_ss.zo")
