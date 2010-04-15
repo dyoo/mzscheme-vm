@@ -11,12 +11,6 @@
 
 
 
-
-;; compile: top icode -> icode
-(define (compile a-top next)
-  (compile-top a-top next))
-
-
 ;; compile-top: top icode -> icode
 (define (compile-top a-top next)
   (match a-top
@@ -43,7 +37,7 @@
   (match a-code
     [(? form?)
      (compile-form a-code next)]
-    #;[(? indirect?)
+    [(? indirect?)
      (compile-indirect a-code next)]
     [else
      ;; literal value is self-evaluating
@@ -98,7 +92,7 @@
                                                      (match b 
                                                        [(? form?)
                                                         (compile-form b next)]
-                                                       #;[(? indirect?)
+                                                       [(? indirect?)
                                                         (compile-indirect b next)]
                                                        [else
                                                         (compile-constant b next)]))
@@ -115,7 +109,7 @@
               (match f
                 [(? form?)
                  (compile-form f next)]
-                #;[(? indirect?)
+                [(? indirect?)
                  (compile-indirect f next)]
                 [else
                  (compile-constant f next)]))
@@ -142,8 +136,8 @@
      (compile-expr x next)]
     [(? seq?)
      (compile-seq x next)]
-    #;[(? indirect?)
-     (run-indirect x state)]
+    [(? indirect?)
+     (compile-indirect x next)]
     [else
      (compile-constant x next)]))
  
@@ -253,8 +247,8 @@
        (run-boxenv an-expr state)]
     [(? localref?)
      (compile-localref an-expr next)]
-    #;[(? toplevel?)
-       (run-toplevel an-expr state)]
+    [(? toplevel?)
+     (compile-toplevel an-expr next)]
     #;[(? topsyntax?)
        (run-topsyntax an-expr state)]
     [(? application?)
@@ -275,20 +269,21 @@
      (compile-primval an-expr next)]))
 
 
-;; run-lam: lam state -> state
-(define (run-lam a-lam state)
+;; run-lam: lam icode -> icode
+(define (compile-lam a-lam next)
   (match a-lam
     [(struct lam (name flags num-params param-types 
                        rest? closure-map closure-types 
                        max-let-depth body))
-     (update-state-retval state
-                          (make-closure-value name
-                                              flags
-                                              num-params
-                                              rest?
-                                              (capture-closure-map-values
-                                               closure-map state)
-                                              body))]))
+     (make-icode:closure name
+                         flags
+                         num-params
+                         rest?
+                         closure-map
+                         (compile-at-expression-position body (make-icode:return 
+                                                               (+ num-params
+                                                                  (if rest? 1 0))))
+                         next)]))
 
 
 ;; capture-closure-map-values: (vectorof exact-nonnegative-integer) state -> (listof any)
@@ -300,21 +295,20 @@
 
 
 
-;; run-closure: closure state -> state
-(define (run-closure a-closure state)
+;; compile-closure: closure icode -> icode
+(define (compile-closure a-closure next)
   (match a-closure 
     [(struct closure (lam gen-id))
-     (let ([new-state (run-lam lam state)])
-       ;; FIXME: squirrel away the gen-id into the evaluated closure.
-       new-state)]))
+     (compile-lam lam
+                  (make-icode:name gen-id next))]))
 
 
-;; run-indirect: indirect state -> state
-#;(define (run-indirect an-indirect state)
+
+;; compile-indirect: indirect icode -> icode
+(define (compile-indirect an-indirect next)
   (match an-indirect
     [(struct indirect (v))
-     (let ([new-state (run-closure v state)])
-       new-state)]))
+     (compile-closure v next)]))
 
 
 ;; run-case-lam: case-lam state -> state
@@ -429,34 +423,31 @@
 
 
 
-;; compile-localref: localref next -> next
-(define (compile-localref a-localref state)
+;; compile-localref: localref icode -> icode
+(define (compile-localref a-localref next)
   (match a-localref
     [(struct localref (unbox? pos clear? other-clears? flonum?))
-     #;(printf "local reference gets back ~s~n" (state-local-ref state pos)) 
-     (update-state-retval state (state-local-ref state pos))
-     #;(list)]))
+     (make-icode:local-lookup unbox? pos clear? other-clears? flonum? next)]))
 
 
 
-;; run-toplevel: toplevel state -> state
-;; Put the toplevel reference onto the retval register.
-(define (run-toplevel a-toplevel state)
+;; compile-toplevel: toplevel icode -> icode
+(define (compile-toplevel a-toplevel next)
   (match a-toplevel
     [(struct toplevel (depth pos const? ready?))
-     (update-state-retval state (state-toplevel-ref state depth pos))]))
+     (make-icode:toplevel-lookup depth pos const? ready? next)]))
 
 
 ;; run-topsyntax: topsyntax state -> state
-(define (run-topsyntax a-topsyntax state)
+#;(define (run-topsyntax a-topsyntax state)
   (match a-topsyntax
     [(struct topsyntax (depth pos midpt))
      state
      #;(list)]))
 
 
-;; compile-application: application state -> state
-(define (compile-application an-application state)
+;; compile-application: application icode -> icode
+(define (compile-application an-application next)
   (match an-application
     [(struct application (rator rands))
      (make-icode:frame 
@@ -469,7 +460,7 @@
 
 
 ;; evaluate-many-at-expression-position: (listof expression-position) state -> state
-(define (evaluate-many-at-expression-position rands state)
+#;(define (evaluate-many-at-expression-position rands state)
   (cond
     [(empty? rands)
      state]
@@ -613,14 +604,14 @@
         (compile-at-expression-position 
          proc
          (make-icode:apply 
-          (make-icode:return 1 next))))))]))
+          next)))))]))
 
 
 ;; compile-primval: primval icode -> icode
 (define (compile-primval a-primval next)
   (match a-primval
     [(struct primval (id))
-     (make-icode:primitive (lookup-primitive id) next)]))
+     (make-icode:primitive (hash-ref primitive-table id) next)]))
 
 
 
@@ -649,7 +640,8 @@
              (namespace-require ''#%unsafe)
              (namespace-require ''#%flfxnum)
              (for/list ([l (namespace-mapped-symbols)])
-               (cons l (with-handlers ([exn:fail? (lambda (x) #f)])
+               (cons l (with-handlers ([exn:fail? (lambda (x) 
+                                                    #f)])
                          (compile l))))))]
         [table (make-hash)])
     (for ([b (in-list bindings)])
@@ -665,62 +657,13 @@
     table))
 
 
-;; This is completely wrong so far...
-(define (lookup-primitive id)
-  (let ([name (hash-ref primitive-table id)])
-    #;(printf "Trying to get primitive ~s~n" name)
-    (case name
-      [(current-print)
-       (lambda (args state)
-         (let ([p (current-print)])
-           #;(printf "I'm in current-print~n")
-           (update-state-retval 
-            state
-            (lambda (args state)
-              (printf "I'm in print, with args=~s~n" args)
-              #;(printf "The state is ~s~n" state)
-              (update-state-retval state (p (first args)))))))]
-      [(apply)
-       (lambda (args state)
-         #;(printf "I'm in apply~n")
-         (update-state-retval 
-          state
-          (apply-operator (first args) (rest args) state)))]
-      
-      [(values)
-       (lambda (args state)
-         #;(printf "I'm in values~n")
-         (update-state-retval state args))]
-      
-      [(for-each)
-        (lambda (args state)
-          #;(printf "I'm in for-each, with state=~s and args=~s~n" state args)
-          (let ([proc (first args)]
-                [lists (rest args)])
-            (foldl 
-             (lambda (list-elts state)
-               (apply-operator proc list-elts state))
-             state
-             lists)))]
- 
-      [else
-       (error 'lookup-primitive (format "~s not implemented yet" id))])))
-
-
-
-
-
-
-
-
 
 
 ;; test: path -> state
 ;; exercising function
 (define (test path)
   (let ([parsed (zo-parse (open-input-file path))])
-    (run parsed fresh-state)
-    (void)))
+    (compile-top parsed (make-icode:no-op))))
 
-#;(test "../sandbox/42/compiled/42_ss_merged_ss.zo")
-(test "../sandbox/square/compiled/square_ss_merged_ss.zo")
+(test "../sandbox/42/compiled/42_ss_merged_ss.zo")
+#;(test "../sandbox/square/compiled/square_ss_merged_ss.zo")
