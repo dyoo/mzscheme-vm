@@ -750,7 +750,7 @@
            (update-state-retval 
             state
             (lambda (args state)
-              ;;(printf "I'm in print, with args=~s~n" args)
+              #;(printf "I'm in print, with args=~s~n" args)
               #;(printf "The state is ~s~n" state)
               (update-state-retval state (p (first args)))))))]
       [(apply)
@@ -792,6 +792,7 @@
 ;; exercising function
 (define (test path)
   (let ([parsed (zo-parse (open-input-file path))])
-    (list (state-retvals (run parsed fresh-state)))))
+    (run parsed fresh-state)
+    (void)))
 
 (test "../sandbox/42/compiled/42_ss_merged_ss.zo")
