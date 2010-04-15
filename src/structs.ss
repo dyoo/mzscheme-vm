@@ -33,6 +33,11 @@
      (make-state stack (cons a-val value-rib) retvals)])) 
 
 
+(define (state-replace-value-rib a-state a-rib)
+  (match a-state
+    [(struct state (stack value-rib retvals))
+     (make-state stack a-rib retvals)]))
+
 ;; state-retval: state -> any
 (define (state-retval a-state)
   (unless (= 1 (length (state-retvals a-state)))

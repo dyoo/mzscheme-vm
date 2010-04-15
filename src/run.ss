@@ -461,7 +461,8 @@
 (define (run-application an-application state)
   (match an-application
     [(struct application (rator rands))
-     (let* ([state-with-rator (evaluate-at-expression-position rator state)]
+     (let* ([old-rib (state-value-rib state)]
+            [state-with-rator (evaluate-at-expression-position rator state)]
             [rator-val (state-retval state-with-rator)]
             [state-with-rands 
              (foldl (lambda (rand state)
@@ -475,7 +476,9 @@
                     state-with-rator
                     (reverse rands))]
             [rands-val (state-value-rib state-with-rands)])
-       (apply-operator rator-val rands-val state-with-rands))]))
+       (apply-operator rator-val rands-val 
+                       (state-replace-value-rib state-with-rands
+                                                old-rib)))]))
 
 
 ;; evaluate-many-at-expression-position: (listof expression-position) state -> state
@@ -750,7 +753,7 @@
            (update-state-retval 
             state
             (lambda (args state)
-              #;(printf "I'm in print, with args=~s~n" args)
+              (printf "I'm in print, with args=~s~n" args)
               #;(printf "The state is ~s~n" state)
               (update-state-retval state (p (first args)))))))]
       [(apply)
@@ -796,3 +799,4 @@
     (void)))
 
 (test "../sandbox/42/compiled/42_ss_merged_ss.zo")
+(test "../sandbox/square/compiled/square_ss_merged_ss.zo")
