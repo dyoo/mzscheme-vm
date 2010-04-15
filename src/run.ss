@@ -435,7 +435,7 @@
 (define (run-localref a-localref state)
   (match a-localref
     [(struct localref (unbox? pos clear? other-clears? flonum?))
-     (printf "local reference gets back ~s~n" (state-local-ref state pos)) 
+     #;(printf "local reference gets back ~s~n" (state-local-ref state pos)) 
      (update-state-retval state (state-local-ref state pos))
      #;(list)]))
 
@@ -469,11 +469,11 @@
                              (evaluate-at-expression-position 
                               rand 
                               state)])
-                        (state-add-value-to-rib  new-rand-val+state
+                        (state-add-value-to-rib new-rand-val+state
                          (state-retval 
                           new-rand-val+state))))
                     state-with-rator
-                    rands)]
+                    (reverse rands))]
             [rands-val (state-value-rib state-with-rands)])
        (apply-operator rator-val rands-val state-with-rands))]))
 
@@ -497,7 +497,7 @@
 
 ;; apply-operator: value (listof value) state -> state
 (define (apply-operator rator rands state)
-  (printf "In apply-operator, with rator=~s~n~n and rands~s~n~n" rator rands)
+  #;(printf "In apply-operator, with rator=~s~n~n and rands~s~n~n" rator rands)
   #;(newline)
   (match rator
     [(struct closure-value (name flags num-params rest? closure-values body))
@@ -552,7 +552,7 @@
      #;(printf "Calling primitive procedure ~s, with state ~s and rands ~s~n" 
              rator state rands)
      #;(newline)
-     (rator state rands)]))
+     (rator rands state)]))
 
 
 
@@ -744,29 +744,29 @@
     #;(printf "Trying to get primitive ~s~n" name)
     (case name
       [(current-print)
-       (lambda (state args)
+       (lambda (args state)
          (let ([p (current-print)])
            #;(printf "I'm in current-print~n")
            (update-state-retval 
             state
-            (lambda (state args)
+            (lambda (args state)
               ;;(printf "I'm in print, with args=~s~n" args)
               #;(printf "The state is ~s~n" state)
-              (update-state-retval state (p args))))))]
+              (update-state-retval state (p (first args)))))))]
       [(apply)
-       (lambda (state args)
+       (lambda (args state)
          #;(printf "I'm in apply~n")
          (update-state-retval 
           state
           (apply-operator (first args) (rest args) state)))]
       
       [(values)
-       (lambda (state args)
+       (lambda (args state)
          #;(printf "I'm in values~n")
          (update-state-retval state args))]
       
       [(for-each)
-        (lambda (state args)
+        (lambda (args state)
           #;(printf "I'm in for-each, with state=~s and args=~s~n" state args)
           (let ([proc (first args)]
                 [lists (rest args)])
