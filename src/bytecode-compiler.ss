@@ -2,7 +2,12 @@
 
 (require scheme/match
          scheme/list
-         compiler/zo-parse)
+         scheme/contract
+         compiler/zo-parse
+         "sexp.ss")
+
+
+(provide/contract [compile-top (compilation-top? . -> . any/c)])
 
 
 ;; The structure of the code follows the type definitions in:
@@ -300,5 +305,7 @@
   (let ([parsed (zo-parse (open-input-file path))])
     (compile-top parsed)))
 
-(test "../sandbox/42/compiled/42_ss_merged_ss.zo")
+
+
+#;(test "../sandbox/42/compiled/42_ss_merged_ss.zo")
 #;(test "../sandbox/square/compiled/square_ss_merged_ss.zo")
