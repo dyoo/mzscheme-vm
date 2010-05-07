@@ -40,6 +40,8 @@ test_output() {
     do
 	cd ${basedir}
 	cd `dirname ${file}`
+	echo
+	echo
 	echo "Testing ${file}"
  	node `basename ${file}` > observed.txt
  	if [ -f expected.txt ]; then
@@ -62,6 +64,7 @@ elif [ "$1" == "test" ]; then
     test_output
 else
     build_mzjs
+    test_output
 fi
 
 
