@@ -41,13 +41,13 @@ test_output() {
 	cd ${basedir}
 	cd `dirname ${file}`
 	echo "Testing ${file}"
-	node `basename ${file}` > observed.txt
-	if [ -f observed.txt ]; then
- 	    diff expected.txt observed.txt
- 	else
- 	    echo "No expected.txt to compare against"
- 	    cat observed.txt
- 	fi
+ 	node `basename ${file}` > observed.txt
+ 	if [ -f expected.txt ]; then
+  	    diff expected.txt observed.txt
+  	else
+  	    echo "No expected.txt to compare against"
+  	    cat observed.txt
+  	fi
     done
     cd ${basedir}
 }
