@@ -1,41 +1,55 @@
 #!/bin/bash
 
-## Make all the js files for the sandbox files.
+## Make all the js files for the tests files.
 
 batchcompiler="../batch/batch.ss"
 
-olddir=`pwd`;
+basedir=`pwd`;
 
 build_batch() {
 ## rebuild all the batch-compiled files
-    cd ${olddir}
-    for file in sandbox/*/*.ss
+    cd ${basedir}
+    for file in tests/*/*.ss
     do
 	cd `dirname ${file}`
-	mzscheme ${olddir}/${batchcompiler} `basename ${file}`
-	cd ${olddir}
+	mzscheme ${basedir}/${batchcompiler} `basename ${file}`
+	cd ${basedir}
     done
-    cd ${olddir}
+    cd ${basedir}
 }
 
 
 build_mzjs() {
 ## run mzjs over all the files
-    cd ${olddir}
-    for file in sandbox/*/*/*_merged_ss.zo
+    cd ${basedir}
+    for file in tests/*/*/*_merged_ss.zo
     do
 	cd `dirname ${file}`
 	echo "Making `basename ${file}`"
-	mzscheme ${olddir}/src/mzjs.ss `basename ${file}`
+	mzscheme ${basedir}/src/mzjs.ss `basename ${file}`
 	cp *.js ..
-	cd ${olddir}
+	cd ${basedir}
     done
-    cd ${olddir}
+    cd ${basedir}
 }
 
 
 test_output() {
-    echo "Not done yet"
+    cd ${basedir}
+    for file in tests/*/*.js
+    do
+	cd ${basedir}
+	cd `dirname ${file}`
+	echo "Testing ${file}"
+	node `basename ${file}` > observed.txt
+	if [ -f observed.txt ]; then
+ 	    diff expected.txt observed.txt
+ 	else
+ 	    echo "No expected.txt to compare against"
+ 	    cat observed.txt
+ 	fi
+    done
+    cd ${basedir}
 }
 
 
@@ -44,6 +58,8 @@ if [ "$1" == "mzjs" ]; then
     build_mzjs
 elif [ "$1" == "batch" ]; then
     build_batch
+elif [ "$1" == "test" ]; then
+    test_output
 else
     build_mzjs
 fi
