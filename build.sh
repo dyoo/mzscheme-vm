@@ -33,6 +33,11 @@ build_mzjs() {
 }
 
 
+test() {
+}
+
+
+
 if [ "$1" == "mzjs" ]; then
     build_mzjs
 elif [ "$1" == "batch" ]; then
