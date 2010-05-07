@@ -3,6 +3,7 @@
 (require scheme/match
          scheme/list
          scheme/contract
+         scheme/pretty
          compiler/zo-parse
          "sexp.ss")
 
@@ -14,15 +15,32 @@
 ;; http://docs.plt-scheme.org/mzc/decompile.html?q=zo-parse#(def._((lib._compiler/zo-parse..ss)._indirect~3f))
 
 
-;; seen-indirects: maps the closures to unique identifiers
-(define seen-indirects (make-hasheq))
+;; Global parameters.
+;; seen-indirects: maps the closures's symbolic identifiers to lambdas.
+(define seen-indirects (make-parameter (make-hasheq)))
+
+
 
 
 ;; compile-top: top -> sexp
 (define (compile-top a-top)
-  (match a-top
-    [(struct compilation-top (max-let-depth prefix code))
-     `(compilation-top ,max-let-depth ,(compile-prefix prefix) ,(compile-code code))]))
+  (parameterize ([seen-indirects (make-hasheq)])
+    (match a-top
+      [(struct compilation-top (max-let-depth prefix code))
+       (let* ([compiled-code (compile-code code)]
+              ;; WARNING: Order dependent!  We need compile-code to run first
+              ;; since it initializes the seen-indirects parameter.
+              [compiled-indirects (emit-indirects)])
+         `(compilation-top ,max-let-depth 
+                           ,(compile-prefix prefix)
+                           ,compiled-indirects
+                           ,compiled-code))])))
+
+(define (emit-indirects)
+  (let ([ht (seen-indirects)])
+    (for/list ([id+lam (in-hash-pairs ht)])
+      `(labeled-indirect ,(car id+lam) ,(compile-lam (cdr id+lam))))))
+      
 
 
 ;; compile-prefix: prefix -> sexp
@@ -215,7 +233,10 @@
 (define (compile-indirect an-indirect)
   (match an-indirect
     [(struct indirect ((struct closure (lam gen-id))))
-     `(indirect ,gen-id)]))
+     (begin
+       ;; Keep track of the indirect.  We'll need to generate the s-expression for it in a moment
+       (hash-set! (seen-indirects) gen-id lam)
+       `(indirect ,gen-id))]))
 
 
 
@@ -242,7 +263,7 @@
   (match an-application
     [(struct application (rator rands))
      `(application ,(compile-at-expression-position rator)
-                   ,(compile-at-expression-position rands))]))
+                   ,(map compile-at-expression-position rands))]))
 
 
 ;; compile-apply-values: apply-values icode -> icode
@@ -264,7 +285,7 @@
 (define (compile-seq a-seq)
   (match a-seq
     [(struct seq (forms))
-     `(seq (map compile-at-expression-position forms))]))
+     `(seq ,(map compile-at-expression-position forms))]))
 
 
 
@@ -307,5 +328,5 @@
 
 
 
-#;(test "../sandbox/42/compiled/42_ss_merged_ss.zo")
-#;(test "../sandbox/square/compiled/square_ss_merged_ss.zo")
+#;(test "../tests/42/compiled/42_ss_merged_ss.zo")
+#;(test "../tests/square/compiled/square_ss_merged_ss.zo")
