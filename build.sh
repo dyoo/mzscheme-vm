@@ -43,7 +43,12 @@ test_output() {
 	echo
 	echo
 	echo "Testing ${file}"
- 	node `basename ${file}` > observed.txt
+	if [ -f input.txt ]; then
+	    node `basename ${file}` <input.txt >observed.txt
+	else
+ 	    node `basename ${file}` >observed.txt
+	fi
+
  	if [ -f expected.txt ]; then
   	    diff expected.txt observed.txt
   	else
