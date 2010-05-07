@@ -6,16 +6,18 @@
 (provide/contract [sexp->js (any/c . -> . string?)])
 
 
-(define LIST-CONSTRUCTOR "_list")
-(define VECTOR-CONSTRUCTOR "_vector")
-(define SYMBOL-CONSTRUCTOR "_symbol")
-(define FLOAT-CONSTRUCTOR "_float")
-(define RATIONAL-CONSTRUCTOR "_rational")
-(define COMPLEX-CONSTRUCTOR "_complex")
-(define CHARACTER-CONSTRUCTOR "_char")
+(define LIST-CONSTRUCTOR "_runtime.list")
+(define VECTOR-CONSTRUCTOR "_runtime.vector")
+(define SYMBOL-CONSTRUCTOR "_runtime.symbol")
+(define FLOAT-CONSTRUCTOR "_runtime.float")
+(define RATIONAL-CONSTRUCTOR "_runtime.rational")
+(define COMPLEX-CONSTRUCTOR "_runtime.complex")
+(define CHARACTER-CONSTRUCTOR "_runtime.char")
 
-(define TRUE "_true")
-(define FALSE "_false")
+(define EMPTY "_runtime.EMPTY")
+(define TRUE "_runtime.TRUE")
+(define FALSE "_runtime.FALSE")
+
 
 
 ;; sexp->js: any -> string
