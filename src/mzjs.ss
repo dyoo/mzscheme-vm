@@ -6,7 +6,7 @@
          scheme/cmdline)
 
 (define (make-output-path a-path)
-  (regexp-replace #px"\\.ss$" 
+  (regexp-replace #px"\\.\\w+$" 
                   (path->string (file-name-from-path a-path))
                   ".js"))
 
