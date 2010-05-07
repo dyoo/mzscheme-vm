@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 ## Make all the js files for the sandbox files.
 
@@ -33,5 +33,14 @@ build_mzjs() {
 }
 
 
+if [ "$1" == "mzjs" ]; then
+    build_mzjs
+elif [ "$1" == "batch" ]; then
+    build_batch
+else
+    build_mzjs
+fi
 
-build_mzjs
+
+#build_mzjs
+#build_batch
