@@ -25,7 +25,7 @@
   (cond
     ;; Empty
     [(empty? expr)
-     "plt.types.Empty.EMPTY"]
+     EMPTY]
     
     ;; Nonempty lists
     [(pair? expr)
