@@ -27,13 +27,15 @@ build_mzjs() {
 	cd `dirname ${file}`
 	echo "Making `basename ${file}`"
 	mzscheme ${olddir}/src/mzjs.ss `basename ${file}`
+	cp *.js ..
 	cd ${olddir}
     done
     cd ${olddir}
 }
 
 
-test() {
+test_output() {
+    echo "Not done yet"
 }
 
 
