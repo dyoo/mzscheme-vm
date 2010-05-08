@@ -1,11 +1,9 @@
 #lang scheme/base
 
 (require scheme/match
-         scheme/list
          scheme/contract
-         scheme/pretty
          compiler/zo-parse
-         "sexp.ss")
+         "jsexp.ss")
 
 
 (provide/contract [compile-top (compilation-top? . -> . any/c)])
@@ -21,8 +19,7 @@
 
 
 
-
-;; compile-top: top -> sexp
+;; compile-top: top -> jsexp
 (define (compile-top a-top)
   (parameterize ([seen-indirects (make-hasheq)])
     (match a-top
@@ -31,37 +28,50 @@
               ;; WARNING: Order dependent!  We need compile-code to run first
               ;; since it initializes the seen-indirects parameter.
               [compiled-indirects (emit-indirects)])
-         `(compilation-top ,max-let-depth 
-                           ,(compile-prefix prefix)
-                           ,compiled-indirects
-                           ,compiled-code))])))
+         (make-ht 'compilation-top
+                  `((max-let-depth ,max-let-depth)
+                    (prefix ,(compile-prefix prefix))
+                    (compiled-indirects ,compiled-indirects)
+                    (code ,compiled-code))))])))
 
+
+;; emit-indirects: -> jsexp
+;; Writes out all the indirect lambdas that we've seen.
 (define (emit-indirects)
   (let ([ht (seen-indirects)])
-    (for/list ([id+lam (in-hash-pairs ht)])
-      `(labeled-indirect ,(car id+lam) ,(compile-lam (cdr id+lam))))))
-      
+    (make-vec 
+     (for/list ([id+lam (in-hash-pairs ht)])
+       (make-ht 'labeled-indirect 
+                `((id ,(car id+lam)) 
+                  (lam ,(compile-lam (cdr id+lam)))))))))
 
 
-;; compile-prefix: prefix -> sexp
+;; compile-prefix: prefix -> jsexp
 (define (compile-prefix a-prefix)
   (match a-prefix
     [(struct prefix (num-lifts toplevels stxs))
      ;; FIXME: handle stxs?
-     `(prefix ,num-lifts ,(compile-toplevels toplevels))]))
+     (make-ht 'prefix 
+              `((num-lifts ,num-lifts)
+                (toplevels ,(compile-toplevels toplevels))))]))
 
 
+;; compile-toplevels: (listof (or/c #f symbol? global-bucket? module-variable?)) -> jsexp
 (define (compile-toplevels toplevels)
-  (map (lambda (a-toplevel)
-         (cond
-           [(eq? a-toplevel #f) #f]
-           [(symbol? a-toplevel) a-toplevel]
-           [(global-bucket? a-toplevel) `(global-bucket ,(global-bucket-name a-toplevel))]
-           [(module-variable? a-toplevel) `(module-variable ,(module-variable-sym a-toplevel))]))
-       toplevels))
+  (make-vec (map (lambda (a-toplevel)
+                   (cond
+                     [(eq? a-toplevel #f) #f]
+                     [(symbol? a-toplevel) a-toplevel]
+                     [(global-bucket? a-toplevel) 
+                      (make-ht 'global-bucket 
+                               `((value ,(global-bucket-name a-toplevel))))]
+                     [(module-variable? a-toplevel) 
+                      (make-ht 'module-variable 
+                               `((value ,(module-variable-sym a-toplevel))))]))
+                 toplevels)))
 
 
-;; compile-code: code -> sexp
+;; compile-code: code -> jsexp
 (define (compile-code a-code)
   (match a-code
     [(? form?)
@@ -73,13 +83,14 @@
      (compile-constant a-code)]))
 
 
-;; compile-constant: datum -> sexp
+;; compile-constant: datum -> jsexp
 (define (compile-constant a-constant)
-  `(constant ,a-constant))
+  (make-ht 'constant 
+           `((value ,a-constant))))
 
 
 
-;; compile-form: form -> sexp
+;; compile-form: form -> jsexp
 (define (compile-form a-form)
   (match a-form
     [(? def-values?)
@@ -94,7 +105,7 @@
      (compile-expr a-form)]))
 
 
-;; compile-mod: mod -> sexp
+;; compile-mod: mod -> jsexp
 (define (compile-mod a-mod)
   (match a-mod
     [(struct mod (name
@@ -109,38 +120,37 @@
                   dummy
                   lang-info
                   internal-context))
-     `(mod ,name 
-           ,(compile-prefix prefix) 
-           ,(map (lambda (b)
-                  (match b 
-                    [(? form?)
-                     (compile-form b)]
-                    [(? indirect?)
-                     (compile-indirect b)]
-                    [else
-                     (compile-constant b)]))
-                body))]))
-  
-  
+     (make-ht 'mod `((name ,name)
+                     (prefix ,(compile-prefix prefix))
+                     (body (make-vec ,(map (lambda (b)
+                                             (match b 
+                                               [(? form?)
+                                                (compile-form b)]
+                                               [(? indirect?)
+                                                (compile-indirect b)]
+                                               [else
+                                                (compile-constant b)]))
+                                           body)))))]))
 
-;; compile-splice: splice -> s-exp
+;; compile-splice: splice -> jsexp
 (define (compile-splice a-splice)
   (match a-splice
     [(struct splice (forms))
-     `(splice ,(map (lambda (f)
-                      (match f
-                        [(? form?)
-                         (compile-form f)]
-                        [(? indirect?)
-                         (compile-indirect f)]
-                        [else
-                         (compile-constant f)]))
-                    forms))]))
-  
+     (make-ht 'splice `((value
+                         ,(make-vec (map (lambda (f)
+                                           (match f
+                                             [(? form?)
+                                              (compile-form f)]
+                                             [(? indirect?)
+                                              (compile-indirect f)]
+                                             [else
+                                              (compile-constant f)]))
+                                         forms)))))]))
 
 
 
-;; compile-at-expression-position: (U expr seq indirect any) icode -> icode
+
+;; compile-at-expression-position: (U expr seq indirect any) -> jsexp
 ;;
 ;; evaluate the expression-like thing at x, installing it into the retvals of
 ;; the current state.
@@ -154,22 +164,22 @@
      (compile-indirect x)]
     [else
      (compile-constant x)]))
- 
 
 
-;; compile-def-values: def-values icode -> icode
+
+;; compile-def-values: def-values icode -> jsexp
 ;; Accumulates the values for rhs, and then installs each value in turn
 ;; into the toplevel.
 (define (compile-def-values a-def-values)
   (match a-def-values
     [(struct def-values (ids rhs))
-     `(def-values 
-        ,(map (lambda (an-id)
-                (match an-id
-                  [(struct toplevel (depth pos const? ready?))
-                   `(toplevel ,depth ,pos ,const? ,ready?)]))
-              ids)
-        ,(compile-at-expression-position rhs))]))
+     (make-ht 'def-values 
+              `((ids ,(make-vec (map (lambda (an-id)
+                                       (match an-id
+                                         [(struct toplevel (depth pos const? ready?))
+                                          `(toplevel ,depth ,pos ,const? ,ready?)]))
+                                     ids)))
+                (body ,(compile-at-expression-position rhs))))]))
 
 
 ;                                          
@@ -210,42 +220,53 @@
      (compile-primval an-expr)]))
 
 
-;; run-lam: lam s-exp -> s-exp
+;; run-lam: lam s-exp -> jsexp
 (define (compile-lam a-lam)
   (match a-lam
     [(struct lam (name flags num-params param-types 
                        rest? closure-map closure-types 
                        max-let-depth body))
-     `(lam ,flags ,num-params ,param-types ,rest? ,closure-map ,closure-types ,max-let-depth 
-           ,(compile-at-expression-position body))]))
+     (make-ht 'lam `((flags ,flags)
+                     (num-params ,num-params)
+                     (param-types ,param-types)
+                     (rest? ,rest?)
+                     (closure-map ,closure-map)
+                     (closure-types ,closure-types)
+                     (max-let-depth ,max-let-depth)
+                     (body ,(compile-at-expression-position body))))]))
 
 
 
-;; compile-closure: closure s-exp -> s-exp
+;; compile-closure: closure s-exp -> jsexp
 (define (compile-closure a-closure)
   (match a-closure 
     [(struct closure (lam gen-id))
-     `(closure ,(compile-lam lam) ,gen-id)]))
+     (make-ht 'closure `((lam ,(compile-lam lam))
+                         (gen-id ,gen-id)))]))
 
 
 
-;; compile-indirect: indirect s-exp -> s-exp
+;; compile-indirect: indirect s-exp -> jsexp
 (define (compile-indirect an-indirect)
   (match an-indirect
     [(struct indirect ((struct closure (lam gen-id))))
      (begin
        ;; Keep track of the indirect.  We'll need to generate the s-expression for it in a moment
        (hash-set! (seen-indirects) gen-id lam)
-       `(indirect ,gen-id))]))
+       (make-ht 'indirect `((value ,gen-id))))]))
 
 
 
 
-;; compile-localref: localref -> s-exp
+;; compile-localref: localref -> jsexp
 (define (compile-localref a-localref)
   (match a-localref
     [(struct localref (unbox? pos clear? other-clears? flonum?))
-     `(localref ,unbox? ,pos ,clear? ,other-clears? ,flonum?)]))
+     (make-ht 'localref `((unbox? ,unbox?)
+                          (pos ,pos)
+                          (clear ,clear?)
+                          (other-clears? ,other-clears?)
+                          (flonum? ,flonum?)))]))
 
 
 
@@ -253,7 +274,10 @@
 (define (compile-toplevel a-toplevel)
   (match a-toplevel
     [(struct toplevel (depth pos const? ready?))
-     `(toplevel ,depth ,pos ,const? ,ready?)]))
+     (make-ht 'toplevel `((depth ,depth)
+                          (pos ,pos)
+                          (const? ,const?)
+                          (ready? ,ready?)))]))
 
 
 
@@ -262,33 +286,33 @@
 (define (compile-application an-application)
   (match an-application
     [(struct application (rator rands))
-     `(application ,(compile-at-expression-position rator)
-                   ,(map compile-at-expression-position rands))]))
+     (make-ht 'application 
+              `((rator ,(compile-at-expression-position rator))
+                (rands ,(make-vec (map compile-at-expression-position rands)))))]))
 
 
 ;; compile-apply-values: apply-values icode -> icode
 (define (compile-apply-values an-apply-values)
   (match an-apply-values
     [(struct apply-values (proc args-expr))
-     `(apply-values ,(compile-at-expression-position proc)
-                    ,(compile-at-expression-position args-expr))]))
+     (make-ht 'apply-values 
+              `((proc ,(compile-at-expression-position proc))
+                (args-expr ,(compile-at-expression-position args-expr))))]))
 
 
 ;; compile-primval: primval icode -> icode
 (define (compile-primval a-primval)
   (match a-primval
     [(struct primval (id))
-     `(primval ,(hash-ref primitive-table id))]))
+     (make-ht 'primval `((value ,(hash-ref primitive-table id))))]))
 
 
 ;; compile-seq: seq icode -> icode
 (define (compile-seq a-seq)
   (match a-seq
     [(struct seq (forms))
-     `(seq ,(map compile-at-expression-position forms))]))
-
-
-
+     (make-ht 'seq 
+              `((forms (make-vec (map compile-at-expression-position forms)))))]))
 
 
 ;; Code is copied-and-pasted from compiler/decompile.

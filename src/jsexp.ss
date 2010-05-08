@@ -9,6 +9,7 @@
 (define (jsexp? x)
   (or (ht? x)
       (vec? x)
+      (boolean? x)
       (symbol? x)
       (char? x)
       (string? x)
@@ -17,6 +18,6 @@
 
 
 (provide/contract [struct ht ([name symbol?]
-                              [key-values (listof jsexp?)])]
+                              [key-values (listof (list symbol? jsexp?))])]
                   [struct vec ([items (listof jsexp?)])]
                   [jsexp? (any/c . -> . boolean?)])

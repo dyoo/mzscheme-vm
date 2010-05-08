@@ -1,9 +1,12 @@
 #lang scheme/base
 (require scheme/string
          scheme/list
-         scheme/contract)
+         scheme/contract
+         scheme/match
+         "jsexp.ss")
 
-(provide/contract [sexp->js (any/c . -> . string?)])
+(provide/contract [jsexp->js (jsexp? . -> . string?)]
+                  [sexp->js (any/c . -> . string?)])
 
 
 (define LIST-CONSTRUCTOR "_runtime.list")
@@ -18,6 +21,33 @@
 (define TRUE "_runtime.TRUE")
 (define FALSE "_runtime.FALSE")
 
+
+
+;; jsexp->js: jsexp -> string
+(define (jsexp->js a-jsexp)
+  (match a-jsexp
+    [(struct ht (name pairs))
+     (string-append "{"
+                    (string-join (map key-value->js pairs) ",")
+                    "}")]
+    [(struct vec (items))
+     (string-append "[" 
+                    (string-join (map jsexp->js a-jsexp) ",")
+                    "]")]
+    [else
+     (sexp->js a-jsexp)]))
+  
+
+;; key-value->js: (list symbol jsval) -> string
+(define (key-value->js a-key-value)
+  (let ([key (first a-key-value)]
+        [value (second a-key-value)])
+    (string-append (sexp->js (symbol->string key))
+                   ":"
+                   (jsexp->js value))))
+
+      
+      
 
 
 ;; sexp->js: any -> string
