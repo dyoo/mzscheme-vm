@@ -18,6 +18,6 @@
 
 
 (provide/contract [struct ht ([name symbol?]
-                              [key-values (listof (list symbol? jsexp?))])]
+                              [key-values (listof (list/c symbol? jsexp?))])]
                   [struct vec ([items (listof jsexp?)])]
                   [jsexp? (any/c . -> . boolean?)])

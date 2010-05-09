@@ -28,6 +28,7 @@
               ;; WARNING: Order dependent!  We need compile-code to run first
               ;; since it initializes the seen-indirects parameter.
               [compiled-indirects (emit-indirects)])
+         (void)
          (make-ht 'compilation-top
                   `((max-let-depth ,max-let-depth)
                     (prefix ,(compile-prefix prefix))
@@ -122,7 +123,7 @@
                   internal-context))
      (make-ht 'mod `((name ,name)
                      (prefix ,(compile-prefix prefix))
-                     (body (make-vec ,(map (lambda (b)
+                     (body ,(make-vec (map (lambda (b)
                                              (match b 
                                                [(? form?)
                                                 (compile-form b)]
@@ -174,11 +175,8 @@
   (match a-def-values
     [(struct def-values (ids rhs))
      (make-ht 'def-values 
-              `((ids ,(make-vec (map (lambda (an-id)
-                                       (match an-id
-                                         [(struct toplevel (depth pos const? ready?))
-                                          `(toplevel ,depth ,pos ,const? ,ready?)]))
-                                     ids)))
+              `((ids ,(make-vec 
+                       (map compile-toplevel ids)))
                 (body ,(compile-at-expression-position rhs))))]))
 
 
@@ -312,7 +310,9 @@
   (match a-seq
     [(struct seq (forms))
      (make-ht 'seq 
-              `((forms (make-vec (map compile-at-expression-position forms)))))]))
+              `((forms 
+                 ,(make-vec 
+                   (map compile-at-expression-position forms)))))]))
 
 
 ;; Code is copied-and-pasted from compiler/decompile.
