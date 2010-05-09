@@ -224,14 +224,15 @@
     [(struct lam (name flags num-params param-types 
                        rest? closure-map closure-types 
                        max-let-depth body))
-     (make-ht 'lam `((flags ,flags)
+     (make-ht 'lam `((flags ,(make-vec flags))
                      (num-params ,num-params)
-                     (param-types ,param-types)
+                     (param-types ,(make-vec param-types))
                      (rest? ,rest?)
-                     (closure-map ,closure-map)
-                     (closure-types ,closure-types)
+                     (closure-map ,(make-vec (vector->list closure-map)))
+                     (closure-types ,(make-vec closure-types))
                      (max-let-depth ,max-let-depth)
                      (body ,(compile-at-expression-position body))))]))
+
 
 
 
