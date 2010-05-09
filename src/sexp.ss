@@ -28,11 +28,14 @@
   (match a-jsexp
     [(struct ht (name pairs))
      (string-append "{"
-                    (string-join (map key-value->js pairs) ",")
+                    (string-join (map key-value->js 
+                                      (cons `(,name name)
+                                            pairs)) 
+                                 ",")
                     "}")]
     [(struct vec (items))
      (string-append "[" 
-                    (string-join (map jsexp->js a-jsexp) ",")
+                    (string-join (map jsexp->js items) ",")
                     "]")]
     [else
      (sexp->js a-jsexp)]))
@@ -46,7 +49,6 @@
                    ":"
                    (jsexp->js value))))
 
-      
       
 
 

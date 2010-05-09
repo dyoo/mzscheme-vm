@@ -16,7 +16,8 @@
       (call-with-output-file (make-output-path a-path)
         (lambda (op)
           (fprintf op "var _runtime = require('./../../lib');")
-          (fprintf op "var program = _runtime.load(~a);" (sexp->js (compile-top (zo-parse ip))))
+          (fprintf op "var program = _runtime.load(~a);" 
+                   (jsexp->js (compile-top (zo-parse ip))))
           (fprintf op "_runtime.run(program);"))
         #:exists 'replace))))
 
