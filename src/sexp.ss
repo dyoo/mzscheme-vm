@@ -29,8 +29,8 @@
     [(struct ht (name pairs))
      (string-append "{"
                     (string-join (map key-value->js 
-                                      (cons `(,name name)
-                                            pairs)) 
+                                      (cons `(name ,(symbol->string name))
+                                            pairs))
                                  ",")
                     "}")]
     [(struct vec (items))
