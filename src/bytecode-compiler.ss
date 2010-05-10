@@ -54,7 +54,8 @@
      ;; FIXME: handle stxs?
      (make-ht 'prefix 
               `((num-lifts ,num-lifts)
-                (toplevels ,(compile-toplevels toplevels))))]))
+                (toplevels ,(compile-toplevels toplevels))
+                (stxs ,(compile-stxs stxs))))]))
 
 
 ;; compile-toplevels: (listof (or/c #f symbol? global-bucket? module-variable?)) -> jsexp
@@ -70,6 +71,13 @@
                       (make-ht 'module-variable 
                                `((value ,(module-variable-sym a-toplevel))))]))
                  toplevels)))
+
+(define (compile-stxs stxs)
+  (make-vec (map (lambda (a-stx)
+                   ;; FIXME: not right.  We need to translate
+                   ;; stxs to runtime values eventually.
+                   (format "~s" stxs))
+                 stxs)))
 
 
 ;; compile-code: code -> jsexp

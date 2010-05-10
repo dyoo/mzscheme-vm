@@ -29,7 +29,7 @@
     [(struct ht (name pairs))
      (string-append "{"
                     (string-join (map key-value->js 
-                                      (cons `(name ,(symbol->string name))
+                                      (cons `($ ,(symbol->string name))
                                             pairs))
                                  ",")
                     "}")]
