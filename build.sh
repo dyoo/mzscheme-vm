@@ -13,7 +13,7 @@ build_batch() {
     do
 	cd `dirname ${file}`
 	rm -rf compiled
-	mzc --no-prop `basename ${file}`
+	mzc --disable-inline --no-prop `basename ${file}`
 	mzscheme ${basedir}/${batchcompiler} ./`basename ${file}`
 	cd ${basedir}
     done

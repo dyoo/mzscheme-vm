@@ -223,7 +223,9 @@
     [(? apply-values?)
      (compile-apply-values an-expr)]
     [(? primval?)
-     (compile-primval an-expr)]))
+     (compile-primval an-expr)]
+    [(? branch?)
+     (compile-branch an-expr)]))
 
 
 ;; run-lam: lam s-exp -> jsexp
@@ -312,6 +314,14 @@
   (match a-primval
     [(struct primval (id))
      (make-ht 'primval `((value ,(hash-ref primitive-table id))))]))
+
+
+(define (compile-branch a-branch)
+  (match a-branch
+    [(struct branch (test then else))
+     (make-ht 'branch `((test ,(compile-at-expression-position test))
+			(then ,(compile-at-expression-position then))
+			(else ,(compile-at-expression-position else))))]))
 
 
 ;; compile-seq: seq icode -> icode
