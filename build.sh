@@ -12,7 +12,9 @@ build_batch() {
     for file in tests/*/*.ss
     do
 	cd `dirname ${file}`
-	mzscheme ${basedir}/${batchcompiler} `basename ${file}`
+	rm -rf compiled
+	mzc --no-prop `basename ${file}`
+	mzscheme ${basedir}/${batchcompiler} ./`basename ${file}`
 	cd ${basedir}
     done
     cd ${basedir}
