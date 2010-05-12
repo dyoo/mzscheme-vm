@@ -403,14 +403,36 @@ var makeApplication = function(rator, rands) {
     state.pushControl(makeMod(makePrefix(1), []));
     state.run();   
     assert.equal(state.vstack.length, 1);
-
+    
     state.pushControl(makeDefValues([makeToplevel(0, 0)],
 				    makeLam(1, [],
 					    makeConstant("I'm a body"))));
     state.run();
-    state.pushControl(makeApplication(makeToplevel(0, 0), []));
+    state.pushControl(makeApplication(makeToplevel(1, 0), [makeConstant("boo")]));
     var result = state.run();
     assert.equal(result, "I'm a body");
 
+    assert.equal(state.vstack.length, 1);
+})();
+
+
+
+// Closure application
+// lambda will square its argument
+(function() {
+    var state = new runtime.State();
+    state.pushControl(makeMod(makePrefix(1), []));
+    state.run();   
+    assert.equal(state.vstack.length, 1);
+    
+    state.pushControl(makeDefValues([makeToplevel(0, 0)],
+				    makeLam(1, [],
+					    makeApplication(makePrimval("*"),
+							    [makeLocalRef(0),
+							     makeLocalRef(0)]))));
+    state.run();
+    state.pushControl(makeApplication(makeToplevel(1, 0), [runtime.rational(4)]));
+    var result = state.run();
+    assert.equal(result, runtime.rational(16));
     assert.equal(state.vstack.length, 1);
 })();
