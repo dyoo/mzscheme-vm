@@ -79,6 +79,12 @@ var makeLam = function(arity, closureMap, body) {
 	    'body': body};	    
 };
 
+
+var makePrimval = function(name) {
+    return {$: 'primval',
+	    'value': name};
+};
+
 //////////////////////////////////////////////////////////////////////
 
 
@@ -266,4 +272,22 @@ var makeLam = function(arity, closureMap, body) {
     assert.ok(result.closureVals[0] instanceof runtime.Prefix);
     assert.deepEqual(result.body, makeConstant("I'm a body"));
     assert.equal(result.numParams, 3);
+})();
+
+
+
+// primval
+(function() {
+    var state = new runtime.State();
+    state.pushControl(makePrimval("current-print"));
+    var result = state.run();
+    assert.ok(result instanceof runtime.Primitive);
+})();
+
+
+// primval on unknowns should throw error
+(function() {
+    var state = new runtime.State();
+    state.pushControl(makePrimval("foobar"));
+    assert.throws(function() { state.run(); });
 })();
