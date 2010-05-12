@@ -383,6 +383,7 @@ var makeApplication = function(rator, rands) {
 })();
 
 
+// Checking negation.
 (function() {
     var state = new runtime.State();
     state.pushControl(makeApplication(
@@ -391,4 +392,25 @@ var makeApplication = function(rator, rands) {
     var result = state.run();
     assert.deepEqual(result, runtime.rational(-1024));
     assert.equal(state.vstack.length, 0);
+})();
+
+
+
+// Closure application
+// lambda will just return a constant value
+(function() {
+    var state = new runtime.State();
+    state.pushControl(makeMod(makePrefix(1), []));
+    state.run();   
+    assert.equal(state.vstack.length, 1);
+
+    state.pushControl(makeDefValues([makeToplevel(0, 0)],
+				    makeLam(1, [],
+					    makeConstant("I'm a body"))));
+    state.run();
+    state.pushControl(makeApplication(makeToplevel(0, 0), []));
+    var result = state.run();
+    assert.equal(result, "I'm a body");
+
+    assert.equal(state.vstack.length, 1);
 })();
