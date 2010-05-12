@@ -26,6 +26,24 @@ var makeStateWithConstant = function(c) {
     return s;
 };
 
+
+var makePrefix = function(n) {
+    var arr = [];    
+    for (var i = 0; i < n; i++) {
+	arr.push(false);
+    }
+    return { $: 'prefix',
+	     'num-lifts': runtime.rational(0),
+	     toplevels: arr };
+};
+
+
+var makeMod = function(prefix, body) {
+    return { $: 'mod', 
+	     prefix: prefix,
+	     body:body };
+};
+
 //////////////////////////////////////////////////////////////////////
 
 
@@ -133,4 +151,17 @@ var makeStateWithConstant = function(c) {
     assert.deepEqual(result, 5);
 
     assert.deepEqual(state1, makeStateWithConstant(5));    
+})();
+
+
+
+// Module prefix
+(function() {
+    var state = new runtime.State();
+    state.pushControl(makeMod(makePrefix(3),
+			      []));
+    state.run();   
+    assert.equal(1, state.vstack.length);
+    assert.ok(state.vstack[0] instanceof runtime.Prefix);
+    assert.equal(state.vstack[0].length(), 3);
 })();
