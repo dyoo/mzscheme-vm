@@ -2,6 +2,7 @@ var assert = require('assert');
 var runtime = require('./../lib');
 var sys = require('sys');
 
+
 //////////////////////////////////////////////////////////////////////
 
 var makeConstant = function(c) { return {$:'constant', value:c}; };
@@ -42,6 +43,20 @@ var makeMod = function(prefix, body) {
     return { $: 'mod', 
 	     prefix: prefix,
 	     body:body };
+};
+
+
+var makeToplevel = function(depth, pos) {
+    return {$:'toplevel',
+	    depth: runtime.rational(depth),
+	    pos:runtime.rational(pos)};
+};
+
+
+var makeDefValues = function(ids, body) {
+    return {$:"def-values",
+	    ids: ids,
+	    body: body};
 };
 
 //////////////////////////////////////////////////////////////////////
@@ -164,4 +179,48 @@ var makeMod = function(prefix, body) {
     assert.equal(1, state.vstack.length);
     assert.ok(state.vstack[0] instanceof runtime.Prefix);
     assert.equal(state.vstack[0].length(), 3);
+})();
+
+
+
+// toplevel lookup
+(function() {
+    var state = new runtime.State();
+    state.pushControl(makeMod(makePrefix(3),
+			      []));
+    state.run();   
+
+    state.vstack[0].set(0, "zero");
+    state.vstack[0].set(1, "one");
+    state.vstack[0].set(2, "two");
+
+    state.pushControl(makeToplevel(0, 0));
+    assert.equal(state.run(), "zero");
+
+    state.pushControl(makeToplevel(0, 1));
+    assert.equal(state.run(), "one");
+
+    state.pushControl(makeToplevel(0, 2));
+    assert.equal(state.run(), "two");
+})();
+
+
+
+
+// define-values
+(function() {
+    var state = new runtime.State();
+    state.pushControl(makeMod(makePrefix(3), []));
+    state.run();   
+    state.pushControl(makeDefValues([makeToplevel(0, 0)],
+				    makeConstant("try it")));
+    state.run();
+
+    var expectedState = new runtime.State();
+    expectedState.pushControl(makeMod(makePrefix(3),
+			      []));
+    expectedState.run();   
+    expectedState.v = "try it";
+    expectedState.vstack[0].set(0, "try it");
+    assert.deepEqual(state, expectedState);
 })();
