@@ -320,5 +320,22 @@ var makeApplication = function(rator, rands) {
 				       makeConstant(runtime.rational(5))]));
     var result = state.run();
     assert.deepEqual(result, runtime.rational(15));
+    assert.equal(state.vstack.length, 0);
 })();
 
+
+
+// primitive application, with nesting
+(function() {
+    var state = new runtime.State();
+    state.pushControl(makeApplication(
+	makePrimval("*"),
+	[makeApplication(
+	    makePrimval("*"),
+	    [makeConstant(runtime.rational(3)),
+	     makeConstant(runtime.rational(5))]),
+	 makeConstant(runtime.rational(7))]));
+				      var result = state.run();
+    assert.deepEqual(result, runtime.rational(105));
+    assert.equal(state.vstack.length, 0);
+})();
