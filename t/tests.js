@@ -64,19 +64,19 @@ var makeConstant = function(c) { return {$:'constant', value:c}; };
 
 
 
-// Simple branch to false
+// Sequences
 (function() {
     var state1 = new runtime.State();
-    state.pushControl({'$' : 'seq', 
-		       forms : [makeConstant(3),
-				makeConstant(4),
-				makeConstant(5)]}),
+    state1.pushControl({'$' : 'seq', 
+			'forms' : [makeConstant(3),
+				   makeConstant(4),
+				   makeConstant(5)]});
     var result = state1.run();
     assert.deepEqual(result, 5);
 
     
     var state2 = new runtime.State();
-    state.pushControl(makeConstant(5));
+    state2.pushControl(makeConstant(5));
 
     
     assert.deepEqual(state2, state1);
