@@ -71,6 +71,7 @@ var makeConstant = function(c) { return {$:'constant', value:c}; };
 			'forms' : [makeConstant(3),
 				   makeConstant(4),
 				   makeConstant(5)]});
+    sys.print(sys.inspect(state1, false, false));
     var result = state1.run();
     assert.deepEqual(result, 5);
 
