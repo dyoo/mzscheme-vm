@@ -91,6 +91,13 @@ var makeApplication = function(rator, rands) {
 	    rands: rands};
 };
 
+
+var makeLocalRef = function(n) {
+    return {$ : 'localref',
+	    pos: runtime.rational(n)};
+};
+
+
 //////////////////////////////////////////////////////////////////////
 
 
@@ -428,11 +435,12 @@ var makeApplication = function(rator, rands) {
     state.pushControl(makeDefValues([makeToplevel(0, 0)],
 				    makeLam(1, [],
 					    makeApplication(makePrimval("*"),
-							    [makeLocalRef(0),
-							     makeLocalRef(0)]))));
+							    [makeLocalRef(2),
+							     makeLocalRef(2)]))));
     state.run();
-    state.pushControl(makeApplication(makeToplevel(1, 0), [runtime.rational(4)]));
+    state.pushControl(makeApplication(makeToplevel(1, 0), 
+				      [makeConstant(runtime.rational(4))]));
     var result = state.run();
-    assert.equal(result, runtime.rational(16));
+    assert.deepEqual(result, runtime.rational(16));
     assert.equal(state.vstack.length, 1);
 })();
