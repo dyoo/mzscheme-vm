@@ -312,7 +312,7 @@ var makeApplication = function(rator, rands) {
 
 
 
-// primitive application
+// primitive application.
 (function() {
     var state = new runtime.State();
     state.pushControl(makeApplication(makePrimval("*"),
@@ -323,6 +323,16 @@ var makeApplication = function(rator, rands) {
     assert.equal(state.vstack.length, 0);
 })();
 
+
+// primitive application with no arguments.
+(function() {
+    var state = new runtime.State();
+    state.pushControl(makeApplication(makePrimval("*"),
+				      []));
+    var result = state.run();
+    assert.deepEqual(result, runtime.rational(1));
+    assert.equal(state.vstack.length, 0);
+})();
 
 
 // primitive application, with nesting
@@ -337,5 +347,48 @@ var makeApplication = function(rator, rands) {
 	 makeConstant(runtime.rational(7))]));
 				      var result = state.run();
     assert.deepEqual(result, runtime.rational(105));
+    assert.equal(state.vstack.length, 0);
+})();
+
+
+// primitive application, with nesting, testing order
+(function() {
+    var state = new runtime.State();
+    state.pushControl(makeApplication(
+	makePrimval("string-append"),
+	[makeApplication(
+	    makePrimval("string-append"),
+	    [makeConstant("hello"),
+	     makeConstant("world")]),
+	 makeConstant("testing")]));
+				      var result = state.run();
+    assert.deepEqual(result, "helloworldtesting");
+    assert.equal(state.vstack.length, 0);
+})();
+
+
+// subtraction
+(function() {
+    var state = new runtime.State();
+    state.pushControl(makeApplication(
+	makePrimval("-"),
+	[makeApplication(
+	    makePrimval("-"),
+	    [makeConstant(runtime.rational(3)),
+	     makeConstant(runtime.rational(4))]),
+	 makeConstant(runtime.rational(15))]));
+				      var result = state.run();
+    assert.deepEqual(result, runtime.rational(-16));
+    assert.equal(state.vstack.length, 0);
+})();
+
+
+(function() {
+    var state = new runtime.State();
+    state.pushControl(makeApplication(
+	makePrimval("-"),
+	[makeConstant(runtime.rational(1024))]));
+    var result = state.run();
+    assert.deepEqual(result, runtime.rational(-1024));
     assert.equal(state.vstack.length, 0);
 })();
