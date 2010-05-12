@@ -59,6 +59,26 @@ var makeDefValues = function(ids, body) {
 	    body: body};
 };
 
+var makeLam = function(arity, closureMap, body) {
+    var aClosureMap = [];
+    var aClosureTypes = [];
+    var aParamTypes = [];
+    for (var i = 0; i < closureMap.length; i++) {
+	aClosureMap.push(runtime.rational(closureMap[i]));
+	aClosureTypes.push(runtime.symbol("val/ref"));
+    }
+    for (var i = 0; i < arity; i++) {
+	aParamTypes.push(runtime.symbol("val"));
+    }
+    return {'$':"lam",
+	    'num-params': runtime.rational(arity),
+	    'param-types': aParamTypes,
+	    'rest?': false,
+	    'closure-map' : aClosureMap,
+	    'closure-types' : aClosureTypes,
+	    'body': body};	    
+};
+
 //////////////////////////////////////////////////////////////////////
 
 
@@ -223,4 +243,27 @@ var makeDefValues = function(ids, body) {
     expectedState.v = "try it";
     expectedState.vstack[0].set(0, "try it");
     assert.deepEqual(state, expectedState);
+})();
+
+
+
+// lambda
+(function() {
+    var state = new runtime.State();
+    state.pushControl(makeMod(makePrefix(3), []));
+    state.run();   
+    state.pushControl(makeDefValues([makeToplevel(0, 0)],
+				    makeConstant("Some toplevel value")));
+
+    state.run();
+    state.pushControl(makeLam(3, [0], makeConstant("I'm a body")));
+
+    var result = state.run();
+
+    // result should be a lambda.
+    assert.ok(result instanceof runtime.ClosureValue);
+    assert.equal(result.closureVals.length, 1);
+    assert.ok(result.closureVals[0] instanceof runtime.Prefix);
+    assert.deepEqual(result.body, makeConstant("I'm a body"));
+    assert.equal(result.numParams, 3);
 })();
