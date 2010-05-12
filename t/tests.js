@@ -85,6 +85,12 @@ var makePrimval = function(name) {
 	    'value': name};
 };
 
+var makeApplication = function(rator, rands) {
+    return {$ : 'application',
+	    rator: rator,
+	    rands: rands};
+};
+
 //////////////////////////////////////////////////////////////////////
 
 
@@ -285,9 +291,34 @@ var makePrimval = function(name) {
 })();
 
 
+
 // primval on unknowns should throw error
 (function() {
     var state = new runtime.State();
     state.pushControl(makePrimval("foobar"));
     assert.throws(function() { state.run(); });
 })();
+
+
+// primval on *
+// primval
+(function() {
+    var state = new runtime.State();
+    state.pushControl(makePrimval("*"));
+    var result = state.run();
+    assert.ok(result instanceof runtime.Primitive);
+})();
+
+
+
+
+// primitive application
+(function() {
+    var state = new runtime.State();
+    state.pushControl(makeApplication(makePrimval("*"),
+				      [makeConstant(runtime.rational(3)),
+				       makeConstant(runtime.rational(5))]));
+    var result = state.run();
+    assert.deepEqual(result, runtime.rational(15));
+})();
+
