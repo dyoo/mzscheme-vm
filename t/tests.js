@@ -61,3 +61,24 @@ var makeConstant = function(c) { return {$:'constant', value:c}; };
     assert.deepEqual(result, 
 		     true);
 })();
+
+
+
+// Simple branch to false
+(function() {
+    var state1 = new runtime.State();
+    state.pushControl({'$' : 'seq', 
+		       forms : [makeConstant(3),
+				makeConstant(4),
+				makeConstant(5)]}),
+    var result = state1.run();
+    assert.deepEqual(result, 5);
+
+    
+    var state2 = new runtime.State();
+    state.pushControl(makeConstant(5));
+
+    
+    assert.deepEqual(state2, state1);
+    
+})();
