@@ -89,6 +89,7 @@ var makePrimval = function(name) {
 };
 
 var makeApplication = function(rator, rands) {
+    assert.ok(typeof(rands) === 'object' && rands.length !== undefined);
     return {$ : 'application',
 	    rator: rator,
 	    rands: rands};
@@ -634,6 +635,23 @@ runTest("factorial",
 	    assert.equal(fact(11), 39916800);
 	    assert.equal(fact(12), 479001600);
 	});
+
+
+
+runTest("apply on a primitive",
+	function() {
+	    var state = new runtime.State();
+	    state.pushControl(makeApplication(
+		makePrimval("apply"),
+		[makePrimval("*"),
+		 makeConstant(
+		     runtime.list([runtime.rational(3),
+				   runtime.rational(9)]))]));
+	    assert.deepEqual(state.run().toFixnum(),
+			     27);
+	    assert.equal(state.vstack.length, 0);
+	});
+
 
 
 
