@@ -544,12 +544,22 @@ runTest("closure application, testing tail calls with even/odd",
 	    var even = function(n) {
 		state.pushControl(makeApplication(makeToplevel(1, 0),
 						  [makeConstant(runtime.rational(n))]));
-		return state.run();;
+		var MAXIMUM_BOUND = 10;
+		while (!state.isStuck()) {
+		    state.step();
+		    assert.ok(state.cstack.length < MAXIMUM_BOUND);
+		    //sys.print(state.cstack.length + "\n");
+		}
+		return state.v;
 	    }
 	    assert.equal(even(0), true);
 	    assert.equal(even(1), false);
 	    assert.equal(even(50), true);
 	    assert.equal(even(51), false);
+	    assert.equal(even(501), false);
+	    assert.equal(even(1001), false);
+	    assert.equal(even(10000), true);
+	    assert.equal(even(10001), false);
 	});
 
 
@@ -620,6 +630,9 @@ runTest("factorial",
  	    assert.equal(fact(4), 24);
 	    assert.equal(fact(5), 120);
 	    assert.equal(fact(6), 720);
+	    assert.equal(fact(10), 3628800);
+	    assert.equal(fact(11), 39916800);
+	    assert.equal(fact(12), 479001600);
 	});
 
 
