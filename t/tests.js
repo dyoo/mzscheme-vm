@@ -8,6 +8,9 @@ var sys = require('sys');
 var EXIT_ON_FIRST_ERROR = true;
 
 
+//////////////////////////////////////////////////////////////////////
+
+
 var makeConstant = function(c) { return {$:'constant', value:c}; };
 
 
@@ -101,6 +104,15 @@ var makeLocalRef = function(n) {
 	    pos: runtime.rational(n)};
 };
 
+
+var makeApplyValues = function(proc, argsExpr) {
+    return {$:'apply-values',
+	    'proc': proc,
+	    'args-expr': argsExpr};
+};
+
+
+//////////////////////////////////////////////////////////////////////
 
 var runTest = function(name, thunk) {
     sys.print("running " + name + "... ");
@@ -700,6 +712,27 @@ runTest("values",
 	    assert.equal(result.elts.length, 2);
 	});
 
+
+
+runTest("values with def-values",
+	function() {
+	    var state = new runtime.State();
+	    state.pushControl(makeMod(makePrefix(2), []));
+	    state.run();   
+	    assert.equal(state.vstack.length, 1);
+	    
+	    state.pushControl(makeDefValues(
+		[makeToplevel(0, 0),
+		 makeToplevel(0, 1)],
+		makeApplication(makePrimval("values"),
+				[makeConstant("hello"),
+				 makeConstant("world")])));
+	    state.run();
+	    assert.equal(state.vstack.length, 1);
+	    assert.ok(state.vstack[0] instanceof runtime.Prefix);
+	    assert.equal(state.vstack[0].ref(0), "hello");
+	    assert.equal(state.vstack[0].ref(1), "world");
+	});
 
 
 
