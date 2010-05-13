@@ -5,6 +5,9 @@ var sys = require('sys');
 
 //////////////////////////////////////////////////////////////////////
 
+var EXIT_ON_FIRST_ERROR = true;
+
+
 var makeConstant = function(c) { return {$:'constant', value:c}; };
 
 
@@ -105,7 +108,9 @@ var runTest = function(name, thunk) {
     } catch(e) {
 	sys.print(" FAIL\n");
 	sys.print(e);
-	throw e;
+	if (EXIT_ON_FIRST_ERROR) {
+	    throw e;
+	}
     }
     sys.print(" ok\n")
     
@@ -497,6 +502,22 @@ runTest("closure application, testing tail calls",
 		assert.ok(state.cstack.length < MAXIMUM_BOUND);
 	    }
 	});
+
+
+
+runTest("zero?",
+	function() {
+	    var state = new runtime.State();
+	    state.pushControl(makeApplication(makePrimval("zero?"),
+					      [makeConstant(runtime.rational(0))]));
+	    assert.deepEqual(state.run(), true);
+
+	    state.pushControl(makeApplication(makePrimval("zero?"),
+					      [makeConstant(runtime.rational(1))]));
+	    assert.deepEqual(state.run(), false);
+	
+	});
+
 
 
 
