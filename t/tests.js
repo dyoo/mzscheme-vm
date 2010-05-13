@@ -684,8 +684,21 @@ runTest("apply on a primitive -, three arguments",
 	});
 
 
-
-
+runTest("values",
+	function() {
+	    var state = new runtime.State();
+	    state.pushControl(makeApplication(
+		makePrimval("values"),
+		[makePrimval("*"),
+		 makeConstant(
+		     runtime.list([runtime.rational(3),
+				   runtime.rational(9),
+				   runtime.rational(12)]))]));
+	    var result = state.run();
+	    assert.equal(state.vstack.length, 0);
+	    assert.ok(result instanceof runtime.ValuesWrapper);
+	    assert.equal(result.elts.length, 2);
+	});
 
 
 
