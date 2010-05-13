@@ -569,6 +569,7 @@ runTest("factorial",
  	    assert.equal(fact(3), 6);
  	    assert.equal(fact(4), 24);
 	    assert.equal(fact(5), 120);
+	    assert.equal(fact(6), 720);
 	});
 
 
