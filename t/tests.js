@@ -668,6 +668,22 @@ runTest("apply on a primitive -",
 	    assert.equal(state.vstack.length, 0);
 	});
 
+runTest("apply on a primitive -, three arguments",
+	function() {
+	    var state = new runtime.State();
+	    state.pushControl(makeApplication(
+		makePrimval("apply"),
+		[makePrimval("-"),
+		 makeConstant(
+		     runtime.list([runtime.rational(3),
+				   runtime.rational(9),
+				   runtime.rational(12)]))]));
+	    assert.deepEqual(state.run().toFixnum(),
+			     -18);
+	    assert.equal(state.vstack.length, 0);
+	});
+
+
 
 
 
