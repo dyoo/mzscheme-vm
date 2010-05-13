@@ -638,7 +638,7 @@ runTest("factorial",
 
 
 
-runTest("apply on a primitive",
+runTest("apply on a primitive *",
 	function() {
 	    var state = new runtime.State();
 	    state.pushControl(makeApplication(
@@ -651,6 +651,23 @@ runTest("apply on a primitive",
 			     27);
 	    assert.equal(state.vstack.length, 0);
 	});
+
+
+
+runTest("apply on a primitive -",
+	function() {
+	    var state = new runtime.State();
+	    state.pushControl(makeApplication(
+		makePrimval("apply"),
+		[makePrimval("-"),
+		 makeConstant(
+		     runtime.list([runtime.rational(3),
+				   runtime.rational(9)]))]));
+	    assert.deepEqual(state.run().toFixnum(),
+			     -6);
+	    assert.equal(state.vstack.length, 0);
+	});
+
 
 
 
