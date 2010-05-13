@@ -497,7 +497,8 @@ runTest("closure application, testing tail calls",
 	    state.run();
 	    state.pushControl(makeApplication(makeToplevel(0, 0), []));
 	    var MAXIMUM_BOUND = 5;
-	    for (var i = 0; i < 1000000; i++) {
+	    var ITERATIONS = 1000000;
+	    for (var i = 0; i < ITERATIONS; i++) {
 		state.step();
 		assert.ok(state.cstack.length < MAXIMUM_BOUND);
 	    }
@@ -545,14 +546,14 @@ runTest("factorial",
 		makeLam(1, [0],
 			makeBranch(
 			    makeApplication(makePrimval("zero?"),
-					    makeLocalRef(2)),
+					    [makeLocalRef(2)]),
 			    makeConstant(runtime.rational(1)),
 			    makeApplication(makePrimval("*"),
-					    makeLocalRef(3),
-					    makeApplication(
-						makeToplevel(3, 0),
-						[makeApplication(makePrimval("sub1"),
-								 [makeLocalRef(5)])]))))));
+					    [makeLocalRef(3),
+					     makeApplication(
+						 makeToplevel(3, 0),
+						 [makeApplication(makePrimval("sub1"),
+								  [makeLocalRef(5)])])])))));
 
 	    state.run();
 
@@ -563,11 +564,11 @@ runTest("factorial",
 	    }
 
  	    assert.equal(fact(0), 1);
-// 	    assert.equal(fact(1), 1);
-// 	    assert.equal(fact(2), 2);
-// 	    assert.equal(fact(3), 6);
-// 	    assert.equal(fact(4), 24);
-// 	    assert.equal(fact(5), 120);
+ 	    assert.equal(fact(1), 1);
+ 	    assert.equal(fact(2), 2);
+ 	    assert.equal(fact(3), 6);
+ 	    assert.equal(fact(4), 24);
+	    assert.equal(fact(5), 120);
 	});
 
 
