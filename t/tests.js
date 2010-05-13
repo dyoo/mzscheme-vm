@@ -506,6 +506,56 @@ runTest("closure application, testing tail calls",
 
 
 
+runTest("closure application, testing tail calls with even/odd",
+	// Checking tail calling behavior
+	// The standard infinite loop should consume bounded control stack.
+	// (define (even? x) (if (zero? x) true (odd? (sub1 x))))
+	// (define (odd? x) (if (zero? x) false (even? (sub1 x))))
+	function() {
+	    var state = new runtime.State();
+	    state.pushControl(makeMod(makePrefix(2), []));
+	    state.run();   
+	    assert.equal(state.vstack.length, 1);
+	    state.pushControl(makeDefValues
+			      ([makeToplevel(0, 0)],
+			       makeLam(1, [0],
+				       makeBranch(
+					   makeApplication(makePrimval("zero?"),
+							   [makeLocalRef(2)]),
+					   makeConstant(true),
+					   makeApplication(makeToplevel(1, 1),
+							   [makeApplication(
+							       makePrimval("sub1"),
+							       [makeLocalRef(3)])])))));
+	    state.pushControl(makeDefValues
+			      ([makeToplevel(0, 1)],
+			       makeLam(1, [0],
+				       makeBranch(
+					   makeApplication(makePrimval("zero?"),
+							   [makeLocalRef(2)]),
+					   makeConstant(false),
+					   makeApplication(makeToplevel(1, 0),
+							   [makeApplication(
+							       makePrimval("sub1"),
+							       [makeLocalRef(3)])])))));
+					   
+	    state.run();
+
+	    var even = function(n) {
+		state.pushControl(makeApplication(makeToplevel(1, 0),
+						  [makeConstant(runtime.rational(n))]));
+		return state.run();;
+	    }
+	    assert.equal(even(0), true);
+	    assert.equal(even(1), false);
+	    assert.equal(even(50), true);
+	    assert.equal(even(51), false);
+	});
+
+
+
+
+
 runTest("zero?",
 	function() {
 	    var state = new runtime.State();
