@@ -520,6 +520,58 @@ runTest("zero?",
 
 
 
+runTest("sub1",
+	function() {
+	    var state = new runtime.State();
+	    state.pushControl(makeApplication(makePrimval("sub1"),
+					      [makeConstant(runtime.rational(25))]));
+	    assert.deepEqual(state.run(), runtime.rational(24));
+	});
+
+
+
+runTest("factorial",
+	// Checking tail calling behavior
+	// The standard infinite loop should consume bounded control stack.
+	// (define (f) (f)) (begin (f)) --> infinite loop, but with bounded control stack.
+	function() {
+	    var state = new runtime.State();
+	    state.pushControl(makeMod(makePrefix(1), []));
+	    state.run();   
+	    assert.equal(state.vstack.length, 1);
+	    
+	    state.pushControl(makeDefValues(
+		[makeToplevel(0, 0)],
+		makeLam(1, [0],
+			makeBranch(
+			    makeApplication(makePrimval("zero?"),
+					    makeLocalRef(2)),
+			    makeConstant(runtime.rational(1)),
+			    makeApplication(makePrimval("*"),
+					    makeLocalRef(3),
+					    makeApplication(
+						makeToplevel(3, 0),
+						[makeApplication(makePrimval("sub1"),
+								 [makeLocalRef(5)])]))))));
+
+	    state.run();
+
+	    var fact = function(n) {
+		state.pushControl(makeApplication(makeToplevel(1, 0),
+						  [makeConstant(runtime.rational(n))]));
+		return state.run().toFixnum();;
+	    }
+
+ 	    assert.equal(fact(0), 1);
+// 	    assert.equal(fact(1), 1);
+// 	    assert.equal(fact(2), 2);
+// 	    assert.equal(fact(3), 6);
+// 	    assert.equal(fact(4), 24);
+// 	    assert.equal(fact(5), 120);
+	});
+
+
+
 
 
 sys.print("\nEND TESTS\n")
