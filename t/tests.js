@@ -551,7 +551,7 @@ runTest("closure application, testing tail calls with even/odd",
 							   [makeApplication(
 							       makePrimval("sub1"),
 							       [makeLocalRef(3)])])))));
-					   
+	    
 	    state.run();
 
 	    var even = function(n) {
@@ -589,7 +589,7 @@ runTest("zero?",
 	    state.pushControl(makeApplication(makePrimval("zero?"),
 					      [makeConstant(runtime.rational(1))]));
 	    assert.deepEqual(state.run(), false);
-	
+	    
 	});
 
 
@@ -733,6 +733,55 @@ runTest("values with def-values",
 	    assert.equal(state.vstack[0].ref(0), "hello");
 	    assert.equal(state.vstack[0].ref(1), "world");
 	});
+
+
+
+runTest("apply-values",
+	function() {
+	    var state = new runtime.State();
+	    state.pushControl(makeMod(makePrefix(2), []));
+	    state.run();   
+	    state.pushControl(makeDefValues(
+		[makeToplevel(0, 0),
+		 makeToplevel(0, 1)],
+		makeApplication(makePrimval("values"),
+				[makeConstant("hello"),
+				 makeConstant("world")])));
+	    state.run();
+
+	    state.pushControl(makeApplyValues(
+		makeLam(2, [], makeApplication(makePrimval("string-append"),
+					       [makeLocalRef(2),
+						makeLocalRef(3)])),
+		makeApplication(makePrimval("values"),
+				[makeToplevel(2, 0),
+				 makeToplevel(2, 1)])));
+	    assert.equal(state.run(), "helloworld");
+	});
+
+
+
+runTest("apply-values, testing no stack usage",
+	function() {
+	    var state = new runtime.State();
+	    state.pushControl(makeMod(makePrefix(2), []));
+	    state.run();   
+	    state.pushControl(makeDefValues(
+		[makeToplevel(0, 0),
+		 makeToplevel(0, 1)],
+		makeApplication(makePrimval("values"),
+				[makePrimval("zero?"),
+				 makeConstant(runtime.rational(0))])));
+	    state.run();
+
+	    state.pushControl(makeApplyValues(
+		makeToplevel(0, 0),
+		makeToplevel(0, 1)));
+	    assert.equal(state.run(), true);
+	    assert.equal(state.vstack.length, 1);
+	});
+
+
 
 
 
