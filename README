@@ -1,1 +1,9 @@
-Notes: use mzscheme 4.2.5, as the VM may change from version to version.
+
+
+Prerequisites:
+
+    * node.js: http://nodejs.org
+
+    * mzscheme 4.2.5
+        use mzscheme 4.2.5, as the VM may change from version to version.
+
