@@ -794,7 +794,7 @@ runTest("apply-values, testing no stack usage",
 	    assert.equal(state.vstack.length, 1);
 	});
 
-runTest("let-one",
+runTest("let-one, trivial",
 	function() {
 	    var state = new runtime.State();
 	    assert.equal(state.vstack.length, 0);
@@ -805,9 +805,28 @@ runTest("let-one",
 		state.step();
 	    }
 	    assert.equal(state.vstack.length, 1);
+	    assert.equal(state.vstack[0], "someValue");
 	    var result = state.run();
 	    assert.equal(state.vstack.length, 0);
 	    assert.deepEqual(result, "someValue");
+	});
+
+
+runTest("let-one, different body",
+	function() {
+	    var state = new runtime.State();
+	    assert.equal(state.vstack.length, 0);
+	    var body = makeConstant("something else");
+	    state.pushControl(makeLet1(makeConstant("someValue"),
+				       body));
+	    while (state.cstack[state.cstack.length - 1] !== body) {
+		state.step();
+	    }
+	    assert.equal(state.vstack.length, 1);
+	    assert.equal(state.vstack[0], "someValue");
+	    var result = state.run();
+	    assert.equal(state.vstack.length, 0);
+	    assert.deepEqual(result, "something else");
 	});
 
 
@@ -822,6 +841,24 @@ runTest("let-void, no boxes",
 	    assert.equal(state.vstack.length, 2);
 	    for(var i = 0; i < state.vstack.length; i++) {
 		assert.ok(state.vstack[i] instanceof runtime.UndefinedValue);
+	    }
+	    var result = state.run();
+	    assert.equal(result, "blah");
+	    assert.equal(state.vstack.length, 0);
+	});
+
+
+runTest("let-void, with boxes",
+	function() {
+	    var state = new runtime.State();
+	    var body = makeConstant("blah");
+	    state.pushControl(makeLetVoid(2, true, body));
+	    while (state.cstack[state.cstack.length - 1] !== body) {
+		state.step();
+	    }
+	    assert.equal(state.vstack.length, 2);
+	    for(var i = 0; i < state.vstack.length; i++) {
+		assert.ok(state.vstack[i] instanceof runtime.Box);
 	    }
 	    var result = state.run();
 	    assert.equal(result, "blah");
