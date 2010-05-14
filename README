@@ -1,5 +1,3 @@
-
-
 Prerequisites:
 
     * node.js: http://nodejs.org
@@ -7,3 +5,9 @@ Prerequisites:
     * mzscheme 4.2.5
         use mzscheme 4.2.5, as the VM may change from version to version.
 
+
+Installation:
+
+    check out the submodules:
+
+        [FIXME: add Jay's batch compiler as a subproject]
