@@ -115,7 +115,14 @@ var makeLet1 = function(rhs, body) {
     return {$: 'let-one',
 	    rhs : rhs,
 	    body : body};
-}
+};
+
+var makeLetVoid = function(count, isBoxes, body) {
+    return {$: 'let-void',
+	    count: runtime.rational(count),
+	    'boxes?' : isBoxes,
+	    body : body};
+};
 
 
 //////////////////////////////////////////////////////////////////////
@@ -803,6 +810,23 @@ runTest("let-one",
 	    assert.deepEqual(result, "someValue");
 	});
 
+
+runTest("let-void, no boxes",
+	function() {
+	    var state = new runtime.State();
+	    var body = makeConstant("blah");
+	    state.pushControl(makeLetVoid(2, false, body));
+	    while (state.cstack[state.cstack.length - 1] !== body) {
+		state.step();
+	    }
+	    assert.equal(state.vstack.length, 2);
+	    for(var i = 0; i < state.vstack.length; i++) {
+		assert.ok(state.vstack[i] instanceof runtime.UndefinedValue);
+	    }
+	    var result = state.run();
+	    assert.equal(result, "blah");
+	    assert.equal(state.vstack.length, 0);
+	});
 
 
 
