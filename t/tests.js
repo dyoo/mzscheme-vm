@@ -924,6 +924,12 @@ runTest("beg0, more general",
 
 
 
+runTest("boxenv",
+	function() {
+	});
+
+
+
 // What's left to implement?
 //
 // closure
@@ -933,7 +939,6 @@ runTest("beg0, more general",
 // boxenv
 // topsyntax
 // with-cont-mark
-// beg0
 // assign
 // varref
 
