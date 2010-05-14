@@ -388,8 +388,6 @@ runTest("My own list function",
 				   makeConstant("two"),
 				   makeConstant("three")]));
 	    var result = state.run();
-	    sys.print('t1: ' + sys.inspect(result));
-	    sys.print('t2: ' + sys.inspect(runtime.list(["one", "two", "three"])));
 	    assert.deepEqual(result,
 			     runtime.list(["one", "two", "three"]));
 	});
