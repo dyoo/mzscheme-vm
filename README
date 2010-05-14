@@ -10,4 +10,5 @@ Installation:
 
     check out the submodules:
 
-        [FIXME: add Jay's batch compiler as a subproject]
+        $ git submodule init
+        $ git submodule update

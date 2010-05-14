@@ -72,10 +72,12 @@
                                `((value ,(module-variable-sym a-toplevel))))]))
                  toplevels)))
 
+;; compile-stxs: (listof stx) -> jsexp
 (define (compile-stxs stxs)
   (make-vec (map (lambda (a-stx)
                    ;; FIXME: not right.  We need to translate
-                   ;; stxs to runtime values eventually.
+                   ;; stxs to runtime values eventually to support
+                   ;; topsyntax
                    (format "~s" stxs))
                  stxs)))
 
@@ -176,7 +178,7 @@
 
 
 
-;; compile-def-values: def-values icode -> jsexp
+;; compile-def-values: def-values -> jsexp
 ;; Accumulates the values for rhs, and then installs each value in turn
 ;; into the toplevel.
 (define (compile-def-values a-def-values)
@@ -209,7 +211,7 @@
 ;                                  ;       
 
 
-
+;; compile-expr: expr -> jsexp
 (define (compile-expr an-expr)
   (match an-expr
     [(? lam?)
@@ -225,10 +227,14 @@
     [(? primval?)
      (compile-primval an-expr)]
     [(? branch?)
-     (compile-branch an-expr)]))
+     (compile-branch an-expr)]
+    [(? closure?)
+     (compile-closure an-expr)]
+    [(? beg0?)
+     (compile-beg0 an-expr)]))
 
 
-;; run-lam: lam s-exp -> jsexp
+;; run-lam: lam -> jsexp
 (define (compile-lam a-lam)
   (match a-lam
     [(struct lam (name flags num-params param-types 
@@ -246,7 +252,7 @@
 
 
 
-;; compile-closure: closure s-exp -> jsexp
+;; compile-closure: closure -> jsexp
 (define (compile-closure a-closure)
   (match a-closure 
     [(struct closure (lam gen-id))
@@ -254,8 +260,7 @@
                          (gen-id ,gen-id)))]))
 
 
-
-;; compile-indirect: indirect s-exp -> jsexp
+;; compile-indirect: indirect -> jsexp
 (define (compile-indirect an-indirect)
   (match an-indirect
     [(struct indirect ((struct closure (lam gen-id))))
@@ -263,7 +268,6 @@
        ;; Keep track of the indirect.  We'll need to generate the s-expression for it in a moment
        (hash-set! (seen-indirects) gen-id lam)
        (make-ht 'indirect `((value ,gen-id))))]))
-
 
 
 
@@ -278,8 +282,7 @@
                           (flonum? ,flonum?)))]))
 
 
-
-;; compile-toplevel: toplevel -> s-exp
+;; compile-toplevel: toplevel -> jsexp
 (define (compile-toplevel a-toplevel)
   (match a-toplevel
     [(struct toplevel (depth pos const? ready?))
@@ -289,9 +292,7 @@
                           (ready? ,ready?)))]))
 
 
-
-
-;; compile-application: application icode -> icode
+;; compile-application: application -> jsexp
 (define (compile-application an-application)
   (match an-application
     [(struct application (rator rands))
@@ -300,7 +301,7 @@
                 (rands ,(make-vec (map compile-at-expression-position rands)))))]))
 
 
-;; compile-apply-values: apply-values icode -> icode
+;; compile-apply-values: apply-values -> jsexp
 (define (compile-apply-values an-apply-values)
   (match an-apply-values
     [(struct apply-values (proc args-expr))
@@ -309,13 +310,14 @@
                 (args-expr ,(compile-at-expression-position args-expr))))]))
 
 
-;; compile-primval: primval icode -> icode
+;; compile-primval: primval jsexp -> jsexp
 (define (compile-primval a-primval)
   (match a-primval
     [(struct primval (id))
      (make-ht 'primval `((value ,(hash-ref primitive-table id))))]))
 
 
+;; compile-branch: branch -> jsexp
 (define (compile-branch a-branch)
   (match a-branch
     [(struct branch (test then else))
@@ -324,7 +326,7 @@
 			(else ,(compile-at-expression-position else))))]))
 
 
-;; compile-seq: seq icode -> icode
+;; compile-seq: seq -> jsexp
 (define (compile-seq a-seq)
   (match a-seq
     [(struct seq (forms))
@@ -332,6 +334,17 @@
               `((forms 
                  ,(make-vec 
                    (map compile-at-expression-position forms)))))]))
+
+
+;; compile-beg0: seq -> jsexp
+(define (compile-beg0 a-beg0)
+  (match a-beg0
+    [(struct beg0 (seq))
+     (make-ht 'beg0 
+              `((seq 
+                 ,(make-vec 
+                   (map compile-at-expression-position seq)))))]))
+
 
 
 ;; Code is copied-and-pasted from compiler/decompile.

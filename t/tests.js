@@ -27,6 +27,11 @@ var makeSeq = function() {
     return { $: 'seq',
 	     forms: arguments };};
 
+var makeBeg0 = function() {
+    return { $: 'beg0',
+	     seq: arguments };};
+
+
 var makeStateWithConstant = function(c) {
     var s = new runtime.State();
     s.v = c;
@@ -48,7 +53,7 @@ var makePrefix = function(n) {
 var makeMod = function(prefix, body) {
     return { $: 'mod', 
 	     prefix: prefix,
-	     body:body };
+	     body : body };
 };
 
 
@@ -883,6 +888,55 @@ runTest("let-void, with boxes",
 	    assert.equal(result, "blah");
 	    assert.equal(state.vstack.length, 0);
 	});
+
+
+runTest("beg0 with just one argument should immediately reduce to its argument",
+	function() {
+	    var state = new runtime.State();
+	    state.pushControl(makeBeg0(makeConstant("first post")));
+	    state.step();
+	    assert.equal(state.cstack.length, 1);
+	    assert.deepEqual(state.cstack[0], 
+			     makeConstant("first post"));
+	    var result = state.run();
+	    assert.equal(result, "first post");
+	});
+
+
+
+runTest("beg0, more general",
+	function() {
+	    var state = new runtime.State();
+	    state.pushControl(makeBeg0(makeConstant("first post"),
+				       makeConstant("second post"),
+				       makeConstant("third post"),
+				       makeConstant("fourth post")));
+	    state.step();
+
+	    // By this point, there should be two elements
+	    // in the control stack, the evaluation of the first
+	    // argument, and a control to continue the
+	    // rest of the sequence evaluation.
+	    assert.equal(state.cstack.length, 2); 
+	    var result = state.run();
+	    assert.equal(result, "first post");
+	});
+
+
+
+// What's left to implement?
+//
+// closure
+// case-lam
+// install-value
+// let-rec
+// boxenv
+// topsyntax
+// with-cont-mark
+// beg0
+// assign
+// varref
+
 
 
 
