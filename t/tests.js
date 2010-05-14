@@ -111,6 +111,12 @@ var makeApplyValues = function(proc, argsExpr) {
 	    'args-expr': argsExpr};
 };
 
+var makeLet1 = function(rhs, body) {
+    return {$: 'let-one',
+	    rhs : rhs,
+	    body : body};
+}
+
 
 //////////////////////////////////////////////////////////////////////
 
@@ -779,6 +785,22 @@ runTest("apply-values, testing no stack usage",
 		makeToplevel(0, 1)));
 	    assert.equal(state.run(), true);
 	    assert.equal(state.vstack.length, 1);
+	});
+
+runTest("let-one",
+	function() {
+	    var state = new runtime.State();
+	    assert.equal(state.vstack.length, 0);
+	    var body = makeLocalRef(0);
+	    state.pushControl(makeLet1(makeConstant("someValue"),
+				       body));
+	    while (state.cstack[state.cstack.length - 1] !== body) {
+		state.step();
+	    }
+	    assert.equal(state.vstack.length, 1);
+	    var result = state.run();
+	    assert.equal(state.vstack.length, 0);
+	    assert.deepEqual(result, "someValue");
 	});
 
 
