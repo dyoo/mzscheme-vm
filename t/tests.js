@@ -373,6 +373,27 @@ runTest("Primval on *",
 	});
 
 
+runTest("My own list function",
+	function() {
+	    var state = new runtime.State();
+	    state.pushControl(makeApplication
+			      ( {'$' : "lam",
+				      'num-params': runtime.rational(0),
+				      'param-types': [],
+				      'rest?': true,
+				      'closure-map' : [],
+				      'closure-types' : [],
+				      'body': makeLocalRef(0)},
+				  [makeConstant("one"),
+				   makeConstant("two"),
+				   makeConstant("three")]));
+	    var result = state.run();
+	    sys.print('t1: ' + sys.inspect(result));
+	    sys.print('t2: ' + sys.inspect(runtime.list(["one", "two", "three"])));
+	    assert.deepEqual(result,
+			     runtime.list(["one", "two", "three"]));
+	});
+
 
 runTest("primitive application",
 	// primitive application.
