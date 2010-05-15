@@ -129,6 +129,12 @@ var makeLetVoid = function(count, isBoxes, body) {
 	    body : body};
 };
 
+var makeBoxenv = function(pos, body) {
+    return {$: 'boxenv',
+	    pos: runtime.rational(pos),
+	    body :body};
+};
+
 
 //////////////////////////////////////////////////////////////////////
 
@@ -926,6 +932,13 @@ runTest("beg0, more general",
 
 runTest("boxenv",
 	function() {
+	    var state = new runtime.State();
+	    state.pushControl(makeLet1(makeConstant("foo"),
+				       makeBoxenv(0, 
+						  makeLocalRef(0))));
+	    var result = state.run();
+	    assert.ok(result instanceof runtime.Box);
+	    assert.deepEqual(result, new runtime.Box("foo"));
 	});
 
 
