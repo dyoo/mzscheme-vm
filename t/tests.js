@@ -135,6 +135,15 @@ var makeBoxenv = function(pos, body) {
 	    body :body};
 };
 
+var makeInstallValue = function(count, pos, isBoxes, rhs, body) {
+    return {$: 'install-value',
+	    count: runtime.rational(count),
+	    pos: runtime.rational(pos),
+	    'boxes?': isBoxes,
+	    rhs: rhs,
+	    body: body};
+};
+
 
 //////////////////////////////////////////////////////////////////////
 
@@ -942,6 +951,67 @@ runTest("boxenv",
 	});
 
 
+runTest("install-value, without boxes",
+	function() {
+	    var state = new runtime.State();
+	    var aBody = makeConstant("peep");
+	    state.pushControl
+		(makeLetVoid
+		 (4,
+		  false,
+		  makeInstallValue
+		  (3, 1, false,
+		   makeApplication(makePrimval("values"),
+				   [makeConstant("3"),
+				    makeConstant("1"),
+				    makeConstant("4")]),
+		   aBody)));
+	    while (state.cstack[state.cstack.length - 1] !== aBody) {
+		state.step();
+	    }
+	    // By this point, the stack should include
+	    assert.equal(state.vstack.length, 4);
+	    assert.equal(state.vstack[0], "4");
+	    assert.equal(state.vstack[1], "1");
+	    assert.equal(state.vstack[2], "3");
+	    var result = state.run();
+	    assert.equal(result, "peep");
+	    assert.equal(state.vstack.length, 0);
+	});
+
+
+
+runTest("install-value, with boxes",
+	function() {
+	    var state = new runtime.State();
+	    var aBody = makeConstant("peep");
+	    state.pushControl
+		(makeLetVoid
+		 (4,
+		  true,
+		  makeInstallValue
+		  (3, 1, true,
+		   makeApplication(makePrimval("values"),
+				   [makeConstant("3"),
+				    makeConstant("1"),
+				    makeConstant("4")]),
+		   aBody)));
+	    while (state.cstack[state.cstack.length - 1] !== aBody) {
+		state.step();
+	    }
+	    // By this point, the stack should include
+	    assert.equal(state.vstack.length, 4);
+	    assert.deepEqual(state.vstack[0], new runtime.Box("4"));
+	    assert.deepEqual(state.vstack[1], new runtime.Box("1"));
+	    assert.deepEqual(state.vstack[2], new runtime.Box("3"));
+	    var result = state.run();
+	    assert.equal(result, "peep");
+	    assert.equal(state.vstack.length, 0);
+	});
+
+
+
+
 
 // What's left to implement?
 //
@@ -949,7 +1019,6 @@ runTest("boxenv",
 // case-lam
 // install-value
 // let-rec
-// boxenv
 // topsyntax
 // with-cont-mark
 // assign
