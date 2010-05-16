@@ -145,6 +145,15 @@ var makeInstallValue = function(count, pos, isBoxes, rhs, body) {
 };
 
 
+var makeWithContMark = function(key, val, body) {
+    return {$: "with-cont-mark",
+	    key: key,
+	    val: val,
+	    body: body};
+};
+    
+
+
 //////////////////////////////////////////////////////////////////////
 
 var runTest = function(name, thunk) {
@@ -969,7 +978,6 @@ runTest("install-value, without boxes",
 	    while (state.cstack[state.cstack.length - 1] !== aBody) {
 		state.step();
 	    }
-	    // By this point, the stack should include
 	    assert.equal(state.vstack.length, 4);
 	    assert.equal(state.vstack[0], "4");
 	    assert.equal(state.vstack[1], "1");
@@ -999,7 +1007,6 @@ runTest("install-value, with boxes",
 	    while (state.cstack[state.cstack.length - 1] !== aBody) {
 		state.step();
 	    }
-	    // By this point, the stack should include
 	    assert.equal(state.vstack.length, 4);
 	    assert.deepEqual(state.vstack[0], new runtime.Box("4"));
 	    assert.deepEqual(state.vstack[1], new runtime.Box("1"));
@@ -1010,17 +1017,36 @@ runTest("install-value, with boxes",
 	});
 
 
+runTest("with-cont-mark", 
+	function() {
+	    var state = new runtime.State();
+	    var aBody = makeConstant("peep");
+	    state.pushControl
+		(makeWithContMark(makeConstant
+				  (runtime.symbol("x")),
+				  makeConstant("42"),
+				  aBody));
+	    while (state.cstack[state.cstack.length -1] !== aBody) {
+		state.step();
+	    }
+	    assert.equal(state.cstack.length, 2);
+	    assert.ok(state.cstack[0] instanceof 
+		      runtime.ContMarkRecordControl);
+	    assert.equal(state.cstack[0].dict['x'],
+			 "42");
+	    var result = state.run();
+	    assert.equal(result, "peep");
+	});
 
 
 
 // What's left to implement?
 //
-// closure
+// with-cont-mark
 // case-lam
-// install-value
 // let-rec
 // topsyntax
-// with-cont-mark
+// closure
 // assign
 // varref
 
