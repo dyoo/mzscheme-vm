@@ -1042,7 +1042,6 @@ runTest("with-cont-mark",
 
 // What's left to implement?
 //
-// with-cont-mark
 // case-lam
 // let-rec
 // topsyntax
