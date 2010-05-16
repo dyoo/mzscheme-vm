@@ -666,9 +666,6 @@ runTest("sub1",
 
 
 runTest("factorial",
-	// Checking tail calling behavior
-	// The standard infinite loop should consume bounded control stack.
-	// (define (f) (f)) (begin (f)) --> infinite loop, but with bounded control stack.
 	function() {
 	    var state = new runtime.State();
 	    state.pushControl(makeMod(makePrefix(1), []));
@@ -1037,6 +1034,38 @@ runTest("with-cont-mark",
 	    var result = state.run();
 	    assert.equal(result, "peep");
 	});
+
+
+
+
+runTest("closure application, testing tail calls in the presence of continuation marks",
+	// Checking tail calling behavior
+	// The standard infinite loop should consume bounded control stack.
+	// (define (f) (call-with-continuation-marks 'x 1 (f))) (begin (f)) --> infinite loop, but with bounded control stack.
+	function() {
+	    var state = new runtime.State();
+	    state.pushControl(makeMod(makePrefix(1), []));
+	    state.run();   
+	    assert.equal(state.vstack.length, 1);
+	    
+	    state.pushControl(makeDefValues([makeToplevel(0, 0)],
+					    makeLam(0, [0],
+						    (makeWithContMark
+						     (makeConstant(runtime.symbol("x")),
+						      makeConstant(runtime.rational(1)),
+						      
+						      makeApplication(makeToplevel(0, 0),
+								      []))))));
+	    state.run();
+	    state.pushControl(makeApplication(makeToplevel(0, 0), []));
+	    var MAXIMUM_BOUND = 6;
+	    var ITERATIONS = 1000000;
+	    for (var i = 0; i < ITERATIONS; i++) {
+		state.step();
+		assert.ok(state.cstack.length < MAXIMUM_BOUND);
+	    }
+	});
+
 
 
 
