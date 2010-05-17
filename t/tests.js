@@ -1169,12 +1169,16 @@ runTest("case-lambda, with a function that consumes one or two values",
 // 	});
 
 
+runTest("let-rec",
+	function() {
+	    sys.print("!Not implemented yet!  ");
+	});
 
-// What's left to implement?
-//
-// case-lam
-// let-rec
-// topsyntax
+
+runTest("topsyntax",
+	function() {
+	    sys.print("!Not implemented yet!  ");
+	});
 
 
 
