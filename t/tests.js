@@ -1202,12 +1202,6 @@ runTest("let-rec",
 		state.pushControl(makeApplication(makeConstant(evenValue),
 						  [makeConstant(runtime.rational(x))]));
 		return state.run();
-		// var MAXIMUM_BOUND = 10;
-		// while (!state.isStuck()) {
-		//     state.step();
-		//     assert.ok(state.cstack.length < MAXIMUM_BOUND);
-		// }
-		// return state.v;
 	    }
 	    assert.equal(state.vstack.length, 0);
 
