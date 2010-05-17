@@ -168,6 +168,12 @@ var makeClosure = function(genId) {
 	    'gen-id': genId };
 };
 
+var makeCaseLam = function(name, lams) {
+    assert.ok(typeof(lams) === 'object' && lams.length !== undefined);
+    return {$: 'case-lam',
+	    clauses: lams};
+};
+
 
 
 //////////////////////////////////////////////////////////////////////
@@ -1124,6 +1130,32 @@ runTest("closure application, testing tail calls in the presence of continuation
 	});
 
 
+runTest("case-lambda, with a function that consumes one or two values",
+	function() {
+	    var state = new runtime.State();
+	    state.pushControl
+		(makeMod(makePrefix(1), 
+			 [makeDefValues
+			  ([makeToplevel(0, 0)],
+			   makeCaseLam(runtime.symbol("last"),
+				       [makeLam(1, [], makeLocalRef(0)),
+					makeLam(2, [], makeLocalRef(1))]))]));
+	    state.run();
+	    state.pushControl(makeApplication(makeToplevel(1, 0),
+					      makeConstant(runtime.rational(5))));
+	    var result = state.run();
+	    assert.equal(result, runtime.rational(5));
+
+
+	    state.pushControl(makeApplication(makeToplevel(1, 0),
+					      makeConstant(runtime.rational(7),
+							   runtime.rational(42))));
+	    result = state.run();
+	    assert.equal(result, runtime.rational(42));
+	});
+
+
+
 // runTest("factorial again, testing the accumulation of continuation marks",
 // 	//
 // 	// (define marks #f)
@@ -1144,7 +1176,6 @@ runTest("closure application, testing tail calls in the presence of continuation
 // case-lam
 // let-rec
 // topsyntax
-// closure
 
 
 
