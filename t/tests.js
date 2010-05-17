@@ -175,6 +175,12 @@ var makeCaseLam = function(name, lams) {
 };
 
 
+var makeLetrec = function(procs, body) {
+    return {$: 'let-rec',
+	    procs: procs,
+	    body: body};
+};
+
 
 //////////////////////////////////////////////////////////////////////
 
@@ -1171,7 +1177,43 @@ runTest("case-lambda, with a function that consumes one or two values",
 
 runTest("let-rec",
 	function() {
-	    sys.print("!Not implemented yet!  ");
+	    var state = new runtime.State();
+	    state.pushControl(makeLetrec([makeLam(1, [0],
+						  makeBranch
+						  (makeApplication(makePrimval("zero?"),
+								   [makeLocalRef(2)]),
+						   makeConstant(true),
+						   makeApplication(makeLocalRef(1),
+								   [makeApplication
+								    (makePrimval("sub1"),
+								     [makeLocalRef(3)])]))),
+					 makeLam(1, [1],
+						 makeBranch
+						 (makeApplication(makePrimval("zero?"),
+								  [makeLocalRef(2)]),
+						  makeConstant(false),
+						  makeApplication(makeLocalRef(1),
+								  [makeApplication
+								   (makePrimval("sub1"),
+								    [makeLocalRef(3)])])))],
+					 makeLocalRef(1)));
+	    var evenValue = state.run();
+	    var e = function(x) {
+		state.pushControl(makeApplication(makeConstant(evenValue),
+						  [makeConstant(runtime.rational(x))]));
+		return state.run();
+	    }
+	    assert.equal(state.vstack.length, 0);
+	    sys.print("e(0) == " + e(0) + "\n");
+	    
+	    assert.equal(e(0), true);
+	    assert.equal(e(1), false);
+	    assert.equal(e(2), true);
+	    assert.equal(e(3), false);
+	    assert.equal(e(5000), true);
+	    assert.equal(e(5001), false);
+
+
 	});
 
 
