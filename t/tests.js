@@ -144,14 +144,20 @@ var makeInstallValue = function(count, pos, isBoxes, rhs, body) {
 	    body: body};
 };
 
-
 var makeWithContMark = function(key, val, body) {
     return {$: "with-cont-mark",
 	    key: key,
 	    val: val,
 	    body: body};
 };
-    
+
+var makeAssign = function(id, rhs, isUndefOk) {
+    return {$: "assign",
+	    id: id,
+	    rhs: rhs,
+	    "undef-ok?": isUndefOk};
+};
+  
 
 
 //////////////////////////////////////////////////////////////////////
@@ -1014,6 +1020,21 @@ runTest("install-value, with boxes",
 	});
 
 
+runTest("assign",
+	function() {
+	    var state = new runtime.State();
+	    state.pushControl(makeMod(makePrefix(1), 
+				    [makeAssign(makeToplevel(0, 0),
+						makeConstant("some value"),
+						true)]));
+	    state.run();
+	    assert.equal(state.vstack.length, 1);
+	    assert.equal(state.vstack[0].ref(0), "some value");
+	});
+
+
+
+
 runTest("with-cont-mark", 
 	function() {
 	    var state = new runtime.State();
@@ -1066,6 +1087,19 @@ runTest("closure application, testing tail calls in the presence of continuation
 	    }
 	});
 
+
+// runTest("factorial again, testing the accumulation of continuation marks",
+// 	//
+// 	// (define marks #f)
+// 	// (define (f x)
+// 	//   (with-continuation-marks 'x x
+// 	//     (if (= x 0)
+// 	//         (begin (set! marks (current-continuation-marks))
+// 	//                1)
+// 	//         (* x (f (sub1 x))))))
+// 	function() {
+
+// 	});
 
 
 
