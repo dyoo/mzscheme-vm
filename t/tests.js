@@ -1142,16 +1142,15 @@ runTest("case-lambda, with a function that consumes one or two values",
 					makeLam(2, [], makeLocalRef(1))]))]));
 	    state.run();
 	    state.pushControl(makeApplication(makeToplevel(1, 0),
-					      makeConstant(runtime.rational(5))));
+					      [makeConstant(runtime.rational(5))]));
 	    var result = state.run();
-	    assert.equal(result, runtime.rational(5));
+	    assert.deepEqual(result, runtime.rational(5));
 
-
-	    state.pushControl(makeApplication(makeToplevel(1, 0),
-					      makeConstant(runtime.rational(7),
-							   runtime.rational(42))));
+	    state.pushControl(makeApplication(makeToplevel(2, 0),
+					      [makeConstant(runtime.rational(7)),
+					       makeConstant(runtime.rational(42))]));
 	    result = state.run();
-	    assert.equal(result, runtime.rational(42));
+	    assert.deepEqual(result, runtime.rational(42));
 	});
 
 
