@@ -158,6 +158,11 @@ var makeAssign = function(id, rhs, isUndefOk) {
 	    "undef-ok?": isUndefOk};
 };
   
+var makeVarref = function(aToplevel) {
+    return {$: "varref",
+	    toplevel: aToplevel};
+};
+
 
 
 //////////////////////////////////////////////////////////////////////
@@ -1033,6 +1038,22 @@ runTest("assign",
 	});
 
 
+runTest("varref",
+	function() {
+	    var state = new runtime.State();
+	    state.pushControl(makeMod(makePrefix(1),
+				      [makeSeq(makeAssign(makeToplevel(0, 0),
+						makeConstant("a toplevel value"),
+							  true),
+					       makeVarref(makeToplevel(0, 0)))]));
+	    var result = state.run();
+	    assert.ok(result instanceof runtime.VariableReference);
+	    assert.equal(result.ref(), "a toplevel value");
+	    result.set("something else!");
+	    assert.equal(state.vstack.length, 1);
+	    assert.equal(state.vstack[0].ref(0), "something else!");
+	});
+
 
 
 runTest("with-cont-mark", 
@@ -1109,7 +1130,6 @@ runTest("closure application, testing tail calls in the presence of continuation
 // let-rec
 // topsyntax
 // closure
-// assign
 // varref
 
 
