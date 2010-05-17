@@ -163,6 +163,11 @@ var makeVarref = function(aToplevel) {
 	    toplevel: aToplevel};
 };
 
+var makeClosure = function(genId) {
+    return {$: 'closure',
+	    'gen-id': genId };
+};
+
 
 
 //////////////////////////////////////////////////////////////////////
@@ -1055,6 +1060,16 @@ runTest("varref",
 	});
 
 
+runTest("closure",
+	function() {
+	    var state = new runtime.State();
+	    state.heap['some-closure'] = 42;
+	    state.pushControl(makeClosure('some-closure'));
+	    // The way we process closures in bytecode-compiler
+	    // should make this a direct heap lookup.
+	    assert.equal(state.run(), 42);
+	});
+
 
 runTest("with-cont-mark", 
 	function() {
@@ -1130,9 +1145,6 @@ runTest("closure application, testing tail calls in the presence of continuation
 // let-rec
 // topsyntax
 // closure
-// varref
-
-
 
 
 

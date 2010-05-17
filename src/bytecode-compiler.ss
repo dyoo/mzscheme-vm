@@ -256,8 +256,10 @@
 (define (compile-closure a-closure)
   (match a-closure 
     [(struct closure (lam gen-id))
-     (make-ht 'closure `((lam ,(compile-lam lam))
-                         (gen-id ,gen-id)))]))
+     (begin
+       (hash-set! (seen-indirects) gen-id lam)
+       (make-ht 'closure `((lam ,(compile-lam lam))
+                           (gen-id ,gen-id))))]))
 
 
 ;; compile-indirect: indirect -> jsexp
