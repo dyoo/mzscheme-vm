@@ -1202,17 +1202,23 @@ runTest("let-rec",
 		state.pushControl(makeApplication(makeConstant(evenValue),
 						  [makeConstant(runtime.rational(x))]));
 		return state.run();
+		// var MAXIMUM_BOUND = 10;
+		// while (!state.isStuck()) {
+		//     state.step();
+		//     assert.ok(state.cstack.length < MAXIMUM_BOUND);
+		// }
+		// return state.v;
 	    }
 	    assert.equal(state.vstack.length, 0);
-	    //runtime.setDebug(true);
+
 	    assert.equal(e(0), true);
 	    assert.equal(e(1), false);
 	    assert.equal(e(2), true);
 	    assert.equal(e(3), false);
 	    assert.equal(e(100), true);
 	    assert.equal(e(101), false);
-	    assert.equal(e(5001), false);
-	    //runtime.setDebug(false);
+	    assert.equal(e(10000), true);
+	    assert.equal(e(10001), false);
 	});
 
 
