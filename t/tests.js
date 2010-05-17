@@ -1204,16 +1204,15 @@ runTest("let-rec",
 		return state.run();
 	    }
 	    assert.equal(state.vstack.length, 0);
-	    sys.print("e(0) == " + e(0) + "\n");
-	    
+	    //runtime.setDebug(true);
 	    assert.equal(e(0), true);
 	    assert.equal(e(1), false);
 	    assert.equal(e(2), true);
 	    assert.equal(e(3), false);
-	    assert.equal(e(5000), true);
+	    assert.equal(e(100), true);
+	    assert.equal(e(101), false);
 	    assert.equal(e(5001), false);
-
-
+	    //runtime.setDebug(false);
 	});
 
 
