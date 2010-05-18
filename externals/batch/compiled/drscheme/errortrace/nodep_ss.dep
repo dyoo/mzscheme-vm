@@ -1,0 +1,1 @@
+("4.2.5" (collects #"errortrace" #"errortrace-key.ss") (collects #"scheme" #"main.ss") (collects #"compiler" #"zo-parse.ss") #"/home/dyoo/work/mzscheme-vm/externals/batch/util.ss" #"/home/dyoo/work/mzscheme-vm/externals/batch/mpi.ss" (collects #"scheme" #"lang" #"reader.ss"))

@@ -1,0 +1,74 @@
+diff --git a/batch.ss b/batch.ss
+index 95a2bf7..e783c1d 100644
+--- a/batch.ss
++++ b/batch.ss
+@@ -53,12 +53,13 @@ Here's the idea:
+   (command-line #:program "batch" #:args (filename) filename))
+ 
+ (define-values (base name dir?) (split-path file-to-batch))
+-(when dir?
++(when (or (eq? base #f) dir?)
+   (error 'batch "Cannot run on directory"))
+ 
++
+ ;; Compile 
+ (eprintf "Removing existing zo file~n")
+-(define compiled-zo-path (build-path base "compiled" (path-add-suffix name #".zo")))
++(define compiled-zo-path (build-compiled-path base (path-add-suffix name #".zo")))
+ 
+ 
+ #;
+@@ -71,7 +72,7 @@ Here's the idea:
+ 
+ (define merged-source-path (path-add-suffix file-to-batch #".merged.ss"))
+ (define-values (merged-source-base merged-source-name _1) (split-path merged-source-path))
+-(define merged-zo-path (path-add-suffix (build-path merged-source-base "compiled" merged-source-name) #".zo"))
++(define merged-zo-path (build-compiled-path merged-source-base (path-add-suffix merged-source-name #".zo")))
+ 
+ ;; Transformations
+ (eprintf "Removing dependencies~n")
+diff --git a/nodep.ss b/nodep.ss
+index 841c58c..f7ebe56 100644
+--- a/nodep.ss
++++ b/nodep.ss
+@@ -50,7 +50,9 @@
+              (nodep/dir
+               (parameterize ([current-load-relative-directory base-directory])
+                 (path->comp-top
+-                 (build-path base "compiled" (path-add-suffix file #".zo"))))
++                 (build-compiled-path 
++                             base 
++                             (path-add-suffix file #".zo"))))
+               pth
+               phase)))
+          (when (and phase (zero? phase))
+diff --git a/util.ss b/util.ss
+index 484eee2..bb4a7ad 100644
+--- a/util.ss
++++ b/util.ss
+@@ -34,6 +34,16 @@
+ (define lang-info/c
+   (or/c #f (vector/c module-path? symbol? any/c)))
+ 
++
++(define (build-compiled-path base name)
++  (build-path 
++   (cond [(path? base) base]
++	 [(eq? base 'relative) 'same]
++	 [(eq? base #f) (error 'batch "Impossible")])
++   "compiled"
++   name))
++
++
+ (provide/contract
+  [prefix-syntax-start (prefix? . -> . exact-nonnegative-integer?)]
+  [prefix-lift-start (prefix? . -> . exact-nonnegative-integer?)]
+@@ -43,4 +53,5 @@
+    (#:void? boolean?)
+    . ->* .
+    (unconstrained-domain-> any/c))]
+- [lang-info/c contract?])
+\ No newline at end of file
++ [lang-info/c contract?]
++ [build-compiled-path ((or/c path-string? (symbols 'relative) false/c) path-string? . -> . (or/c path-string? (symbols 'same 'up)))])
+\ No newline at end of file
