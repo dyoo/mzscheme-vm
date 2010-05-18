@@ -1,5 +1,8 @@
 #lang scheme
 (require "loadtest.ss")
+(current-namespace (make-base-namespace))
+
+
 (Section 'basic)
 
 (require scheme/flonum
