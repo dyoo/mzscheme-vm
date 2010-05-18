@@ -18,8 +18,8 @@
 (define CHARACTER-CONSTRUCTOR "_runtime.char")
 
 (define EMPTY "_runtime.EMPTY")
-(define TRUE "_runtime.TRUE")
-(define FALSE "_runtime.FALSE")
+(define TRUE "true")
+(define FALSE "false")
 
 
 
@@ -37,8 +37,10 @@
      (string-append "[" 
                     (string-join (map jsexp->js items) ",")
                     "]")]
-    [else
-     (sexp->js a-jsexp)]))
+    [(struct int (v))
+     (number->string v)]
+    [(struct lit (v))
+     (sexp->js v)]))
   
 
 ;; key-value->js: (list symbol jsval) -> string

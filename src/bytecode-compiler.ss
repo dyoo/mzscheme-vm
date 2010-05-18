@@ -30,7 +30,7 @@
               [compiled-indirects (emit-indirects)])
          (void)
          (make-ht 'compilation-top
-                  `((max-let-depth ,max-let-depth)
+                  `((max-let-depth ,(make-int max-let-depth))
                     (prefix ,(compile-prefix prefix))
                     (compiled-indirects ,compiled-indirects)
                     (code ,compiled-code))))])))
@@ -43,7 +43,7 @@
     (make-vec 
      (for/list ([id+lam (in-hash-pairs ht)])
        (make-ht 'labeled-indirect 
-                `((id ,(car id+lam)) 
+                `((id ,(make-lit (car id+lam)))
                   (lam ,(compile-lam (cdr id+lam)))))))))
 
 
@@ -53,7 +53,7 @@
     [(struct prefix (num-lifts toplevels stxs))
      ;; FIXME: handle stxs?
      (make-ht 'prefix 
-              `((num-lifts ,num-lifts)
+              `((num-lifts ,(make-int num-lifts))
                 (toplevels ,(compile-toplevels toplevels))
                 (stxs ,(compile-stxs stxs))))]))
 
@@ -62,14 +62,16 @@
 (define (compile-toplevels toplevels)
   (make-vec (map (lambda (a-toplevel)
                    (cond
-                     [(eq? a-toplevel #f) #f]
-                     [(symbol? a-toplevel) a-toplevel]
+                     [(eq? a-toplevel #f) 
+                      (make-lit #f)]
+                     [(symbol? a-toplevel)
+                      (make-lit a-toplevel)]
                      [(global-bucket? a-toplevel) 
                       (make-ht 'global-bucket 
-                               `((value ,(global-bucket-name a-toplevel))))]
+                               `((value ,(make-lit (global-bucket-name a-toplevel)))))]
                      [(module-variable? a-toplevel) 
                       (make-ht 'module-variable 
-                               `((value ,(module-variable-sym a-toplevel))))]))
+                               `((value ,(make-lit (module-variable-sym a-toplevel)))))]))
                  toplevels)))
 
 ;; compile-stxs: (listof stx) -> jsexp
@@ -78,7 +80,7 @@
                    ;; FIXME: not right.  We need to translate
                    ;; stxs to runtime values eventually to support
                    ;; topsyntax
-                   (format "~s" stxs))
+                   (make-lit (format "~s" stxs)))
                  stxs)))
 
 
@@ -97,7 +99,7 @@
 ;; compile-constant: datum -> jsexp
 (define (compile-constant a-constant)
   (make-ht 'constant 
-           `((value ,a-constant))))
+           `((value ,(make-lit a-constant)))))
 
 
 
@@ -131,7 +133,7 @@
                   dummy
                   lang-info
                   internal-context))
-     (make-ht 'mod `((name ,name)
+     (make-ht 'mod `((name ,(make-lit name))
                      (prefix ,(compile-prefix prefix))
                      (body ,(make-vec (map (lambda (b)
                                              (match b 
@@ -240,13 +242,13 @@
     [(struct lam (name flags num-params param-types 
                        rest? closure-map closure-types 
                        max-let-depth body))
-     (make-ht 'lam `((flags ,(make-vec flags))
-                     (num-params ,num-params)
-                     (param-types ,(make-vec param-types))
-                     (rest? ,rest?)
-                     (closure-map ,(make-vec (vector->list closure-map)))
-                     (closure-types ,(make-vec closure-types))
-                     (max-let-depth ,max-let-depth)
+     (make-ht 'lam `((flags ,(make-vec (map make-lit flags)))
+                     (num-params ,(make-int num-params))
+                     (param-types ,(make-vec (map make-lit param-types)))
+                     (rest? ,(make-lit rest?))
+                     (closure-map ,(make-vec (map make-lit (vector->list closure-map))))
+                     (closure-types ,(make-vec (map make-lit closure-types)))
+                     (max-let-depth ,(make-int max-let-depth))
                      (body ,(compile-at-expression-position body))))]))
 
 
@@ -259,7 +261,7 @@
      (begin
        (hash-set! (seen-indirects) gen-id lam)
        (make-ht 'closure `((lam ,(compile-lam lam))
-                           (gen-id ,gen-id))))]))
+                           (gen-id ,(make-lit gen-id)))))]))
 
 
 ;; compile-indirect: indirect -> jsexp
@@ -269,7 +271,7 @@
      (begin
        ;; Keep track of the indirect.  We'll need to generate the s-expression for it in a moment
        (hash-set! (seen-indirects) gen-id lam)
-       (make-ht 'indirect `((value ,gen-id))))]))
+       (make-ht 'indirect `((value ,(make-lit gen-id)))))]))
 
 
 
@@ -277,21 +279,21 @@
 (define (compile-localref a-localref)
   (match a-localref
     [(struct localref (unbox? pos clear? other-clears? flonum?))
-     (make-ht 'localref `((unbox? ,unbox?)
-                          (pos ,pos)
-                          (clear ,clear?)
-                          (other-clears? ,other-clears?)
-                          (flonum? ,flonum?)))]))
+     (make-ht 'localref `((unbox? ,(make-lit unbox?))
+                          (pos ,(make-int pos))
+                          (clear ,(make-lit clear?))
+                          (other-clears? ,(make-lit other-clears?))
+                          (flonum? ,(make-lit flonum?))))]))
 
 
 ;; compile-toplevel: toplevel -> jsexp
 (define (compile-toplevel a-toplevel)
   (match a-toplevel
     [(struct toplevel (depth pos const? ready?))
-     (make-ht 'toplevel `((depth ,depth)
-                          (pos ,pos)
-                          (const? ,const?)
-                          (ready? ,ready?)))]))
+     (make-ht 'toplevel `((depth ,(make-int depth))
+                          (pos ,(make-int pos))
+                          (const? ,(make-lit const?))
+                          (ready? ,(make-lit ready?))))]))
 
 
 ;; compile-application: application -> jsexp
@@ -316,7 +318,8 @@
 (define (compile-primval a-primval)
   (match a-primval
     [(struct primval (id))
-     (make-ht 'primval `((value ,(hash-ref primitive-table id))))]))
+     (make-ht 'primval `((value ,(make-lit 
+                                  (symbol->string (hash-ref primitive-table id))))))]))
 
 
 ;; compile-branch: branch -> jsexp
