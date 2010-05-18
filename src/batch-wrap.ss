@@ -3,17 +3,16 @@
 
 
 (require scheme/pretty
-         scheme/system
          scheme/contract
          compiler/compiler
          compiler/decompile
          compiler/zo-marshal
-         "../externals/compiler/batch/util.ss"
-         "../externals/compiler/batch/nodep.ss"
-         "../externals/compiler/batch/merge.ss"
-         "../externals/compiler/batch/gc-toplevels.ss"
-         "../externals/compiler/batch/alpha.ss"
-         "../externals/compiler/batch/module.ss")
+         "../externals/batch/util.ss"
+         "../externals/batch/nodep.ss"
+         "../externals/batch/merge.ss"
+         "../externals/batch/gc-toplevels.ss"
+         "../externals/batch/alpha.ss"
+         "../externals/batch/module.ss")
 
 (provide/contract [batch-compile (path-string? . -> . path?)])
 
@@ -65,8 +64,8 @@
                   ;; Output
                   (define batch-final batch-mod)
                   
-                  #;(eprintf "Writing merged source~n")
-                  #;(with-output-to-file
+                  (eprintf "Writing merged source~n")
+                  (with-output-to-file
                       merged-source-path
                     (lambda ()
                       (pretty-print (decompile batch-final)))
