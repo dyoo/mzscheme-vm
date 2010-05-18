@@ -45,7 +45,7 @@ var makePrefix = function(n) {
 	arr.push(false);
     }
     return { $: 'prefix',
-	     'num-lifts': runtime.rational(0),
+	     'num-lifts': 0,
 	     toplevels: arr };
 };
 
@@ -59,8 +59,8 @@ var makeMod = function(prefix, body) {
 
 var makeToplevel = function(depth, pos) {
     return {$:'toplevel',
-	    depth: runtime.rational(depth),
-	    pos:runtime.rational(pos)};
+	    depth: depth,
+	    pos: pos};
 };
 
 
@@ -75,14 +75,14 @@ var makeLam = function(arity, closureMap, body) {
     var aClosureTypes = [];
     var aParamTypes = [];
     for (var i = 0; i < closureMap.length; i++) {
-	aClosureMap.push(runtime.rational(closureMap[i]));
-	aClosureTypes.push(runtime.symbol("val/ref"));
+	aClosureMap.push(closureMap[i]);
+	aClosureTypes.push("val/ref");
     }
     for (var i = 0; i < arity; i++) {
-	aParamTypes.push(runtime.symbol("val"));
+	aParamTypes.push("val");
     }
     return {'$':"lam",
-	    'num-params': runtime.rational(arity),
+	    'num-params': arity,
 	    'param-types': aParamTypes,
 	    'rest?': false,
 	    'closure-map' : aClosureMap,
@@ -106,7 +106,7 @@ var makeApplication = function(rator, rands) {
 
 var makeLocalRef = function(n) {
     return {$ : 'localref',
-	    pos: runtime.rational(n)};
+	    pos: n};
 };
 
 
@@ -124,21 +124,21 @@ var makeLet1 = function(rhs, body) {
 
 var makeLetVoid = function(count, isBoxes, body) {
     return {$: 'let-void',
-	    count: runtime.rational(count),
+	    count: count,
 	    'boxes?' : isBoxes,
 	    body : body};
 };
 
 var makeBoxenv = function(pos, body) {
     return {$: 'boxenv',
-	    pos: runtime.rational(pos),
+	    pos: pos,
 	    body :body};
 };
 
 var makeInstallValue = function(count, pos, isBoxes, rhs, body) {
     return {$: 'install-value',
-	    count: runtime.rational(count),
-	    pos: runtime.rational(pos),
+	    count: count,
+	    pos: pos,
 	    'boxes?': isBoxes,
 	    rhs: rhs,
 	    body: body};
@@ -435,7 +435,7 @@ runTest("My own list function",
 	    var state = new runtime.State();
 	    state.pushControl(makeApplication
 			      ( {'$' : "lam",
-				      'num-params': runtime.rational(0),
+				      'num-params': 0,
 				      'param-types': [],
 				      'rest?': true,
 				      'closure-map' : [],
