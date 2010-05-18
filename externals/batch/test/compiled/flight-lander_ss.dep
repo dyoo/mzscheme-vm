@@ -1,1 +1,0 @@
-("4.2.5.1" (collects #"lang" #"htdp-beginner.ss") (collects #"teachpack" #"htdp" #"world.ss") (collects #"lang" #"htdp-beginner-reader.ss"))
