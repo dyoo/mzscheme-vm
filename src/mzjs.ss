@@ -8,9 +8,11 @@
          scheme/cmdline)
 
 (define (make-output-path a-path)
-  (regexp-replace #px"\\.\\w+$" 
-                  (path->string (file-name-from-path a-path))
-                  ".js"))
+  (let-values ([(base file dir?) (split-path a-path)])
+    (build-path base
+                (regexp-replace #px"\\.\\w+$" 
+                                (path->string (file-name-from-path file))
+                                ".js"))))
 
 ;; mzjs: path -> void
 ;; Given the path of a scheme program, run it through the batch compiler

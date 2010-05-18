@@ -20,7 +20,7 @@
 (define EMPTY "_runtime.EMPTY")
 (define TRUE "true")
 (define FALSE "false")
-
+(define VOID "_runtime.VOID")
 
 
 ;; jsexp->js: jsexp -> string
@@ -57,6 +57,9 @@
 ;; sexp->js: any -> string
 (define (sexp->js expr)
   (cond
+    [(void? expr)
+     VOID]
+    
     ;; Empty
     [(empty? expr)
      EMPTY]

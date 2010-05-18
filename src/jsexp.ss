@@ -14,12 +14,13 @@
       (lit? x)))
 
 (define (lit-value? x)
-  #t
-  #;(or (boolean? x)
-        (symbol? x)
-        (char? x)
-        (string? x)
-        (number? x)))
+  (or (boolean? x)
+      (symbol? x)
+      (char? x)
+      (string? x)
+      (number? x)
+      (list? x)
+      (void? x)))
 
 
 
