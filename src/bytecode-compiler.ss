@@ -233,7 +233,9 @@
     [(? closure?)
      (compile-closure an-expr)]
     [(? beg0?)
-     (compile-beg0 an-expr)]))
+     (compile-beg0 an-expr)]
+    [(? with-cont-mark?)
+     (compile-with-cont-mark an-expr)]))
 
 
 ;; run-lam: lam -> jsexp
@@ -349,6 +351,17 @@
               `((seq 
                  ,(make-vec 
                    (map compile-at-expression-position seq)))))]))
+
+
+(define (compile-with-cont-mark a-with-cont-mark)
+  (match a-with-cont-mark
+    [(struct with-cont-mark (key val body))
+     (make-ht 'with-cont-mark1 
+              `((key ,(compile-at-expression-position key))
+                (val ,(compile-at-expression-position val))
+                (body ,(compile-at-expression-position body))))]))
+
+             
 
 
 
