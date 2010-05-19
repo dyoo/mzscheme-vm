@@ -1,3 +1,7 @@
+!!! This is not ready for public consumption yet. !!!
+
+
+
 Prerequisites:
 
     * node.js: http://nodejs.org
@@ -5,10 +9,38 @@ Prerequisites:
     * mzscheme 4.2.5
         use mzscheme 4.2.5, as the VM may change from version to version.
 
-
+##################################################
 Installation:
 
     check out the submodules:
 
         $ git submodule init
         $ git submodule update
+
+##################################################
+Running core opcode tests:
+
+    $ cd t
+    $ node tests.js
+
+##################################################
+Running examples:
+
+    $ cd tests
+    
+    There should be several subdirectories.  For example, let's
+    go into 42:
+
+    $ cd 42
+    $ cat 42.ss
+    #lang scheme/base
+    42
+
+    It's a simple program that should display 42.  Let's compile it.
+
+    $ mzscheme ../../src/mzjs.ss 42.ss
+
+    This should produce a file, 42.js, which we can now run.
+
+    $ node 42.js
+    42
