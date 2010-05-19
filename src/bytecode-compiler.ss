@@ -218,6 +218,8 @@
   (match an-expr
     [(? lam?)
      (compile-lam an-expr)]
+    [(? case-lam?)
+     (compile-case-lam an-expr)]
     [(? localref?)
      (compile-localref an-expr)]
     [(? toplevel?)
@@ -235,10 +237,28 @@
     [(? beg0?)
      (compile-beg0 an-expr)]
     [(? with-cont-mark?)
-     (compile-with-cont-mark an-expr)]))
+     (compile-with-cont-mark an-expr)]
+    [(? let-one?)
+     (compile-let-one an-expr)]
+    [(? let-void?)
+     (compile-let-void an-expr)]
+    [(? let-rec?)
+     (compile-let-rec an-expr)]
+    [(? indirect?)
+     (compile-indirect an-expr)]
+    [(? install-value?)
+     (compile-install-value an-expr)]
+    [(? assign?)
+     (compile-assign an-expr)]
+    [(? varref?)
+     (compile-varref an-expr)]
+    [(? boxenv?)
+     (compile-boxenv an-expr)]
+    [(? topsyntax?)
+     (compile-topsyntax an-expr)]))
 
 
-;; run-lam: lam -> jsexp
+;; compile-lam: lam -> jsexp
 (define (compile-lam a-lam)
   (match a-lam
     [(struct lam (name flags num-params param-types 
@@ -254,6 +274,13 @@
                      (body ,(compile-at-expression-position body))))]))
 
 
+;; compile-case-lam: case-lam -> jsexp
+(define (compile-case-lam a-case-lam)
+  (match a-case-lam
+    [(struct case-lam (name clauses))
+     (make-ht 'case-lam `((name ,(make-lit name))
+                          (clauses ,(make-vec (map compile-lam clauses)))))]))
+              
 
 
 ;; compile-closure: closure -> jsexp
@@ -353,6 +380,7 @@
                    (map compile-at-expression-position seq)))))]))
 
 
+;; compile-with-cont-mark: cont-mark -> jsexp
 (define (compile-with-cont-mark a-with-cont-mark)
   (match a-with-cont-mark
     [(struct with-cont-mark (key val body))
@@ -361,7 +389,76 @@
                 (val ,(compile-at-expression-position val))
                 (body ,(compile-at-expression-position body))))]))
 
+
+;; compile-let-one: let-one -> jsexp
+(define (compile-let-one a-let-one)
+  (match a-let-one
+    [(struct let-one (rhs body flonum?))
+     (make-ht 'let-one 
+              `((rhs ,(compile-at-expression-position rhs))
+                (body ,(compile-at-expression-position body))
+                (flonum? ,(make-lit flonum?))))]))
+
+
+;; compile-let-void: let-void -> jsexp
+(define (compile-let-void a-let-void)
+  (match a-let-void
+    [(struct let-void (count boxes? body))
+     (make-ht 'let-void 
+              `((count ,(make-int count))
+                (boxes ,(make-lit boxes?))
+                (body ,(compile-at-expression-position body))))]))
              
+
+;; compile-let-rec: let-rec -> jsexp
+(define (compile-let-rec a-let-rec)
+  (match a-let-rec
+    [(struct let-rec (procs body))
+     (make-ht 'let-rec `((procs ,(make-vec (map compile-lam procs)))
+                         (body ,(compile-at-expression-position body))))]))
+  
+
+;; compile-install-value: install-value -> jsexp
+(define (compile-install-value an-install-value)
+  (match an-install-value
+    [(struct install-value (count pos boxes? rhs body))
+     (make-ht 'install-value `((count ,(make-int count))
+                               (pos ,(make-int pos))
+                               (boxes? ,(make-lit boxes?))
+                               (rhs ,(compile-at-expression-position rhs))
+                               (body ,(compile-at-expression-position body))))]))
+
+;; compile-varref: varref -> jsexp
+(define (compile-varref a-varref)
+  (match a-varref
+    [(struct varref (toplevel))
+     (make-ht 'varref `((toplevel ,(compile-toplevel toplevel))))]))
+
+
+;; compile-assign: assign -> jsexp
+(define (compile-assign an-assign)
+  (match an-assign
+    [(struct assign (id rhs undef-ok?))
+     (make-ht 'assign `((id ,(compile-toplevel id))
+                        (rhs ,(compile-at-expression-position rhs))
+                        (undef-ok? ,(make-lit undef-ok?))))]))
+
+
+;; compile-boxenv: boxenv -> jsexp
+(define (compile-boxenv a-boxenv)
+  (match a-boxenv
+    [(struct boxenv (pos body))
+     (make-ht 'boxenv `((pos ,(make-int pos))
+                        (body ,(compile-at-expression-position body))))]))
+
+
+;; compile-topsyntax: topsyntax -> jsexp
+(define (compile-topsyntax a-topsyntax)
+  (match a-topsyntax
+    [(struct topsyntax (depth pos midpt))
+     (make-ht `topsyntax `((depth ,(make-int depth))
+                           (pos ,(make-int pos))
+                           (midpt ,(make-int midpt))))]))
 
 
 

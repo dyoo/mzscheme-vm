@@ -23,63 +23,58 @@
   
   
   (parameterize ([current-namespace (make-base-empty-namespace)])
-    (let (#;[compiler (compile-zos #f 
-                                 #:module? #t 
-                                 #:verbose? #f)])
-      ;; Compile 
-      (managed-compile-zo file-to-batch #; (list file-to-batch) #;'auto)
-      (let ([compiled-zo-path (build-compiled-path base (path-add-suffix name #".zo"))])
-        
-        (let*-values ([(merged-source-path)
-                       (path-add-suffix file-to-batch #".merged.ss")]
-                      [(merged-source-base merged-source-name _1)
-                       (split-path merged-source-path)]
-                      [(merged-zo-path)
-                       (build-compiled-path merged-source-base 
-                                            (path-add-suffix merged-source-name #".zo"))])
+    ;; Compile 
+    (managed-compile-zo file-to-batch)
+    (let ([compiled-zo-path (build-compiled-path base (path-add-suffix name #".zo"))])
+      
+      (let*-values ([(merged-source-path)
+                     (path-add-suffix file-to-batch #".merged.ss")]
+                    [(merged-source-base merged-source-name _1)
+                     (split-path merged-source-path)]
+                    [(merged-zo-path)
+                     (build-compiled-path merged-source-base 
+                                          (path-add-suffix merged-source-name #".zo"))])
+        ;; Transformations
+        (eprintf "Removing dependencies~n")
+        (let-values ([(batch-nodep top-lang-info top-self-modidx)
+                      (nodep-file file-to-batch)])
           
-          
-          ;; Transformations
-          (eprintf "Removing dependencies~n")
-          (let-values ([(batch-nodep top-lang-info top-self-modidx)
-                        (nodep-file file-to-batch)])
+          (eprintf "Merging modules~n")
+          (let ([batch-merge
+                 (merge-compilation-top batch-nodep)])
             
-            (eprintf "Merging modules~n")
-            (let ([batch-merge
-                   (merge-compilation-top batch-nodep)])
+            (eprintf "GC-ing top-levels~n")
+            (let ([batch-gcd
+                   (gc-toplevels batch-merge)])
               
-              (eprintf "GC-ing top-levels~n")
-              (let ([batch-gcd
-                     (gc-toplevels batch-merge)])
+              (eprintf "Alpha-varying top-levels~n")
+              (let ([batch-alpha
+                     (alpha-vary-ctop batch-gcd)])
                 
-                (eprintf "Alpha-varying top-levels~n")
-                (let ([batch-alpha
-                       (alpha-vary-ctop batch-gcd)])
+                (define batch-modname
+                  (string->symbol (regexp-replace #rx"\\.ss$" (path->string merged-source-name) "")))
+                (eprintf "Modularizing into ~a~n" batch-modname)
+                (let ([batch-mod
+                       (wrap-in-kernel-module batch-modname top-lang-info top-self-modidx batch-alpha)])
                   
-                  (define batch-modname
-                    (string->symbol (regexp-replace #rx"\\.ss$" (path->string merged-source-name) "")))
-                  (eprintf "Modularizing into ~a~n" batch-modname)
-                  (let ([batch-mod
-                         (wrap-in-kernel-module batch-modname top-lang-info top-self-modidx batch-alpha)])
-                    
-                    ;; Output
-                    (define batch-final batch-mod)
-                    
-                    #;(eprintf "Writing merged source~n")
-                    #;(with-output-to-file
+                  ;; Output
+                  (define batch-final batch-mod)
+                  
+                  #;(eprintf "Writing merged source~n")
+                  #;(with-output-to-file
                         merged-source-path
                       (lambda ()
                         (pretty-print (decompile batch-final)))
                       #:exists 'replace)
-                    
-                    (eprintf "Writing merged zo~n")
-                    (void
-                     (with-output-to-file 
-                         merged-zo-path
-                       (lambda ()
-                         (write-bytes (zo-marshal batch-final)))
-                       #:exists 'replace))
-                    
-                    merged-zo-path
-                    #;(eprintf "Running merged source~n")
-                    #;(void (system (format "mzscheme ~a" merged-source-path)))))))))))))
+                  
+                  (eprintf "Writing merged zo~n")
+                  (void
+                   (with-output-to-file 
+                       merged-zo-path
+                     (lambda ()
+                       (write-bytes (zo-marshal batch-final)))
+                     #:exists 'replace))
+                  
+                  merged-zo-path
+                  #;(eprintf "Running merged source~n")
+                  #;(void (system (format "mzscheme ~a" merged-source-path))))))))))))
