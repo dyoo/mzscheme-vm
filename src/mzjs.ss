@@ -8,7 +8,8 @@
          scheme/cmdline)
 
 (define (make-output-path a-path)
-  (let-values ([(base file dir?) (split-path a-path)])
+  (let-values ([(base file dir?)
+                (split-path a-path)])
     (build-path base
                 (regexp-replace #px"\\.\\w+$" 
                                 (path->string (file-name-from-path file))
@@ -19,7 +20,8 @@
 ;; and generate the javascript program.
 (define (mzjs a-path)
   ;; Run the batch compiler over the path
-  (let ([compiled-zo-path (batch-compile a-path)])
+  (let* ([a-path (normalize-path a-path)]
+         [compiled-zo-path (batch-compile a-path)])
     (call-with-input-file compiled-zo-path
       (lambda (ip)
         (call-with-output-file (make-output-path a-path)
@@ -31,6 +33,6 @@
           #:exists 'replace)))))
 
 
-#;(mzjs (command-line #:program "mzjs" 
+(mzjs (command-line #:program "mzjs" 
               #:args (filename)
               filename))

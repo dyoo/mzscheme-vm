@@ -6,30 +6,15 @@ batchcompiler="../batch/batch.ss"
 
 basedir=`pwd`;
 
-build_batch() {
-## rebuild all the batch-compiled files
-    cd ${basedir}
-    for file in tests/*/*.ss
-    do
-	cd `dirname ${file}`
-	rm -rf compiled
-	mzc --disable-inline --no-prop `basename ${file}`
-	mzscheme ${basedir}/${batchcompiler} ./`basename ${file}`
-	cd ${basedir}
-    done
-    cd ${basedir}
-}
-
 
 build_mzjs() {
 ## run mzjs over all the files
     cd ${basedir}
-    for file in tests/*/*/*_merged_ss.zo
+    for file in tests/*/*.ss
     do
 	cd `dirname ${file}`
 	echo "Making `basename ${file}`"
 	mzscheme ${basedir}/src/mzjs.ss `basename ${file}`
-	cp *.js ..
 	cd ${basedir}
     done
     cd ${basedir}
@@ -65,8 +50,6 @@ test_output() {
 
 if [ "$1" == "mzjs" ]; then
     build_mzjs
-elif [ "$1" == "batch" ]; then
-    build_batch
 elif [ "$1" == "test" ]; then
     test_output
 else
