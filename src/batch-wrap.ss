@@ -4,7 +4,7 @@
 
 (require scheme/pretty
          scheme/contract
-         compiler/compiler
+         compiler/cm
          compiler/decompile
          compiler/zo-marshal
          "../externals/compiler/batch/util.ss"
@@ -23,11 +23,11 @@
   
   
   (parameterize ([current-namespace (make-base-empty-namespace)])
-    (let ([compiler (compile-zos #f 
+    (let (#;[compiler (compile-zos #f 
                                  #:module? #t 
                                  #:verbose? #f)])
       ;; Compile 
-      (compiler (list file-to-batch) 'auto)
+      (managed-compile-zo file-to-batch #; (list file-to-batch) #;'auto)
       (let ([compiled-zo-path (build-compiled-path base (path-add-suffix name #".zo"))])
         
         (let*-values ([(merged-source-path)
