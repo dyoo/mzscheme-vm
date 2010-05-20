@@ -16,11 +16,19 @@
 (define (lit-value? x)
   (or (boolean? x)
       (symbol? x)
+      (keyword? x)
       (char? x)
       (string? x)
+      (bytes? x)
       (number? x)
-      (list? x)
-      (void? x)))
+      (void? x)
+      (path? x)
+      (regexp? x)
+      (byte-regexp? x)
+      (and (list? x)
+           (andmap lit-value? x))
+      (and (vector? x) 
+           (andmap lit-value? (vector->list x)))))
 
 
 
