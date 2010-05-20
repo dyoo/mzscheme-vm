@@ -719,7 +719,7 @@ runTest("factorial",
 	    var fact = function(n) {
 		state.pushControl(makeApplication(makeToplevel(1, 0),
 						  [makeConstant(runtime.rational(n))]));
-		return state.run().toFixnum();;
+		return state.run();
 	    }
 
  	    assert.equal(fact(0), 1);
@@ -745,7 +745,7 @@ runTest("apply on a primitive *",
 		 makeConstant(
 		     runtime.list([runtime.rational(3),
 				   runtime.rational(9)]))]));
-	    assert.deepEqual(state.run().toFixnum(),
+	    assert.deepEqual(state.run(),
 			     27);
 	    assert.equal(state.vstack.length, 0);
 	});
@@ -761,7 +761,7 @@ runTest("apply on a primitive -",
 		 makeConstant(
 		     runtime.list([runtime.rational(3),
 				   runtime.rational(9)]))]));
-	    assert.deepEqual(state.run().toFixnum(),
+	    assert.deepEqual(state.run(),
 			     -6);
 	    assert.equal(state.vstack.length, 0);
 	});
@@ -776,7 +776,7 @@ runTest("apply on a primitive -, three arguments",
 		     runtime.list([runtime.rational(3),
 				   runtime.rational(9),
 				   runtime.rational(12)]))]));
-	    assert.deepEqual(state.run().toFixnum(),
+	    assert.deepEqual(state.run(),
 			     -18);
 	    assert.equal(state.vstack.length, 0);
 	});
