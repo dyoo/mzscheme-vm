@@ -15,11 +15,12 @@
 (define KEYWORD-CONSTRUCTOR "_runtime.keyword")
 (define FLOAT-CONSTRUCTOR "_runtime.float")
 (define RATIONAL-CONSTRUCTOR "_runtime.rational")
+(define BIGNUM-CONSTRUCTOR "_runtime.bignum")
 (define COMPLEX-CONSTRUCTOR "_runtime.complex")
 (define CHARACTER-CONSTRUCTOR "_runtime.char")
 (define PATH-CONSTRUCTOR "_runtime.path")
 (define REGEXP-CONSTRUCTOR "_runtime.regexp")
-(define REGEXP-CONSTRUCTOR "_runtime.byteRegexp")
+(define BYTE-REGEXP-CONSTRUCTOR "_runtime.byteRegexp")
 (define BYTES-CONSTRUCTOR "_runtime.bytes")
 
 
@@ -181,6 +182,19 @@
                         ", "
                         (number->string (denominator a-num))
                         ")")]))
+
+;; integer->js: int -> string
+(define (integer->js an-int)
+  (cond
+    ;; non-overflow case
+    [(< (abs an-int) 9e15)
+     (number->string an-int)]
+    ;; overflow case
+    [else
+     (string-append BIGNUM-CONSTRUCTOR 
+                    "("
+                    (string->js (number->string an-int))
+                    ")")]))
 
 
 ;; number->java-string: number -> string
