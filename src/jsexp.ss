@@ -27,6 +27,9 @@
       (byte-regexp? x)
       (and (list? x)
            (andmap lit-value? x))
+      (and (pair? x)
+           (lit-value? (car x))
+           (lit-value? (cdr x)))
       (and (vector? x) 
            (andmap lit-value? (vector->list x)))))
 

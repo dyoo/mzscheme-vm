@@ -10,6 +10,7 @@
 
 
 (define LIST-CONSTRUCTOR "_runtime.list")
+(define PAIR-CONSTRUCTOR "_runtime.pair")
 (define VECTOR-CONSTRUCTOR "_runtime.vector")
 (define SYMBOL-CONSTRUCTOR "_runtime.symbol")
 (define KEYWORD-CONSTRUCTOR "_runtime.keyword")
@@ -72,11 +73,20 @@
      EMPTY]
     
     ;; Nonempty lists
-    [(pair? expr)
+    [(list? expr)
      (let ([translations (sexps->js expr)])
        (string-append LIST-CONSTRUCTOR "(["
                       (string-join translations ",")
                       "])"))]
+
+    ;; Dotted pairs
+    [(pair? expr)
+     (string-append PAIR-CONSTRUCTOR "("
+                    (sexp->js (car expr))
+                    ","
+                    (sexp->js (cdr expr))
+                    ")")]
+    
     ;; Vectors
     [(vector? expr)
      (let ([translations (sexps->js (vector->list expr))])
