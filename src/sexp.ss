@@ -12,10 +12,17 @@
 (define LIST-CONSTRUCTOR "_runtime.list")
 (define VECTOR-CONSTRUCTOR "_runtime.vector")
 (define SYMBOL-CONSTRUCTOR "_runtime.symbol")
+(define KEYWORD-CONSTRUCTOR "_runtime.keyword")
 (define FLOAT-CONSTRUCTOR "_runtime.float")
 (define RATIONAL-CONSTRUCTOR "_runtime.rational")
+(define BIGNUM-CONSTRUCTOR "_runtime.bignum")
 (define COMPLEX-CONSTRUCTOR "_runtime.complex")
 (define CHARACTER-CONSTRUCTOR "_runtime.char")
+(define PATH-CONSTRUCTOR "_runtime.path")
+(define REGEXP-CONSTRUCTOR "_runtime.regexp")
+(define BYTE-REGEXP-CONSTRUCTOR "_runtime.byteRegexp")
+(define BYTES-CONSTRUCTOR "_runtime.bytes")
+
 
 (define EMPTY "_runtime.EMPTY")
 (define TRUE "true")
@@ -82,7 +89,13 @@
      (string-append SYMBOL-CONSTRUCTOR "("
                     (string->js (symbol->string expr))
                     ")")]
-    
+
+    ;; Keywords
+    [(keyword? expr)
+     (string-append KEYWORD-CONSTRUCTOR "("
+                    (string->js (symbol->string expr))
+                    ")")]
+
     ;; Numbers
     [(number? expr)
      (number->js expr)]
@@ -91,6 +104,12 @@
     [(string? expr)
      (string->js expr)]
     
+    ;; Bytes
+    [(bytes? expr)
+     (string-append BYTES-CONSTRUCTOR "("
+                    (string-join (map number->string (bytes->list expr)) ",")
+                    ")")]
+
     ;; Characters
     [(char? expr)
      (character->js expr)]
@@ -98,6 +117,23 @@
     ;; Booleans
     [(boolean? expr)
      (boolean->js expr)]
+ 
+    ;; Paths
+    [(path? expr)
+     (string-append PATH-CONSTRUCTOR "(" 
+                    (string->js (path->string expr))
+                    ")")]
+    
+    ;; Regexps
+    [(regexp? expr)
+     (string-append REGEXP-CONSTRUCTOR "("
+                    (string->js (object-name expr))
+                    ")")]
+    [(byte-regexp? expr)
+     (string-append BYTE-REGEXP-CONSTRUCTOR "("
+                    (string->js (object-name expr))
+                    ")")]
+
     
     [else
      (error 'sexp->js (format "Can't translate ~s" expr))]))
@@ -146,6 +182,19 @@
                         ", "
                         (number->string (denominator a-num))
                         ")")]))
+
+;; integer->js: int -> string
+(define (integer->js an-int)
+  (cond
+    ;; non-overflow case
+    [(< (abs an-int) 9e15)
+     (number->string an-int)]
+    ;; overflow case
+    [else
+     (string-append BIGNUM-CONSTRUCTOR 
+                    "("
+                    (string->js (number->string an-int))
+                    ")")]))
 
 
 ;; number->java-string: number -> string
