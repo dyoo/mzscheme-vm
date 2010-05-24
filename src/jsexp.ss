@@ -25,6 +25,7 @@
       (path? x)
       (regexp? x)
       (byte-regexp? x)
+      (box? x)
       (and (list? x)
            (andmap lit-value? x))
       (and (pair? x)

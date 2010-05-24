@@ -20,6 +20,7 @@
 (define COMPLEX-CONSTRUCTOR "_runtime.complex")
 (define CHARACTER-CONSTRUCTOR "_runtime.char")
 (define PATH-CONSTRUCTOR "_runtime.path")
+(define BOX-CONSTRUCTOR "_runtime.box")
 (define REGEXP-CONSTRUCTOR "_runtime.regexp")
 (define BYTE-REGEXP-CONSTRUCTOR "_runtime.byteRegexp")
 (define BYTES-CONSTRUCTOR "_runtime.bytes")
@@ -103,9 +104,9 @@
     ;; Keywords
     [(keyword? expr)
      (string-append KEYWORD-CONSTRUCTOR "("
-                    (string->js (symbol->string expr))
+                    (string->js (keyword->string expr))
                     ")")]
-
+    
     ;; Numbers
     [(number? expr)
      (number->js expr)]
@@ -133,15 +134,23 @@
      (string-append PATH-CONSTRUCTOR "(" 
                     (string->js (path->string expr))
                     ")")]
+
+    ;; Boxes
+    [(box? expr)
+     (string-append BOX-CONSTRUCTOR "("
+                    (sexp->js (unbox expr))
+                    ")")]
     
     ;; Regexps
     [(regexp? expr)
      (string-append REGEXP-CONSTRUCTOR "("
-                    (string->js (object-name expr))
+                    (sexp->js (object-name expr))
                     ")")]
+
+    ;; Byte regexps
     [(byte-regexp? expr)
      (string-append BYTE-REGEXP-CONSTRUCTOR "("
-                    (string->js (object-name expr))
+                    (sexp->js (object-name expr))
                     ")")]
 
     

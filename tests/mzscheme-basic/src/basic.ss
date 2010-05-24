@@ -161,6 +161,10 @@
 (test '(a 7 c) list 'a (+ 3 4) 'c)
 (test '() list)
 
+
+;; dyoo: subsetting here
+#;(
+
 (test 3 length '(a b c))
 (test 3 length '(a (b) (c d e)))
 (test 0 length '())
@@ -945,6 +949,9 @@
 (test #f byte? (expt 2 40))
 (test #f byte? (expt 2 100))
 (test #f byte? #\newline)
+
+
+) ;; dyoo: subset ends
 
 ;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
