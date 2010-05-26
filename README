@@ -61,3 +61,5 @@ TODO
   content from Moby-scheme's kernel.
 
 * Make the tests/mzscheme-basic tests run under mzscheme-vm.
+
+* Structured error values

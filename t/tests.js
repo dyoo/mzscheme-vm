@@ -2,6 +2,12 @@ var assert = require('assert');
 var runtime = require('./../lib');
 var sys = require('sys');
 
+//////////////////////////////////////////////////////////////////////
+
+
+var run = runtime.run;
+var step = runtime.step;
+
 
 //////////////////////////////////////////////////////////////////////
 
@@ -209,7 +215,7 @@ runTest("simple empty state",
 	function() { 
 	    var state = new runtime.State();
 	    assert.ok(state.isStuck());
-	    state.run();
+	    run(state);
 	    assert.ok(state.isStuck());
 	});
 
@@ -220,7 +226,7 @@ runTest("Numeric constant",
 	function() {
 	    var state = new runtime.State();
 	    state.pushControl(makeConstant(42));
-	    var result = state.run();
+	    var result = run(state);
 	    assert.deepEqual(result, 
 			     42);
 	    
@@ -234,7 +240,7 @@ runTest("String constant",
 	function() {
 	    var state = new runtime.State();
 	    state.pushControl(makeConstant("hello world"));
-	    var result = state.run();
+	    var result = run(state);
 	    assert.deepEqual(result, 
 			     "hello world");
 
@@ -247,7 +253,7 @@ runTest("Boolean constant",
 	function() {
 	    var state = new runtime.State();
 	    state.pushControl(makeConstant(true));
-	    var result = state.run();
+	    var result = run(state);
 	    assert.deepEqual(result, true);
 
 	    assert.deepEqual(state, makeStateWithConstant(true));
@@ -262,7 +268,7 @@ runTest("Simple boolean branch to true",
 	    state.pushControl(makeBranch(makeConstant(true),
 					 makeConstant(true),
 					 makeConstant(false)));
-	    var result = state.run();
+	    var result = run(state);
 	    assert.deepEqual(result, true);
 	});
 
@@ -274,7 +280,7 @@ runTest("Simple boolean branch to false",
 	    state.pushControl(makeBranch(makeConstant(false),
 					 makeConstant(false),
 					 makeConstant(true)));
-	    var result = state.run();
+	    var result = run(state);
 	    assert.deepEqual(result, 
 			     true);
 
@@ -290,7 +296,7 @@ runTest("nested booleans",
 	    state.pushControl(makeBranch(makeBranch(makeConstant(true), makeConstant(false), makeConstant(true)),
 					 makeConstant("apple"),
 					 makeConstant("pie")));
-	    var result = state.run();
+	    var result = run(state);
 	    assert.deepEqual(result, "pie");
 
 	    assert.deepEqual(state, makeStateWithConstant("pie"));
@@ -305,13 +311,13 @@ runTest("Sequences",
 	    state1.pushControl(makeSeq(makeConstant(3),
 				       makeConstant(4),
 				       makeConstant(5)));
-	    state1.step();
-	    state1.step();
+	    step(state1);
+	    step(state1);
 	    assert.ok(!state1.isStuck());
 	    assert.deepEqual(state1.v, 3);
-	    state1.step();
+	    step(state1);
 	    assert.deepEqual(state1.v, 4);
-	    var result = state1.run();
+	    var result = run(state1);
 	    assert.deepEqual(result, 5);
 
 	    assert.deepEqual(state1, makeStateWithConstant(5));    
@@ -325,7 +331,7 @@ runTest("module prefix",
 	    var state = new runtime.State();
 	    state.pushControl(makeMod(makePrefix(3),
 				      []));
-	    state.run();   
+	    run(state);   
 	    assert.equal(1, state.vstack.length);
 	    assert.ok(state.vstack[0] instanceof runtime.Prefix);
 	    assert.equal(state.vstack[0].length(), 3);
@@ -338,20 +344,20 @@ runTest("toplevel lookup",
 	    var state = new runtime.State();
 	    state.pushControl(makeMod(makePrefix(3),
 				      []));
-	    state.run();   
+	    run(state);   
 
 	    state.vstack[0].set(0, "zero");
 	    state.vstack[0].set(1, "one");
 	    state.vstack[0].set(2, "two");
 
 	    state.pushControl(makeToplevel(0, 0));
-	    assert.equal(state.run(), "zero");
+	    assert.equal(run(state), "zero");
 
 	    state.pushControl(makeToplevel(0, 1));
-	    assert.equal(state.run(), "one");
+	    assert.equal(run(state), "one");
 
 	    state.pushControl(makeToplevel(0, 2));
-	    assert.equal(state.run(), "two");
+	    assert.equal(run(state), "two");
 	});
 
 
@@ -361,15 +367,15 @@ runTest("define-values",
 	function() {
 	    var state = new runtime.State();
 	    state.pushControl(makeMod(makePrefix(3), []));
-	    state.run();   
+	    run(state);   
 	    state.pushControl(makeDefValues([makeToplevel(0, 0)],
 					    makeConstant("try it")));
-	    state.run();
+	    run(state);
 
 	    var expectedState = new runtime.State();
 	    expectedState.pushControl(makeMod(makePrefix(3),
 					      []));
-	    expectedState.run();   
+	    run(expectedState);   
 	    expectedState.v = "try it";
 	    expectedState.vstack[0].set(0, "try it");
 	    assert.deepEqual(state, expectedState);
@@ -381,14 +387,14 @@ runTest("lambda",
 	function() {
 	    var state = new runtime.State();
 	    state.pushControl(makeMod(makePrefix(3), []));
-	    state.run();   
+	    run(state);   
 	    state.pushControl(makeDefValues([makeToplevel(0, 0)],
 					    makeConstant("Some toplevel value")));
 
-	    state.run();
+	    run(state);
 	    state.pushControl(makeLam(3, [0], makeConstant("I'm a body")));
 
-	    var result = state.run();
+	    var result = run(state);
 
 	    // result should be a lambda.
 	    assert.ok(result instanceof runtime.ClosureValue);
@@ -405,7 +411,7 @@ runTest("primval (current-print)",
 	function() {
 	    var state = new runtime.State();
 	    state.pushControl(makePrimval("current-print"));
-	    var result = state.run();
+	    var result = run(state);
 	    assert.ok(result instanceof runtime.Primitive);
 	});
 
@@ -415,7 +421,7 @@ runTest("primval on bad primitive should throw error",
 	function() {
 	    var state = new runtime.State();
 	    state.pushControl(makePrimval("foobar"));
-	    assert.throws(function() { state.run(); });
+	    assert.throws(function() { run(state); });
 	});
 
 
@@ -425,7 +431,7 @@ runTest("Primval on *",
 	function() {
 	    var state = new runtime.State();
 	    state.pushControl(makePrimval("*"));
-	    var result = state.run();
+	    var result = run(state);
 	    assert.ok(result instanceof runtime.Primitive);
 	});
 
@@ -444,7 +450,7 @@ runTest("My own list function",
 				  [makeConstant("one"),
 				   makeConstant("two"),
 				   makeConstant("three")]));
-	    var result = state.run();
+	    var result = run(state);
 	    assert.deepEqual(result,
 			     runtime.list(["one", "two", "three"]));
 	});
@@ -457,7 +463,7 @@ runTest("primitive application",
 	    state.pushControl(makeApplication(makePrimval("*"),
 					      [makeConstant(runtime.rational(3)),
 					       makeConstant(runtime.rational(5))]));
-	    var result = state.run();
+	    var result = run(state);
 	    assert.deepEqual(result, runtime.rational(15));
 	    assert.equal(state.vstack.length, 0);
 	});
@@ -469,7 +475,7 @@ runTest("primitive application, no arguments",
 	    var state = new runtime.State();
 	    state.pushControl(makeApplication(makePrimval("*"),
 					      []));
-	    var result = state.run();
+	    var result = run(state);
 	    assert.deepEqual(result, runtime.rational(1));
 	    assert.equal(state.vstack.length, 0);
 	});
@@ -486,7 +492,7 @@ runTest("primitive application, nested application",
 		    [makeConstant(runtime.rational(3)),
 		     makeConstant(runtime.rational(5))]),
 		 makeConstant(runtime.rational(7))]));
-	    var result = state.run();
+	    var result = run(state);
 	    assert.deepEqual(result, runtime.rational(105));
 	    assert.equal(state.vstack.length, 0);
 	});
@@ -503,7 +509,7 @@ runTest("primitive appliation, nesting, testing non-commutativity",
 		    [makeConstant("hello"),
 		     makeConstant("world")]),
 		 makeConstant("testing")]));
-	    var result = state.run();
+	    var result = run(state);
 	    assert.deepEqual(result, "helloworldtesting");
 	    assert.equal(state.vstack.length, 0);
 	});
@@ -519,7 +525,7 @@ runTest("primitive application, subtraction",
 		    [makeConstant(runtime.rational(3)),
 		     makeConstant(runtime.rational(4))]),
 		 makeConstant(runtime.rational(15))]));
-	    var result = state.run();
+	    var result = run(state);
 	    assert.deepEqual(result, runtime.rational(-16));
 	    assert.equal(state.vstack.length, 0);
 	});
@@ -531,7 +537,7 @@ runTest("primitive application, unary subtraction (negation)",
 	    state.pushControl(makeApplication(
 		makePrimval("-"),
 		[makeConstant(runtime.rational(1024))]));
-	    var result = state.run();
+	    var result = run(state);
 	    assert.deepEqual(result, runtime.rational(-1024));
 	    assert.equal(state.vstack.length, 0);
 	});
@@ -543,15 +549,15 @@ runTest("closure application",
 	function() {
 	    var state = new runtime.State();
 	    state.pushControl(makeMod(makePrefix(1), []));
-	    state.run();   
+	    run(state);   
 	    assert.equal(state.vstack.length, 1);
 	    
 	    state.pushControl(makeDefValues([makeToplevel(0, 0)],
 					    makeLam(1, [],
 						    makeConstant("I'm a body"))));
-	    state.run();
+	    run(state);
 	    state.pushControl(makeApplication(makeToplevel(1, 0), [makeConstant("boo")]));
-	    var result = state.run();
+	    var result = run(state);
 	    assert.equal(result, "I'm a body");
 
 	    assert.equal(state.vstack.length, 1);
@@ -564,7 +570,7 @@ runTest("closure application, defining square",
 	function() {
 	    var state = new runtime.State();
 	    state.pushControl(makeMod(makePrefix(1), []));
-	    state.run();   
+	    run(state);   
 	    assert.equal(state.vstack.length, 1);
 	    
 	    state.pushControl(makeDefValues([makeToplevel(0, 0)],
@@ -572,10 +578,10 @@ runTest("closure application, defining square",
 						    makeApplication(makePrimval("*"),
 								    [makeLocalRef(2),
 								     makeLocalRef(2)]))));
-	    state.run();
+	    run(state);
 	    state.pushControl(makeApplication(makeToplevel(1, 0), 
 					      [makeConstant(runtime.rational(4))]));
-	    var result = state.run();
+	    var result = run(state);
 	    assert.deepEqual(result, runtime.rational(16));
 	    assert.equal(state.vstack.length, 1);
 	});
@@ -589,19 +595,19 @@ runTest("closure application, testing tail calls",
 	function() {
 	    var state = new runtime.State();
 	    state.pushControl(makeMod(makePrefix(1), []));
-	    state.run();   
+	    run(state);   
 	    assert.equal(state.vstack.length, 1);
 	    
 	    state.pushControl(makeDefValues([makeToplevel(0, 0)],
 					    makeLam(0, [0],
 						    makeApplication(makeToplevel(0, 0),
 								    []))));
-	    state.run();
+	    run(state);
 	    state.pushControl(makeApplication(makeToplevel(0, 0), []));
 	    var MAXIMUM_BOUND = 5;
 	    var ITERATIONS = 1000000;
 	    for (var i = 0; i < ITERATIONS; i++) {
-		state.step();
+		step(state);
 		assert.ok(state.cstack.length < MAXIMUM_BOUND);
 	    }
 	});
@@ -616,7 +622,7 @@ runTest("closure application, testing tail calls with even/odd",
 	function() {
 	    var state = new runtime.State();
 	    state.pushControl(makeMod(makePrefix(2), []));
-	    state.run();   
+	    run(state);   
 	    assert.equal(state.vstack.length, 1);
 	    state.pushControl(makeDefValues
 			      ([makeToplevel(0, 0)],
@@ -641,14 +647,14 @@ runTest("closure application, testing tail calls with even/odd",
 							       makePrimval("sub1"),
 							       [makeLocalRef(3)])])))));
 	    
-	    state.run();
+	    run(state);
 
 	    var even = function(n) {
 		state.pushControl(makeApplication(makeToplevel(1, 0),
 						  [makeConstant(runtime.rational(n))]));
 		var MAXIMUM_BOUND = 10;
 		while (!state.isStuck()) {
-		    state.step();
+		    step(state);
 		    assert.ok(state.cstack.length < MAXIMUM_BOUND);
 		    //sys.print(state.cstack.length + "\n");
 		}
@@ -673,11 +679,11 @@ runTest("zero?",
 	    var state = new runtime.State();
 	    state.pushControl(makeApplication(makePrimval("zero?"),
 					      [makeConstant(runtime.rational(0))]));
-	    assert.deepEqual(state.run(), true);
+	    assert.deepEqual(run(state), true);
 
 	    state.pushControl(makeApplication(makePrimval("zero?"),
 					      [makeConstant(runtime.rational(1))]));
-	    assert.deepEqual(state.run(), false);
+	    assert.deepEqual(run(state), false);
 	    
 	});
 
@@ -688,7 +694,7 @@ runTest("sub1",
 	    var state = new runtime.State();
 	    state.pushControl(makeApplication(makePrimval("sub1"),
 					      [makeConstant(runtime.rational(25))]));
-	    assert.deepEqual(state.run(), runtime.rational(24));
+	    assert.deepEqual(run(state), runtime.rational(24));
 	});
 
 
@@ -697,7 +703,7 @@ runTest("factorial",
 	function() {
 	    var state = new runtime.State();
 	    state.pushControl(makeMod(makePrefix(1), []));
-	    state.run();   
+	    run(state);   
 	    assert.equal(state.vstack.length, 1);
 	    
 	    state.pushControl(makeDefValues(
@@ -714,12 +720,12 @@ runTest("factorial",
 						 [makeApplication(makePrimval("sub1"),
 								  [makeLocalRef(5)])])])))));
 
-	    state.run();
+	    run(state);
 
 	    var fact = function(n) {
 		state.pushControl(makeApplication(makeToplevel(1, 0),
 						  [makeConstant(runtime.rational(n))]));
-		return state.run();
+		return run(state);
 	    }
 
  	    assert.equal(fact(0), 1);
@@ -745,7 +751,7 @@ runTest("apply on a primitive *",
 		 makeConstant(
 		     runtime.list([runtime.rational(3),
 				   runtime.rational(9)]))]));
-	    assert.deepEqual(state.run(),
+	    assert.deepEqual(run(state),
 			     27);
 	    assert.equal(state.vstack.length, 0);
 	});
@@ -761,7 +767,7 @@ runTest("apply on a primitive -",
 		 makeConstant(
 		     runtime.list([runtime.rational(3),
 				   runtime.rational(9)]))]));
-	    assert.deepEqual(state.run(),
+	    assert.deepEqual(run(state),
 			     -6);
 	    assert.equal(state.vstack.length, 0);
 	});
@@ -776,7 +782,7 @@ runTest("apply on a primitive -, three arguments",
 		     runtime.list([runtime.rational(3),
 				   runtime.rational(9),
 				   runtime.rational(12)]))]));
-	    assert.deepEqual(state.run(),
+	    assert.deepEqual(run(state),
 			     -18);
 	    assert.equal(state.vstack.length, 0);
 	});
@@ -792,7 +798,7 @@ runTest("values",
 		     runtime.list([runtime.rational(3),
 				   runtime.rational(9),
 				   runtime.rational(12)]))]));
-	    var result = state.run();
+	    var result = run(state);
 	    assert.equal(state.vstack.length, 0);
 	    assert.ok(result instanceof runtime.ValuesWrapper);
 	    assert.equal(result.elts.length, 2);
@@ -804,7 +810,7 @@ runTest("values with def-values",
 	function() {
 	    var state = new runtime.State();
 	    state.pushControl(makeMod(makePrefix(2), []));
-	    state.run();   
+	    run(state);   
 	    assert.equal(state.vstack.length, 1);
 	    
 	    state.pushControl(makeDefValues(
@@ -813,7 +819,7 @@ runTest("values with def-values",
 		makeApplication(makePrimval("values"),
 				[makeConstant("hello"),
 				 makeConstant("world")])));
-	    state.run();
+	    run(state);
 	    assert.equal(state.vstack.length, 1);
 	    assert.ok(state.vstack[0] instanceof runtime.Prefix);
 	    assert.equal(state.vstack[0].ref(0), "hello");
@@ -826,14 +832,14 @@ runTest("apply-values",
 	function() {
 	    var state = new runtime.State();
 	    state.pushControl(makeMod(makePrefix(2), []));
-	    state.run();   
+	    run(state);   
 	    state.pushControl(makeDefValues(
 		[makeToplevel(0, 0),
 		 makeToplevel(0, 1)],
 		makeApplication(makePrimval("values"),
 				[makeConstant("hello"),
 				 makeConstant("world")])));
-	    state.run();
+	    run(state);
 
 	    state.pushControl(makeApplyValues(
 		makeLam(2, [], makeApplication(makePrimval("string-append"),
@@ -842,7 +848,7 @@ runTest("apply-values",
 		makeApplication(makePrimval("values"),
 				[makeToplevel(2, 0),
 				 makeToplevel(2, 1)])));
-	    assert.equal(state.run(), "helloworld");
+	    assert.equal(run(state), "helloworld");
 	});
 
 
@@ -851,19 +857,19 @@ runTest("apply-values, testing no stack usage",
 	function() {
 	    var state = new runtime.State();
 	    state.pushControl(makeMod(makePrefix(2), []));
-	    state.run();   
+	    run(state);   
 	    state.pushControl(makeDefValues(
 		[makeToplevel(0, 0),
 		 makeToplevel(0, 1)],
 		makeApplication(makePrimval("values"),
 				[makePrimval("zero?"),
 				 makeConstant(runtime.rational(0))])));
-	    state.run();
+	    run(state);
 
 	    state.pushControl(makeApplyValues(
 		makeToplevel(0, 0),
 		makeToplevel(0, 1)));
-	    assert.equal(state.run(), true);
+	    assert.equal(run(state), true);
 	    assert.equal(state.vstack.length, 1);
 	});
 
@@ -875,11 +881,11 @@ runTest("let-one, trivial",
 	    state.pushControl(makeLet1(makeConstant("someValue"),
 				       body));
 	    while (state.cstack[state.cstack.length - 1] !== body) {
-		state.step();
+		step(state);
 	    }
 	    assert.equal(state.vstack.length, 1);
 	    assert.equal(state.vstack[0], "someValue");
-	    var result = state.run();
+	    var result = run(state);
 	    assert.equal(state.vstack.length, 0);
 	    assert.deepEqual(result, "someValue");
 	});
@@ -893,11 +899,11 @@ runTest("let-one, different body",
 	    state.pushControl(makeLet1(makeConstant("someValue"),
 				       body));
 	    while (state.cstack[state.cstack.length - 1] !== body) {
-		state.step();
+		step(state);
 	    }
 	    assert.equal(state.vstack.length, 1);
 	    assert.equal(state.vstack[0], "someValue");
-	    var result = state.run();
+	    var result = run(state);
 	    assert.equal(state.vstack.length, 0);
 	    assert.deepEqual(result, "something else");
 	});
@@ -909,13 +915,13 @@ runTest("let-void, no boxes",
 	    var body = makeConstant("blah");
 	    state.pushControl(makeLetVoid(2, false, body));
 	    while (state.cstack[state.cstack.length - 1] !== body) {
-		state.step();
+		step(state);
 	    }
 	    assert.equal(state.vstack.length, 2);
 	    for(var i = 0; i < state.vstack.length; i++) {
 		assert.ok(state.vstack[i] instanceof runtime.UndefinedValue);
 	    }
-	    var result = state.run();
+	    var result = run(state);
 	    assert.equal(result, "blah");
 	    assert.equal(state.vstack.length, 0);
 	});
@@ -927,13 +933,13 @@ runTest("let-void, with boxes",
 	    var body = makeConstant("blah");
 	    state.pushControl(makeLetVoid(2, true, body));
 	    while (state.cstack[state.cstack.length - 1] !== body) {
-		state.step();
+		step(state);
 	    }
 	    assert.equal(state.vstack.length, 2);
 	    for(var i = 0; i < state.vstack.length; i++) {
 		assert.ok(state.vstack[i] instanceof runtime.Box);
 	    }
-	    var result = state.run();
+	    var result = run(state);
 	    assert.equal(result, "blah");
 	    assert.equal(state.vstack.length, 0);
 	});
@@ -943,11 +949,11 @@ runTest("beg0 with just one argument should immediately reduce to its argument",
 	function() {
 	    var state = new runtime.State();
 	    state.pushControl(makeBeg0(makeConstant("first post")));
-	    state.step();
+	    step(state);
 	    assert.equal(state.cstack.length, 1);
 	    assert.deepEqual(state.cstack[0], 
 			     makeConstant("first post"));
-	    var result = state.run();
+	    var result = run(state);
 	    assert.equal(result, "first post");
 	});
 
@@ -960,14 +966,14 @@ runTest("beg0, more general",
 				       makeConstant("second post"),
 				       makeConstant("third post"),
 				       makeConstant("fourth post")));
-	    state.step();
+	    step(state);
 
 	    // By this point, there should be two elements
 	    // in the control stack, the evaluation of the first
 	    // argument, and a control to continue the
 	    // rest of the sequence evaluation.
 	    assert.equal(state.cstack.length, 2); 
-	    var result = state.run();
+	    var result = run(state);
 	    assert.equal(result, "first post");
 	});
 
@@ -979,7 +985,7 @@ runTest("boxenv",
 	    state.pushControl(makeLet1(makeConstant("foo"),
 				       makeBoxenv(0, 
 						  makeLocalRef(0))));
-	    var result = state.run();
+	    var result = run(state);
 	    assert.ok(result instanceof runtime.Box);
 	    assert.deepEqual(result, new runtime.Box("foo"));
 	});
@@ -1001,13 +1007,13 @@ runTest("install-value, without boxes",
 				    makeConstant("4")]),
 		   aBody)));
 	    while (state.cstack[state.cstack.length - 1] !== aBody) {
-		state.step();
+		step(state);
 	    }
 	    assert.equal(state.vstack.length, 4);
 	    assert.equal(state.vstack[0], "4");
 	    assert.equal(state.vstack[1], "1");
 	    assert.equal(state.vstack[2], "3");
-	    var result = state.run();
+	    var result = run(state);
 	    assert.equal(result, "peep");
 	    assert.equal(state.vstack.length, 0);
 	});
@@ -1030,13 +1036,13 @@ runTest("install-value, with boxes",
 				    makeConstant("4")]),
 		   aBody)));
 	    while (state.cstack[state.cstack.length - 1] !== aBody) {
-		state.step();
+		step(state);
 	    }
 	    assert.equal(state.vstack.length, 4);
 	    assert.deepEqual(state.vstack[0], new runtime.Box("4"));
 	    assert.deepEqual(state.vstack[1], new runtime.Box("1"));
 	    assert.deepEqual(state.vstack[2], new runtime.Box("3"));
-	    var result = state.run();
+	    var result = run(state);
 	    assert.equal(result, "peep");
 	    assert.equal(state.vstack.length, 0);
 	});
@@ -1049,7 +1055,7 @@ runTest("assign",
 				    [makeAssign(makeToplevel(0, 0),
 						makeConstant("some value"),
 						true)]));
-	    state.run();
+	    run(state);
 	    assert.equal(state.vstack.length, 1);
 	    assert.equal(state.vstack[0].ref(0), "some value");
 	});
@@ -1063,7 +1069,7 @@ runTest("varref",
 						makeConstant("a toplevel value"),
 							  true),
 					       makeVarref(makeToplevel(0, 0)))]));
-	    var result = state.run();
+	    var result = run(state);
 	    assert.ok(result instanceof runtime.VariableReference);
 	    assert.equal(result.ref(), "a toplevel value");
 	    result.set("something else!");
@@ -1079,7 +1085,7 @@ runTest("closure",
 	    state.pushControl(makeClosure('some-closure'));
 	    // The way we process closures in bytecode-compiler
 	    // should make this a direct heap lookup.
-	    assert.equal(state.run(), 42);
+	    assert.equal(run(state), 42);
 	});
 
 
@@ -1093,14 +1099,14 @@ runTest("with-cont-mark",
 				  makeConstant("42"),
 				  aBody));
 	    while (state.cstack[state.cstack.length -1] !== aBody) {
-		state.step();
+		step(state);
 	    }
 	    assert.equal(state.cstack.length, 2);
 	    assert.ok(state.cstack[0] instanceof 
 		      runtime.ContMarkRecordControl);
 	    assert.equal(state.cstack[0].dict['x'],
 			 "42");
-	    var result = state.run();
+	    var result = run(state);
 	    assert.equal(result, "peep");
 	});
 
@@ -1114,7 +1120,7 @@ runTest("closure application, testing tail calls in the presence of continuation
 	function() {
 	    var state = new runtime.State();
 	    state.pushControl(makeMod(makePrefix(1), []));
-	    state.run();   
+	    run(state);   
 	    assert.equal(state.vstack.length, 1);
 	    
 	    state.pushControl(makeDefValues([makeToplevel(0, 0)],
@@ -1125,12 +1131,12 @@ runTest("closure application, testing tail calls in the presence of continuation
 						      
 						      makeApplication(makeToplevel(0, 0),
 								      []))))));
-	    state.run();
+	    run(state);
 	    state.pushControl(makeApplication(makeToplevel(0, 0), []));
 	    var MAXIMUM_BOUND = 6;
 	    var ITERATIONS = 1000000;
 	    for (var i = 0; i < ITERATIONS; i++) {
-		state.step();
+		step(state);
 		assert.ok(state.cstack.length < MAXIMUM_BOUND);
 	    }
 	});
@@ -1146,16 +1152,16 @@ runTest("case-lambda, with a function that consumes one or two values",
 			   makeCaseLam(runtime.symbol("last"),
 				       [makeLam(1, [], makeLocalRef(0)),
 					makeLam(2, [], makeLocalRef(1))]))]));
-	    state.run();
+	    run(state);
 	    state.pushControl(makeApplication(makeToplevel(1, 0),
 					      [makeConstant(runtime.rational(5))]));
-	    var result = state.run();
+	    var result = run(state);
 	    assert.deepEqual(result, runtime.rational(5));
 
 	    state.pushControl(makeApplication(makeToplevel(2, 0),
 					      [makeConstant(runtime.rational(7)),
 					       makeConstant(runtime.rational(42))]));
-	    result = state.run();
+	    result = run(state);
 	    assert.deepEqual(result, runtime.rational(42));
 	});
 
@@ -1197,11 +1203,11 @@ runTest("let-rec",
 								   (makePrimval("sub1"),
 								    [makeLocalRef(3)])])))],
 					 makeLocalRef(1)));
-	    var evenValue = state.run();
+	    var evenValue = run(state);
 	    var e = function(x) {
 		state.pushControl(makeApplication(makeConstant(evenValue),
 						  [makeConstant(runtime.rational(x))]));
-		return state.run();
+		return run(state);
 	    }
 	    assert.equal(state.vstack.length, 0);
 
