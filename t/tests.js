@@ -806,6 +806,19 @@ runTest("values",
 
 
 
+runTest("values with no arguments",
+	function() {
+	    var state = new runtime.State();
+	    state.pushControl(makeApplication(
+		makePrimval("values"),[]));
+	    var result = run(state);
+	    assert.equal(state.vstack.length, 0);
+	    assert.ok(result instanceof runtime.ValuesWrapper);
+	    assert.equal(result.elts.length, 0);
+	});
+
+
+
 runTest("values with def-values",
 	function() {
 	    var state = new runtime.State();

@@ -53,7 +53,7 @@ if [ "$1" == "mzjs" ]; then
 elif [ "$1" == "test" ]; then
     test_output
 else
-    build_mzjs
+#    build_mzjs
     test_output
 fi
 
