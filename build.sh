@@ -10,7 +10,7 @@ basedir=`pwd`;
 build_mzjs() {
 ## run mzjs over all the files
     cd ${basedir}
-    for file in tests/*/*.ss
+    for file in tests/programs/*/*.ss
     do
 	cd `dirname ${file}`
 	echo "Making `basename ${file}`"
@@ -23,7 +23,7 @@ build_mzjs() {
 
 test_output() {
     cd ${basedir}
-    for file in tests/*/*.js
+    for file in tests/programs/*/*.js
     do
 	cd ${basedir}
 	cd `dirname ${file}`
