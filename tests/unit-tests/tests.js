@@ -1220,25 +1220,27 @@ runTest("case-lambda, with a function that consumes one or two values",
 runTest("let-rec",
 	function() {
 	    var state = new runtime.State();
-	    state.pushControl(makeLetrec([makeLam(1, [0],
-						  makeBranch
-						  (makeApplication(makePrimval("zero?"),
-								   [makeLocalRef(2)]),
-						   makeConstant(true),
-						   makeApplication(makeLocalRef(1),
-								   [makeApplication
-								    (makePrimval("sub1"),
-								     [makeLocalRef(3)])]))),
-					 makeLam(1, [1],
-						 makeBranch
-						 (makeApplication(makePrimval("zero?"),
-								  [makeLocalRef(2)]),
-						  makeConstant(false),
-						  makeApplication(makeLocalRef(1),
-								  [makeApplication
-								   (makePrimval("sub1"),
-								    [makeLocalRef(3)])])))],
-					 makeLocalRef(1)));
+	    state.pushControl(makeLetVoid(2,
+					  false,
+					  makeLetrec([makeLam(1, [0],
+							      makeBranch
+							      (makeApplication(makePrimval("zero?"),
+									       [makeLocalRef(2)]),
+							       makeConstant(true),
+							       makeApplication(makeLocalRef(1),
+									       [makeApplication
+										(makePrimval("sub1"),
+										 [makeLocalRef(3)])]))),
+						      makeLam(1, [1],
+							      makeBranch
+							      (makeApplication(makePrimval("zero?"),
+									       [makeLocalRef(2)]),
+							       makeConstant(false),
+							       makeApplication(makeLocalRef(1),
+									       [makeApplication
+										(makePrimval("sub1"),
+										 [makeLocalRef(3)])])))],
+						     makeLocalRef(1))));
 	    var evenValue = run(state);
 	    var e = function(x) {
 		state.pushControl(makeApplication(makeConstant(evenValue),
