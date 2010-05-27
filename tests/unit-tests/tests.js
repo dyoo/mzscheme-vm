@@ -1,9 +1,9 @@
 var assert = require('assert');
-var runtime = require('./../lib');
+var runtime = require('./../../lib');
 var sys = require('sys');
 
 
-var jsnums = require('./../externals/js-numbers/src/js-numbers');
+var jsnums = require('./../../externals/js-numbers/src/js-numbers');
 
 //////////////////////////////////////////////////////////////////////
 
