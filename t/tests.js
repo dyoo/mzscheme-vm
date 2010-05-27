@@ -2,6 +2,9 @@ var assert = require('assert');
 var runtime = require('./../lib');
 var sys = require('sys');
 
+
+var jsnums = require('./../externals/js-numbers/src/js-numbers');
+
 //////////////////////////////////////////////////////////////////////
 
 
@@ -816,6 +819,26 @@ runTest("values with no arguments",
 	    assert.ok(result instanceof runtime.ValuesWrapper);
 	    assert.equal(result.elts.length, 0);
 	});
+
+
+
+
+runTest("current-inexact-milliseconds",
+	function() {
+	    var state = new runtime.State();
+	    for (var i = 0; i < 2000; i++) {
+		state.pushControl(makeApplication(
+		    makePrimval("current-inexact-milliseconds"),[]));
+		var result1 = run(state);
+
+
+		state.pushControl(makeApplication(
+		    makePrimval("current-inexact-milliseconds"),[]));
+		var result2 = run(state);
+		assert.ok(jsnums.lessThanOrEqual(result1, result2));
+	    }
+	});
+
 
 
 
