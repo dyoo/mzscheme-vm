@@ -16,7 +16,7 @@
 
 (let loop ([i 0])
   (cond
-    [(< i 10000)
+    [(< i 100000)
      (display i)
      (display " ")
      (display (time (lambda () (f i 1))))
