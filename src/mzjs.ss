@@ -3,30 +3,47 @@
          "sexp.ss"
          "batch-wrap.ss"
          compiler/zo-parse
-         #;compiler/compiler
+         scheme/file
          scheme/path
-         scheme/cmdline)
+         scheme/cmdline
+         scheme/runtime-path)
 
-(define (make-output-path a-path)
+(define-runtime-path lib-directory "../lib")
+
+;; make-output-file-path: path -> path
+;; Given the normalized name of the Scheme program, produce a normalized path
+;; of the output javascript program.
+(define (make-output-file-path a-file-path)
   (let-values ([(base file dir?)
-                (split-path a-path)])
+                (split-path a-file-path)])
     (build-path base
                 (regexp-replace #px"\\.\\w+$" 
                                 (path->string (file-name-from-path file))
                                 ".js"))))
+
+
+;; copy-lib-files: path -> void
+;; copy the files in lib to the directory.
+(define (copy-lib-files a-dir)
+  (unless (directory-exists?  (build-path a-dir "lib"))
+    (copy-directory/files lib-directory (build-path a-dir "lib"))))
+        
+               
 
 ;; mzjs: path -> void
 ;; Given the path of a scheme program, run it through the batch compiler
 ;; and generate the javascript program.
 (define (mzjs a-path)
   ;; Run the batch compiler over the path
-  (let* ([a-path (normalize-path a-path)]
-         [compiled-zo-path (batch-compile a-path)])
+  (let*-values ([(a-path) (normalize-path a-path)]
+                [(compiled-zo-path) (batch-compile a-path)]
+                [(base-dir file dir?) (split-path a-path)])
+    (copy-lib-files base-dir)
     (call-with-input-file compiled-zo-path
       (lambda (ip)
-        (call-with-output-file (make-output-path a-path)
+        (call-with-output-file (make-output-file-path a-path)
           (lambda (op)
-            (fprintf op "var _runtime = require('./../../lib');")
+            (fprintf op "var _runtime = require('./lib');")
             (fprintf op "var program = _runtime.load(~a);" 
                      (jsexp->js (compile-top (zo-parse ip))))
             (fprintf op "_runtime.run(program);"))
