@@ -1,9 +1,9 @@
 var assert = require('assert');
 var runtime = require('./../../lib');
+var control = require('./../../lib/control');
+var types = require('./../../lib/types');
 var sys = require('sys');
 
-
-var jsnums = require('./../../lib/js-numbers');
 
 //////////////////////////////////////////////////////////////////////
 
@@ -20,26 +20,6 @@ var EXIT_ON_FIRST_ERROR = true;
 //////////////////////////////////////////////////////////////////////
 
 
-var makeConstant = function(c) { return {$:'constant', value:c}; };
-
-
-var makeBranch = function(x, y, z) { 
-    var b = {};
-    b['$'] = 'branch';
-    b['test'] = x;
-    b['then'] = y;
-    b['else'] = z;
-    return b;
-};
-
-var makeSeq = function() {
-    return { $: 'seq',
-	     forms: arguments };};
-
-var makeBeg0 = function() {
-    return { $: 'beg0',
-	     seq: arguments };};
-
 
 var makeStateWithConstant = function(c) {
     var s = new runtime.State();
@@ -53,31 +33,39 @@ var makePrefix = function(n) {
     for (var i = 0; i < n; i++) {
 	arr.push(false);
     }
-    return { $: 'prefix',
-	     'num-lifts': 0,
-	     toplevels: arr };
+    return new control.Prefix({numLifts: 0,
+			       toplevels: arr });
 };
-
 
 var makeMod = function(prefix, body) {
-    return { $: 'mod', 
-	     prefix: prefix,
-	     body : body };
+    return new control.ModControl(prefix, body);
 };
 
+var makeConstant = function(c) {
+    return new control.ConstantControl(c);
+};
+
+var makeBranch = function(x, y, z) { 
+    return new control.BranchControl(x, y, z);
+};
+
+var makeSeq = function() {
+    return new control.SeqControl(arguments);
+};
+
+var makeBeg0 = function() {
+    return new control.Beg0Control(arguments);
+};
 
 var makeToplevel = function(depth, pos) {
-    return {$:'toplevel',
-	    depth: depth,
-	    pos: pos};
+    return new control.ToplevelControl(depth, pos);
 };
 
 
 var makeDefValues = function(ids, body) {
-    return {$:"def-values",
-	    ids: ids,
-	    body: body};
+    return new control.DefValuesControl(ids, body);
 };
+
 
 var makeLam = function(arity, closureMap, body) {
     var aClosureMap = [];
@@ -90,104 +78,118 @@ var makeLam = function(arity, closureMap, body) {
     for (var i = 0; i < arity; i++) {
 	aParamTypes.push("val");
     }
-    return {'$':"lam",
-	    'num-params': arity,
-	    'param-types': aParamTypes,
-	    'rest?': false,
-	    'closure-map' : aClosureMap,
-	    'closure-types' : aClosureTypes,
-	    'body': body};	    
+
+    return new control.LamControl({'numParams': arity,
+				   'paramTypes': aParamTypes,
+				   'isRest': false,
+				   'closureMap' : aClosureMap,
+				   'closureTypes' : aClosureTypes,
+				   'body': body});    
 };
+
+
+var makeLamWithRest = function(arity, closureMap, body) {
+    var aClosureMap = [];
+    var aClosureTypes = [];
+    var aParamTypes = [];
+    for (var i = 0; i < closureMap.length; i++) {
+	aClosureMap.push(closureMap[i]);
+	aClosureTypes.push("val/ref");
+    }
+    for (var i = 0; i < arity; i++) {
+	aParamTypes.push("val");
+    }
+
+    return new control.LamControl({'numParams': arity,
+				   'paramTypes': aParamTypes,
+				   'isRest': true,
+				   'closureMap' : aClosureMap,
+				   'closureTypes' : aClosureTypes,
+				   'body': body});    
+};
+
+
+
+
 
 
 var makePrimval = function(name) {
-    return {$: 'primval',
-	    'value': name};
+    return new control.PrimvalControl(name);
 };
+
 
 var makeApplication = function(rator, rands) {
     assert.ok(typeof(rands) === 'object' && rands.length !== undefined);
-    return {$ : 'application',
-	    rator: rator,
-	    rands: rands};
+    return new control.ApplicationControl(rator, rands);
 };
 
 
 var makeLocalRef = function(n) {
-    return {$ : 'localref',
-	    pos: n};
+    return new control.LocalrefControl(n);
 };
 
 
 var makeApplyValues = function(proc, argsExpr) {
-    return {$:'apply-values',
-	    'proc': proc,
-	    'args-expr': argsExpr};
+    return new control.ApplyValuesControl(proc, argsExpr);
 };
+
 
 var makeLet1 = function(rhs, body) {
-    return {$: 'let-one',
-	    rhs : rhs,
-	    body : body};
+    return new control.LetOneControl(rhs, body);
 };
 
+
 var makeLetVoid = function(count, isBoxes, body) {
-    return {$: 'let-void',
-	    count: count,
-	    'boxes?' : isBoxes,
-	    body : body};
+    return new control.LetVoidControl({count: count,
+				       isBoxes : isBoxes,
+				       body : body});
 };
 
 var makeBoxenv = function(pos, body) {
-    return {$: 'boxenv',
-	    pos: pos,
-	    body :body};
+    return new control.BoxenvControl(pos, body);
 };
+
 
 var makeInstallValue = function(count, pos, isBoxes, rhs, body) {
-    return {$: 'install-value',
-	    count: count,
-	    pos: pos,
-	    'boxes?': isBoxes,
-	    rhs: rhs,
-	    body: body};
+    return new control.InstallValueControl({count: count,
+					    pos: pos,
+					    isBoxes: isBoxes,
+					    rhs: rhs,
+					    body: body});
+
 };
+
 
 var makeWithContMark = function(key, val, body) {
-    return {$: "with-cont-mark",
-	    key: key,
-	    val: val,
-	    body: body};
+    return new control.WithContMarkControl(key, val, body);
 };
+
 
 var makeAssign = function(id, rhs, isUndefOk) {
-    return {$: "assign",
-	    id: id,
-	    rhs: rhs,
-	    "undef-ok?": isUndefOk};
+    return new control.AssignControl({id: id,
+				      rhs: rhs,
+				      isUndefOk: isUndefOk});
 };
+
   
 var makeVarref = function(aToplevel) {
-    return {$: "varref",
-	    toplevel: aToplevel};
+    return new control.VarrefControl(aToplevel);
 };
+
 
 var makeClosure = function(genId) {
-    return {$: 'closure',
-	    'gen-id': genId };
+    return new control.ClosureControl(genId);
 };
 
-var makeCaseLam = function(name, lams) {
-    assert.ok(typeof(lams) === 'object' && lams.length !== undefined);
-    return {$: 'case-lam',
-	    clauses: lams};
+
+var makeCaseLam = function(name, clauses) {
+    assert.ok(typeof(clauses) === 'object' && clauses.length !== undefined);
+    return new control.CaseLamControl(name, clauses);
 };
 
 
 var makeLetrec = function(procs, body) {
-    return {$: 'let-rec',
-	    procs: procs,
-	    body: body};
+    return new control.LetRecControl(procs, body);
 };
 
 
@@ -336,7 +338,7 @@ runTest("module prefix",
 				      []));
 	    run(state);   
 	    assert.equal(1, state.vstack.length);
-	    assert.ok(state.vstack[0] instanceof runtime.Prefix);
+	    assert.ok(state.vstack[0] instanceof types.PrefixValue);
 	    assert.equal(state.vstack[0].length(), 3);
 	});
 
@@ -402,7 +404,7 @@ runTest("lambda",
 	    // result should be a lambda.
 	    assert.ok(result instanceof runtime.ClosureValue);
 	    assert.equal(result.closureVals.length, 1);
-	    assert.ok(result.closureVals[0] instanceof runtime.Prefix);
+	    assert.ok(result.closureVals[0] instanceof types.PrefixValue);
 	    assert.deepEqual(result.body, makeConstant("I'm a body"));
 	    assert.equal(result.numParams, 3);
 	});
@@ -442,17 +444,10 @@ runTest("Primval on *",
 runTest("My own list function",
 	function() {
 	    var state = new runtime.State();
-	    state.pushControl(makeApplication
-			      ( {'$' : "lam",
-				      'num-params': 0,
-				      'param-types': [],
-				      'rest?': true,
-				      'closure-map' : [],
-				      'closure-types' : [],
-				      'body': makeLocalRef(0)},
-				  [makeConstant("one"),
-				   makeConstant("two"),
-				   makeConstant("three")]));
+	    state.pushControl(makeApplication(makeLamWithRest(0, [], makeLocalRef(0)),
+					      [makeConstant("one"),
+					       makeConstant("two"),
+					       makeConstant("three")]))
 	    var result = run(state);
 	    assert.deepEqual(result,
 			     runtime.list(["one", "two", "three"]));
@@ -835,7 +830,7 @@ runTest("current-inexact-milliseconds",
 		state.pushControl(makeApplication(
 		    makePrimval("current-inexact-milliseconds"),[]));
 		var result2 = run(state);
-		assert.ok(jsnums.lessThanOrEqual(result1, result2));
+		assert.ok(runtime.lessThanOrEqual(result1, result2));
 	    }
 	});
 
@@ -857,7 +852,7 @@ runTest("values with def-values",
 				 makeConstant("world")])));
 	    run(state);
 	    assert.equal(state.vstack.length, 1);
-	    assert.ok(state.vstack[0] instanceof runtime.Prefix);
+	    assert.ok(state.vstack[0] instanceof types.PrefixValue);
 	    assert.equal(state.vstack[0].ref(0), "hello");
 	    assert.equal(state.vstack[0].ref(1), "world");
 	});
@@ -1139,7 +1134,7 @@ runTest("with-cont-mark",
 	    }
 	    assert.equal(state.cstack.length, 2);
 	    assert.ok(state.cstack[0] instanceof 
-		      runtime.ContMarkRecordControl);
+		      control.ContMarkRecordControl);
 	    assert.equal(state.cstack[0].dict['x'],
 			 "42");
 	    var result = run(state);
