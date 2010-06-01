@@ -25,8 +25,9 @@
 ;; copy-lib-files: path -> void
 ;; copy the files in lib to the directory.
 (define (copy-lib-files a-dir)
-  (unless (directory-exists?  (build-path a-dir "lib"))
-    (copy-directory/files lib-directory (build-path a-dir "lib"))))
+  (when (directory-exists? (build-path a-dir "lib"))
+    (delete-directory/files (build-path a-dir "lib")))
+  (copy-directory/files lib-directory (build-path a-dir "lib")))
         
                
 

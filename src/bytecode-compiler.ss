@@ -406,7 +406,7 @@
     [(struct let-void (count boxes? body))
      (make-ht 'let-void 
               `((count ,(make-int count))
-                (boxes ,(make-lit boxes?))
+                (boxes? ,(make-lit boxes?))
                 (body ,(compile-at-expression-position body))))]))
              
 
