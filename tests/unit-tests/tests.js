@@ -670,6 +670,9 @@ runTest("closure application, testing tail calls with even/odd",
 
 
 
+/********************************
+ *** Primitive Function Tests ***
+ ********************************/
 
 
 runTest("zero?",
@@ -693,8 +696,259 @@ runTest("sub1",
 	    state.pushControl(makeApplication(makePrimval("sub1"),
 					      [makeConstant(runtime.rational(25))]));
 	    assert.deepEqual(run(state), runtime.rational(24));
+
+	    state.pushControl(makeApplication(makePrimval("sub1"),
+			    		      [makeConstant(runtime.complex(3, 5))]));
+	    assert.deepEqual(run(state), runtime.complex(2, 5));
 	});
 
+
+runTest("add1",
+	function() {
+	    var state = new runtime.State();
+	    state.pushControl(makeApplication(makePrimval("add1"),
+					      [makeConstant(runtime.rational(25))]));
+	    assert.deepEqual(run(state), runtime.rational(26));
+
+	    state.pushControl(makeApplication(makePrimval("add1"),
+			    		      [makeConstant(runtime.complex(3, 5))]));
+	    assert.deepEqual(run(state), runtime.complex(4, 5));
+	});
+
+
+runTest("+",
+	function() {
+	    var state = new runtime.State();
+	    state.pushControl(makeApplication(makePrimval('+'), []));
+	    assert.deepEqual(run(state), runtime.rational(0));
+
+	    state.pushControl(makeApplication(makePrimval('+'),
+			    		      [makeConstant(runtime.rational(2))]));
+	    assert.deepEqual(run(state), runtime.rational(2));
+
+	    state.pushControl(makeApplication(makePrimval('+'),
+			    		      [makeConstant(runtime.rational(1)),
+					       makeConstant(runtime.rational(2))]));
+	    assert.deepEqual(run(state), runtime.rational(3));
+
+	    state.pushControl(makeApplication(makePrimval('+'),
+			    		      [makeConstant(runtime.rational(1)),
+					       makeConstant(runtime.rational(2)),
+					       makeConstant(runtime.rational(3)),
+					       makeConstant(runtime.rational(4))]));
+	    assert.deepEqual(run(state), runtime.rational(10));
+	});
+
+
+runTest("-",
+	function() {
+	    var state = new runtime.State();
+	    state.pushControl(makeApplication(makePrimval('-'),
+			    		      [makeConstant(runtime.rational(2))]));
+	    assert.deepEqual(run(state), runtime.rational(-2));
+
+	    state.pushControl(makeApplication(makePrimval('-'),
+			    		      [makeConstant(runtime.rational(1)),
+					       makeConstant(runtime.rational(2))]));
+	    assert.deepEqual(run(state), runtime.rational(-1));
+
+	    state.pushControl(makeApplication(makePrimval('-'),
+			    		      [makeConstant(runtime.rational(1)),
+					       makeConstant(runtime.rational(2)),
+					       makeConstant(runtime.rational(3)),
+					       makeConstant(runtime.rational(4))]));
+	    assert.deepEqual(run(state), runtime.rational(-8));
+	});
+
+
+runTest("*",
+	function() {
+	    var state = new runtime.State();
+	    state.pushControl(makeApplication(makePrimval('*'), []));
+	    assert.deepEqual(run(state), runtime.rational(1));
+
+	    state.pushControl(makeApplication(makePrimval('*'),
+			    		      [makeConstant(runtime.rational(2))]));
+	    assert.deepEqual(run(state), runtime.rational(2));
+
+	    state.pushControl(makeApplication(makePrimval('*'),
+			    		      [makeConstant(runtime.rational(1)),
+					       makeConstant(runtime.rational(2))]));
+	    assert.deepEqual(run(state), runtime.rational(2));
+
+	    state.pushControl(makeApplication(makePrimval('*'),
+			    		      [makeConstant(runtime.rational(1)),
+					       makeConstant(runtime.rational(2)),
+					       makeConstant(runtime.rational(3)),
+					       makeConstant(runtime.rational(4))]));
+	    assert.deepEqual(run(state), runtime.rational(24));
+	});
+
+
+runTest("/",
+	function() {
+	    var state = new runtime.State();
+	    state.pushControl(makeApplication(makePrimval('/'),
+			    		      [makeConstant(runtime.rational(2))]));
+	    assert.deepEqual(run(state), runtime.rational(1, 2));
+
+	    state.pushControl(makeApplication(makePrimval('/'),
+			    		      [makeConstant(runtime.rational(1)),
+					       makeConstant(runtime.rational(3))]));
+	    assert.deepEqual(run(state), runtime.rational(1, 3));
+
+	    state.pushControl(makeApplication(makePrimval('/'),
+			    		      [makeConstant(runtime.rational(18)),
+					       makeConstant(runtime.rational(2)),
+					       makeConstant(runtime.rational(3)),
+					       makeConstant(runtime.rational(4))]));
+	    assert.deepEqual(run(state), runtime.rational(3, 4));
+	});
+
+
+runTest('abs',
+	function() {
+	    var state = new runtime.State();
+	    state.pushControl(makeApplication(makePrimval('abs'),
+			    		      [makeConstant(runtime.rational(2))]));
+	    assert.deepEqual(run(state), runtime.rational(2));
+
+	    state.pushControl(makeApplication(makePrimval('abs'),
+			    		      [makeConstant(runtime.rational(-2))]));
+	    assert.deepEqual(run(state), runtime.rational(2));
+	});
+
+/*
+runTest('quotient',
+	function() {
+	    var state = new runtime.State();
+	    state.pushControl(makeApplication(makePrimval('quotient'),
+			    		      [makeConstant(runtime.rational(5)),
+					       makeConstant(runtime.rational(3))]));
+	    assert.deepEqual(run(state), runtime.rational(1));
+	});
+
+
+runTest('remainder',
+	function() {
+	    var state = new runtime.State();
+	    state.pushControl(makeApplication(makePrimval('remainder'),
+			    		      [makeConstant(runtime.rational(5)),
+					       makeConstant(runtime.rational(3))]));
+	    assert.deepEqual(run(state), runtime.rational(2));
+	});
+*/
+
+runTest('modulo',
+	function() {
+	    var state = new runtime.State();
+	    state.pushControl(makeApplication(makePrimval('modulo'),
+			    		      [makeConstant(runtime.rational(-5)),
+					       makeConstant(runtime.rational(3))]));
+	    assert.deepEqual(run(state), runtime.rational(1));
+	});
+
+
+runTest('=',
+	function() {
+	    var state = new runtime.State();
+	    var isEqual = function(nums) {
+	    	var args = [];
+		for(var i = 0; i < nums.length; i++) {
+			args.push(makeConstant(runtime.rational(nums[i])));
+		}
+	    	state.pushControl(makeApplication(makePrimval('='), args));
+		return run(state);
+	    }
+
+	    assert.deepEqual(isEqual([2, 3]), false);
+	    assert.deepEqual(isEqual([2, 2, 2, 2]), true);
+	    assert.deepEqual(isEqual([2, 2, 3, 3]), false);
+	});
+
+
+runTest('<',
+	function() {
+	    var state = new runtime.State();
+	    var isLT = function(nums) {
+	    	var args = [];
+		for(var i = 0; i < nums.length; i++) {
+			args.push(makeConstant(runtime.rational(nums[i])));
+		}
+	    	state.pushControl(makeApplication(makePrimval('<'), args));
+		return run(state);
+	    }
+
+	    assert.deepEqual(isLT([1, 2]), true);
+	    assert.deepEqual(isLT([2, 2]), false);
+	    assert.deepEqual(isLT([3, 2]), false);
+	    assert.deepEqual(isLT([1, 2, 3, 4]), true);
+	    assert.deepEqual(isLT([1, 2, 2, 3]), false);
+	    assert.deepEqual(isLT([1, 3, 5, 4]), false);
+	});
+
+
+runTest('>',
+	function() {
+	    var state = new runtime.State();
+	    var isGT = function(nums) {
+	    	var args = [];
+		for(var i = 0; i < nums.length; i++) {
+			args.push(makeConstant(runtime.rational(nums[i])));
+		}
+	    	state.pushControl(makeApplication(makePrimval('>'), args));
+		return run(state);
+	    }
+
+	    assert.deepEqual(isGT([1, 2]), false);
+	    assert.deepEqual(isGT([2, 2]), false);
+	    assert.deepEqual(isGT([3, 2]), true);
+	    assert.deepEqual(isGT([4, 3, 2, 1]), true);
+	    assert.deepEqual(isGT([4, 3, 3, 2]), false);
+	    assert.deepEqual(isGT([4, 3, 5, 2]), false);
+	});
+
+
+runTest('<=',
+	function() {
+	    var state = new runtime.State();
+	    var isLTE = function(nums) {
+	    	var args = [];
+		for(var i = 0; i < nums.length; i++) {
+			args.push(makeConstant(runtime.rational(nums[i])));
+		}
+	    	state.pushControl(makeApplication(makePrimval('<='), args));
+		return run(state);
+	    }
+
+	    assert.deepEqual(isLTE([1, 2]), true);
+	    assert.deepEqual(isLTE([2, 2]), true);
+	    assert.deepEqual(isLTE([3, 2]), false);
+	    assert.deepEqual(isLTE([1, 2, 3, 4]), true);
+	    assert.deepEqual(isLTE([2, 3, 3, 3]), true);
+	    assert.deepEqual(isLTE([1, 3, 5, 4]), false);
+	});
+
+
+runTest('>=',
+	function() {
+	    var state = new runtime.State();
+	    var isGTE = function(nums) {
+	    	var args = [];
+		for(var i = 0; i < nums.length; i++) {
+			args.push(makeConstant(runtime.rational(nums[i])));
+		}
+	    	state.pushControl(makeApplication(makePrimval('>='), args));
+		return run(state);
+	    }
+
+	    assert.deepEqual(isGTE([1, 2]), false);
+	    assert.deepEqual(isGTE([2, 2]), true);
+	    assert.deepEqual(isGTE([3, 2]), true);
+	    assert.deepEqual(isGTE([4, 3, 2, 1]), true);
+	    assert.deepEqual(isGTE([4, 3, 3, 2]), true);
+	    assert.deepEqual(isGTE([5, 3, 5, 4]), false);
+	});
 
 
 runTest("factorial",
