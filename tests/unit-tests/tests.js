@@ -193,6 +193,31 @@ var makeLetrec = function(procs, body) {
 };
 
 
+/////////////////////////////////////////////////////////////////////
+
+
+var testPrim = function(funName, baseArgs, expectedValue) {
+	var state = new runtime.State();
+	var args = [];
+	for (var i = 0; i < baseArgs.length; i++) {
+		args.push(makeConstant(baseArgs[i]));
+	}
+	state.pushControl(makeApplication(makePrimval(funName), args));
+	assert.deepEqual(run(state), expectedValue);
+}
+
+var testNumPrim = function(funName, baseArgs, expectedValue) {
+	var state = new runtime.State();
+	var args = [];
+	for (var i = 0; i < baseArgs.length; i++) {
+		args.push(makeConstant(runtime.rational(baseArgs[i])));
+	}
+	state.pushControl(makeApplication(makePrimval(funName), args));
+	assert.deepEqual(run(state), expectedValue);
+}
+
+
+
 //////////////////////////////////////////////////////////////////////
 
 var runTest = function(name, thunk) {
@@ -670,285 +695,281 @@ runTest("closure application, testing tail calls with even/odd",
 
 
 
-/********************************
- *** Primitive Function Tests ***
- ********************************/
+/*************************************
+ *** Primitive Math Function Tests ***
+ *************************************/
 
 
 runTest("zero?",
 	function() {
-	    var state = new runtime.State();
-	    state.pushControl(makeApplication(makePrimval("zero?"),
-					      [makeConstant(runtime.rational(0))]));
-	    assert.deepEqual(run(state), true);
-
-	    state.pushControl(makeApplication(makePrimval("zero?"),
-					      [makeConstant(runtime.rational(1))]));
-	    assert.deepEqual(run(state), false);
-	    
+		testNumPrim('zero?', [0], true);
+		testNumPrim('zero?', [1], false);
+		testPrim('zero?', [runtime.complex(0, 1)], false);
 	});
 
 
 
 runTest("sub1",
 	function() {
-	    var state = new runtime.State();
-	    state.pushControl(makeApplication(makePrimval("sub1"),
-					      [makeConstant(runtime.rational(25))]));
-	    assert.deepEqual(run(state), runtime.rational(24));
-
-	    state.pushControl(makeApplication(makePrimval("sub1"),
-			    		      [makeConstant(runtime.complex(3, 5))]));
-	    assert.deepEqual(run(state), runtime.complex(2, 5));
+		testNumPrim('sub1', [25], runtime.rational(24));
+		testPrim('sub1', [runtime.complex(3, 5)], runtime.complex(2, 5));
 	});
 
 
 runTest("add1",
 	function() {
-	    var state = new runtime.State();
-	    state.pushControl(makeApplication(makePrimval("add1"),
-					      [makeConstant(runtime.rational(25))]));
-	    assert.deepEqual(run(state), runtime.rational(26));
-
-	    state.pushControl(makeApplication(makePrimval("add1"),
-			    		      [makeConstant(runtime.complex(3, 5))]));
-	    assert.deepEqual(run(state), runtime.complex(4, 5));
+		testNumPrim('add1', [25], runtime.rational(26));
+		testPrim('add1', [runtime.complex(3, 5)], runtime.complex(4, 5));
 	});
 
 
 runTest("+",
 	function() {
-	    var state = new runtime.State();
-	    state.pushControl(makeApplication(makePrimval('+'), []));
-	    assert.deepEqual(run(state), runtime.rational(0));
-
-	    state.pushControl(makeApplication(makePrimval('+'),
-			    		      [makeConstant(runtime.rational(2))]));
-	    assert.deepEqual(run(state), runtime.rational(2));
-
-	    state.pushControl(makeApplication(makePrimval('+'),
-			    		      [makeConstant(runtime.rational(1)),
-					       makeConstant(runtime.rational(2))]));
-	    assert.deepEqual(run(state), runtime.rational(3));
-
-	    state.pushControl(makeApplication(makePrimval('+'),
-			    		      [makeConstant(runtime.rational(1)),
-					       makeConstant(runtime.rational(2)),
-					       makeConstant(runtime.rational(3)),
-					       makeConstant(runtime.rational(4))]));
-	    assert.deepEqual(run(state), runtime.rational(10));
+		testNumPrim('+', [], runtime.rational(0));
+		testNumPrim('+', [2], runtime.rational(2));
+		testNumPrim('+', [1, 2], runtime.rational(3));
+		testNumPrim('+', [1, 2, 3, 4], runtime.rational(10));
 	});
 
 
 runTest("-",
 	function() {
-	    var state = new runtime.State();
-	    state.pushControl(makeApplication(makePrimval('-'),
-			    		      [makeConstant(runtime.rational(2))]));
-	    assert.deepEqual(run(state), runtime.rational(-2));
-
-	    state.pushControl(makeApplication(makePrimval('-'),
-			    		      [makeConstant(runtime.rational(1)),
-					       makeConstant(runtime.rational(2))]));
-	    assert.deepEqual(run(state), runtime.rational(-1));
-
-	    state.pushControl(makeApplication(makePrimval('-'),
-			    		      [makeConstant(runtime.rational(1)),
-					       makeConstant(runtime.rational(2)),
-					       makeConstant(runtime.rational(3)),
-					       makeConstant(runtime.rational(4))]));
-	    assert.deepEqual(run(state), runtime.rational(-8));
+		testNumPrim('-', [2], runtime.rational(-2));
+		testNumPrim('-', [1, 2], runtime.rational(-1));
+		testNumPrim('-', [1, 2, 3, 4], runtime.rational(-8));
 	});
 
 
 runTest("*",
 	function() {
-	    var state = new runtime.State();
-	    state.pushControl(makeApplication(makePrimval('*'), []));
-	    assert.deepEqual(run(state), runtime.rational(1));
-
-	    state.pushControl(makeApplication(makePrimval('*'),
-			    		      [makeConstant(runtime.rational(2))]));
-	    assert.deepEqual(run(state), runtime.rational(2));
-
-	    state.pushControl(makeApplication(makePrimval('*'),
-			    		      [makeConstant(runtime.rational(1)),
-					       makeConstant(runtime.rational(2))]));
-	    assert.deepEqual(run(state), runtime.rational(2));
-
-	    state.pushControl(makeApplication(makePrimval('*'),
-			    		      [makeConstant(runtime.rational(1)),
-					       makeConstant(runtime.rational(2)),
-					       makeConstant(runtime.rational(3)),
-					       makeConstant(runtime.rational(4))]));
-	    assert.deepEqual(run(state), runtime.rational(24));
+		testNumPrim('*', [], runtime.rational(1));
+		testNumPrim('*', [2], runtime.rational(2));
+		testNumPrim('*', [1, 2], runtime.rational(2));
+		testNumPrim('*', [1, 2, 3, 4], runtime.rational(24));
 	});
 
 
 runTest("/",
 	function() {
-	    var state = new runtime.State();
-	    state.pushControl(makeApplication(makePrimval('/'),
-			    		      [makeConstant(runtime.rational(2))]));
-	    assert.deepEqual(run(state), runtime.rational(1, 2));
-
-	    state.pushControl(makeApplication(makePrimval('/'),
-			    		      [makeConstant(runtime.rational(1)),
-					       makeConstant(runtime.rational(3))]));
-	    assert.deepEqual(run(state), runtime.rational(1, 3));
-
-	    state.pushControl(makeApplication(makePrimval('/'),
-			    		      [makeConstant(runtime.rational(18)),
-					       makeConstant(runtime.rational(2)),
-					       makeConstant(runtime.rational(3)),
-					       makeConstant(runtime.rational(4))]));
-	    assert.deepEqual(run(state), runtime.rational(3, 4));
+		testNumPrim('/', [2], runtime.rational(1, 2));
+		testNumPrim('/', [1, 3], runtime.rational(1, 3));
+		testNumPrim('/', [18, 2, 3, 4], runtime.rational(3, 4));
 	});
 
 
 runTest('abs',
 	function() {
-	    var state = new runtime.State();
-	    state.pushControl(makeApplication(makePrimval('abs'),
-			    		      [makeConstant(runtime.rational(2))]));
-	    assert.deepEqual(run(state), runtime.rational(2));
-
-	    state.pushControl(makeApplication(makePrimval('abs'),
-			    		      [makeConstant(runtime.rational(-2))]));
-	    assert.deepEqual(run(state), runtime.rational(2));
+		testNumPrim('abs', [2], runtime.rational(2));
+		testNumPrim('abs', [0], runtime.rational(0));
+		testNumPrim('abs', [-2], runtime.rational(2));
 	});
 
 /*
 runTest('quotient',
 	function() {
-	    var state = new runtime.State();
-	    state.pushControl(makeApplication(makePrimval('quotient'),
-			    		      [makeConstant(runtime.rational(5)),
-					       makeConstant(runtime.rational(3))]));
-	    assert.deepEqual(run(state), runtime.rational(1));
+	    testNumPrim('quotient', [5, 3], runtime.rational(1));
 	});
 
 
 runTest('remainder',
 	function() {
-	    var state = new runtime.State();
-	    state.pushControl(makeApplication(makePrimval('remainder'),
-			    		      [makeConstant(runtime.rational(5)),
-					       makeConstant(runtime.rational(3))]));
-	    assert.deepEqual(run(state), runtime.rational(2));
+	    testNumPrim('remainder', [5, 3], runtime.rational(2));
 	});
 */
 
 runTest('modulo',
 	function() {
-	    var state = new runtime.State();
-	    state.pushControl(makeApplication(makePrimval('modulo'),
-			    		      [makeConstant(runtime.rational(-5)),
-					       makeConstant(runtime.rational(3))]));
-	    assert.deepEqual(run(state), runtime.rational(1));
+	    testNumPrim('modulo', [-5, 3], runtime.rational(1));
 	});
 
 
 runTest('=',
 	function() {
-	    var state = new runtime.State();
-	    var isEqual = function(nums) {
-	    	var args = [];
-		for(var i = 0; i < nums.length; i++) {
-			args.push(makeConstant(runtime.rational(nums[i])));
-		}
-	    	state.pushControl(makeApplication(makePrimval('='), args));
-		return run(state);
-	    }
-
-	    assert.deepEqual(isEqual([2, 3]), false);
-	    assert.deepEqual(isEqual([2, 2, 2, 2]), true);
-	    assert.deepEqual(isEqual([2, 2, 3, 3]), false);
+	    testNumPrim('=', [2, 3], false);
+	    testNumPrim('=', [2, 2, 2, 2], true);
+	    testNumPrim('=', [2, 2, 3, 3], false);
 	});
 
 
 runTest('<',
 	function() {
-	    var state = new runtime.State();
-	    var isLT = function(nums) {
-	    	var args = [];
-		for(var i = 0; i < nums.length; i++) {
-			args.push(makeConstant(runtime.rational(nums[i])));
-		}
-	    	state.pushControl(makeApplication(makePrimval('<'), args));
-		return run(state);
-	    }
-
-	    assert.deepEqual(isLT([1, 2]), true);
-	    assert.deepEqual(isLT([2, 2]), false);
-	    assert.deepEqual(isLT([3, 2]), false);
-	    assert.deepEqual(isLT([1, 2, 3, 4]), true);
-	    assert.deepEqual(isLT([1, 2, 2, 3]), false);
-	    assert.deepEqual(isLT([1, 3, 5, 4]), false);
+	    testNumPrim('<', [1, 2], true);
+	    testNumPrim('<', [2, 2], false);
+	    testNumPrim('<', [3, 2], false);
+	    testNumPrim('<', [1, 2, 3, 4], true);
+	    testNumPrim('<', [1, 2, 2, 3], false);
+	    testNumPrim('<', [1, 3, 5, 4], false);
 	});
 
 
 runTest('>',
 	function() {
-	    var state = new runtime.State();
-	    var isGT = function(nums) {
-	    	var args = [];
-		for(var i = 0; i < nums.length; i++) {
-			args.push(makeConstant(runtime.rational(nums[i])));
-		}
-	    	state.pushControl(makeApplication(makePrimval('>'), args));
-		return run(state);
-	    }
-
-	    assert.deepEqual(isGT([1, 2]), false);
-	    assert.deepEqual(isGT([2, 2]), false);
-	    assert.deepEqual(isGT([3, 2]), true);
-	    assert.deepEqual(isGT([4, 3, 2, 1]), true);
-	    assert.deepEqual(isGT([4, 3, 3, 2]), false);
-	    assert.deepEqual(isGT([4, 3, 5, 2]), false);
+	    testNumPrim('>', [1, 2], false);
+	    testNumPrim('>', [2, 2], false);
+	    testNumPrim('>', [3, 2], true);
+	    testNumPrim('>', [4, 3, 2, 1], true);
+	    testNumPrim('>', [4, 3, 3, 2], false);
+	    testNumPrim('>', [4, 3, 5, 2], false);
 	});
 
 
 runTest('<=',
 	function() {
-	    var state = new runtime.State();
-	    var isLTE = function(nums) {
-	    	var args = [];
-		for(var i = 0; i < nums.length; i++) {
-			args.push(makeConstant(runtime.rational(nums[i])));
-		}
-	    	state.pushControl(makeApplication(makePrimval('<='), args));
-		return run(state);
-	    }
-
-	    assert.deepEqual(isLTE([1, 2]), true);
-	    assert.deepEqual(isLTE([2, 2]), true);
-	    assert.deepEqual(isLTE([3, 2]), false);
-	    assert.deepEqual(isLTE([1, 2, 3, 4]), true);
-	    assert.deepEqual(isLTE([2, 3, 3, 3]), true);
-	    assert.deepEqual(isLTE([1, 3, 5, 4]), false);
+	    testNumPrim('<=', [1, 2], true);
+	    testNumPrim('<=', [2, 2], true);
+	    testNumPrim('<=', [3, 2], false);
+	    testNumPrim('<=', [1, 2, 3, 4], true);
+	    testNumPrim('<=', [2, 3, 3, 3], true);
+	    testNumPrim('<=', [1, 3, 5, 4], false);
 	});
 
 
 runTest('>=',
 	function() {
-	    var state = new runtime.State();
-	    var isGTE = function(nums) {
-	    	var args = [];
-		for(var i = 0; i < nums.length; i++) {
-			args.push(makeConstant(runtime.rational(nums[i])));
-		}
-	    	state.pushControl(makeApplication(makePrimval('>='), args));
-		return run(state);
-	    }
-
-	    assert.deepEqual(isGTE([1, 2]), false);
-	    assert.deepEqual(isGTE([2, 2]), true);
-	    assert.deepEqual(isGTE([3, 2]), true);
-	    assert.deepEqual(isGTE([4, 3, 2, 1]), true);
-	    assert.deepEqual(isGTE([4, 3, 3, 2]), true);
-	    assert.deepEqual(isGTE([5, 3, 5, 4]), false);
+	    testNumPrim('>=', [1, 2], false);
+	    testNumPrim('>=', [2, 2], true);
+	    testNumPrim('>=', [3, 2], true);
+	    testNumPrim('>=', [4, 3, 2, 1], true);
+	    testNumPrim('>=', [4, 3, 3, 2], true);
+	    testNumPrim('>=', [5, 3, 5, 4], false);
 	});
+
+
+runTest('positive?',
+	function() {
+		testNumPrim('positive?', [-1], false);
+		testNumPrim('positive?', [0], false);
+		testNumPrim('positive?', [1], true);
+	});
+
+
+runTest('negative?',
+	function() {
+		testNumPrim('negative?', [-1], true);
+		testNumPrim('negative?', [0], false);
+		testNumPrim('negative?', [1], false);
+	});
+
+
+runTest('max',
+	function() {
+		testNumPrim('max', [1], runtime.rational(1));
+		testNumPrim('max', [1, 2], runtime.rational(2));
+		testNumPrim('max', [2, 1, 4, 3, 6, 2], runtime.rational(6));
+	});
+
+
+runTest('min',
+	function() {
+		testNumPrim('min', [1], runtime.rational(1));
+		testNumPrim('min', [1, 2], runtime.rational(1));
+		testNumPrim('min', [2, 1, 4, 3, 6, 2], runtime.rational(1));
+	});
+
+
+
+/*************************************
+ *** Primitive List Function Tests ***
+ *************************************/
+
+
+runTest('cons, car, and cdr',
+	function() {
+		var state = new runtime.State();
+		state.pushControl(makeApplication(makePrimval('car'),
+						  [makeApplication(makePrimval('cons'),
+							 	   [makeConstant(runtime.rational(1)),
+								    makeConstant(runtime.EMPTY)])]));
+		assert.deepEqual(run(state), runtime.rational(1));
+
+		state.pushControl(makeApplication(makePrimval('cdr'),
+						  [makeApplication(makePrimval('cons'),
+							  	   [makeConstant(runtime.rational(1)),
+								    makeConstant(runtime.EMPTY)])]));
+		assert.deepEqual(run(state), runtime.EMPTY);
+
+		state.pushControl(makeApplication(makePrimval('cdr'),
+						  [makeApplication(makePrimval('cons'),
+							[makeConstant(runtime.rational(1)),
+							 makeApplication(makePrimval('cons'),
+								[makeConstant(runtime.rational(2)),
+								 makeConstant(runtime.EMPTY)])])]));
+		assert.deepEqual(run(state), runtime.pair(2, runtime.EMPTY));
+	});
+
+
+runTest('list?',
+	function() {
+		testPrim('list?', [runtime.EMPTY], true);
+		testPrim('list?', [runtime.pair(1, runtime.EMPTY)], true);
+		testPrim('list?', [runtime.list([1, 2, 0, 3, 2])], true);
+		testPrim('list?', [runtime.complex(0, 2)], false);
+	});
+
+
+runTest('list',
+	function() {
+		testNumPrim('list', [], runtime.EMPTY);
+		testNumPrim('list', [1], runtime.pair(runtime.rational(1), runtime.EMPTY));
+		testNumPrim('list', [1, 5, 3], runtime.list([runtime.rational(1),
+							     runtime.rational(5),
+							     runtime.rational(3)]));
+	});
+
+
+runTest('list*',
+	function() {
+		testPrim('list*', [runtime.EMPTY], runtime.EMPTY);
+		testPrim('list*', [runtime.rational(1), runtime.pair(runtime.rational(2), runtime.EMPTY)],
+			 runtime.list([runtime.rational(1), runtime.rational(2)]));
+		testPrim('list*', [runtime.rational(1), runtime.rational(2), runtime.rational(3),
+				   runtime.list([runtime.rational(4), runtime.rational(5)])],
+			  runtime.list([runtime.rational(1),
+					runtime.rational(2),
+					runtime.rational(3),
+					runtime.rational(4),
+					runtime.rational(5)]));
+	});
+
+
+runTest('length',
+	function() {
+		testPrim('length', [runtime.EMPTY], 0);
+		testPrim('length', [runtime.list([1])], 1);
+		testPrim('length', [runtime.list([1, 2, 3, 4])], 4);
+	});
+
+
+runTest('append',
+	function() {
+		testPrim('append', [], runtime.EMPTY);
+		testPrim('append', [runtime.list([1])], runtime.list([1]));
+		testPrim('append', [runtime.EMPTY, runtime.list([1, 2, 3]), runtime.list([1, 2])],
+			 runtime.list([1, 2, 3, 1, 2]));
+	});
+
+
+runTest('reverse',
+	function() {
+		testPrim('reverse', [runtime.EMPTY], runtime.EMPTY);
+		testPrim('reverse', [runtime.list([1])], runtime.list([1]));
+		testPrim('reverse', [runtime.list([1, 2, 3, 4, 5])], runtime.list([5, 4, 3, 2, 1]));
+	});
+
+
+runTest('list-ref',
+	function() {
+		var testList = runtime.list([runtime.rational(1),
+					     runtime.rational(1),
+					     runtime.rational(2),
+					     runtime.rational(3),
+					     runtime.rational(5),
+					     runtime.rational(8),
+					     runtime.rational(11)]);
+		testPrim('list-ref', [testList, runtime.rational(0)], runtime.rational(1));
+		testPrim('list-ref', [testList, runtime.rational(5)], runtime.rational(8));
+	});
+
 
 
 runTest("factorial",
@@ -1204,7 +1225,7 @@ runTest("let-void, no boxes",
 	    }
 	    assert.equal(state.vstack.length, 2);
 	    for(var i = 0; i < state.vstack.length; i++) {
-		assert.ok(state.vstack[i] instanceof runtime.UndefinedValue);
+		assert.ok(state.vstack[i] === runtime.UNDEFINED);
 	    }
 	    var result = run(state);
 	    assert.equal(result, "blah");
