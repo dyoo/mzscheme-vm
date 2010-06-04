@@ -283,24 +283,24 @@
 
 (define (translate-module-rename a-module-rename)
   (match a-module-rename
-    [(struct internal:module-rename (phase kind set-id unmarshals renames makr-renames plus-kern?))
+    [(struct internal:module-rename (phase kind set-id unmarshals renames mark-renames plus-kern?))
      (make-module-rename phase kind set-id 
-                         (map translate-make-all-from-module unmarshals)
+                         (map translate-all-from-module unmarshals)
                          (map translate-module-binding renames)
                          mark-renames
                          plus-kern?)]))
 
-(define (translate-make-all-from-module an-all-from-module)
+(define (translate-all-from-module an-all-from-module)
   (match an-all-from-module
-    [(struct internal:make-all-from-module (path phase src-phase exceptions prefix))
-     (make-make-all-from-module path phase src-phase exceptions prefix)]))
+    [(struct internal:all-from-module (path phase src-phase exceptions prefix))
+     (make-all-from-module path phase src-phase exceptions prefix)]))
     
 
 (define (translate-module-binding a-module-binding)
   (match a-module-binding
     [(? internal:simple-module-binding?)
      (translate-simple-module-binding a-module-binding)]
-    [(? internal:phased-module-binding (path phase export-name nominal-path nominal-export-name))
+    [(? internal:phased-module-binding?)
      (translate-phased-module-binding a-module-binding)]
     [(? internal:exported-nominal-module-binding?)
      (translate-exported-nominal-module-binding a-module-binding)]
@@ -311,13 +311,20 @@
 
 (define (translate-simple-module-binding a-simple-module-binding)
   (match a-simple-module-binding
-    [(struct internal:simple-module-binding path)
+    [(struct internal:simple-module-binding (path))
      (make-simple-module-binding path)]))
+
 
 (define (translate-phased-module-binding a-binding)
   (match a-binding
     [(struct internal:phased-module-binding (path phase export-name nominal-path nominal-export-name))
+     (make-phased-module-binding path phase export-name (translate-nominal-path nominal-path) nominal-export-name)]))
      
+
+(define (translate-nominal-module-binding a-binding)
+  (match a-binding
+    [(struct internal:nominal-module-binding (path nominal-path))
+     (make-nominal-module-binding path (translate-nominal-path nominal-path))]))
 
 
 (define (translate-exported-nominal-module-binding a-module-binding)
@@ -326,6 +333,10 @@
      (make-exported-nominal-module-binding path export-name (translate-nominal-path nominal-path) nominal-export-name)]))
 
 
+(define (translate-exported-module-binding a-module-binding)
+  (match a-module-binding
+    [(struct internal:exported-module-binding (path export-name))
+     (make-exported-module-binding path export-name)]))
 
 (define (translate-module-variable a-module-variable)
   (match a-module-variable
@@ -336,6 +347,37 @@
   (match a-bucket
     [(struct internal:global-bucket (name))
      (make-global-bucket name)]))
+
+
+
+(define (translate-nominal-path a-nominal-path)
+  (match a-nominal-path
+    [(? simple-nominal-path?)
+     (translate-simple-nominal-path a-nominal-path)]
+    [(? imported-nominal-path?)
+     (translate-imported-nominal-path a-nominal-path)]
+    [(? phased-nominal-path?)
+     (translate-phased-nominal-path a-nominal-path)]))
+
+
+(define (translate-simple-nominal-path a-path)
+  (match a-path
+    [(struct internal:simple-nominal-path (value))
+     (make-simple-nominal-path (value))]))
+
+
+(define (translate-imported-nominal-path a-path)
+  (match a-path
+    [(struct internal:imported-nominal-path (value import-phase))
+     (make-imported-nominal-path (value import-phase))]))
+                                         
+
+(define (translate-phased-nominal-path a-path)
+  (match a-path
+    [(struct internal:phased-nominal-path (value import-phase phase))
+     (make-phased-nominal-path value import-phase phase)]))
+
+
 
 
 (define (translate-indirect an-indirect)
