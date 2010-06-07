@@ -1,0 +1,6 @@
+// Hacks to make some extra things work
+
+var debug = function(s) {};
+var debugF = function(f_s) {};
+
+

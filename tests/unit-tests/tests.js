@@ -1,8 +1,11 @@
 var assert = require('assert');
-var runtime = require('./../../lib');
-var control = require('./../../lib/control');
-var types = require('./../../lib/types');
+var runtime = require('./../../lib/test-support');
+//var control = require('./../../lib/control');
+//var types = require('./../../lib/types');
 var sys = require('sys');
+
+var control = runtime.control;
+var types = runtime.types;
 
 
 //////////////////////////////////////////////////////////////////////

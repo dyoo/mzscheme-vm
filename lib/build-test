@@ -1,0 +1,11 @@
+#!/bin/bash
+
+rm -f test-support.js
+
+for i in `cat order`; do
+	echo 'Adding file' $i;
+	cat $i >> test-support.js;
+done;
+
+echo 'Adding exports for testing'
+cat exports.js >> test-support.js;

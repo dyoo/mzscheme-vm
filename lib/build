@@ -1,0 +1,8 @@
+#!/bin/bash
+
+rm -f support.js
+
+for i in `cat order`; do
+	echo 'Adding file' $i;
+	cat $i >> support.js;
+done;
