@@ -14,7 +14,21 @@
          "../externals/compiler/batch/alpha.ss"
          "../externals/compiler/batch/module.ss")
 
-(provide/contract [batch-compile (path-string? . -> . path?)])
+(provide/contract 
+ [batch-compile (path-string? . -> . path?)]
+ [unbatched-compile (path-string? . -> . path?)])
+
+
+(define (unbatched-compile file)
+  (define-values (base name dir?) (split-path file))
+  (when (or (eq? base #f) dir?)
+    (error 'batch "Cannot run on directory"))
+    
+  (parameterize ([current-namespace (make-base-empty-namespace)])
+    (managed-compile-zo file))
+  (build-compiled-path base (path-add-suffix name #".zo")))
+
+
 
 (define (batch-compile file-to-batch)
   (define-values (base name dir?) (split-path file-to-batch))
