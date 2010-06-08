@@ -660,7 +660,7 @@
 (define (translate-let-void a-let-void)
   (match a-let-void
     [(struct internal:let-void (count boxes? body))
-     (make-let-void (count boxes? (translate-at-expression-position body)))]))
+     (make-let-void count boxes? (translate-at-expression-position body))]))
 
 
 (define (translate-let-one a-let-one)
@@ -676,3 +676,6 @@
     [(struct internal:case-lam (name clauses))
      (make-case-lam name (map translate-lam clauses))]))
 
+
+
+(provide/contract [translate-compilation-top (internal:compilation-top? . -> . compilation-top?)])
