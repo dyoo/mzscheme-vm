@@ -216,13 +216,19 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+
+
 ;; Translation from mzscheme 4.2.5 bytecode structures to our own.
+
+(define current-indirect-map (make-parameter (make-hasheq)))
 
 
 (define (translate-compilation-top a-top)
-  (match a-top
-    [(struct internal:compilation-top (max-let-depth prefix code))
-     (make-compilation-top max-let-depth (translate-prefix prefix) (translate-code code))]))
+  (parameterize ([current-indirect-map (make-hasheq)])
+    (match a-top
+      [(struct internal:compilation-top (max-let-depth prefix code))
+       (make-compilation-top max-let-depth (translate-prefix prefix) (translate-code code))])))
+  
 
 (define (translate-code a-code)
   (match a-code
@@ -383,9 +389,17 @@
 (define (translate-indirect an-indirect)
   (match an-indirect
     [(struct internal:indirect (v))
-     ;; FIXME: avoid cycles: detect if we're already translating this value.
-     (make-indirect (translate-closure v))]))
-
+     (cond
+       [(hash-ref (current-indirect-map) an-indirect #f)
+        (hash-ref (current-indirect-map) an-indirect)]
+       [else
+        (begin
+          ;; make the shell, and continue the copy.
+          (let ([partial-result (make-indirect #f)])
+            (hash-set! (current-indirect-map) an-indirect partial-result)
+            (let* ([translated-closure (translate-closure v)])
+              (set-indirect-v! partial-result translated-closure)
+              partial-result)))])]))
 
 
 (define (translate-form a-form)
