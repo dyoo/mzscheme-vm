@@ -72,10 +72,20 @@
                      [(global-bucket? a-toplevel) 
                       (make-ht 'global-bucket 
                                `((value ,(make-lit (global-bucket-name a-toplevel)))))]
-                     [(module-variable? a-toplevel) 
-                      (make-ht 'module-variable 
-                               `((value ,(make-lit (module-variable-sym a-toplevel)))))]))
+                     [(module-variable? a-toplevel)
+                      (compile-module-variable a-toplevel)]))
                  toplevels)))
+
+(define (compile-module-variable a-module-variable)
+  (match a-module-variable
+    [(struct module-variable (modidx sym pos phase))
+     (make-ht 'module-variable `((sym ,(make-lit sym))
+                                 (modidx ,(compile-module-path-index modidx))
+                                 (pos ,(make-lit pos))
+                                 (phase ,(make-lit phase))))]))
+
+
+
 
 ;; compile-stxs: (listof stx) -> jsexp
 (define (compile-stxs stxs)
