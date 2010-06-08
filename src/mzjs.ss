@@ -2,7 +2,8 @@
 (require "bytecode-compiler.ss"
          "sexp.ss"
          "batch-wrap.ss"
-         compiler/zo-parse
+         "bytecode-structs.ss"
+         (prefix-in internal: compiler/zo-parse)
          scheme/file
          scheme/path
          scheme/cmdline
@@ -46,7 +47,7 @@
           (lambda (op)
             (fprintf op "var _runtime = require('./lib');")
             (fprintf op "var program = _runtime.load(~a);" 
-                     (jsexp->js (compile-top (zo-parse ip))))
+                     (jsexp->js (compile-top (translate-compilation-top (internal:zo-parse ip)))))
             (fprintf op "_runtime.run(program);"))
           #:exists 'replace)))))
 

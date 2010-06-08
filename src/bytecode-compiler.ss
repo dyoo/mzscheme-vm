@@ -2,8 +2,11 @@
 
 (require scheme/match
          scheme/contract
-         compiler/zo-parse
-         "jsexp.ss")
+         scheme/list
+         "bytecode-structs.ss"
+         "jsexp.ss"
+         "primitive-table.ss"
+         (prefix-in internal: compiler/zo-parse))
 
 
 (provide/contract [compile-top (compilation-top? . -> . any/c)])
@@ -69,10 +72,20 @@
                      [(global-bucket? a-toplevel) 
                       (make-ht 'global-bucket 
                                `((value ,(make-lit (global-bucket-name a-toplevel)))))]
-                     [(module-variable? a-toplevel) 
-                      (make-ht 'module-variable 
-                               `((value ,(make-lit (module-variable-sym a-toplevel)))))]))
+                     [(module-variable? a-toplevel)
+                      (compile-module-variable a-toplevel)]))
                  toplevels)))
+
+(define (compile-module-variable a-module-variable)
+  (match a-module-variable
+    [(struct module-variable (modidx sym pos phase))
+     (make-ht 'module-variable `((sym ,(make-lit sym))
+                                 (modidx ,(compile-module-path-index modidx))
+                                 (pos ,(make-lit pos))
+                                 (phase ,(make-lit phase))))]))
+
+
+
 
 ;; compile-stxs: (listof stx) -> jsexp
 (define (compile-stxs stxs)
@@ -134,6 +147,7 @@
                   lang-info
                   internal-context))
      (make-ht 'mod `((name ,(make-lit name))
+                     (requires ,(compile-requires requires))
                      (prefix ,(compile-prefix prefix))
                      (body ,(make-vec (map (lambda (b)
                                              (match b 
@@ -144,6 +158,41 @@
                                                [else
                                                 (compile-constant b)]))
                                            body)))))]))
+
+(define (compile-requires requires)
+  (make-vec (map (lambda (a-require)
+                   (make-vec (cons (make-lit (first a-require))
+                                   (map compile-module-path-index (rest a-require)))))
+                 requires)))
+       
+
+
+(define (compile-module-path-index mpi)
+  (let-values ([(mpath base)
+                (module-path-index-split mpi)])
+    (make-ht 'module-path `((path ,(make-lit (cond 
+                                               [(module-path? mpath) 
+                                                mpath]
+                                               [else #f])))
+                            (base ,(cond 
+                                     [(module-path-index? base)
+                                      (compile-module-path-index base)]
+                                     [(resolved-module-path? base)
+                                      (compile-resolved-module-path base)]
+                                     [else
+                                        (make-lit #f)]
+                                       ))))))
+
+
+(define (compile-resolved-module-path rmp)
+  (let ([pathname (resolved-module-path-name rmp)])
+    (make-ht 'resolved-module-path `((path ,(make-lit (cond [(path? pathname)
+                                                             (path->string pathname)]
+                                                            [else
+                                                             pathname])))))))
+
+
+
 
 ;; compile-splice: splice -> jsexp
 (define (compile-splice a-splice)
@@ -462,39 +511,12 @@
 
 
 
-;; Code is copied-and-pasted from compiler/decompile.
-(define primitive-table
-  ;; Figure out number-to-id mapping for kernel functions in `primitive'
-  (let ([bindings
-         (let ([ns (make-base-empty-namespace)])
-           (parameterize ([current-namespace ns])
-             (namespace-require ''#%kernel)
-             (namespace-require ''#%unsafe)
-             (namespace-require ''#%flfxnum)
-             (for/list ([l (namespace-mapped-symbols)])
-               (cons l (with-handlers ([exn:fail? (lambda (x) 
-                                                    #f)])
-                         (compile l))))))]
-        [table (make-hash)])
-    (for ([b (in-list bindings)])
-      (let ([v (and (cdr b)
-                    (zo-parse (let-values ([(in out) (make-pipe)])
-                                (write (cdr b) out)
-                                (close-output-port out)
-                                in)))])
-        (let ([n (match v
-                   [(struct compilation-top (_ prefix (struct primval (n)))) n]
-                   [else #f])])
-          (hash-set! table n (car b)))))
-    table))
-
-
 
 
 ;; test: path -> state
 ;; exercising function
 (define (test path)
-  (let ([parsed (zo-parse (open-input-file path))])
+  (let ([parsed (translate-compilation-top (internal:zo-parse (open-input-file path)))])
     (compile-top parsed)))
 
 
