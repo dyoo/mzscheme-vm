@@ -211,28 +211,6 @@ var testPrim = function(funName, f, baseArgs, expectedValue) {
 
 var id = function(x) {return x;};
 
-/*
-var testNumPrim = function(funName, baseArgs, expectedValue) {
-	var state = new runtime.State();
-	var args = [];
-	for (var i = 0; i < baseArgs.length; i++) {
-		args.push(makeConstant(runtime.rational(baseArgs[i])));
-	}
-	state.pushControl(makeApplication(makePrimval(funName), args));
-	assert.deepEqual(run(state), expectedValue);
-}
-
-var testStringPrim = function(funName, baseArgs, expectedValue) {
-	var state = new runtime.State();
-	var args = [];
-	for (var i = 0; i < baseArgs.length; i++) {
-		args.push(makeConstant(runtime.string(baseArgs[i])));
-	}
-	state.pushControl(makeApplication(makePrimval(funName), args));
-	assert.deepEqual(run(state), expectedValue);
-}
-*/
-
 
 
 //////////////////////////////////////////////////////////////////////
@@ -1723,16 +1701,16 @@ runTest('list*',
 runTest('length',
 	function() {
 		testPrim('length', id, [runtime.EMPTY], 0);
-		testPrim('length', id, [runtime.list([1])], 1);
-		testPrim('length', id, [runtime.list([1, 2, 3, 4])], 4);
+		testPrim('length', runtime.list, [[1]], 1);
+		testPrim('length', runtime.list, [[1, 2, 3, 4]], 4);
 	});
 
 
 runTest('append',
 	function() {
-		testPrim('append', id, [], runtime.EMPTY);
-		testPrim('append', id, [runtime.list([1])], runtime.list([1]));
-		testPrim('append', id, [runtime.EMPTY, runtime.list([1, 2, 3]), runtime.list([1, 2])],
+		testPrim('append', runtime.list, [], runtime.EMPTY);
+		testPrim('append', runtime.list, [[1]], runtime.list([1]));
+		testPrim('append', runtime.list, [[], [1, 2, 3], [1, 2]],
 			 runtime.list([1, 2, 3, 1, 2]));
 	});
 
@@ -1757,6 +1735,287 @@ runTest('list-ref',
 		testPrim('list-ref', id, [testList, runtime.rational(0)], runtime.rational(1));
 		testPrim('list-ref', id, [testList, runtime.rational(5)], runtime.rational(8));
 	});
+
+
+
+/******************************
+ *** Vector Primitive Tests ***
+ ******************************/
+
+
+runTest('vector?',
+	function() {
+		testPrim('vector?', id, [1], false);
+		testPrim('vector?', runtime.list, [[1, 2, 3]], false);
+		testPrim('vector?', runtime.vector, [[1, 2, 3]], true);
+	});
+
+
+runTest('make-vector',
+	function() {
+		testPrim('make-vector', id, [0, runtime.char('a')], runtime.vector([]));
+		testPrim('make-vector', id, [3, 5], runtime.vector([5, 5, 5]));
+	});
+
+
+runTest('vector',
+	function() {
+		testPrim('vector', id, [1, 2, 3, 4], runtime.vector([1, 2, 3, 4]));
+		testPrim('vector', id, [], runtime.vector([]));
+	});
+
+
+runTest('vector-length',
+	function() {
+		testPrim('vector-length', runtime.vector, [[]], 0);
+		testPrim('vector-length', runtime.vector, [[1, 2, 3]], 3);
+	});
+
+
+runTest('vector-ref',
+	function() {
+		testPrim('vector-ref', id, [runtime.vector([1, 2]), 1], 2);
+		testPrim('vector-ref', id, [runtime.vector([3, 2, 1]), 0], 3);
+	});
+
+
+runTest('vector-set!',
+	function() {
+		testPrim('vector-set!', id, [runtime.vector([1, 2, 3]), 0, runtime.char('a')], types.VOID);
+
+		var testVec = runtime.vector([1, 2, 3, 4]);
+		var state = new runtime.State();
+		state.pushControl(makeApplication(makePrimval('vector-set!'),
+						  [makeConstant(testVec),
+						   makeConstant(2),
+						   makeConstant(5)]));
+		var result = run(state);
+		assert.deepEqual(result, types.VOID);
+		assert.deepEqual(testVec, runtime.vector([1, 2, 5, 4]));
+
+		var testVec2 = runtime.vector([runtime.char('a'),
+					       runtime.char('b'),
+					       runtime.char('c')]);
+		state.pushControl(makeApplication(makePrimval('vector-set!'),
+						  [makeConstant(testVec2),
+						   makeConstant(1),
+						   makeConstant(runtime.char('B'))]));
+		run(state);
+		assert.deepEqual(testVec2, runtime.vector([runtime.char('a'),
+							   runtime.char('B'),
+							   runtime.char('c')]));
+	});
+
+
+runTest('vector->list',
+	function() {
+		testPrim('vector->list', runtime.vector, [[]], runtime.EMPTY);
+		testPrim('vector->list', runtime.vector, [[1, 2, 3]], runtime.list([1, 2, 3]));
+	});
+
+
+
+/****************************
+ *** Char Primitive Tests ***
+ ****************************/
+
+
+
+
+runTest('char?',
+	function() {
+		testPrim('char?', id, [runtime.symbol('hello!')], false);
+		testPrim('char?', runtime.string, ['string'], false);
+		testPrim('char?', runtime.char, ['w'], true);
+	});
+
+
+runTest('char=?',
+	function() {
+		testPrim('char=?', runtime.char, ['a', 's', 'D'], false);
+		testPrim('char=?', runtime.char, ['f', 'F'], false);
+		testPrim('char=?', runtime.char, ['a', 'a', 'a'], true);
+		testPrim('char=?', runtime.char, ['1', '1', '2'], false);
+	});
+
+runTest('char-ci=?',
+	function() {
+		testPrim('char-ci=?', runtime.char, ['a', 's', 'D'], false);
+		testPrim('char-ci=?', runtime.char, ['f', 'F'], true);
+		testPrim('char-ci=?', runtime.char, ['a', 'a', 'a'], true);
+		testPrim('char-ci=?', runtime.char, ['1', '1', '2'], false);
+	});
+
+runTest('char<?',
+	function() {
+		testPrim('char<?', runtime.char, ['A', 'a'], true);
+		testPrim('char<?', runtime.char, ['a', 'b'], true);
+		testPrim('char<?', runtime.char, ['b', 'a'], false);
+		testPrim('char<?', runtime.char, ['a', 'd', 'c'], false);
+		testPrim('char<?', runtime.char, ['a', 'b', 'b', 'd'], false);
+		testPrim('char<?', runtime.char, ['a', 'b', 'c', 'd', 'e'], true);
+	});
+
+runTest('char>?',
+	function() {
+		testPrim('char>?', runtime.char, ['A', 'a'], false);
+		testPrim('char>?', runtime.char, ['a', 'b'], false);
+		testPrim('char>?', runtime.char, ['b', 'a'], true);
+		testPrim('char>?', runtime.char, ['f', 'd', 'e'], false);
+		testPrim('char>?', runtime.char, ['e', 'd', 'c', 'c', 'a'], false);
+		testPrim('char>?', runtime.char, ['e', 'd', 'c', 'b', 'a'], true);
+	});
+
+runTest('char<=?',
+	function() {
+		testPrim('char<=?', runtime.char, ['A', 'a'], true);
+		testPrim('char<=?', runtime.char, ['a', 'b'], true);
+		testPrim('char<=?', runtime.char, ['b', 'a'], false);
+		testPrim('char<=?', runtime.char, ['a', 'd', 'c'], false);
+		testPrim('char<=?', runtime.char, ['a', 'b', 'b', 'd'], true);
+		testPrim('char<=?', runtime.char, ['a', 'b', 'c', 'd', 'e'], true);
+	});
+
+runTest('char>=?',
+	function() {
+		testPrim('char>=?', runtime.char, ['A', 'a'], false);
+		testPrim('char>=?', runtime.char, ['a', 'b'], false);
+		testPrim('char>=?', runtime.char, ['b', 'a'], true);
+		testPrim('char>=?', runtime.char, ['f', 'd', 'e'], false);
+		testPrim('char>=?', runtime.char, ['e', 'd', 'c', 'c', 'a'], true);
+		testPrim('char>=?', runtime.char, ['e', 'd', 'c', 'b', 'a'], true);
+	});
+
+runTest('char-ci<?',
+	function() {
+		testPrim('char-ci<?', runtime.char, ['A', 'a'], false);
+		testPrim('char-ci<?', runtime.char, ['a', 'b'], true);
+		testPrim('char-ci<?', runtime.char, ['b', 'A'], false);
+		testPrim('char-ci<?', runtime.char, ['a', 'd', 'c'], false);
+		testPrim('char-ci<?', runtime.char, ['a', 'b', 'b', 'd'], false);
+		testPrim('char-ci<?', runtime.char, ['a', 'B', 'c', 'd', 'e'], true);
+	});
+
+runTest('char-ci>?',
+	function() {
+		testPrim('char-ci>?', runtime.char, ['a', 'A'], false);
+		testPrim('char-ci>?', runtime.char, ['a', 'b'], false);
+		testPrim('char-ci>?', runtime.char, ['b', 'A'], true);
+		testPrim('char-ci>?', runtime.char, ['f', 'd', 'e'], false);
+		testPrim('char-ci>?', runtime.char, ['e', 'd', 'c', 'c', 'a'], false);
+		testPrim('char-ci>?', runtime.char, ['e', 'd', 'C', 'b', 'a'], true);
+	});
+
+runTest('char-ci<=?',
+	function() {
+		testPrim('char-ci<=?', runtime.char, ['a', 'A'], true);
+		testPrim('char-ci<=?', runtime.char, ['a', 'B'], true);
+		testPrim('char-ci<=?', runtime.char, ['b', 'a'], false);
+		testPrim('char-ci<=?', runtime.char, ['a', 'd', 'c'], false);
+		testPrim('char-ci<=?', runtime.char, ['a', 'b', 'B', 'd'], true);
+		testPrim('char-ci<=?', runtime.char, ['a', 'b', 'C', 'd', 'e'], true);
+	});
+
+runTest('char-ci>=?',
+	function() {
+		testPrim('char-ci>=?', runtime.char, ['A', 'a'], true);
+		testPrim('char-ci>=?', runtime.char, ['a', 'b'], false);
+		testPrim('char-ci>=?', runtime.char, ['B', 'a'], true);
+		testPrim('char-ci>=?', runtime.char, ['f', 'd', 'e'], false);
+		testPrim('char-ci>=?', runtime.char, ['e', 'd', 'C', 'c', 'a'], true);
+		testPrim('char-ci>=?', runtime.char, ['e', 'd', 'c', 'B', 'a'], true);
+	});
+
+
+runTest('char-alphabetic?',
+	function() {
+		testPrim('char-alphabetic?', runtime.char, ['a'], true);
+		testPrim('char-alphabetic?', runtime.char, ['Z'], true);
+		testPrim('char-alphabetic?', runtime.char, ['3'], false);
+		testPrim('char-alphabetic?', runtime.char, [' '], false);
+		testPrim('char-alphabetic?', runtime.char, ['!'], false);
+		testPrim('char-alphabetic?', runtime.char, ['\n'], false);
+	});
+
+
+runTest('char-numeric?',
+	function() {
+		testPrim('char-numeric?', runtime.char, ['a'], false);
+		testPrim('char-numeric?', runtime.char, ['Z'], false);
+		testPrim('char-numeric?', runtime.char, ['3'], true);
+		testPrim('char-numeric?', runtime.char, [' '], false);
+		testPrim('char-numeric?', runtime.char, ['!'], false);
+		testPrim('char-numeric?', runtime.char, ['\n'], false);
+	});
+
+
+runTest('char-whitespace?',
+	function() {
+		testPrim('char-whitespace?', runtime.char, ['a'], false);
+		testPrim('char-whitespace?', runtime.char, ['Z'], false);
+		testPrim('char-whitespace?', runtime.char, ['3'], false);
+		testPrim('char-whitespace?', runtime.char, [' '], true);
+		testPrim('char-whitespace?', runtime.char, ['!'], false);
+		testPrim('char-whitespace?', runtime.char, ['\n'], true);
+		testPrim('char-whitespace?', runtime.char, ['\t'], true);
+	});
+
+
+runTest('char-upper-case?',
+	function() {
+		testPrim('char-upper-case?', runtime.char, ['a'], false);
+		testPrim('char-upper-case?', runtime.char, ['Z'], true);
+		testPrim('char-upper-case?', runtime.char, ['3'], false);
+		testPrim('char-upper-case?', runtime.char, [' '], false);
+		testPrim('char-upper-case?', runtime.char, ['!'], false);
+		testPrim('char-upper-case?', runtime.char, ['\n'], false);
+	});
+
+
+runTest('char-lower-case?',
+	function() {
+		testPrim('char-lower-case?', runtime.char, ['a'], true);
+		testPrim('char-lower-case?', runtime.char, ['Z'], false);
+		testPrim('char-lower-case?', runtime.char, ['3'], false);
+		testPrim('char-lower-case?', runtime.char, [' '], false);
+		testPrim('char-lower-case?', runtime.char, ['!'], false);
+		testPrim('char-lower-case?', runtime.char, ['\n'], false);
+	});
+
+
+runTest('char->integer',
+	function() {
+		testPrim('char->integer', runtime.char, ['0'], 48);
+		testPrim('char->integer', runtime.char, ['\n'], 10);
+	});
+
+
+runTest('integer->char',
+	function() {
+		testPrim('integer->char', id, [48], runtime.char('0'));
+		testPrim('integer->char', id, [65], runtime.char('A'));
+	});
+
+
+runTest('char-upcase',
+	function() {
+		testPrim('char-upcase', runtime.char, ['a'], runtime.char('A'));
+		testPrim('char-upcase', runtime.char, ['B'], runtime.char('B'));
+		testPrim('char-upcase', runtime.char, ['2'], runtime.char('2'));
+		testPrim('char-upcase', runtime.char, ['~'], runtime.char('~'));
+	});
+
+
+runTest('char-downcase',
+	function() {
+		testPrim('char-downcase', runtime.char, ['a'], runtime.char('a'));
+		testPrim('char-downcase', runtime.char, ['B'], runtime.char('b'));
+		testPrim('char-downcase', runtime.char, ['2'], runtime.char('2'));
+		testPrim('char-downcase', runtime.char, ['~'], runtime.char('~'));
+	});
+
+
+///////////////////////////////////////////////////////////////////////
 
 
 
