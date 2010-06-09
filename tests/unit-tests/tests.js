@@ -2159,6 +2159,15 @@ runTest('char-downcase',
 ///////////////////////////////////////////////////////////////////////
 
 
+runTest('struct?',
+	function() {
+		testPrim('struct?', runtime.string, ['a'], false);
+		testPrim('struct?', id, [1], false);
+		testPrim('struct?', id, [runtime.EMPTY], false);
+		testPrim('struct?', runtime.box, [2], false);
+	});
+
+
 
 runTest("topsyntax",
 	function() {
