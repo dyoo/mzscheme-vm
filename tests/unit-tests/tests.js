@@ -1737,6 +1737,131 @@ runTest('list-ref',
 	});
 
 
+runTest('memq',
+	function() {
+		testPrim('memq', id, [0, runtime.list([1, 2, 3])], false);
+		testPrim('memq', id, [2, runtime.list([1, 2, 3])], runtime.list([2, 3]));
+		testPrim('memq', id, [runtime.complex(2, 2),
+				      runtime.list([runtime.complex(1, 1),
+						    runtime.complex(2, 2),
+						    runtime.complex(3, 3)])],
+			 false);
+		testPrim('memq', id, [runtime.char('a'),
+				      runtime.list([runtime.char('c'),
+						    runtime.char('b'),
+						    runtime.char('a')])],
+			 false);
+		testPrim('memq', id, [runtime.string('a'),
+				      runtime.list([runtime.string('c'),
+						    runtime.string('b'),
+						    runtime.string('a')])],
+			 false);
+
+		var str = runtime.string('hi');
+		testPrim('memq', id, [str, runtime.list([runtime.string('Yo'),
+						         runtime.string(', '),
+						         str])],
+			 runtime.list([str]));
+	});
+
+
+runTest('memv',
+	function() {
+		testPrim('memv', id, [0, runtime.list([1, 2, 3])], false);
+		testPrim('memv', id, [2, runtime.list([1, 2, 3])], runtime.list([2, 3]));
+		testPrim('memv', id, [runtime.complex(2, 2),
+				      runtime.list([runtime.complex(1, 1),
+						    runtime.complex(2, 2),
+						    runtime.complex(3, 3)])],
+			 runtime.list([runtime.complex(2, 2), runtime.complex(3, 3)]));
+		testPrim('memv', id, [runtime.char('a'),
+				      runtime.list([runtime.char('c'),
+						    runtime.char('b'),
+						    runtime.char('a')])],
+			 runtime.list([runtime.char('a')]));
+		testPrim('memv', id, [runtime.string('a'),
+				      runtime.list([runtime.string('c'),
+						    runtime.string('b'),
+						    runtime.string('a')])],
+			 false);
+
+		var str = runtime.string('hi');
+		testPrim('memv', id, [str, runtime.list([runtime.string('Yo'),
+						         runtime.string(', '),
+						         str])],
+			 runtime.list([str]));
+	});
+
+
+runTest('member',
+	function() {
+		testPrim('member', id, [0, runtime.list([1, 2, 3])], false);
+		testPrim('member', id, [2, runtime.list([1, 2, 3])], runtime.list([2, 3]));
+		testPrim('member', id, [runtime.complex(2, 2),
+				        runtime.list([runtime.complex(1, 1),
+						      runtime.complex(2, 2),
+						      runtime.complex(3, 3)])],
+			 runtime.list([runtime.complex(2, 2), runtime.complex(3, 3)]));
+//		testPrim('member', id, [runtime.char('a'),
+//				        runtime.list([runtime.char('c'),
+//						      runtime.char('b'),
+//						      runtime.char('a')])],
+//			 runtime.list([runtime.char('b')]));
+//		testPrim('member', id, [runtime.string('a'),
+//				        runtime.list([runtime.string('c'),
+//						      runtime.string('b'),
+//						      runtime.string('a')])],
+//			 runtime.list([runtime.string('a')]));
+
+		var str = runtime.string('hi');
+		testPrim('member', id, [str, runtime.list([runtime.string('Yo'),
+							   runtime.string(', '),
+							   str])],
+			 runtime.list([str]));
+	});
+
+
+
+
+/***************************
+ *** Box Primitive Tests ***
+ ***************************/
+
+
+runTest('box',
+	function() {
+		testPrim('box', id, [1], runtime.box(1));
+		testPrim('box', runtime.string, ['abc'], new runtime.Box(runtime.string('abc')));
+	});
+
+
+runTest('box?',
+	function() {
+		testPrim('box?', runtime.box, [1], true);
+		testPrim('box?', runtime.char, ['a'], false);
+		testPrim('box?', id, [15], false);
+	});
+
+
+runTest('unbox',
+	function() {
+		testPrim('unbox', runtime.box, [2], 2);
+		testPrim('unbox', runtime.box, [runtime.char('a')], runtime.char('a'));
+	});
+
+
+runTest('set-box!',
+	function() {
+		var testBox1 = runtime.box(1);
+		var testBox2 = runtime.box(runtime.string('hello'));
+		testPrim('set-box!', id, [testBox1, 15], runtime.VOID);
+		testPrim('set-box!', id, [testBox2, runtime.string('world')], runtime.VOID);
+
+		assert.deepEqual(testBox1, runtime.box(15));
+		assert.deepEqual(testBox2, runtime.box(runtime.string('world')));
+	});
+
+
 
 /******************************
  *** Vector Primitive Tests ***
