@@ -1270,6 +1270,22 @@ runTest('symbol->string',
 	});
 
 
+runTest('number->string',
+	function() {
+		testPrim('number->string', runtime.rational, [5], runtime.string('5'));
+		testPrim('number->string', id, [runtime.complex(0, 2)], runtime.string('0+2i'));
+		testPrim('number->string', id, [runtime.rational(5, 3)], runtime.string('5/3'));
+	});
+
+
+runTest('stinrg->number',
+	function() {
+		testPrim('string->number', runtime.string, ['abc'], false);
+		testPrim('string->number', runtime.string, ['123'], 123);
+		testPrim('string->number', runtime.string, ['0+3i'], runtime.complex(0, 3));
+	});
+
+
 runTest('string?',
 	function() {
 		testPrim('string?', id, [runtime.symbol('hello!')], false);
