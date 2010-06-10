@@ -1573,6 +1573,14 @@ runTest('string-whitespace?',
 	});
 
 
+runTest('replicate',
+	function() {
+		testPrim('replicate', id, [3, runtime.string('ab')], runtime.string('ababab'))
+		testPrim('replicate', id, [0, runtime.string('hi')], runtime.string(''));
+		testPrim('replicate', id, [50, runtime.string('')], runtime.string(''));
+	});
+
+
 
 /*************************************
  *** Primitive Math Function Tests ***
@@ -1755,6 +1763,13 @@ runTest('=~',
 	});
 
 
+runTest('conjugate',
+	function() {
+		testPrim('conjugate', id, [1], 1);
+		testPrim('conjugate', id, [runtime.complex(3, 3)], runtime.complex(3, -3));
+	});
+
+
 
 /*************************************
  *** Primitive List Function Tests ***
@@ -1934,6 +1949,31 @@ runTest('member',
 							   runtime.string(', '),
 							   str])],
 			 runtime.list([str]));
+	});
+
+
+runTest('remove',
+	function() {
+		testPrim('remove', id, [3, runtime.list([1, 2, 3, 4, 5])], runtime.list([1, 2, 4, 5]));
+		testPrim('remove', id, [1, runtime.list([1, 2, 1, 2])], runtime.list([2, 1, 2]));
+		testPrim('remove', id, [10, runtime.list([1, 2, 3, 4])], runtime.list([1,2,3,4]));
+//		testPrim('remove', id, [runtime.string('a'), runtime.list([runtime.string('b'),
+//									   runtime.string('a'),
+//									   runtime.string('c'),
+//									   runtime.string('a')])],
+//			 runtime.list([runtime.string('b'), runtime.string('c'), runtime.string('a')]));
+		var state = new runtime.State();
+		state.pushControl(makeApplication(makePrimval('remove'),
+						  [makeConstant(runtime.string('a')),
+						   makeConstant(runtime.list([runtime.string('b'),
+									      runtime.string('a'),
+									      runtime.string('c'),
+									      runtime.string('a')]))]));
+		var res = run(state);
+		assert.deepEqual(res.first().toString(), 'b');
+		assert.deepEqual(res.rest().first().toString(), 'c');
+		assert.deepEqual(res.rest().rest().first().toString(), 'a');
+		assert.deepEqual(res.rest().rest().rest(), runtime.EMPTY);
 	});
 
 
@@ -2598,6 +2638,16 @@ runTest('equal?',
 	});
 
 
+runTest('equal~?',
+	function() {
+		testPrim('equal~?', id, [runtime.string('h'), runtime.string('h'), 5], true);
+		testPrim('equal~?', id, [5, 4, 0], false);
+		testPrim('equal~?', id, [runtime.char('a'), runtime.char('b'), 3], false);
+		testPrim('equal~?', id, [5, 3, 3], true);
+		testPrim('equal~?', runtime.float, [5.4, 4.9, 0.5], true);
+	});
+
+
 runTest('struct?',
 	function() {
 		testPrim('struct?', runtime.string, ['a'], false);
@@ -2624,6 +2674,13 @@ runTest('procedure-arity',
 
 		state.pushControl(makeApplication(makePrimval('procedure-arity'), [makePrimval('hash-ref')]));
 		assert.deepEqual(run(state), runtime.list([2, 3]));
+	});
+
+
+runTest('identity',
+	function() {
+		testPrim('identity', id, [5], 5);
+		testPrim('identity', runtime.string, ['hello'], runtime.string('hello'));
 	});
 
 
