@@ -1838,6 +1838,17 @@ runTest('member',
 
 
 
+runTest('map',
+	function() {
+		var state = new runtime.State();
+		state.pushControl(makeApplication(makePrimval('map'),
+						  [makePrimval('add1'),
+						   makeConstant(runtime.list([1, 2, 3]))]));
+		assert.deepEqual(run(state), runtime.list([2, 3, 4]));
+	});
+
+
+
 
 /***************************
  *** Box Primitive Tests ***
