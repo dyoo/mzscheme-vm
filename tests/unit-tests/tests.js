@@ -524,9 +524,9 @@ runTest("primitive appliation, nesting, testing non-commutativity",
 		makePrimval("string-append"),
 		[makeApplication(
 		    makePrimval("string-append"),
-		    [makeConstant("hello"),
-		     makeConstant("world")]),
-		 makeConstant("testing")]));
+		    [makeConstant(runtime.string("hello")),
+		     makeConstant(runtime.string("world"))]),
+		 makeConstant(runtime.string("testing"))]));
 	    var result = run(state);
 	    assert.deepEqual(result, runtime.string("helloworldtesting"));
 	    assert.equal(state.vstack.length, 0);
@@ -860,8 +860,8 @@ runTest("apply-values",
 		[makeToplevel(0, 0),
 		 makeToplevel(0, 1)],
 		makeApplication(makePrimval("values"),
-				[makeConstant("hello"),
-				 makeConstant("world")])));
+				[makeConstant(types.string("hello")),
+				 makeConstant(types.string("world"))])));
 	    run(state);
 
 	    state.pushControl(makeApplyValues(
@@ -871,7 +871,7 @@ runTest("apply-values",
 		makeApplication(makePrimval("values"),
 				[makeToplevel(2, 0),
 				 makeToplevel(2, 1)])));
-	    assert.equal(run(state), "helloworld");
+	    assert.deepEqual(run(state), types.string("helloworld"));
 	});
 
 
@@ -1846,6 +1846,83 @@ runTest('map',
 						   makeConstant(runtime.list([1, 2, 3]))]));
 		assert.deepEqual(run(state), runtime.list([2, 3, 4]));
 	});
+
+
+runTest('build-list',
+	function() {
+		var state = new runtime.State();
+		state.pushControl(makeApplication(makePrimval('build-list'),
+						  [makeConstant(5), makePrimval('add1')]));
+		assert.deepEqual(run(state), runtime.list([1, 2, 3, 4, 5]));
+
+		state.pushControl(makeApplication(makePrimval('build-list'),
+						  [makeConstant(5), makePrimval('number->string')]));
+		assert.deepEqual(run(state), runtime.list([runtime.string('0'),
+							   runtime.string('1'),
+							   runtime.string('2'),
+							   runtime.string('3'),
+							   runtime.string('4')]));
+	});
+
+
+runTest('argmax',
+	function() {
+		var state = new runtime.State();
+		state.pushControl(makeApplication(makePrimval('argmax'),
+						  [makePrimval('car'),
+						   makeConstant(runtime.list([runtime.pair(1, 2),
+									      runtime.list([1, 2, 3]),
+									      runtime.pair(3, 5),
+									      runtime.pair(2, 13)]))]));
+		assert.deepEqual(run(state), runtime.pair(3, 5));
+
+		state.pushControl(makeApplication(makePrimval('argmax'),
+						  [makePrimval('-'),
+						   makeConstant(runtime.list([1, 3, 5, 2, 4]))]));
+		assert.deepEqual(run(state), 1);
+	});
+
+
+runTest('argmin',
+	function() {
+		var state = new runtime.State();
+		state.pushControl(makeApplication(makePrimval('argmin'),
+						  [makePrimval('car'),
+						   makeConstant(runtime.list([runtime.pair(1, 2),
+									      runtime.list([1, 2, 3]),
+									      runtime.pair(3, 5),
+									      runtime.pair(2, 13)]))]));
+		assert.deepEqual(run(state), runtime.pair(1, 2));
+
+		state.pushControl(makeApplication(makePrimval('argmin'),
+						  [makePrimval('-'),
+						   makeConstant(runtime.list([1, 3, 5, 2, 4]))]));
+		assert.deepEqual(run(state), 5);
+	});
+
+
+/*
+runTest('quicksort',
+	function() {
+		var state = new runtime.State();
+		state.pushControl(makeApplication(makePrimval('quicksort'),
+						  [makeConstant(runtime.list([4, 3, 6, 8, 2, 9])),
+						   makePrimval('<')]));
+		var result = run(state);
+		assert.deepEqual(result, runtime.list([2, 3, 4, 6, 8, 9]));
+
+		state.pushControl(makeApplication(makePrimval('quicksort'),
+						  [makeConstant(runtime.list([runtime.char('k'),
+									      runtime.char('o'),
+									      runtime.char('c'),
+									      runtime.char('g')])),
+						   makePrimval('char>?')]));
+		assert.deepEqual(run(state), runtime.list([runtime.char('o'),
+							   runtime.char('k'),
+							   runtime.char('g'),
+							   runtime.char('c')]));
+	});
+*/
 
 
 
