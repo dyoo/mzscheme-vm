@@ -1253,8 +1253,14 @@ runTest("let-rec",
 
 runTest('symbol?',
 	function() {
-		testPrim('symbol?', id, [runtime.symbol('hi')], true);
+		testPrim('symbol?', runtime.symbol, ['hi'], true);
 		testPrim('symbol?', runtime.rational, [1], false);
+	});
+
+runTest('symbol=?',
+	function() {
+		testPrim('symbol=?', runtime.symbol, ['abc', 'abd'], false);
+		testPrim('symbol=?', runtime.symbol, ['cdf', 'cdf'], true);
 	});
 
 runTest('string->symbol',
@@ -1482,6 +1488,91 @@ runTest('format',
 	});
 
 
+runTest('explode',
+	function() {
+		testPrim('explode', runtime.string, [''], runtime.EMPTY);
+		testPrim('explode', runtime.string, ['hello'], runtime.list([runtime.string('h'),
+									     runtime.string('e'),
+									     runtime.string('l'),
+									     runtime.string('l'),
+									     runtime.string('o')]));
+	});
+
+
+runTest('implode',
+	function() {
+		testPrim('implode', id, [runtime.EMPTY], runtime.string(''));
+		testPrim('implode', runtime.list, [[runtime.string('h'),
+						    runtime.string('e'),
+						    runtime.string('l'),
+						    runtime.string('l'),
+						    runtime.string('o')]],
+			 runtime.string('hello'));
+	});
+
+
+runTest('string->int',
+	function() {
+		testPrim('string->int', runtime.string, ['0'], 48);
+		testPrim('string->int', runtime.string, ['\n'], 10);
+	});
+
+
+runTest('int->string',
+	function() {
+		testPrim('int->string', id, [50], runtime.string('2'));
+		testPrim('int->string', id, [10], runtime.string('\n'));
+	});
+
+
+runTest('string-alphabetic?',
+	function() {
+		testPrim('string-alphabetic?', runtime.string, ['abcd'], true);
+		testPrim('string-alphabetic?', runtime.string, ['AbCZ'], true);
+		testPrim('string-alphabetic?', runtime.string, ['a b c'], false);
+		testPrim('string-alphabetic?', runtime.string, ['1243!'], false);
+	});
+
+
+runTest('string-ith',
+	function() {
+		testPrim('string-ith', id, [runtime.string('abcde'), 2], runtime.string('c'));
+		testPrim('string-ith', id, [runtime.string('12345'), 0], runtime.string('1'));
+	});
+
+
+runTest('string-lower-case?',
+	function() {
+		testPrim('string-lower-case?', runtime.string, ['abcd'], true);
+		testPrim('string-lower-case?', runtime.string, ['abc1'], false);
+		testPrim('string-lower-case?', runtime.string, ['Abc'], false);
+	});
+
+
+runTest('string-numeric?',
+	function() {
+		testPrim('string-numeric?', runtime.string, ['1234'], true);
+		testPrim('string-numeric?', runtime.string, ['0+2i'], false);
+		testPrim('string-numeric?', runtime.string, ['03()'], false);
+	});
+
+
+runTest('string-upper-case?',
+	function() {
+		testPrim('string-upper-case?', runtime.string, ['ABCD'], true);
+		testPrim('string-upper-case?', runtime.string, ['AbZ'], false);
+		testPrim('string-upper-case?', runtime.string, ['05AB'], false);
+	});
+
+
+runTest('string-whitespace?',
+	function() {
+		testPrim('string-whitespace?', runtime.string, ['a b c'], false);
+		testPrim('string-whitespace?', runtime.string, [' \n '], true);
+		testPrim('string-whitespace?', runtime.string, ['\t\r\n '], true);
+	});
+
+
 
 /*************************************
  *** Primitive Math Function Tests ***
@@ -1652,6 +1743,15 @@ runTest('min',
 		testPrim('min', runtime.rational, [1], runtime.rational(1));
 		testPrim('min', runtime.rational, [1, 2], runtime.rational(1));
 		testPrim('min', runtime.rational, [2, 1, 4, 3, 6, 2], runtime.rational(1));
+	});
+
+
+runTest('=~',
+	function() {
+		testPrim('=~', id, [1, 2, 2], true);
+		testPrim('=~', id, [1, 2, runtime.float(0.5)], false);
+		testPrim('=~', runtime.rational, [5, 3, 1], false);
+		testPrim('=~', runtime.rational, [5, 3, 4], true);
 	});
 
 
@@ -1967,6 +2067,193 @@ runTest('set-box!',
 
 
 
+
+/****************************
+ *** Hash Primitive Tests ***
+ ****************************/
+
+
+runTest('hash?',
+	function() {
+		testPrim('hash?', id, [1], false);
+		testPrim('hash?', runtime.vector, [[1, 2, 3]], false);
+		testPrim('hash?', runtime.hash, [runtime.EMPTY], true);
+		testPrim('hash?', runtime.hashEq, [runtime.EMPTY], true);
+		testPrim('hash?', runtime.hash, [runtime.list([runtime.pair(1, 2)])], true);
+		testPrim('hash?', runtime.hashEq, [runtime.list([runtime.pair(1, 2)])], true);
+	});
+
+
+runTest('make-hash',
+	function() {
+		var state = new runtime.State();
+		state.pushControl(makeApplication(makePrimval('make-hash'), []));
+		var res = run(state);
+		assert.ok(types.isHash(res));
+		assert.ok(res.hash.isEmpty());
+
+
+		state.pushControl(makeApplication(makePrimval('make-hash'),
+						  [makeConstant(runtime.list([runtime.pair(1, 2),
+									      runtime.pair(3, 4),
+									      runtime.pair(5, 6)]))]));
+		var res2 = run(state);
+		assert.ok(types.isHash(res2));
+		assert.ok( !res2.hash.isEmpty() );
+		assert.ok(res2.hash.containsKey(1));
+		assert.ok(res2.hash.containsKey(3));
+		assert.ok(res2.hash.containsKey(5));
+		assert.deepEqual(res2.hash.get(1), 2);
+		assert.deepEqual(res2.hash.get(3), 4);
+		assert.deepEqual(res2.hash.get(5), 6);
+
+		state.pushControl(makeApplication(makePrimval('make-hash'),
+						  [makeConstant(runtime.list(
+								  [runtime.pair(runtime.string('a'),
+									  	2)]))]));
+		var res3 = run(state);
+		assert.deepEqual(res3.hash.get(runtime.string('a')), 2);
+	});
+
+
+runTest('make-hasheq',
+	function() {
+		var state = new runtime.State();
+		state.pushControl(makeApplication(makePrimval('make-hasheq'), []));
+		var res = run(state);
+		assert.ok(types.isHash(res));
+		assert.ok(res.hash.isEmpty());
+
+
+		state.pushControl(makeApplication(makePrimval('make-hasheq'),
+						  [makeConstant(runtime.list([runtime.pair(1, 2),
+									      runtime.pair(3, 4),
+									      runtime.pair(5, 6)]))]));
+		var res2 = run(state);
+		assert.ok(types.isHash(res2));
+		assert.ok( !res2.hash.isEmpty() );
+		assert.ok(res2.hash.containsKey(1));
+		assert.ok(res2.hash.containsKey(3));
+		assert.ok(res2.hash.containsKey(5));
+		assert.deepEqual(res2.hash.get(1), 2);
+		assert.deepEqual(res2.hash.get(3), 4);
+		assert.deepEqual(res2.hash.get(5), 6);
+
+		var str1 = runtime.string('a');
+		var str2 = runtime.string('a');
+		state.pushControl(makeApplication(makePrimval('make-hasheq'),
+						  [makeConstant(runtime.list(
+								  [runtime.pair(str1, 1),
+								   runtime.pair(str2, 2)]))]));
+		var res3 = run(state);
+		assert.ok( !res3.hash.containsKey(runtime.string('a')) );
+		assert.deepEqual(res3.hash.get(str1), 1);
+		assert.deepEqual(res3.hash.get(str2), 2);
+	});
+
+
+runTest('hash-set!',
+	function() {
+		var testHash = runtime.hash(runtime.list([runtime.pair(1, 1), runtime.pair(2, 3)]));
+		
+//		sys.print('\ntestHash = ' + sys.inspect(testHash) + "\n");
+//		sys.print('testHash.hash = ' + sys.inspect(testHash.hash) + '\n');
+
+		assert.deepEqual(testHash.hash.get(1), 1);
+		assert.deepEqual(testHash.hash.containsKey(5), false);
+
+		var state = new runtime.State();
+		state.pushControl(makeApplication(makePrimval('hash-set!'),
+						  [makeConstant(testHash), makeConstant(5), makeConstant(8)]));
+		var result = run(state);
+		assert.deepEqual(result, runtime.VOID);
+		assert.deepEqual(testHash.hash.get(5), 8);
+
+		state.pushControl(makeApplication(makePrimval('hash-set!'),
+						  [makeConstant(testHash), makeConstant(1), makeConstant(0)]));
+		assert.deepEqual(run(state), runtime.VOID);
+		assert.deepEqual(testHash.hash.get(1), 0);
+	});
+
+
+runTest('hash-ref',
+	function() {
+		var hash1 = runtime.hash(runtime.list([runtime.pair(1, 2),
+						       runtime.pair(runtime.string('hello'),
+								    runtime.string('world')),
+						       runtime.pair(runtime.string('hello'),
+								    runtime.string('world2'))]));
+
+		testPrim('hash-ref', id, [hash1, runtime.string('hello')], runtime.string('world2'));
+		testPrim('hash-ref', id, [hash1, 1, false], 2);
+		testPrim('hash-ref', id, [hash1, 2, false], false);
+		// TODO Implement tests that call thunks!!
+
+		var str1 = runtime.string('hello');
+		var str2 = str1.copy();
+		var hash2 = runtime.hashEq(runtime.list([runtime.pair(str1, runtime.string('world')),
+							 runtime.pair(str2, runtime.string('world2')),
+							 runtime.pair(1, 2),
+							 runtime.pair(3, 4)]));
+		testPrim('hash-ref', id, [hash2, runtime.string('hello'), false], false);
+		testPrim('hash-ref', id, [hash2, str1], runtime.string('world'));
+		testPrim('hash-ref', id, [hash2, runtime.string('a'), 2], 2);
+		// TODO Implement tests that call thunks!!
+	});
+
+
+runTest('hash-remove!',
+	function() {
+		var hash1 = runtime.hash(runtime.list([runtime.pair(1, 2),
+						       runtime.pair(2, 3),
+						       runtime.pair(3, 4),
+						       runtime.pair(4, 5)]));
+		assert.ok(hash1.hash.containsKey(1));
+		testPrim('hash-remove!', id, [hash1, 1], runtime.VOID);
+		assert.ok( !hash1.hash.containsKey(1) );
+
+		var str1 = runtime.string('a');
+		var str2 = runtime.string('b');
+		var hash2 = runtime.hashEq(runtime.list([runtime.pair(str1, 5),
+							 runtime.pair(str2, 3)]));
+		testPrim('hash-remove!', id, [hash2, runtime.string('a')], runtime.VOID);
+		assert.ok(hash2.hash.containsKey(str1));
+		testPrim('hash-remove!', id, [hash2, str2], runtime.VOID);
+		assert.ok( !hash2.hash.containsKey(str2) );
+	});
+
+
+runTest('hash-map',
+	function() {
+		var str1 = runtime.string('hello');
+		var str2 = str1.copy();
+		var str3 = str1.copy();
+		var hash1 = runtime.hash(runtime.list([runtime.pair(str1, runtime.string('a')),
+						       runtime.pair(str2, runtime.string('b')),
+						       runtime.pair(str3, runtime.string('c'))]));
+
+		var state = new runtime.State();
+		state.pushControl(makeApplication(makePrimval('hash-map'),
+						  [makeConstant(hash1), makePrimval('string-append')]));
+		assert.ok( hash1.hash.containsKey(runtime.string('hello')) );
+		assert.deepEqual(run(state), runtime.list([runtime.string('helloc')]));
+
+		var hash2 = runtime.hashEq(runtime.list([runtime.pair(str1, runtime.string('a')),
+							 runtime.pair(str2, runtime.string('b')),
+							 runtime.pair(str3, runtime.string('c'))]));
+
+		var state = new runtime.State();
+		state.pushControl(makeApplication(makePrimval('hash-map'),
+						  [makeConstant(hash2), makePrimval('string-append')]));
+		assert.deepEqual(run(state), runtime.list([runtime.string('helloc'),
+							   runtime.string('hellob'),
+							   runtime.string('helloa')]));
+	});
+
+
+
+
+
 /******************************
  *** Vector Primitive Tests ***
  ******************************/
@@ -2247,12 +2534,96 @@ runTest('char-downcase',
 ///////////////////////////////////////////////////////////////////////
 
 
+runTest('not',
+	function() {
+		testPrim('not', id, [false], true);
+		testPrim('not', id, [0], false);
+		testPrim('not', id, [1], false);
+		testPrim('not', runtime.char, ['0'], false);
+	});
+
+
+runTest('boolean?',
+	function() {
+		testPrim('boolean?', id, [false], true);
+		testPrim('boolean?', id, [true], true);
+		testPrim('boolean?', runtime.string, ['false'], false);
+		testPrim('boolean?', id, [0], false);
+		testPrim('boolean?', id, [1], false);
+	});
+
+
+runTest('eq?',
+	function() {
+		var testStr = runtime.string('hello');
+		var testChar = runtime.char('H');
+		testPrim('eq?', id, [1, 1], true);
+		testPrim('eq?', id, [1, 2], false);
+		testPrim('eq?', id, [runtime.rational(1, 3), runtime.rational(1, 3)], false);
+		testPrim('eq?', runtime.symbol, ['a', 'a'], true);
+		testPrim('eq?', runtime.string, ['a', 'a'], false);
+		testPrim('eq?', id, [testStr, testStr], true);
+		testPrim('eq?', id, [testChar, testChar], true);
+		testPrim('eq?', id, [testChar, runtime.char('H')], false);
+	});
+
+
+runTest('eqv?',
+	function() {
+		var testStr = runtime.string('hello');
+		var testChar = runtime.char('H');
+		testPrim('eqv?', id, [1, 1], true);
+		testPrim('eqv?', id, [1, 2], false);
+		testPrim('eqv?', id, [runtime.rational(1, 3), runtime.rational(1, 3)], true);
+		testPrim('eqv?', runtime.symbol, ['a', 'a'], true);
+		testPrim('eqv?', runtime.string, ['a', 'a'], false);
+		testPrim('eqv?', id, [testStr, testStr], true);
+		testPrim('eqv?', id, [testChar, testChar], true);
+		testPrim('eqv?', id, [testChar, runtime.char('H')], true);
+	});
+
+
+runTest('equal?',
+	function() {
+		var testStr = runtime.string('hello');
+		var testChar = runtime.char('H');
+		testPrim('equal?', id, [1, 1], true);
+		testPrim('equal?', id, [1, 2], false);
+		testPrim('equal?', id, [runtime.rational(1, 3), runtime.rational(1, 3)], true);
+		testPrim('equal?', runtime.symbol, ['a', 'a'], true);
+		testPrim('equal?', runtime.string, ['a', 'a'], true);
+		testPrim('equal?', id, [testStr, testStr], true);
+		testPrim('equal?', id, [testChar, testChar], true);
+		testPrim('equal?', id, [testChar, runtime.char('H')], true);
+	});
+
+
 runTest('struct?',
 	function() {
 		testPrim('struct?', runtime.string, ['a'], false);
 		testPrim('struct?', id, [1], false);
 		testPrim('struct?', id, [runtime.EMPTY], false);
 		testPrim('struct?', runtime.box, [2], false);
+	});
+
+
+runTest('procedure-arity',
+	function() {
+		var state = new runtime.State();
+		state.pushControl(makeApplication(makePrimval('procedure-arity'), [makePrimval('+')]));
+		assert.deepEqual(run(state), runtime.arityAtLeast(0));
+
+		state.pushControl(makeApplication(makePrimval('procedure-arity'), [makePrimval('-')]));
+		assert.deepEqual(run(state), runtime.arityAtLeast(1));
+
+		state.pushControl(makeApplication(makePrimval('procedure-arity'), [makePrimval('equal?')]));
+		assert.deepEqual(run(state), 2);
+
+		state.pushControl(makeApplication(makePrimval('procedure-arity'), [makePrimval('random')]));
+		assert.deepEqual(run(state), runtime.list([0, 1]));
+
+		state.pushControl(makeApplication(makePrimval('procedure-arity'), [makePrimval('hash-ref')]));
+		assert.deepEqual(run(state), runtime.list([2, 3]));
 	});
 
 
