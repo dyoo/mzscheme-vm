@@ -209,6 +209,25 @@ var testPrim = function(funName, f, baseArgs, expectedValue) {
 	assert.deepEqual(run(state), expectedValue);
 };
 
+var testPrimF = function(funName, f, baseArgs, expectedValue, transform) {
+	var state = new runtime.State();
+	var args = [];
+	for (var i = 0; i < baseArgs.length; i++) {
+		args.push(makeConstant(f(baseArgs[i])));
+	}
+	state.pushControl(makeApplication(makePrimval(funName), args));
+	assert.deepEqual(transform(run(state)), expectedValue);
+}
+
+var listToStringArray = function(lst) {
+	var ret = [];
+	while ( !lst.isEmpty() ) {
+		ret.push( lst.first().toString() );
+		lst = lst.rest();
+	}
+	return ret;
+}
+
 var id = function(x) {return x;};
 
 
@@ -1943,16 +1962,16 @@ runTest('member',
 						      runtime.complex(2, 2),
 						      runtime.complex(3, 3)])],
 			 runtime.list([runtime.complex(2, 2), runtime.complex(3, 3)]));
-//		testPrim('member', id, [runtime.char('a'),
-//				        runtime.list([runtime.char('c'),
-//						      runtime.char('b'),
-//						      runtime.char('a')])],
-//			 runtime.list([runtime.char('a')]));
-//		testPrim('member', id, [runtime.string('a'),
-//				        runtime.list([runtime.string('c'),
-//						      runtime.string('b'),
-//						      runtime.string('a')])],
-//			 runtime.list([runtime.string('a')]));
+		testPrimF('member', id, [runtime.char('b'),
+					 runtime.list([runtime.char('c'),
+						       runtime.char('b'),
+						       runtime.char('a')])],
+			  ['#\\b', '#\\a'], listToStringArray);
+		testPrimF('member', id, [runtime.string('a'),
+					 runtime.list([runtime.string('c'),
+						       runtime.string('b'),
+						       runtime.string('a')])],
+			  ['a'], listToStringArray);
 
 		var str = runtime.string('hi');
 		testPrim('member', id, [str, runtime.list([runtime.string('Yo'),
@@ -1967,11 +1986,11 @@ runTest('remove',
 		testPrim('remove', id, [3, runtime.list([1, 2, 3, 4, 5])], runtime.list([1, 2, 4, 5]));
 		testPrim('remove', id, [1, runtime.list([1, 2, 1, 2])], runtime.list([2, 1, 2]));
 		testPrim('remove', id, [10, runtime.list([1, 2, 3, 4])], runtime.list([1,2,3,4]));
-//		testPrim('remove', id, [runtime.string('a'), runtime.list([runtime.string('b'),
-//									   runtime.string('a'),
-//									   runtime.string('c'),
-//									   runtime.string('a')])],
-//			 runtime.list([runtime.string('b'), runtime.string('c'), runtime.string('a')]));
+		testPrimF('remove', id, [runtime.string('a'), runtime.list([runtime.string('b'),
+									    runtime.string('a'),
+									    runtime.string('c'),
+									    runtime.string('a')])],
+			  ['b', 'c', 'a'], listToStringArray);
 		var state = new runtime.State();
 		state.pushControl(makeApplication(makePrimval('remove'),
 						  [makeConstant(runtime.string('a')),
@@ -1996,6 +2015,60 @@ runTest('map',
 						   makeConstant(runtime.list([1, 2, 3]))]));
 		assert.deepEqual(run(state), runtime.list([2, 3, 4]));
 	});
+
+runTest('filter',
+	function() {
+		var state = new runtime.State();
+		state.pushControl(makeApplication(makePrimval('filter'),
+						  [makePrimval('even?'),
+						   makeConstant(runtime.list([1, 2, 3, 4, 5, 6]))]));
+		assert.deepEqual(run(state), runtime.list([2, 4, 6]));
+
+		state.pushControl(makeApplication(makePrimval('filter'),
+						  [makeLam(1, [], makeConstant(false)),
+						   makeConstant(runtime.list([1, 2, 3, 4]))]));
+		assert.deepEqual(run(state), runtime.EMPTY);
+
+		state.pushControl(makeApplication(makePrimval('filter'),
+						  [makeLam(1, [], makeConstant(true)),
+						   makeConstant(runtime.list([1, 2, 3, 4]))]));
+		assert.deepEqual(run(state), runtime.list([1, 2, 3, 4]));
+	});
+
+
+runTest('foldl',
+	function() {
+		var state = new runtime.State();
+		state.pushControl(makeApplication(makePrimval('foldl'),
+						  [makePrimval('-'),
+						   makeConstant(2),
+						   makeConstant(runtime.list([1, 2, 3, 4]))]));
+		assert.deepEqual(run(state), 4);
+
+		state.pushControl(makeApplication(makePrimval('foldl'),
+						  [makePrimval('cons'),
+						   makeConstant(runtime.list([1, 2])),
+						   makeConstant(runtime.list([3, 4, 5, 6]))]));
+		assert.deepEqual(run(state), runtime.list([6, 5, 4, 3, 1, 2]));
+	});
+
+
+runTest('foldr',
+	function() {
+		var state = new runtime.State();
+		state.pushControl(makeApplication(makePrimval('foldr'),
+						  [makePrimval('-'),
+						   makeConstant(2),
+						   makeConstant(runtime.list([1, 2, 3, 4]))]));
+		assert.deepEqual(run(state), 0);
+
+		state.pushControl(makeApplication(makePrimval('foldr'),
+						  [makePrimval('cons'),
+						   makeConstant(runtime.list([1, 2])),
+						   makeConstant(runtime.list([3, 4, 5, 6]))]));
+		assert.deepEqual(run(state), runtime.list([3, 4, 5, 6, 1, 2]));
+	});
+
 
 
 runTest('build-list',
@@ -2078,10 +2151,12 @@ runTest('compose',
 		var state = new runtime.State();
 		state.pushControl(makeApplication(makeApplication(makePrimval('compose'),
 								  [makePrimval('magnitude'),
-								   makePrimval('+')]),
+								   makePrimval('+'),
+								   makePrimval('values')]),
 						  [makeConstant(2),
 						   makeConstant(3),
-						   makeConstant(runtime.complex(-2, 4))]));
+						   makeConstant(2),
+						   makeConstant(runtime.complex(-4, 4))]));
 		assert.deepEqual(run(state), runtime.rational(5));
 
 		var composed = makeApplication(makePrimval('compose'),
@@ -2257,7 +2332,6 @@ runTest('hash-ref',
 		testPrim('hash-ref', id, [hash1, runtime.string('hello')], runtime.string('world2'));
 		testPrim('hash-ref', id, [hash1, 1, false], 2);
 		testPrim('hash-ref', id, [hash1, 2, false], false);
-		// TODO Implement tests that call thunks!!
 
 		var str1 = runtime.string('hello');
 		var str2 = str1.copy();
@@ -2268,7 +2342,19 @@ runTest('hash-ref',
 		testPrim('hash-ref', id, [hash2, runtime.string('hello'), false], false);
 		testPrim('hash-ref', id, [hash2, str1], runtime.string('world'));
 		testPrim('hash-ref', id, [hash2, runtime.string('a'), 2], 2);
-		// TODO Implement tests that call thunks!!
+
+		var state = new runtime.State();
+		state.pushControl(makeApplication(makePrimval('hash-ref'),
+						  [makeConstant(hash1),
+						   makeConstant(2),
+						   makeLam(0, [], makeConstant(15))]));
+		assert.deepEqual(run(state), 15);
+
+		state.pushControl(makeApplication(makePrimval('hash-ref'),
+						  [makeConstant(hash2),
+						   makeConstant(runtime.string('hello')),
+						   makeLam(0, [], makeConstant(true))]));
+		assert.deepEqual(run(state), true);
 	});
 
 
@@ -2602,6 +2688,36 @@ runTest('char-downcase',
 
 
 ///////////////////////////////////////////////////////////////////////
+
+
+runTest('values',
+	function() {
+		testPrim('values', id, [], new runtime.ValuesWrapper([]));
+		testPrim('values', id, [1, 2, 3, 4], new runtime.ValuesWrapper([1, 2, 3, 4]));
+		testPrim('values', id, [1], 1);
+	});
+
+runTest('call-with-values',
+	function() {
+		var state = new runtime.State();
+		state.pushControl(makeApplication(makePrimval('call-with-values'),
+						  [makePrimval('values'),
+						   makePrimval('+')]));
+		assert.deepEqual(run(state), 0);
+
+		state.pushControl(makeApplication(makePrimval('call-with-values'),
+						  [makeLam(0, [], makeConstant(1)),
+						   makePrimval('+')]));
+		assert.deepEqual(run(state), 1);
+
+		state.pushControl(makeApplication(makePrimval('call-with-values'),
+						  [makeLam(0, [], makeApplication(makePrimval('values'),
+								  		  [makeConstant(1),
+										   makeConstant(2),
+										   makeConstant(3)])),
+						   makePrimval('+')]));
+		assert.deepEqual(run(state), 6);
+	});
 
 
 runTest('not',
