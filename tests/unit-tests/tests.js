@@ -1,13 +1,3 @@
-var assert = require('assert');
-var runtime = require('./../../lib/test-support');
-//var control = require('./../../lib/control');
-//var types = require('./../../lib/types');
-var sys = require('sys');
-
-var control = runtime.control;
-var types = runtime.types;
-
-
 //////////////////////////////////////////////////////////////////////
 
 
@@ -1676,18 +1666,18 @@ runTest('abs',
 		testPrim('abs', runtime.rational, [-2], runtime.rational(2));
 	});
 
-/*
+
 runTest('quotient',
 	function() {
-	    testPrim('quotient', runtime.rational, [5, 3], runtime.rational(1));
+		testPrim('quotient', runtime.rational, [5, 3], runtime.rational(1));
 	});
 
 
 runTest('remainder',
 	function() {
-	    testPrim('remainder', runtime.rational, [5, 3], runtime.rational(2));
+		testPrim('remainder', runtime.rational, [5, 3], runtime.rational(2));
 	});
-*/
+
 
 runTest('modulo',
 	function() {

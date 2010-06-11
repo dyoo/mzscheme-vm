@@ -1,11 +1,21 @@
 #!/bin/bash
 
-rm -f support.js
+origdir=`pwd`
+cd `dirname $0`
+
+if [ $2 ]
+    then
+	target=$origdir/$2
+    else
+	target=support.js
+fi
+
+rm -f $target
 
 if [ -f $1-platform.js ]
     then
 	echo 'Adding file' $1'-support.js';
-	cat $1-platform.js >> support.js;
+	cat $1-platform.js >> $target;
     else
 	echo "Requires platform either browser or node"
 	exit
@@ -13,8 +23,5 @@ fi
 
 for i in `cat order`; do
 	echo 'Adding file' $i;
-	cat $i >> support.js;
+	cat $i >> $target;
 done;
-
-echo 'Adding exports for testing'
-cat exports.js >> support.js;
