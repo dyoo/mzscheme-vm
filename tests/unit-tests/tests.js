@@ -1770,6 +1770,16 @@ runTest('conjugate',
 	});
 
 
+runTest('magnitude',
+	function() {
+		testPrim('magnitude', id, [4], 4);
+		testPrim('magnitude', id, [runtime.complex(3, 4)], 5);
+		testPrim('magnitude', id, [runtime.float(3.5)], runtime.float(3.5));
+		testPrim('magnitude', id, [runtime.rational(3, 5)], runtime.rational(3, 5));
+		testPrim('magnitude', id, [runtime.complex(12, 5)], 13);
+	});
+
+
 
 /*************************************
  *** Primitive List Function Tests ***
@@ -1937,7 +1947,7 @@ runTest('member',
 //				        runtime.list([runtime.char('c'),
 //						      runtime.char('b'),
 //						      runtime.char('a')])],
-//			 runtime.list([runtime.char('b')]));
+//			 runtime.list([runtime.char('a')]));
 //		testPrim('member', id, [runtime.string('a'),
 //				        runtime.list([runtime.string('c'),
 //						      runtime.string('b'),
@@ -2041,7 +2051,6 @@ runTest('argmin',
 	});
 
 
-/*
 runTest('quicksort',
 	function() {
 		var state = new runtime.State();
@@ -2062,7 +2071,28 @@ runTest('quicksort',
 							   runtime.char('g'),
 							   runtime.char('c')]));
 	});
-*/
+
+
+runTest('compose',
+	function() {
+		var state = new runtime.State();
+		state.pushControl(makeApplication(makeApplication(makePrimval('compose'),
+								  [makePrimval('magnitude'),
+								   makePrimval('+')]),
+						  [makeConstant(2),
+						   makeConstant(3),
+						   makeConstant(runtime.complex(-2, 4))]));
+		assert.deepEqual(run(state), runtime.rational(5));
+
+		var composed = makeApplication(makePrimval('compose'),
+					       [makePrimval('even?'),
+						makePrimval('*'),
+						makePrimval('values')]);
+		state.pushControl(makeApplication(composed, [makeConstant(3), makeConstant(5)]));
+		assert.deepEqual(run(state), false);
+		state.pushControl(makeApplication(composed, [makeConstant(2), makeConstant(4), makeConstant(15)]));
+		assert.deepEqual(run(state), true);
+	});
 
 
 
