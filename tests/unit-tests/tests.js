@@ -11,7 +11,13 @@ var types = runtime.types;
 //////////////////////////////////////////////////////////////////////
 
 
-var run = runtime.run;
+var run = function(state) {
+	while (!state.isStuck()) {
+	    runtime.step(state);
+	}
+	return state.v;
+}
+
 var step = runtime.step;
 
 
@@ -2800,6 +2806,7 @@ runTest('struct?',
 		testPrim('struct?', id, [1], false);
 		testPrim('struct?', id, [runtime.EMPTY], false);
 		testPrim('struct?', runtime.box, [2], false);
+		testPrim('struct?', id, [runtime.posn(2, 4)], true);
 	});
 
 
@@ -2828,6 +2835,34 @@ runTest('identity',
 		testPrim('identity', id, [5], 5);
 		testPrim('identity', runtime.string, ['hello'], runtime.string('hello'));
 	});
+
+
+runTest('make-posn',
+	function() {
+		testPrim('make-posn', id, [4, 5], runtime.posn(4, 5));
+		testPrim('make-posn', runtime.char, ['a', 'B'], runtime.posn(runtime.char('a'), runtime.char('B')));
+	});
+
+runTest('posn?',
+	function() {
+		testPrim('posn?', id, [4], false);
+		testPrim('posn?', runtime.box, [4], false);
+		testPrim('posn?', id, [runtime.posn(5, 4)], true);
+	});
+
+runTest('posn-x',
+	function() {
+		testPrim('posn-x', id, [runtime.posn(5, 4)], 5);
+		testPrim('posn-x', id, [runtime.posn(runtime.char('a'), runtime.char('b'))], runtime.char('a'));
+	});
+
+runTest('posn-y',
+	function() {	
+		testPrim('posn-y', id, [runtime.posn(5, 4)], 4);
+		testPrim('posn-y', id, [runtime.posn(runtime.char('a'), runtime.char('b'))], runtime.char('b'));
+	});
+
+
 
 
 

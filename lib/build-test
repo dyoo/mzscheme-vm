@@ -2,6 +2,15 @@
 
 rm -f test-support.js
 
+if [ -f $1-platform.js ]
+    then
+	echo 'Adding file' $1'-platform.js';
+	cat $1-platform.js >> test-support.js;
+    else
+	echo "Requires platform either browser or node"
+	exit
+fi
+
 for i in `cat order`; do
 	echo 'Adding file' $i;
 	cat $i >> test-support.js;
