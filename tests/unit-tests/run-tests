@@ -1,0 +1,29 @@
+#!/bin/bash
+
+cd `dirname $0`
+
+if [ $1 ]
+    then
+	filename=$1
+    else
+	filename='exec-tests.js'
+fi
+
+#if [ -f $filename ]
+#    then
+#	echo "File exec-tests.js already exists."
+#	echo "Please remove" filename "or use a different file."
+#	exit
+#fi
+
+rm -f $filename
+
+echo 'Building support files'
+echo
+../../lib/build-test node $filename
+echo
+
+cat imports.js >> $filename
+cat tests.js >> $filename
+node $filename
+#rm -f $filename
