@@ -394,10 +394,11 @@
         (hash-ref (current-indirect-map) an-indirect)]
        [else
         (begin
-          ;; make the shell, and continue the copy.
+          ;; Make the shell, and continue the copy.
           (let ([partial-result (make-indirect #f)])
             (hash-set! (current-indirect-map) an-indirect partial-result)
             (let* ([translated-closure (translate-closure v)])
+              ;; Fix the shell.
               (set-indirect-v! partial-result translated-closure)
               partial-result)))])]))
 

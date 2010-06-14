@@ -1,4 +1,13 @@
+!!! WARNING
 !!! This is not ready for public consumption yet. !!!
+!!! This is not ready for public consumption yet. !!!
+!!! This is not ready for public consumption yet. !!!
+!!! WARNING
+
+
+Summary
+
+    mzscheme-vm: an implementation of the mzscheme VM in Javascript.
 
 
 
@@ -63,3 +72,13 @@ TODO
 * Make the tests/mzscheme-basic tests run under mzscheme-vm.
 
 * Structured error values
+
+
+
+######################################################################
+
+
+Contributors: the following folks have helped to implement
+mzscheme-vm:
+
+   * Ethan Cecchetti
