@@ -118,15 +118,15 @@
 (arity-test eqv? 2 2)
 (arity-test equal? 2 2)
 
-(err/rt-test (set-mcdr! (list 1 2) 4))
+;(err/rt-test (set-mcdr! (list 1 2) 4))
 
 (test '(a b c d e) 'dot '(a . (b . (c . (d . (e . ()))))))
-(define x (mcons 'a (mcons 'b (mcons 'c null))))
+;(define x (mcons 'a (mcons 'b (mcons 'c null))))
 (define y x)
-(set-mcdr! x 4)
-(test (mcons 'a 4) 'set-mcdr! x)
-(set-mcar! x 'z)
-(test (mcons 'z 4) 'set-mcar! x)
+;(set-mcdr! x 4)
+;(test (mcons 'a 4) 'set-mcdr! x)
+;(set-mcar! x 'z)
+;(test (mcons 'z 4) 'set-mcar! x)
 (test #t eqv? x y)
 (test '(a b c . d) 'dot '(a . (b . (c . d))))
 (test #f list? y)
@@ -162,9 +162,6 @@
 (test '() list)
 
 
-;; dyoo: subsetting here
-#;(
-
 (test 3 length '(a b c))
 (test 3 length '(a (b) (c d e)))
 (test 0 length '())
@@ -179,12 +176,18 @@
 (set! x (cons 4 0))
 (err/rt-test (length x))
 
+#|
+FIXME: mutable pairs are not currently implemented!
+
+
 (arity-test set-mcar! 2 2)
 (arity-test set-mcdr! 2 2)
 (err/rt-test (set-mcar! 4 4))
 (err/rt-test (set-mcdr! 4 4))
 (err/rt-test (set-mcar! (cons 1 4) 4))
 (err/rt-test (set-mcdr! (cons 1 4) 4))
+
+|#
 
 (define (box-tests box unbox box? set-box! set-box!-name unbox-name)
   (define b (box 5))
@@ -376,6 +379,9 @@
 
 (arity-test symbol? 1 1)
 
+#|
+FIXME: Not currently implemented
+
 (test #t keyword? '#:a)
 (test #f keyword? 'a)
 (test '#:apple string->keyword "apple")
@@ -391,6 +397,8 @@
 (test #t keyword<? (string->keyword "\uA0") (string->keyword "\uFF"))
 (test #f keyword<? (string->keyword "\uFF") (string->keyword "\uA0"))
 (test #f keyword<? (string->keyword "\uA0") (string->keyword "\uA0"))
+
+|#
 
 (arity-test keyword? 1 1)
 (arity-test keyword<? 2 -1)
@@ -933,6 +941,10 @@
 	   string-ci<? 
 	   string-ci>=? 
 	   string-ci<=?
+	   ))
+#|
+FIXME: string-locale not currently implemented!
+
 	   string-locale=? 
 	   string-locale>? 
 	   string-locale<? 
@@ -940,6 +952,10 @@
 	   string-locale-ci>? 
 	   string-locale-ci<?))
 
+|#
+
+#|
+FIXME: byte operations not currently implemented!
 
 (test #t byte? 10)
 (test #t byte? 0)
@@ -950,8 +966,8 @@
 (test #f byte? (expt 2 100))
 (test #f byte? #\newline)
 
+|#
 
-) ;; dyoo: subset ends
 
 ;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 

@@ -23,7 +23,7 @@ echo
 ../../lib/build-test node $filename
 echo
 
-cat imports.js >> $filename
+#cat imports.js >> $filename
 cat tests.js >> $filename
 node $filename
 #rm -f $filename

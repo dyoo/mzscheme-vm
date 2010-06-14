@@ -14,14 +14,19 @@ rm -f $target
 
 if [ -f $1-platform.js ]
     then
-	echo 'Adding file' $1'-support.js';
+	echo 'Adding platform-specific code';
 	cat $1-platform.js >> $target;
     else
 	echo "Requires platform either browser or node"
 	exit
 fi
 
+echo 'Concatinating main source files';
 for i in `cat order`; do
-	echo 'Adding file' $i;
+	echo '    adding' $i;
 	cat $i >> $target;
 done;
+
+
+echo
+echo 'Done building'

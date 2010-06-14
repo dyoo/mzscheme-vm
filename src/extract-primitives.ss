@@ -1,6 +1,7 @@
 #lang scheme/base
 
 (require scheme/match
+         scheme/contract
          compiler/zo-parse)
 
 
@@ -9,6 +10,8 @@
 
 ;; The structure of the code follows the type definitions in:
 ;; http://docs.plt-scheme.org/mzc/decompile.html?q=zo-parse#(def._((lib._compiler/zo-parse..ss)._indirect~3f))
+
+(provide/contract [extract-primitives (compilation-top? . -> . (listof symbol?))])
 
 
 ;; extract-primitives: toplevel -> (listof symbol)

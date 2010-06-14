@@ -975,7 +975,7 @@ runTest("let-void, with boxes",
 	    }
 	    assert.equal(state.vstack.length, 2);
 	    for(var i = 0; i < state.vstack.length; i++) {
-		assert.ok(state.vstack[i] instanceof runtime.Box);
+		assert.ok( runtime.isBox(state.vstack[i]) );
 	    }
 	    var result = run(state);
 	    assert.equal(result, "blah");
@@ -1024,8 +1024,8 @@ runTest("boxenv",
 				       makeBoxenv(0, 
 						  makeLocalRef(0))));
 	    var result = run(state);
-	    assert.ok(result instanceof runtime.Box);
-	    assert.deepEqual(result, new runtime.Box("foo"));
+	    assert.ok( runtime.isBox(result) );
+	    assert.deepEqual(result, runtime.box("foo"));
 	});
 
 
@@ -1077,9 +1077,9 @@ runTest("install-value, with boxes",
 		step(state);
 	    }
 	    assert.equal(state.vstack.length, 4);
-	    assert.deepEqual(state.vstack[0], new runtime.Box("4"));
-	    assert.deepEqual(state.vstack[1], new runtime.Box("1"));
-	    assert.deepEqual(state.vstack[2], new runtime.Box("3"));
+	    assert.deepEqual(state.vstack[0], runtime.box("4"));
+	    assert.deepEqual(state.vstack[1], runtime.box("1"));
+	    assert.deepEqual(state.vstack[2], runtime.box("3"));
 	    var result = run(state);
 	    assert.equal(result, "peep");
 	    assert.equal(state.vstack.length, 0);
@@ -1310,7 +1310,7 @@ runTest('stinrg->number',
 runTest('string?',
 	function() {
 		testPrim('string?', id, [runtime.symbol('hello!')], false);
-		testPrim('string?', id, ['string'], false);
+		testPrim('string?', id, ['string'], true);
 		testPrim('string?', runtime.string, ['world'], true);
 	});
 
@@ -1364,6 +1364,7 @@ runTest('string<?',
 		testPrim('string<?', runtime.string, ['abc', 'ab'], false);
 		testPrim('string<?', runtime.string, ['abc', 'abc'], false);
 		testPrim('string<?', runtime.string, ['abc', 'def', 'cde'], false);
+		testPrim('string<?', runtime.string, ['A', ']', 'a'], true);
 		testPrim('string<?', runtime.string, ['a', 'b', 'c', 'd', 'dd', 'e'], true);
 	});
 
@@ -1373,6 +1374,7 @@ runTest('string>?',
 		testPrim('string>?', runtime.string, ['abc', 'ab'], true);
 		testPrim('string>?', runtime.string, ['abc', 'abc'], false);
 		testPrim('string>?', runtime.string, ['def', 'abc', 'cde'], false);
+		testPrim('string>?', runtime.string, ['a', ']', 'A'], true);
 		testPrim('string>?', runtime.string, ['e', 'd', 'cc', 'c', 'b', 'a'], true);
 	});
 
@@ -1383,6 +1385,7 @@ runTest('string<=?',
 		testPrim('string<=?', runtime.string, ['abc', 'abc'], true);
 		testPrim('string<=?', runtime.string, ['abc', 'aBc'], false);
 		testPrim('string<=?', runtime.string, ['abc', 'def', 'cde'], false);
+		testPrim('string<=?', runtime.string, ['A', ']', 'a'], true);
 		testPrim('string<=?', runtime.string, ['a', 'b', 'b', 'd', 'dd', 'e'], true);
 	});
 
@@ -1393,6 +1396,7 @@ runTest('string>=?',
 		testPrim('string>=?', runtime.string, ['abc', 'abc'], true);
 		testPrim('string>=?', runtime.string, ['aBc', 'abc'], false);
 		testPrim('string>=?', runtime.string, ['def', 'abc', 'cde'], false);
+		testPrim('string>=?', runtime.string, ['a', ']', 'A'], true);
 		testPrim('string>=?', runtime.string, ['e', 'e', 'cc', 'c', 'b', 'a'], true);
 	});
 
@@ -2176,7 +2180,7 @@ runTest('compose',
 runTest('box',
 	function() {
 		testPrim('box', id, [1], runtime.box(1));
-		testPrim('box', runtime.string, ['abc'], new runtime.Box(runtime.string('abc')));
+		testPrim('box', runtime.string, ['abc'], runtime.box(runtime.string('abc')));
 	});
 
 
