@@ -1280,14 +1280,14 @@ runTest('symbol=?',
 
 runTest('string->symbol',
 	function() {
-		testPrim('string->symbol', id, [runtime.string('hello!')], runtime.symbol('hello!'));
-		testPrim('string->symbol', id, [runtime.string(' world')], runtime.symbol(' world'));
+		testPrim('string->symbol', id, ['hello!'], runtime.symbol('hello!'));
+		testPrim('string->symbol', runtime.string, [' world'], runtime.symbol(' world'));
 	});
 
 
 runTest('symbol->string',
 	function() {
-		testPrim('symbol->string', id, [runtime.symbol('hello!')], runtime.string('hello!'));
+		testPrim('symbol->string', runtime.symbol, ['hello!'], runtime.string('hello!'));
 	});
 
 
@@ -1302,7 +1302,7 @@ runTest('number->string',
 runTest('stinrg->number',
 	function() {
 		testPrim('string->number', runtime.string, ['abc'], false);
-		testPrim('string->number', runtime.string, ['123'], 123);
+		testPrim('string->number', id, ['123'], 123);
 		testPrim('string->number', runtime.string, ['0+3i'], runtime.complex(0, 3));
 	});
 
@@ -1331,79 +1331,85 @@ runTest('string',
 runTest('string-length',
 	function() {
 		testPrim('string-length', runtime.string, [''], 0);
+		testPrim('string-length', id, ['5'], 1);
 		testPrim('string-length', runtime.string, ['antidisestablishmentarianism'], 28);
 	});
 
 runTest('string-ref',
 	function() {
+		testPrim('string-ref', id, ['world', 3], runtime.char('l'));
 		testPrim('string-ref', id, [runtime.string('abcd'), 1], runtime.char('b'));
 		testPrim('string-ref', id, [runtime.string('asdfasdf'), 4], runtime.char('a'));
 	});
 
 runTest('string=?',
 	function() {
+		testPrim('string=?', id, ['asdf', 'Asdf'], false);
+		testPrim('string=?', id, ['asdf', runtime.string('asdf')], true);
 		testPrim('string=?', runtime.string, ['asdf', 'asdf', 'Asdf'], false);
 		testPrim('string=?', runtime.string, ['far', 'fAr'], false);
-		testPrim('string=?', runtime.string, ['', ''], true);
+		testPrim('string=?', id, ['', ''], true);
 		testPrim('string=?', runtime.string, ['as', 'as', 'as'], true);
 		testPrim('string=?', runtime.string, ['1', '1', '2'], false);
 	});
 
 runTest('string-ci=?',
 	function() {
+		testPrim('string-ci=?', id, ['asdf', 'Asdf'], true);
+		testPrim('string-ci=?', id, ['asdf', runtime.string('asdf')], true);
 		testPrim('string-ci=?', runtime.string, ['asdf', 'asdf', 'Asdf'], true);
 		testPrim('string-ci=?', runtime.string, ['far', 'fAr'], true);
-		testPrim('string-ci=?', runtime.string, ['', ''], true);
+		testPrim('string-ci=?', id, ['', ''], true);
 		testPrim('string-ci=?', runtime.string, ['as', 'as', 'as'], true);
 		testPrim('string-ci=?', runtime.string, ['1', '1', '2'], false);
 	});
 
 runTest('string<?',
 	function() {
-		testPrim('string<?', runtime.string, ["", "a"], true);
+		testPrim('string<?', id, ["", "a"], true);
 		testPrim('string<?', runtime.string, ['abc', 'ab'], false);
-		testPrim('string<?', runtime.string, ['abc', 'abc'], false);
+		testPrim('string<?', id, [runtime.string('abc'), 'abc'], false);
 		testPrim('string<?', runtime.string, ['abc', 'def', 'cde'], false);
-		testPrim('string<?', runtime.string, ['A', ']', 'a'], true);
+		testPrim('string<?', id, ['A', runtime.string(']'), 'a'], true);
 		testPrim('string<?', runtime.string, ['a', 'b', 'c', 'd', 'dd', 'e'], true);
 	});
 
 runTest('string>?',
 	function() {
-		testPrim('string>?', runtime.string, ["", "a"], false);
+		testPrim('string>?', id, ["", "a"], false);
 		testPrim('string>?', runtime.string, ['abc', 'ab'], true);
-		testPrim('string>?', runtime.string, ['abc', 'abc'], false);
-		testPrim('string>?', runtime.string, ['def', 'abc', 'cde'], false);
-		testPrim('string>?', runtime.string, ['a', ']', 'A'], true);
+		testPrim('string>?', id, [runtime.string('abc'), 'abc'], false);
+		testPrim('string>?', runtime.string, ['abc', 'def', 'cde'], false);
+		testPrim('string>?', id, ['a', runtime.string(']'), 'A'], true);
 		testPrim('string>?', runtime.string, ['e', 'd', 'cc', 'c', 'b', 'a'], true);
 	});
 
 runTest('string<=?',
 	function() {
-		testPrim('string<=?', runtime.string, ["", "a"], true);
+		testPrim('string<=?', id, ["", "a"], true);
 		testPrim('string<=?', runtime.string, ['abc', 'ab'], false);
-		testPrim('string<=?', runtime.string, ['abc', 'abc'], true);
+		testPrim('string<=?', id, [runtime.string('abc'), 'abc'], true);
 		testPrim('string<=?', runtime.string, ['abc', 'aBc'], false);
 		testPrim('string<=?', runtime.string, ['abc', 'def', 'cde'], false);
-		testPrim('string<=?', runtime.string, ['A', ']', 'a'], true);
+		testPrim('string<=?', id, ['A', runtime.string(']'), 'a'], true);
 		testPrim('string<=?', runtime.string, ['a', 'b', 'b', 'd', 'dd', 'e'], true);
 	});
 
 runTest('string>=?',
 	function() {
-		testPrim('string>=?', runtime.string, ["", "a"], false);
+		testPrim('string>=?', id, ["", "a"], false);
 		testPrim('string>=?', runtime.string, ['abc', 'ab'], true);
-		testPrim('string>=?', runtime.string, ['abc', 'abc'], true);
+		testPrim('string>=?', id, [runtime.string('abc'), 'abc'], true);
 		testPrim('string>=?', runtime.string, ['aBc', 'abc'], false);
-		testPrim('string>=?', runtime.string, ['def', 'abc', 'cde'], false);
-		testPrim('string>=?', runtime.string, ['a', ']', 'A'], true);
+		testPrim('string>=?', runtime.string, ['abc', 'def', 'cde'], false);
+		testPrim('string>=?', id, ['a', runtime.string(']'), 'A'], true);
 		testPrim('string>=?', runtime.string, ['e', 'e', 'cc', 'c', 'b', 'a'], true);
 	});
 
 runTest('string-ci<?',
 	function() {
-		testPrim('string-ci<?', runtime.string, ["", "a"], true);
-		testPrim('string-ci<?', runtime.string, ['Abc', 'ab'], false);
+		testPrim('string-ci<?', id, ["", "a"], true);
+		testPrim('string-ci<?', id, [runtime.string('Abc'), 'ab'], false);
 		testPrim('string-ci<?', runtime.string, ['abc', 'abc'], false);
 		testPrim('string-ci<?', runtime.string, ['abc', 'def', 'cde'], false);
 		testPrim('string-ci<?', runtime.string, ['a', 'b', 'C', 'd', 'dd', 'e'], true);
@@ -1411,8 +1417,8 @@ runTest('string-ci<?',
 
 runTest('string-ci>?',
 	function() {
-		testPrim('string-ci>?', runtime.string, ["", "a"], false);
-		testPrim('string-ci>?', runtime.string, ['abc', 'Ab'], true);
+		testPrim('string-ci>?', id, ["", "a"], false);
+		testPrim('string-ci>?', id, [runtime.string('Abc'), 'ab'], true);
 		testPrim('string-ci>?', runtime.string, ['abc', 'abc'], false);
 		testPrim('string-ci>?', runtime.string, ['def', 'abc', 'cde'], false);
 		testPrim('string-ci>?', runtime.string, ['e', 'D', 'cc', 'c', 'b', 'a'], true);
@@ -1420,9 +1426,9 @@ runTest('string-ci>?',
 
 runTest('string-ci<=?',
 	function() {
-		testPrim('string-ci<=?', runtime.string, ["", "a"], true);
+		testPrim('string-ci<=?', id, ["", "a"], true);
 		testPrim('string-ci<=?', runtime.string, ['Abc', 'ab'], false);
-		testPrim('string-ci<=?', runtime.string, ['abc', 'abc'], true);
+		testPrim('string-ci<=?', id, [runtime.string('abc'), 'abc'], true);
 		testPrim('string-ci<=?', runtime.string, ['abc', 'aBc'], true);
 		testPrim('string-ci<=?', runtime.string, ['abc', 'def', 'cde'], false);
 		testPrim('string-ci<=?', runtime.string, ['a', 'b', 'b', 'D', 'dd', 'e'], true);
@@ -1430,9 +1436,9 @@ runTest('string-ci<=?',
 
 runTest('string-ci>=?',
 	function() {
-		testPrim('string-ci>=?', runtime.string, ["", "a"], false);
-		testPrim('string-ci>=?', runtime.string, ['abc', 'ab'], true);
-		testPrim('string-ci>=?', runtime.string, ['abc', 'abc'], true);
+		testPrim('string-ci>=?', id, ["", "a"], false);
+		testPrim('string-ci>=?', runtime.string, ['Abc', 'ab'], true);
+		testPrim('string-ci>=?', id, [runtime.string('abc'), 'abc'], true);
 		testPrim('string-ci>=?', runtime.string, ['aBc', 'abc'], true);
 		testPrim('string-ci>=?', runtime.string, ['def', 'abc', 'cde'], false);
 		testPrim('string-ci>=?', runtime.string, ['e', 'e', 'cc', 'C', 'b', 'a'], true);
@@ -1441,9 +1447,9 @@ runTest('string-ci>=?',
 
 runTest('substring',
 	function() {
-		testPrim('substring', id, [runtime.string('abc'), 1], runtime.string('bc'));
+		testPrim('substring', id, ['abc', 1], runtime.string('bc'));
 		testPrim('substring', id, [runtime.string('abc'), 0], runtime.string('abc'));
-		testPrim('substring', id, [runtime.string('abcdefgh'), 2, 4], runtime.string('cd'));
+		testPrim('substring', id, ['abcdefgh', 2, 4], runtime.string('cd'));
 		testPrim('substring', id, [runtime.string('abc'), 3], runtime.string(''));
 		testPrim('substring', id, [runtime.string('abcd'), 2, 2], runtime.string(''));
 	});
@@ -1452,6 +1458,7 @@ runTest('substring',
 runTest('string-append',
 	function() {
 		testPrim('string-append', runtime.string, [], runtime.string(''));
+		testPrim('string-append', id, ['a', runtime.string('b'), 'c'], runtime.string('abc'));
 		testPrim('string-append', runtime.string, ['a', '', 'b', ' world'], runtime.string('ab world'));
 	});
 
@@ -1459,9 +1466,10 @@ runTest('string-append',
 runTest('string->list',
 	function() {
 		testPrim('string->list', runtime.string, [''], runtime.EMPTY);
-		testPrim('string->list', runtime.string, ['one'], runtime.list([runtime.char('o'),
-										runtime.char('n'),
-										runtime.char('e')]));
+		testPrim('string->list', id, ['one'], runtime.list([runtime.char('o'), runtime.char('n'), runtime.char('e')]));
+		testPrim('string->list', runtime.string, ['two'], runtime.list([runtime.char('t'),
+										runtime.char('w'),
+										runtime.char('o')]));
 	});
 
 runTest('list->string',
@@ -1480,6 +1488,7 @@ runTest('list->string',
 runTest('string-copy',
 	function() {
 		testPrim('string-copy', runtime.string, [''], runtime.string(''));
+		testPrim('string-copy', id, ['had'], runtime.string('had'));
 		testPrim('string-copy', runtime.string, ['hello'], runtime.string('hello'));
 
 		var state = new runtime.State();
@@ -1487,19 +1496,19 @@ runTest('string-copy',
 		state.pushControl(makeApplication(makePrimval('string-copy'), [makeConstant(str)]));
 		var result = run(state);
 		assert.deepEqual(result, str);
-		assert.deepEqual((result === str), false);
+		assert.ok(result !== str);
 	});
 
 
 runTest('format',
 	function() {
 		testPrim('format', runtime.string, ['hello'], runtime.string('hello'));
-		testPrim('format', runtime.string, ['hello~n'], runtime.string('hello\n'));
+		testPrim('format', id, ['hello~n'], runtime.string('hello\n'));
 		testPrim('format', id, [runtime.string('Test: ~a~nTest2: ~A~%'),
 					runtime.char('A'),
 					runtime.list([1, 2, 3])],
 			 runtime.string('Test: A\nTest2: (1 2 3)\n'));
-		testPrim('format', id, [runtime.string('~s ~S ~a'),
+		testPrim('format', id, ['~s ~S ~a',
 					runtime.char('b'),
 					runtime.complex(0, 2),
 					runtime.char('b')],
@@ -1509,7 +1518,7 @@ runTest('format',
 
 runTest('explode',
 	function() {
-		testPrim('explode', runtime.string, [''], runtime.EMPTY);
+		testPrim('explode', id, [''], runtime.EMPTY);
 		testPrim('explode', runtime.string, ['hello'], runtime.list([runtime.string('h'),
 									     runtime.string('e'),
 									     runtime.string('l'),
@@ -1546,16 +1555,16 @@ runTest('int->string',
 
 runTest('string-alphabetic?',
 	function() {
-		testPrim('string-alphabetic?', runtime.string, ['abcd'], true);
+		testPrim('string-alphabetic?', id, ['abcd'], true);
 		testPrim('string-alphabetic?', runtime.string, ['AbCZ'], true);
-		testPrim('string-alphabetic?', runtime.string, ['a b c'], false);
+		testPrim('string-alphabetic?', id, ['a b c'], false);
 		testPrim('string-alphabetic?', runtime.string, ['1243!'], false);
 	});
 
 
 runTest('string-ith',
 	function() {
-		testPrim('string-ith', id, [runtime.string('abcde'), 2], runtime.string('c'));
+		testPrim('string-ith', id, ['abcde', 2], runtime.string('c'));
 		testPrim('string-ith', id, [runtime.string('12345'), 0], runtime.string('1'));
 	});
 
@@ -1563,14 +1572,15 @@ runTest('string-ith',
 runTest('string-lower-case?',
 	function() {
 		testPrim('string-lower-case?', runtime.string, ['abcd'], true);
-		testPrim('string-lower-case?', runtime.string, ['abc1'], false);
+		testPrim('string-lower-case?', id, ['abc1'], false);
 		testPrim('string-lower-case?', runtime.string, ['Abc'], false);
 	});
 
 
 runTest('string-numeric?',
 	function() {
-		testPrim('string-numeric?', runtime.string, ['1234'], true);
+		testPrim('string-numeric?', id, ['1234'], true);
+		testPrim('string-numeric?', runtime.string, ['5432'], true);
 		testPrim('string-numeric?', runtime.string, ['0+2i'], false);
 		testPrim('string-numeric?', runtime.string, ['03()'], false);
 	});
@@ -1578,7 +1588,8 @@ runTest('string-numeric?',
 
 runTest('string-upper-case?',
 	function() {
-		testPrim('string-upper-case?', runtime.string, ['ABCD'], true);
+		testPrim('string-upper-case?', id, ['ABCD'], true);
+		testPrim('string-upper-case?', runtime.string, ['ADF'], true);
 		testPrim('string-upper-case?', runtime.string, ['AbZ'], false);
 		testPrim('string-upper-case?', runtime.string, ['05AB'], false);
 	});
@@ -1587,7 +1598,7 @@ runTest('string-upper-case?',
 runTest('string-whitespace?',
 	function() {
 		testPrim('string-whitespace?', runtime.string, ['a b c'], false);
-		testPrim('string-whitespace?', runtime.string, [' \n '], true);
+		testPrim('string-whitespace?', id, [' \n '], true);
 		testPrim('string-whitespace?', runtime.string, ['\t\r\n '], true);
 	});
 
@@ -1595,8 +1606,39 @@ runTest('string-whitespace?',
 runTest('replicate',
 	function() {
 		testPrim('replicate', id, [3, runtime.string('ab')], runtime.string('ababab'))
-		testPrim('replicate', id, [0, runtime.string('hi')], runtime.string(''));
+		testPrim('replicate', id, [0, 'hi'], runtime.string(''));
 		testPrim('replicate', id, [50, runtime.string('')], runtime.string(''));
+	});
+
+
+runTest('string->immutable-string',
+	function() {
+		testPrim('string->immutable-string', id, ['hello'], 'hello');
+		testPrim('string->immutable-string', runtime.string, ['world'], 'world');
+	});
+
+
+runTest('string-set!',
+	function() {
+		var str1 = runtime.string('hello');
+		testPrim('string-set!', id, [str1, 2, runtime.char('w')], runtime.VOID);
+		assert.deepEqual(str1, runtime.string('hewlo'));
+
+		var str2 = runtime.string('no');
+		testPrim('string-set!', id, [str2, 1, runtime.char('!')], runtime.VOID);
+		assert.deepEqual(str2, runtime.string('n!'));
+	});
+
+
+runTest('string-fill!',
+	function() {
+		var str1 = runtime.string('lawl');
+		testPrim('string-fill!', id, [str1, runtime.char('q')], runtime.VOID);
+		assert.deepEqual(str1, runtime.string('qqqq'));
+
+		var str2 = runtime.string('');
+		testPrim('string-fill!', id, [str2, runtime.char(' ')], runtime.VOID);
+		assert.deepEqual(str2, runtime.string(''));
 	});
 
 
