@@ -41,10 +41,12 @@
                                       (cons `($ ,(make-lit (symbol->string name)))
                                             pairs))
                                  ",")
+                    "\n"
                     "}")]
     [(struct vec (items))
      (string-append "[" 
                     (string-join (map jsexp->js items) ",")
+                    "\n"
                     "]")]
     [(struct int (v))
      (number->string v)]
