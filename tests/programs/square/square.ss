@@ -2,5 +2,5 @@
 (define (square x)
   (* x x))
 
-(square 3)
-(square 4)
+(printf "~s\n" (square 3))
+(printf "~s\n" (square 4))

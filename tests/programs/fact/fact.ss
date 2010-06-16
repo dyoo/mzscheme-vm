@@ -5,4 +5,5 @@
     ((= x 0) 1)
     (else (* x (fact (sub1 x))))))
 
-(fact 100)
+(display (fact 100))
+(newline)

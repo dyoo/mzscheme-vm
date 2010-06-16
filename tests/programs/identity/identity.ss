@@ -3,4 +3,4 @@
 (define (identity x)
   x)
 
-(identity "id")
+(printf "~s\n" (identity "id"))
