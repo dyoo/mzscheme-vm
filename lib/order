@@ -2,6 +2,8 @@ js-numbers.js
 jshashtable.js
 types.js
 state.js
+world/world-config.js
+world/world.js
 primitive.js
 control.js
 loader.js
