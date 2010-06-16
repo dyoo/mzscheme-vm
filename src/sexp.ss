@@ -26,10 +26,10 @@
 (define BYTES-CONSTRUCTOR "types.bytes")
 
 
-(define EMPTY "_runtime.EMPTY")
+(define EMPTY "types.EMPTY")
 (define TRUE "true")
 (define FALSE "false")
-(define VOID "_runtime.VOID")
+(define VOID "types.VOID")
 
 
 ;; jsexp->js: jsexp -> string
