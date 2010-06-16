@@ -9,21 +9,21 @@
                   [sexp->js (any/c . -> . string?)])
 
 
-(define LIST-CONSTRUCTOR "_runtime.list")
-(define PAIR-CONSTRUCTOR "_runtime.pair")
-(define VECTOR-CONSTRUCTOR "_runtime.vector")
-(define SYMBOL-CONSTRUCTOR "_runtime.symbol")
-(define KEYWORD-CONSTRUCTOR "_runtime.keyword")
-(define FLOAT-CONSTRUCTOR "_runtime.float")
-(define RATIONAL-CONSTRUCTOR "_runtime.rational")
-(define BIGNUM-CONSTRUCTOR "_runtime.bignum")
-(define COMPLEX-CONSTRUCTOR "_runtime.complex")
-(define CHARACTER-CONSTRUCTOR "_runtime.char")
-(define PATH-CONSTRUCTOR "_runtime.path")
-(define BOX-CONSTRUCTOR "_runtime.box")
-(define REGEXP-CONSTRUCTOR "_runtime.regexp")
-(define BYTE-REGEXP-CONSTRUCTOR "_runtime.byteRegexp")
-(define BYTES-CONSTRUCTOR "_runtime.bytes")
+(define LIST-CONSTRUCTOR "types.list")
+(define PAIR-CONSTRUCTOR "types.pair")
+(define VECTOR-CONSTRUCTOR "types.vector")
+(define SYMBOL-CONSTRUCTOR "types.symbol")
+(define KEYWORD-CONSTRUCTOR "types.keyword")
+(define FLOAT-CONSTRUCTOR "types.float")
+(define RATIONAL-CONSTRUCTOR "types.rational")
+(define BIGNUM-CONSTRUCTOR "types.bignum")
+(define COMPLEX-CONSTRUCTOR "types.complex")
+(define CHARACTER-CONSTRUCTOR "types.char")
+(define PATH-CONSTRUCTOR "types.path")
+(define BOX-CONSTRUCTOR "types.box")
+(define REGEXP-CONSTRUCTOR "types.regexp")
+(define BYTE-REGEXP-CONSTRUCTOR "types.byteRegexp")
+(define BYTES-CONSTRUCTOR "types.bytes")
 
 
 (define EMPTY "_runtime.EMPTY")
@@ -40,12 +40,12 @@
                     (string-join (map key-value->js 
                                       (cons `($ ,(make-lit (symbol->string name)))
                                             pairs))
-                                 ",")
+                                 " ,")
                     "\n"
                     "}")]
     [(struct vec (items))
      (string-append "[" 
-                    (string-join (map jsexp->js items) ",")
+                    (string-join (map jsexp->js items) " ,")
                     "\n"
                     "]")]
     [(struct int (v))
