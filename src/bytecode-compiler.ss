@@ -27,7 +27,7 @@
   (parameterize ([seen-indirects (make-hasheq)])
     (match a-top
       [(struct compilation-top (max-let-depth prefix code))
-       (let* ([compiled-code (compile-code code)]
+       (let* ([compiled-code (compile-at-form-position code)]
               ;; WARNING: Order dependent!  We need compile-code to run first
               ;; since it initializes the seen-indirects parameter.
               [compiled-indirects (emit-indirects)])
@@ -149,14 +149,7 @@
      (make-ht 'mod `((name ,(make-lit name))
                      (requires ,(compile-requires requires))
                      (prefix ,(compile-prefix prefix))
-                     (body ,(make-vec (map (lambda (b)
-                                             (match b 
-                                               [(? form?)
-                                                (compile-form b)]
-                                               [(? indirect?)
-                                                (compile-indirect b)]
-                                               [else
-                                                (compile-constant b)]))
+                     (body ,(make-vec (map compile-at-form-position
                                            body)))))]))
 
 (define (compile-requires requires)
@@ -199,14 +192,7 @@
   (match a-splice
     [(struct splice (forms))
      (make-ht 'splice `((value
-                         ,(make-vec (map (lambda (f)
-                                           (match f
-                                             [(? form?)
-                                              (compile-form f)]
-                                             [(? indirect?)
-                                              (compile-indirect f)]
-                                             [else
-                                              (compile-constant f)]))
+                         ,(make-vec (map compile-at-form-position
                                          forms)))))]))
 
 
@@ -223,6 +209,16 @@
     [(? seq?)
      (compile-seq x)]
     [(? indirect?)
+     (compile-indirect x)]
+    [else
+     (compile-constant x)]))
+
+
+(define (compile-at-form-position x)
+  (match x
+    [(? form?)
+     (compile-form x)]
+    [(? indirect? x)
      (compile-indirect x)]
     [else
      (compile-constant x)]))
@@ -416,7 +412,7 @@
      (make-ht 'seq 
               `((forms 
                  ,(make-vec 
-                   (map compile-at-expression-position forms)))))]))
+                   (map compile-at-form-position forms)))))]))
 
 
 ;; compile-beg0: seq -> jsexp
