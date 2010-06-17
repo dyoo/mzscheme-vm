@@ -2236,6 +2236,12 @@ runTest('hash?',
 	});
 
 
+runTest('str',
+	function() {
+	    assert.equal(typeof(runtime.string('a')), 'object');
+	});
+
+
 runTest('make-hash',
 	function() {
 		var state = new runtime.State();
