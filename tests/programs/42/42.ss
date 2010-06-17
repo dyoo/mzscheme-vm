@@ -1,2 +1,2 @@
 #lang scheme/base
-42
+(printf "~s\n" 42)
