@@ -4,7 +4,10 @@ jshashtable.js
 types.js
 state.js
 world/world-config.js
+world/world-stimuli.js
 world/world.js
+world/jsworld/jsworld.js
+world/jsworld.js
 primitive.js
 control.js
 loader.js
