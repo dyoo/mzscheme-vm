@@ -2,4 +2,5 @@
 
 (define (f x) x)
 
-(if (f #t) 'ok 'not-ok)
+(display (if (f #t) 'ok 'not-ok))
+(newline)

@@ -1,2 +1,2 @@
 #lang scheme/base
-(printf "hello world")
+(printf "hello world\n")

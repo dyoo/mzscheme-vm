@@ -71,7 +71,7 @@
                       (make-lit a-toplevel)]
                      [(global-bucket? a-toplevel) 
                       (make-ht 'global-bucket 
-                               `((value ,(make-lit (global-bucket-name a-toplevel)))))]
+                               `((value ,(make-lit (symbol->string (global-bucket-name a-toplevel))))))]
                      [(module-variable? a-toplevel)
                       (compile-module-variable a-toplevel)]))
                  toplevels)))
