@@ -5,9 +5,19 @@ cd `dirname $0`
 
 if [ $2 ]
     then
-	target=$origdir/$2
+	if [[ $2 == /* ]]
+	    then
+		target=$2
+	    else
+		target=$origdir/$2
+	fi
     else
-	target=test-support.js
+	target=support.js
+fi
+
+if [[ $target == */ ]]
+    then
+	target=$target/support.js
 fi
 
 rm -f $target
