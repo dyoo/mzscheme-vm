@@ -1,0 +1,16 @@
+This is a list of stuff that needs to get done
+
+
+*** High Priority ***
+Test/debug current jsworld (need bootstrap functionality)
+Get PLT test suite up and running
+Get WeScheme running with MzScheme VM
+
+
+** Medium Priority **
+Get effects working in jsworld again
+Rewrite jsworld to work with cooperative and reentrant big-bangs
+
+
+* Low Priority *
+Change printing of chars and byte strings so that it properly displays non-printable characters (as #\<number>)
