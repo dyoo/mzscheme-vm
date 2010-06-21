@@ -194,14 +194,12 @@
 ;; rational-number->js: number -> string
 (define (rational-number->js a-num)
   (cond [(= (denominator a-num) 1)
-         (string-append RATIONAL-CONSTRUCTOR "("
-                        (number->string (numerator a-num))
-                        ")")]
+         (string-append (integer->js (numerator a-num)))]
         [else
          (string-append RATIONAL-CONSTRUCTOR "("
-                        (number->string (numerator a-num))
+                        (integer->js (numerator a-num))
                         ", "
-                        (number->string (denominator a-num))
+                        (integer->js (denominator a-num))
                         ")")]))
 
 ;; integer->js: int -> string
