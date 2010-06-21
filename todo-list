@@ -3,8 +3,8 @@ This is a list of stuff that needs to get done
 
 *** High Priority ***
 Test/debug current jsworld (need bootstrap functionality)
-Get PLT test suite up and running
-Get WeScheme running with MzScheme VM
+Get primitives tested using PLT test suite
+Get WeScheme running with MzScheme VM as backend
 
 
 ** Medium Priority **
