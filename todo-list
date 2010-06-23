@@ -3,6 +3,8 @@ This is a list of stuff that needs to get done
 
 *** High Priority ***
 Test/debug current jsworld (need bootstrap functionality)
+  Bugs:
+    when using text inputs, manual poll (interval) doesn't stop with stop-when, gets an error first
 Get primitives tested using PLT test suite
 Get WeScheme running with MzScheme VM as backend
 
