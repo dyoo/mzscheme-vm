@@ -304,9 +304,8 @@ runTest("external call",
 	function() {
 	    var state = new runtime.State();
 	    interpret.call(state, 
-			   makePrimval("*"),
-			   [makeConstant(2),
-			    makeConstant(3)],
+			   primitive.getPrimitive("*"),
+			   [2, 3],
 			   function(v) { assert.equal(v, 6) });
 	});
 
