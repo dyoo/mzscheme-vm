@@ -1151,7 +1151,7 @@ runTest("with-cont-mark",
 	    }
 	    assert.equal(state.cstack.length, 2);
 	    assert.ok(state.cstack[0] instanceof 
-		      control.ContMarkRecordControl);
+		      types.ContMarkRecordControl);
 	    assert.equal(state.cstack[0].dict['x'],
 			 "42");
 	    var result = run(state);
