@@ -1,18 +1,25 @@
 This is a list of stuff that needs to get done
 
 
-*** High Priority ***
+**** Very High Priority ****
 Test/debug current jsworld (need bootstrap functionality)
-  Bugs:
-    when using text inputs, manual poll (interval) doesn't stop with stop-when, gets an error first
-Get primitives tested using PLT test suite
 Get WeScheme running with MzScheme VM as backend
+
+
+*** High Priority ***
+Get primitives tested using PLT test suite
+Add error location with continuation marks
+Test for correctness and performance on different platforms
 
 
 ** Medium Priority **
 Get effects working in jsworld again
 Rewrite jsworld to work with cooperative and reentrant big-bangs
+Add in missing jsworld procedures (on-mouse, on-mouse!, image-rotate)
+Fix extraneous manual poll (after world stops) on text inputs (around line 1180 in jsworld/jsworld.js)
 
 
 * Low Priority *
 Change printing of chars and byte strings so that it properly displays non-printable characters (as #\<number>)
+Fix formatting of "wrong number of arguments" error
+Make errors report what (other) arguments were given
