@@ -23,3 +23,15 @@ Fix extraneous manual poll (after world stops) on text inputs (around line 1180 
 Change printing of chars and byte strings so that it properly displays non-printable characters (as #\<number>)
 Fix formatting of "wrong number of arguments" error
 Make errors report what (other) arguments were given
+
+
+
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+Errors in the REPL:
+
+
+(error 'three "There's a zombie")
+ReferenceError: format is not defined
