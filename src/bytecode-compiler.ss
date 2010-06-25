@@ -429,7 +429,7 @@
 (define (compile-with-cont-mark a-with-cont-mark)
   (match a-with-cont-mark
     [(struct with-cont-mark (key val body))
-     (make-ht 'with-cont-mark1 
+     (make-ht 'with-cont-mark 
               `((key ,(compile-at-expression-position key))
                 (val ,(compile-at-expression-position val))
                 (body ,(compile-at-expression-position body))))]))
