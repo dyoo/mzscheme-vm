@@ -2914,6 +2914,16 @@ runTest('posn-y',
 	});
 
 
+runTest('structure equality',
+	function() {
+		testPrim('equal?', id, [runtime.exn('a', 5), runtime.exn('a', 5)], true);
+		testPrim('equal?', id, [runtime.exn('a', 5), runtime.exn('b', 5)], false);
+		testPrim('equal?', id, [runtime.exn('a', 5), runtime.exnFail('a', 5)], false);
+		testPrim('equal?', id, [runtime.exnFail('a', 5), runtime.exn('a', 5)], false);
+		testPrim('equal?', id, [runtime.exn('a', 5), runtime.color(4, 3, 6)], false);
+	});
+
+
 
 
 
