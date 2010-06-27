@@ -9,6 +9,7 @@ Get WeScheme running with MzScheme VM as backend
 *** High Priority ***
 Get primitives tested using PLT test suite
 Add error location with continuation marks
+	Get run's error check to add continuation marks to errors of type exn
 Test for correctness and performance on different platforms
 
 
