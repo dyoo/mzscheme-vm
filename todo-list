@@ -1,24 +1,28 @@
 This is a list of stuff that needs to get done
 
 
-**** Very High Priority ****
-Test/debug current jsworld (need bootstrap functionality)
-	Get newlines to display properly with js-text
-Get WeScheme running with MzScheme VM as backend
+**** Very High Priority **** (stuff Emmanuel needs)
+Fully test the following:
+    on-redraw
+    programs Emmanuel sends us
+Make sure all errors are emitting reasonable locations
+Be able to save, publish, and run programs in WeScheme
+Test for correctness on IE 6, IE 7, and IE 8
+Robustly test all non-world primitives
 
 
 *** High Priority ***
 Get primitives tested using PLT test suite
-Add error location with continuation marks
-	Get run's error check to add continuation marks to errors of type exn
-Test for correctness and performance on different platforms
+Test for performance on different platforms
+Get effects working in jsworld again
 
 
 ** Medium Priority **
-Get effects working in jsworld again
+Get newlines to display properly with js-text
 Rewrite jsworld to work with cooperative and reentrant big-bangs
+	Fix extraneous manual poll (after world stops) on text inputs (around line 1180 in jsworld/jsworld.js)
 Add in missing jsworld procedures (on-mouse, on-mouse!, image-rotate)
-Fix extraneous manual poll (after world stops) on text inputs (around line 1180 in jsworld/jsworld.js)
+Fix on-key for non-alpha-numeric keys (already works for \t, \b, enter, space, up, down, left, right)
 
 
 * Low Priority *
