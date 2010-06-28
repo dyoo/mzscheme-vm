@@ -1522,6 +1522,18 @@ runTest('format',
 					runtime.complex(0, 2),
 					runtime.char('b')],
 			 runtime.string('#\\b 0+2i b'));
+
+		testPrim('format', id, ['~s ~a', primitive.getPrimitive('+'), primitive.getPrimitive('format')],
+			 runtime.string('#<procedure:+> #<procedure:format>'));
+		
+		var box1 = types.box('junk');
+		var box2 = types.box(box1);
+		box1.set(box2);
+		testPrim('format', id, ['~s', box1], runtime.string('#&#&...'));
+		
+		var box3 = types.box('junk');
+		box3.set(box3);
+		testPrim('format', id, ['~a', box3], runtime.string('#&...'));
 	});
 
 
