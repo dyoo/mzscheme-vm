@@ -3,7 +3,7 @@ This is a list of stuff that needs to get done
 
 **** Very High Priority **** (stuff Emmanuel needs)
 Fully test the following:
-    on-redraw
+    on-redraw (pretty much done)
     programs Emmanuel sends us
 Make sure all errors are emitting reasonable locations
 Be able to save, publish, and run programs in WeScheme
