@@ -244,16 +244,35 @@
 
 ;; excape-char-code: char -> string
 (define (escape-char-code a-char)
-  (cond
-    [(char=? a-char #\")
-     (string #\\ #\")]
-    [(char=? a-char #\\)
-     (string #\\ #\\)]
-    [(char=? a-char #\newline)
-     (string #\\ #\n)]
+  (case (char->integer a-char)
+    [(0) "\\0"]
+    [(7) "\\a"]
+    [(8) "\\b"]
+    [(9) "\\t"]
+    [(10) "\\n"]
+    [(11) "\\v"]
+    [(12) "\\f"]
+    [(13) "\\r"]
+    [(34) "\\\""]
+    [(92) "\\\\"]
     [else
-     (string a-char)]))
-  
+     (cond
+       [(char-graphic? a-char)
+        (string a-char)]
+       [else
+        (string-append "\\u"
+                       (pad0 (number->string (char->integer a-char) 16) 
+                             4))])]))
+
+;; pad0: string number -> string
+;; Adds the padding character #\0 in front of str so that it has the desired length.
+(define (pad0 str len)
+  (cond [(>= (string-length str) len)
+         str]
+        [else
+         (string-append (build-string (- len (string-length str))(lambda (i) #\0))
+                        str)]))
+
 
 ;; string->javascript-string: string -> string
 (define (string->js a-str)
