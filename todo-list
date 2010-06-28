@@ -3,6 +3,7 @@ This is a list of stuff that needs to get done
 
 **** Very High Priority ****
 Test/debug current jsworld (need bootstrap functionality)
+	Get newlines to display properly with js-text
 Get WeScheme running with MzScheme VM as backend
 
 
