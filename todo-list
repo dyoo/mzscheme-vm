@@ -40,5 +40,13 @@ Make errors report what (other) arguments were given
 Errors in the REPL:
 
 
+On Firefox, use of the 'text' image function will produce the following error:
+
+    ctx.measureText is not a function
+
+
+//////////////////////////////////////////////////////////////////////
+
+
 (error 'three "There's a zombie")
 ReferenceError: format is not defined
