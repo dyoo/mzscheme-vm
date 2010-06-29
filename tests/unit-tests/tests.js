@@ -1522,6 +1522,18 @@ runTest('format',
 					runtime.complex(0, 2),
 					runtime.char('b')],
 			 runtime.string('#\\b 0+2i b'));
+
+		testPrim('format', id, ['~s ~a', primitive.getPrimitive('+'), primitive.getPrimitive('format')],
+			 runtime.string('#<procedure:+> #<procedure:format>'));
+		
+		var box1 = types.box('junk');
+		var box2 = types.box(box1);
+		box1.set(box2);
+		testPrim('format', id, ['~s', box1], runtime.string('#&#&...'));
+		
+		var box3 = types.box('junk');
+		box3.set(box3);
+		testPrim('format', id, ['~a', box3], runtime.string('#&...'));
 	});
 
 
@@ -2878,6 +2890,27 @@ runTest('procedure-arity',
 
 		state.pushControl(makeApplication(makePrimval('procedure-arity'), [makePrimval('hash-ref')]));
 		assert.deepEqual(run(state), runtime.list([2, 3]));
+
+		var testProc = new types.CaseLambdaValue('',
+			[new runtime.Primitive('', 1, false, false, function() {}),
+			 new runtime.Primitive('', 2, true, false, function() {})]);
+		state.pushControl(makeApplication(makePrimval('procedure-arity'), [makeConstant(testProc)]));
+		assert.deepEqual(run(state), runtime.list([1, runtime.arityAtLeast(2)]));
+
+		var testProc2 = new types.CaseLambdaValue('',
+			[new runtime.Primitive('', 1, false, false, function() {}),
+			 new runtime.Primitive('', 0, true, false, function() {})]);
+		state.pushControl(makeApplication(makePrimval('procedure-arity'), [makeConstant(testProc2)]));
+		assert.deepEqual(run(state), runtime.arityAtLeast(0));
+
+		var testProc3 = new types.CaseLambdaValue('',
+			[new runtime.Primitive('', 1, false, false, function() {}),
+			 new runtime.Primitive('', 4, true, false, function() {}),
+			 new runtime.Primitive('', 0, false, false, function() {}),
+			 new runtime.Primitive('', 3, true, false, function() {}),
+			 new runtime.Primitive('', 3, false, false, function() {})]);
+		state.pushControl(makeApplication(makePrimval('procedure-arity'), [makeConstant(testProc3)]));
+		assert.deepEqual(run(state), runtime.list([0, 1, runtime.arityAtLeast(3)]));
 	});
 
 
