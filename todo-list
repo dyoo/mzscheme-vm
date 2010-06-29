@@ -23,6 +23,7 @@ Rewrite jsworld to work with cooperative and reentrant big-bangs
 	Fix extraneous manual poll (after world stops) on text inputs (around line 1180 in jsworld/jsworld.js)
 Add in missing jsworld procedures (on-mouse, on-mouse!, image-rotate)
 Fix on-key for non-alpha-numeric keys (already works for \t, \b, enter, space, up, down, left, right)
+Make hash tables display contents when printing
 
 
 * Low Priority *
