@@ -2476,6 +2476,25 @@ runTest('hash-map',
 	});
 
 
+runTest('hash-for-each',
+	function() {
+		var hash1 = runtime.hash(runtime.list([runtime.pair(1, 2),
+						       runtime.pair(2, 3),
+						       runtime.pair(3, 4),
+						       runtime.pair(4, 5)]));
+		var state = new runtime.State();
+		var ret = [];
+		state.pushControl(makeApplication(makePrimval('hash-for-each'),
+						  [makeConstant(hash1),
+						   makeConstant(new runtime.Primitive('', 2, false, false,
+								function(key, val) {
+								  	ret.push( helpers.format('~s - ~s!~n', [key, val]) );
+								}))]));
+		assert.deepEqual(run(state), runtime.VOID);
+		assert.deepEqual(ret, ['1 - 2!\n', '2 - 3!\n', '3 - 4!\n', '4 - 5!\n']);
+	});
+
+
 
 
 
