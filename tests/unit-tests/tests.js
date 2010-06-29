@@ -1973,14 +1973,14 @@ runTest('floor, ceiling, and round',
 runTest('numerator and denominator',
 	function() {
 		testPrim('numerator', id, [30], 30);
-		testPrim('numerator', id, [runtime.rational(10, 2)], 5);
+		testPrim('numerator', id, [runtime.rational(10, -2)], -5);
 		testPrim('numerator', runtime.float, [10.5], runtime.float(21));
-		testPrim('numerator', runtime.float, [2.53], runtime.float(253));
+		testPrim('numerator', runtime.float, [-2.53], runtime.float(-253));
 		testPrim('denominator', id, [43], 1);
 		testPrim('denominator', id, [runtime.rational(12, 4)], 1);
-		testPrim('denominator', id, [runtime.rational(23, 5)], 5);
+		testPrim('denominator', id, [runtime.rational(23, -5)], 5);
 		testPrim('denominator', runtime.float, [12.125], runtime.float(8));
-		testPrim('denominator', runtime.float, [2.53], runtime.float(100));
+		testPrim('denominator', runtime.float, [-2.53], runtime.float(100));
 	});
 
 
