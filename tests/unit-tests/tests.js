@@ -1862,6 +1862,140 @@ runTest('magnitude',
 	});
 
 
+runTest('number?',
+	function() {
+		testPrim('number?', id, [5], true);
+		testPrim('number?', runtime.rational, [10], true);
+		testPrim('number?', id, [runtime.rational(10, 3)], true);
+		testPrim('number?', runtime.float, [10.5], true);
+		testPrim('number?', id, [runtime.complex(5, 3)], true);
+		testPrim('number?', id, ['string'], false);
+	});
+
+
+runTest('complex?',
+	function() {
+		testPrim('complex?', id, [5], true);
+		testPrim('complex?', runtime.rational, [10], true);
+		testPrim('complex?', id, [runtime.rational(10, 3)], true);
+		testPrim('complex?', runtime.float, [10.5], true);
+		testPrim('complex?', id, [runtime.complex(5, 3)], true);
+		testPrim('complex?', id, ['string'], false);
+	});
+
+
+runTest('real?',
+	function() {
+		testPrim('real?', id, [5], true);
+		testPrim('real?', runtime.rational, [10], true);
+		testPrim('real?', id, [runtime.rational(10, 3)], true);
+		testPrim('real?', runtime.float, [10.5], true);
+		testPrim('real?', id, [runtime.complex(5, 3)], false);
+		testPrim('real?', id, ['string'], false);
+	});
+
+
+runTest('rational?',
+	function() {
+		testPrim('rational?', id, [5], true);
+		testPrim('rational?', runtime.rational, [10], true);
+		testPrim('rational?', id, [runtime.rational(10, 3)], true);
+		testPrim('rational?', runtime.float, [10.5], true);
+		testPrim('rational?', runtime.float, [Math.sqrt(2)], true);
+		testPrim('rational?', id, [runtime.complex(5, 3)], false);
+		testPrim('rational?', id, ['string'], false);
+	});
+
+
+runTest('integer?',
+	function() {
+		testPrim('integer?', id, [5], true);
+		testPrim('integer?', runtime.rational, [10], true);
+		testPrim('integer?', id, [runtime.complex(5, 0)], true);
+		testPrim('integer?', id, [runtime.rational(10, 3)], false);
+		testPrim('integer?', runtime.float, [10.5], false);
+		testPrim('integer?', id, [runtime.complex(5, 3)], false);
+		testPrim('integer?', id, ['string'], false);
+	});
+
+
+runTest('exact?',
+	function() {
+		testPrim('exact?', id, [5], true);
+		testPrim('exact?', id, [runtime.rational(4, 3)], true);
+		testPrim('exact?', runtime.float, [10.0], false);
+		testPrim('exact?', id, [runtime.complex(5, 2)], true);
+		testPrim('exact?', id, [runtime.complex(runtime.float(5.2), runtime.float(0.1))], false);
+	});
+
+
+runTest('inexact?',
+	function() {
+		testPrim('inexact?', id, [5], false);
+		testPrim('inexact?', id, [runtime.rational(4, 3)], false);
+		testPrim('inexact?', runtime.float, [10.0], true);
+		testPrim('inexact?', id, [runtime.complex(5, 2)], false);
+		testPrim('inexact?', id, [runtime.complex(runtime.float(5.2), runtime.float(0.1))], true);
+	});
+
+
+runTest('odd? and even?',
+	function() {
+		testPrim('odd?', id, [5], true);
+		testPrim('odd?', runtime.float, [10.0], false);
+		testPrim('even?', id, [15], false);
+		testPrim('even?', runtime.float, [13.0], false);
+	});
+
+
+runTest('gcd and lcm',
+	function() {
+		testPrim('gcd', id, [1001, 98], 7);
+		testPrim('gcd', id, [6, 10, 15], 1);
+		testPrim('lcm', id, [91, 77], 1001);
+		testPrim('lcm', id, [6, 10, 15], 30);
+	});
+
+
+runTest('floor, ceiling, and round',
+	function() {
+		testPrim('floor', id, [14], 14);
+		testPrim('floor', runtime.float, [12.56], 12);
+		testPrim('ceiling', id, [13], 13);
+		testPrim('ceiling', runtime.float, [12.23], 13);
+		testPrim('ceiling', runtime.float, [12.00], 12);
+		testPrim('round', id, [124], 124);
+		testPrim('round', runtime.float, [12.432], 12);
+		testPrim('round', runtime.float, [12.543], 13);
+	});
+
+
+runTest('numerator and denominator',
+	function() {
+		testPrim('numerator', id, [30], 30);
+		testPrim('numerator', id, [runtime.rational(10, 2)], 5);
+		testPrim('numerator', runtime.float, [10.5], runtime.float(21));
+		testPrim('numerator', runtime.float, [2.53], runtime.float(253));
+		testPrim('denominator', id, [43], 1);
+		testPrim('denominator', id, [runtime.rational(12, 4)], 1);
+		testPrim('denominator', id, [runtime.rational(23, 5)], 5);
+		testPrim('denominator', runtime.float, [12.125], runtime.float(8));
+		testPrim('denominator', runtime.float, [2.53], runtime.float(100));
+	});
+
+
+runTest('exp and log',
+	function() {
+		testPrim('exp', id, [0], 1);
+		testPrim('exp', runtime.float, [0], runtime.float(1));
+		testPrim('exp', id, [3], runtime.float(Math.exp(3)));
+		testPrim('log', id, [1], 0);
+		testPrim('log', runtime.float, [1], runtime.float(0));
+		testPrim('log', id, [primitive.getPrimitive('e')], runtime.float(1));
+	});
+
+
+
 
 /*************************************
  *** Primitive List Function Tests ***
