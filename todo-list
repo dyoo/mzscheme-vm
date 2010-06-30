@@ -10,6 +10,9 @@ Be able to save, publish, and run programs in WeScheme
 Test for correctness on IE 6, IE 7, and IE 8
 Robustly test all non-world primitives
 
+Speed up WeScheme (page loads take forever)
+put in vertical scroll bar on definitions window (and maybe interactions too?)
+
 
 *** High Priority ***
 Get primitives tested using PLT test suite
