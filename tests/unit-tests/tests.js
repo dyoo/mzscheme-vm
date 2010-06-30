@@ -1973,14 +1973,14 @@ runTest('floor, ceiling, and round',
 runTest('numerator and denominator',
 	function() {
 		testPrim('numerator', id, [30], 30);
-		testPrim('numerator', id, [runtime.rational(10, 2)], 5);
+		testPrim('numerator', id, [runtime.rational(10, -2)], -5);
 		testPrim('numerator', runtime.float, [10.5], runtime.float(21));
-		testPrim('numerator', runtime.float, [2.53], runtime.float(253));
+		testPrim('numerator', runtime.float, [-2.53], runtime.float(-253));
 		testPrim('denominator', id, [43], 1);
 		testPrim('denominator', id, [runtime.rational(12, 4)], 1);
-		testPrim('denominator', id, [runtime.rational(23, 5)], 5);
+		testPrim('denominator', id, [runtime.rational(23, -5)], 5);
 		testPrim('denominator', runtime.float, [12.125], runtime.float(8));
-		testPrim('denominator', runtime.float, [2.53], runtime.float(100));
+		testPrim('denominator', runtime.float, [-2.53], runtime.float(100));
 	});
 
 
@@ -1992,6 +1992,90 @@ runTest('exp and log',
 		testPrim('log', id, [1], 0);
 		testPrim('log', runtime.float, [1], runtime.float(0));
 		testPrim('log', id, [primitive.getPrimitive('e')], runtime.float(1));
+	});
+
+
+runTest('sin, cos, tan, asin, acos, atan',
+	function() {
+		testPrim('sin', id, [20], runtime.float(Math.sin(20)));
+		testPrim('sin', id, [0], runtime.float(0));
+		testPrim('cos', id, [0], runtime.float(1));
+		testPrim('cos', runtime.float, [43], runtime.float(Math.cos(43)));
+		testPrim('tan', runtime.float, [0], runtime.float(0));
+		testPrim('tan', id, [-30], runtime.float(Math.tan(-30)));
+
+		testPrim('asin', runtime.float, [-0.5], runtime.float(Math.asin(-0.5)));
+		testPrim('acos', runtime.float, [0.53], runtime.float(Math.acos(0.53)));
+		testPrim('atan', runtime.float, [-543], runtime.float(Math.atan(-543)));
+	});
+
+
+runTest('sqrt, integer-sqrt, and expt',
+	function() {
+		testPrim('sqrt', id, [25], 5);
+		testPrim('sqrt', runtime.float, [1.44], runtime.float(1.2));
+		testPrim('sqrt', id, [-1], runtime.complex(0, 1));
+		testPrim('sqrt', id, [runtime.complex(0, 2)], runtime.complex(1, 1));
+		testPrim('sqrt', id, [runtime.complex(runtime.float(0), runtime.float(-2))],
+			 runtime.complex(runtime.float(1), runtime.float(-1)));
+
+		testPrim('integer-sqrt', id, [15], 3);
+		testPrim('integer-sqrt', id, [88], 9);
+
+		testPrim('expt', id, [2, 20], 1048576);
+		testPrim('expt', id, [3, 3], 27);
+		testPrim('expt', runtime.float, [12.4, 5.43], runtime.float(Math.pow(12.4, 5.43)));
+	});
+
+
+runTest('make-rectangular, make-polar, real-part, imag-part, angle',
+	function() {
+		testPrim('make-rectangular', id, [5, 3], runtime.complex(5, 3));
+		testPrim('make-rectangular', id, [5, runtime.float(4)],
+			 runtime.complex(runtime.float(5), runtime.float(4)));
+		
+		testPrim('make-polar', id, [1, 0], runtime.complex(1, 0));
+		testPrimF('make-polar', runtime.float, [5, Math.PI/2], true,
+			  function(res) {
+			  	return (jsnums.isInexact(res) &&
+					Math.abs(jsnums.toFixnum(jsnums.realPart(res))) < 0.000001 &&
+					Math.abs(jsnums.toFixnum(jsnums.imaginaryPart(res)) - 5) < 0.0000001);
+				});
+
+		testPrim('real-part', id, [14], 14);
+		testPrim('real-part', runtime.float, [4], runtime.float(4));
+		testPrim('real-part', id, [runtime.complex(0, 1)], 0);
+		testPrim('real-part', id, [runtime.complex(runtime.float(1.44), runtime.float(5))], runtime.float(1.44));
+
+		testPrim('imag-part', id, [14], 0);
+		testPrim('imag-part', runtime.float, [4], 0);
+		testPrim('imag-part', id, [runtime.complex(0, 1)], 1);
+		testPrim('imag-part', id, [runtime.complex(runtime.float(1.44), runtime.float(5))], runtime.float(5));
+
+		testPrim('angle', id, [runtime.complex(3, 0)], 0);
+		testPrim('angle', runtime.float, [4.46], 0);
+		testPrim('angle', id, [-54], runtime.float(Math.PI));
+		testPrimF('angle', id, [runtime.complex(1, 1)], true,
+		          function(res) {
+			  	return (jsnums.isInexact(res) &&
+					Math.abs(jsnums.toFixnum(res) - Math.PI/4) < 0.0000001);
+				});
+	});
+
+
+runTest('exact->inexact and inexact->exact',
+	function() {
+		testPrim('exact->inexact', id, [5], runtime.float(5));
+		testPrim('exact->inexact', runtime.float, [5.2], runtime.float(5.2));
+		testPrim('exact->inexact', id, [runtime.rational(2, 3)], runtime.float(2/3));
+		testPrim('exact->inexact', id, [runtime.complex(3, 5)], runtime.complex(runtime.float(3), runtime.float(5)));
+
+		testPrim('inexact->exact', runtime.float, [0], 0);
+		testPrim('inexact->exact', runtime.float, [1.25], runtime.rational(5, 4));
+		testPrim('inexact->exact', id, [5], 5);
+		testPrim('inexact->exact', id, [runtime.complex(5, 3)], runtime.complex(5, 3));
+		testPrim('inexact->exact', id, [runtime.complex(runtime.float(5.2), runtime.float(4))],
+			 runtime.complex(runtime.rational(26, 5), 4));
 	});
 
 
