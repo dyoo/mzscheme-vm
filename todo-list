@@ -24,6 +24,7 @@ Rewrite jsworld to work with cooperative and reentrant big-bangs
 Add in missing jsworld procedures (on-mouse, on-mouse!, image-rotate)
 Fix on-key for non-alpha-numeric keys (already works for \t, \b, enter, space, up, down, left, right)
 Make hash tables display contents when printing
+Add fields to errors to display arguments better (using toDomNode instead of toWrittenString)
 
 
 * Low Priority *
