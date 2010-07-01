@@ -2079,6 +2079,45 @@ runTest('exact->inexact and inexact->exact',
 	});
 
 
+runTest('first, second, third, fourth, fifth, sixth, seventh, eighth',
+	function() {
+		var testList1 = runtime.list([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
+		var testList2 = runtime.list([runtime.list([1, 2]),
+					      runtime.list([3, 4]),
+					      runtime.list([5, 6]),
+					      runtime.list([7, 8]),
+					      runtime.list([9, 10]),
+					      runtime.list([11, 12]),
+					      runtime.list([13, 14]),
+					      runtime.list([15, 16]),
+					      runtime.list([17, 18]),
+					      runtime.list([19, 20])]);
+		testPrim('first', id, [testList1], 1);
+		testPrim('first', id, [testList2], runtime.list([1, 2]));
+		
+		testPrim('second', id, [testList1], 2);
+		testPrim('second', id, [testList2], runtime.list([3, 4]));
+
+		testPrim('third', id, [testList1], 3);
+		testPrim('third', id, [testList2], runtime.list([5, 6]));
+
+		testPrim('fourth', id, [testList1], 4);
+		testPrim('fourth', id, [testList2], runtime.list([7, 8]));
+
+		testPrim('fifth', id, [testList1], 5);
+		testPrim('fifth', id, [testList2], runtime.list([9, 10]));
+
+		testPrim('sixth', id, [testList1], 6);
+		testPrim('sixth', id, [testList2], runtime.list([11, 12]));
+
+		testPrim('seventh', id, [testList1], 7);
+		testPrim('seventh', id, [testList2], runtime.list([13, 14]));
+
+		testPrim('eighth', id, [testList1], 8);
+		testPrim('eighth', id, [testList2], runtime.list([15, 16]));
+	});
+
+
 
 
 /*************************************
@@ -2116,6 +2155,7 @@ runTest('list?',
 		testPrim('list?', id, [runtime.EMPTY], true);
 		testPrim('list?', id, [runtime.pair(1, runtime.EMPTY)], true);
 		testPrim('list?', id, [runtime.list([1, 2, 0, 3, 2])], true);
+		testPrim('list?', id, [runtime.pair(1, 4)], false);
 		testPrim('list?', id, [runtime.complex(0, 2)], false);
 	});
 
@@ -2153,6 +2193,9 @@ runTest('append',
 		testPrim('append', runtime.list, [[1]], runtime.list([1]));
 		testPrim('append', runtime.list, [[], [1, 2, 3], [1, 2]],
 			 runtime.list([1, 2, 3, 1, 2]));
+		testPrim('append', id, [runtime.list([1, 2]), runtime.list([3]), 4],
+			 runtime.pair(1, runtime.pair(2, runtime.pair(3, 4))));
+		testPrim('append', id, [5], 5);
 	});
 
 
