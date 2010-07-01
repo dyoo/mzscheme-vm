@@ -18,6 +18,7 @@ put in vertical scroll bar on definitions window (and maybe interactions too?)
 Get primitives tested using PLT test suite
 Test for performance on different platforms
 Get effects working in jsworld again
+Fix on-key so it recognizes shift being held down
 
 
 ** Medium Priority **
