@@ -300,6 +300,7 @@ runTest("Boolean constant",
 	});
 
 
+
 runTest("external call",
 	function() {
 	    var state = new runtime.State();
@@ -3247,4 +3248,52 @@ runTest("topsyntax",
 
 
 
-sys.print("\nEND TESTS\n")
+
+
+
+
+
+
+/**
+This next test is special and should be last.  It'll run an infinite loop, and
+schedule a break.
+*/
+runTest("closure application, testing break",
+	// (define (f) (f)) (begin (f)) --> infinite loop, but with bounded control stack.
+	function() {
+	    var state = new runtime.State();
+	    state.pushControl(makeMod(makePrefix(1), []));
+	    run(state);   
+	    assert.equal(state.vstack.length, 1);
+	    
+
+	    state.pushControl(makeApplication(makeToplevel(0, 0), []));
+	    state.pushControl(makeDefValues([makeToplevel(0, 0)],
+					    makeLam(0, [0],
+						    makeApplication(makeToplevel(0, 0),
+								    []))));
+	    var isTerminated = false;
+	    interpret.run(state,
+			  function() {
+			      isTerminated = true;
+			  }, 
+			  function(err) {});
+	    var waitTillBreak = function() {
+		if (isTerminated) {
+		    sys.print("\nEND TESTS\n")
+		    return;
+		} else {
+		    state.breakRequested = true;
+		    setTimeout(waitTillBreak, 10);
+		}
+	    };
+	    waitTillBreak();
+	});
+
+
+
+
+
+
+
+
