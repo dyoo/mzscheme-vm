@@ -2494,6 +2494,60 @@ runTest('compose',
 	});
 
 
+runTest('caar, cadr, cdar, cddr, etc.',
+	function() {
+		var deepArrayToList = function(a) {
+			if ( !(a instanceof Array) ) {
+				return a;
+			}
+			return runtime.list( helpers.map(a, deepArrayToList) );
+		}
+
+		testPrim('car', runtime.list, [[1, 2, 3]], 1);
+		testPrim('caar', deepArrayToList, [[[1, 2], [3, 4], []]], 1);
+		testPrim('caar', deepArrayToList, [[[[1, 2], [3, 4]], [[5, 6], [7, 8]]]], runtime.list([1, 2]));
+		testPrim('caar', runtime.list, [[runtime.pair(1, runtime.pair(2, 3))]], 1);
+
+		testPrim('cadr', runtime.list, [[1, 2, 3]], 2);
+		testPrim('cadr', deepArrayToList, [[[1, 2], [3, 4]]], runtime.list([3, 4]));
+
+		testPrim('cdar', deepArrayToList, [[[1, 2], [3, 4], []]], runtime.list([2]));
+		testPrim('cdar', runtime.list, [[runtime.pair(1, 2)]], 2);
+
+		testPrim('cddr', runtime.list, [[1, 2, 3, 4]], runtime.list([3, 4]));
+		testPrim('cddr', deepArrayToList, [[[], [1], [1, 2], [1, 2, 3]]], deepArrayToList([[1, 2], [1, 2, 3]]));
+		testPrim('cddr', id, [runtime.pair(1, runtime.pair(2, 3))], 3);
+
+		testPrim('caaar', deepArrayToList, [[[[1, 2], [3, 4]], [[5, 6], [7, 8]]]], 1);
+		testPrim('caaar', deepArrayToList, [[[runtime.pair(0, 1)]]], 0);
+
+		testPrim('caadr', deepArrayToList, [[[1, 2], [3, 4], []]], 3);
+		testPrim('caadr', deepArrayToList, [[[[1, 2], [3, 4]], [[5, 6], [7, 8]]]], runtime.list([5, 6]));
+
+		testPrim('cadar', deepArrayToList, [[[1, 2], [3, 4], []]], 2);
+		testPrim('cadar', deepArrayToList, [[[[1, 2], [3, 4]], [[5, 6], [7, 8]]]], runtime.list([3, 4]));
+
+		testPrim('cdaar', deepArrayToList, [[[[1, 2], [3, 4]], [[5, 6], [7, 8]]]], runtime.list([2]));
+		testPrim('cdaar', deepArrayToList, [[[runtime.pair(0, 1)]]], 1);
+
+		testPrim('cdadr', deepArrayToList, [[[1, 2], [3, 4], []]], runtime.list([4]));
+		testPrim('cdadr', deepArrayToList, [[[[1, 2], [3, 4]], [[5, 6], [7, 8]]]], deepArrayToList([[7, 8]]));
+		testPrim('cdadr', deepArrayToList, [[runtime.pair(1, 2), runtime.pair(3, 4)]], 4);
+
+		testPrim('cddar', deepArrayToList, [[[1, 2], [3, 4], []]], runtime.EMPTY);
+		testPrim('cddar', deepArrayToList, [[runtime.pair(1, runtime.pair(2, 3))]], 3);
+
+		testPrim('caddr', runtime.list, [[1, 2, 3, 4]], 3);
+		testPrim('caddr', deepArrayToList, [[[1, 2], [3, 4], []]], runtime.EMPTY);
+
+		testPrim('cdddr', runtime.list, [[1, 2, 3, 4]], runtime.list([4]));
+		testPrim('cdddr', id, [runtime.pair(1, runtime.pair(2, runtime.pair(3, 4)))], 4);
+
+		testPrim('cadddr', runtime.list, [[1, 2, 3, 4]], 4);
+		testPrim('cadddr', deepArrayToList, [[[1, 2], [3, 4], [5, 6], [7, 8]]], runtime.list([7, 8]));
+	});
+
+
 
 
 /***************************
