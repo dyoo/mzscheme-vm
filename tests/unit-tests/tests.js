@@ -3279,7 +3279,8 @@ runTest("closure application, testing break",
 			  function() {
 			  }, 
 			  function(err) {
-			      assert.ok(types.isExnBreak(err));
+			      assert.ok(types.isSchemeError(err));
+			      assert.ok(types.isExnBreak(err.val));
 			      isTerminated = true;
 			  });
 	    var waitTillBreak = function() {
