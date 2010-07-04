@@ -2196,6 +2196,7 @@ runTest('append',
 		testPrim('append', id, [runtime.list([1, 2]), runtime.list([3]), 4],
 			 runtime.pair(1, runtime.pair(2, runtime.pair(3, 4))));
 		testPrim('append', id, [5], 5);
+		testPrim('append', id, [runtime.EMPTY, 3], 3);
 	});
 
 
