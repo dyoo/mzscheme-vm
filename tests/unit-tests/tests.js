@@ -3092,6 +3092,34 @@ runTest('char-downcase',
 	});
 
 
+runTest('char print formatting',
+	function() {
+		testPrim('format', id, ['~s', runtime.char('\n')], runtime.string('#\\newline'));
+		testPrim('format', id, ['~s', runtime.char('\0')], runtime.string('#\\nul'));
+		testPrim('format', id, ['~a', runtime.char('b')], runtime.string('b'));
+		testPrim('format', id, ['~s', runtime.char('b')], runtime.string('#\\b'));
+
+		var state = new runtime.State();
+		state.pushControl(makeApplication(makePrimval('format'),
+						  [makeConstant('~s'),
+						   makeApplication(makePrimval('integer->char'),
+								   [makeConstant(24)])]));
+		assert.deepEqual(run(state), runtime.string('#\\u0018'));
+
+		state.pushControl(makeApplication(makePrimval('format'),
+						  [makeConstant('~s'),
+						   makeApplication(makePrimval('integer->char'),
+								   [makeConstant(127)])]));
+		assert.deepEqual(run(state), runtime.string('#\\rubout'));
+
+		state.pushControl(makeApplication(makePrimval('format'),
+						  [makeConstant('~s'),
+						   makeApplication(makePrimval('integer->char'),
+								   [makeConstant(955)])]));
+		assert.deepEqual(run(state), runtime.string('#\\u03BB'));
+	});
+
+
 ///////////////////////////////////////////////////////////////////////
 
 
