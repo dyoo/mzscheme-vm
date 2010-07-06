@@ -119,9 +119,9 @@
     
     ;; Bytes
     [(bytes? expr)
-     (string-append BYTES-CONSTRUCTOR "("
+     (string-append BYTES-CONSTRUCTOR "(["
                     (string-join (map number->string (bytes->list expr)) ",")
-                    ")")]
+                    "])")]
 
     ;; Characters
     [(char? expr)
