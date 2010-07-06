@@ -606,7 +606,7 @@
 (define (translate-assign an-assign)
   (match an-assign
     [(struct internal:assign (id rhs undef-ok?))
-     (make-assign id (translate-at-expression-position rhs) undef-ok?)]))
+     (make-assign (translate-toplevel id) (translate-at-expression-position rhs) undef-ok?)]))
              
 
 (define (translate-varref a-varref)
