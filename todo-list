@@ -26,14 +26,10 @@ Get newlines to display properly with js-text
 Rewrite jsworld to work with cooperative and reentrant big-bangs
 	Fix extraneous manual poll (after world stops) on text inputs (around line 1180 in jsworld/jsworld.js)
 Add in missing jsworld procedures (on-mouse, on-mouse!, image-rotate)
-Make hash tables display contents when printing
 Add fields to errors to display arguments better (using toDomNode instead of toWrittenString)
 
 
 * Low Priority *
-Change printing of chars and byte strings so that it properly displays non-printable characters (as #\<number>)
-Change printing of chars to properly display non-printable characters
-Fix formatting of "wrong number of arguments" error
 Make errors report what (other) arguments were given
 
 
