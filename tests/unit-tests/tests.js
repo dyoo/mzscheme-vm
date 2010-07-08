@@ -238,6 +238,9 @@ var runTest = function(name, thunk) {
 	sys.print(" FAIL\n");
 	sys.print(e);
 	if (EXIT_ON_FIRST_ERROR) {
+		if (console && console.log && e.stack) {
+			console.log(e.stack);
+		}
 	    throw e;
 	}
     }
@@ -3321,6 +3324,56 @@ runTest('structure equality',
 	});
 
 
+/***************************
+ *** FFI Primitive Tests ***
+ ***************************/
+
+
+runTest('get-js-object',
+	function() {
+		testPrim('get-js-object', id, ['setInterval'], types.jsObject('setInterval', setInterval));
+		testPrim('get-js-object', id, [types.jsObject('types', types), 'box'],
+			 types.jsObject('types.box', types.box));
+		testPrim('get-js-object', runtime.string, ['types', 'cons'], types.jsObject('types.cons', types.cons));
+		testPrim('get-js-object', id, ['world', runtime.string('Kernel'), 'ellipseImage'],
+			 types.jsObject('world.Kernel.ellipseImage', world.Kernel.ellipseImage));
+		testPrim('get-js-object', id, [types.jsObject('world', world), 'Kernel', 'isColor'],
+			 types.jsObject('world.Kernel.isColor', world.Kernel.isColor));
+		testPrim('get-js-object', id, [types.jsObject('world.config', world.config), 'Kernel', 'getNoneEffect'],
+			 types.jsObject('world.config.Kernel.getNoneEffect', world.config.Kernel.getNoneEffect));
+		testPrim('get-js-object', id, ['junk'], types.jsObject('junk', undefined));
+
+		try {
+			testPrim('get-js-object', id, ['world', 'junk', 'something'], false);
+		} catch(e) {
+			assert.deepEqual(e, types.schemeError(
+				types.exnFailContract('get-js-object: tried to access field something of world.junk, '
+					+ 'but world.junk was undefined'),
+				false));
+		}
+	});
+
+
+runTest('js-call',
+	function() {
+		testPrim('js-call', id, [types.jsObject('jsnums.greaterThan', jsnums.greaterThan), 4, runtime.rational(3, 2)], true);
+		testPrim('js-call', id, [types.jsObject('types.hash', types.hash), runtime.EMPTY], types.hash(runtime.EMPTY));
+
+		var state = new runtime.State();
+		var results = [];
+		state.pushControl(makeApplication(makePrimval('js-call'),
+						  [makeConstant(types.jsObject('setInterval', setInterval)),
+						   makeConstant(function() { results.push('tick'); }),
+						   makeConstant(500)]));
+		var watchId = run(state);
+		setTimeout(function() {
+			clearInterval(watchId);
+			assert.deepEqual(results, ['tick', 'tick', 'tick', 'tick', 'tick']);
+		}, 2600);
+	});
+		
+
+
 
 
 
@@ -3346,6 +3399,7 @@ schedule a break.
 
 Only after the interpreter breaks do we print "END TESTS".
 */
+/*
 runTest("closure application, testing break",
 	// (define (f) (f)) (begin (f)) --> infinite loop, but with bounded control stack.
 	function() {
@@ -3377,3 +3431,4 @@ runTest("closure application, testing break",
 	    };
 	    waitTillBreak();
 	});
+*/
