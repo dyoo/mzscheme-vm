@@ -6,7 +6,6 @@ Fully test the following:
     on-redraw (pretty much done)
     programs Emmanuel sends us
 Make sure all errors are emitting reasonable locations
-Be able to save, publish, and run programs in WeScheme
 Test for correctness on IE 6, IE 7, and IE 8
 Robustly test all non-world primitives
 
@@ -26,15 +25,10 @@ Get newlines to display properly with js-text
 Rewrite jsworld to work with cooperative and reentrant big-bangs
 	Fix extraneous manual poll (after world stops) on text inputs (around line 1180 in jsworld/jsworld.js)
 Add in missing jsworld procedures (on-mouse, on-mouse!, image-rotate)
-Fix on-key for non-alpha-numeric keys (already works for \t, \b, enter, space, up, down, left, right)
-Make hash tables display contents when printing
 Add fields to errors to display arguments better (using toDomNode instead of toWrittenString)
 
 
 * Low Priority *
-Change printing of chars and byte strings so that it properly displays non-printable characters (as #\<number>)
-Change printing of chars to properly display non-printable characters
-Fix formatting of "wrong number of arguments" error
 Make errors report what (other) arguments were given
 
 

@@ -238,6 +238,9 @@ var runTest = function(name, thunk) {
 	sys.print(" FAIL\n");
 	sys.print(e);
 	if (EXIT_ON_FIRST_ERROR) {
+		if (console && console.log && e.stack) {
+			console.log(e.stack);
+		}
 	    throw e;
 	}
     }
@@ -2197,6 +2200,7 @@ runTest('append',
 		testPrim('append', id, [runtime.list([1, 2]), runtime.list([3]), 4],
 			 runtime.pair(1, runtime.pair(2, runtime.pair(3, 4))));
 		testPrim('append', id, [5], 5);
+		testPrim('append', id, [runtime.EMPTY, 3], 3);
 	});
 
 
@@ -2492,6 +2496,60 @@ runTest('compose',
 		assert.deepEqual(run(state), false);
 		state.pushControl(makeApplication(composed, [makeConstant(2), makeConstant(4), makeConstant(15)]));
 		assert.deepEqual(run(state), true);
+	});
+
+
+runTest('caar, cadr, cdar, cddr, etc.',
+	function() {
+		var deepArrayToList = function(a) {
+			if ( !(a instanceof Array) ) {
+				return a;
+			}
+			return runtime.list( helpers.map(a, deepArrayToList) );
+		}
+
+		testPrim('car', runtime.list, [[1, 2, 3]], 1);
+		testPrim('caar', deepArrayToList, [[[1, 2], [3, 4], []]], 1);
+		testPrim('caar', deepArrayToList, [[[[1, 2], [3, 4]], [[5, 6], [7, 8]]]], runtime.list([1, 2]));
+		testPrim('caar', runtime.list, [[runtime.pair(1, runtime.pair(2, 3))]], 1);
+
+		testPrim('cadr', runtime.list, [[1, 2, 3]], 2);
+		testPrim('cadr', deepArrayToList, [[[1, 2], [3, 4]]], runtime.list([3, 4]));
+
+		testPrim('cdar', deepArrayToList, [[[1, 2], [3, 4], []]], runtime.list([2]));
+		testPrim('cdar', runtime.list, [[runtime.pair(1, 2)]], 2);
+
+		testPrim('cddr', runtime.list, [[1, 2, 3, 4]], runtime.list([3, 4]));
+		testPrim('cddr', deepArrayToList, [[[], [1], [1, 2], [1, 2, 3]]], deepArrayToList([[1, 2], [1, 2, 3]]));
+		testPrim('cddr', id, [runtime.pair(1, runtime.pair(2, 3))], 3);
+
+		testPrim('caaar', deepArrayToList, [[[[1, 2], [3, 4]], [[5, 6], [7, 8]]]], 1);
+		testPrim('caaar', deepArrayToList, [[[runtime.pair(0, 1)]]], 0);
+
+		testPrim('caadr', deepArrayToList, [[[1, 2], [3, 4], []]], 3);
+		testPrim('caadr', deepArrayToList, [[[[1, 2], [3, 4]], [[5, 6], [7, 8]]]], runtime.list([5, 6]));
+
+		testPrim('cadar', deepArrayToList, [[[1, 2], [3, 4], []]], 2);
+		testPrim('cadar', deepArrayToList, [[[[1, 2], [3, 4]], [[5, 6], [7, 8]]]], runtime.list([3, 4]));
+
+		testPrim('cdaar', deepArrayToList, [[[[1, 2], [3, 4]], [[5, 6], [7, 8]]]], runtime.list([2]));
+		testPrim('cdaar', deepArrayToList, [[[runtime.pair(0, 1)]]], 1);
+
+		testPrim('cdadr', deepArrayToList, [[[1, 2], [3, 4], []]], runtime.list([4]));
+		testPrim('cdadr', deepArrayToList, [[[[1, 2], [3, 4]], [[5, 6], [7, 8]]]], deepArrayToList([[7, 8]]));
+		testPrim('cdadr', deepArrayToList, [[runtime.pair(1, 2), runtime.pair(3, 4)]], 4);
+
+		testPrim('cddar', deepArrayToList, [[[1, 2], [3, 4], []]], runtime.EMPTY);
+		testPrim('cddar', deepArrayToList, [[runtime.pair(1, runtime.pair(2, 3))]], 3);
+
+		testPrim('caddr', runtime.list, [[1, 2, 3, 4]], 3);
+		testPrim('caddr', deepArrayToList, [[[1, 2], [3, 4], []]], runtime.EMPTY);
+
+		testPrim('cdddr', runtime.list, [[1, 2, 3, 4]], runtime.list([4]));
+		testPrim('cdddr', id, [runtime.pair(1, runtime.pair(2, runtime.pair(3, 4)))], 4);
+
+		testPrim('cadddr', runtime.list, [[1, 2, 3, 4]], 4);
+		testPrim('cadddr', deepArrayToList, [[[1, 2], [3, 4], [5, 6], [7, 8]]], runtime.list([7, 8]));
 	});
 
 
@@ -3037,6 +3095,34 @@ runTest('char-downcase',
 	});
 
 
+runTest('char print formatting',
+	function() {
+		testPrim('format', id, ['~s', runtime.char('\n')], runtime.string('#\\newline'));
+		testPrim('format', id, ['~s', runtime.char('\0')], runtime.string('#\\nul'));
+		testPrim('format', id, ['~a', runtime.char('b')], runtime.string('b'));
+		testPrim('format', id, ['~s', runtime.char('b')], runtime.string('#\\b'));
+
+		var state = new runtime.State();
+		state.pushControl(makeApplication(makePrimval('format'),
+						  [makeConstant('~s'),
+						   makeApplication(makePrimval('integer->char'),
+								   [makeConstant(24)])]));
+		assert.deepEqual(run(state), runtime.string('#\\u0018'));
+
+		state.pushControl(makeApplication(makePrimval('format'),
+						  [makeConstant('~s'),
+						   makeApplication(makePrimval('integer->char'),
+								   [makeConstant(127)])]));
+		assert.deepEqual(run(state), runtime.string('#\\rubout'));
+
+		state.pushControl(makeApplication(makePrimval('format'),
+						  [makeConstant('~s'),
+						   makeApplication(makePrimval('integer->char'),
+								   [makeConstant(955)])]));
+		assert.deepEqual(run(state), runtime.string('#\\u03BB'));
+	});
+
+
 ///////////////////////////////////////////////////////////////////////
 
 
@@ -3238,6 +3324,56 @@ runTest('structure equality',
 	});
 
 
+/***************************
+ *** FFI Primitive Tests ***
+ ***************************/
+
+
+runTest('get-js-object',
+	function() {
+		testPrim('get-js-object', id, ['setInterval'], types.jsObject('setInterval', setInterval));
+		testPrim('get-js-object', id, [types.jsObject('types', types), 'box'],
+			 types.jsObject('types.box', types.box));
+		testPrim('get-js-object', runtime.string, ['types', 'cons'], types.jsObject('types.cons', types.cons));
+		testPrim('get-js-object', id, ['world', runtime.string('Kernel'), 'ellipseImage'],
+			 types.jsObject('world.Kernel.ellipseImage', world.Kernel.ellipseImage));
+		testPrim('get-js-object', id, [types.jsObject('world', world), 'Kernel', 'isColor'],
+			 types.jsObject('world.Kernel.isColor', world.Kernel.isColor));
+		testPrim('get-js-object', id, [types.jsObject('world.config', world.config), 'Kernel', 'getNoneEffect'],
+			 types.jsObject('world.config.Kernel.getNoneEffect', world.config.Kernel.getNoneEffect));
+		testPrim('get-js-object', id, ['junk'], types.jsObject('junk', undefined));
+
+		try {
+			testPrim('get-js-object', id, ['world', 'junk', 'something'], false);
+		} catch(e) {
+			assert.deepEqual(e, types.schemeError(
+				types.exnFailContract('get-js-object: tried to access field something of world.junk, '
+					+ 'but world.junk was undefined'),
+				false));
+		}
+	});
+
+
+runTest('js-call',
+	function() {
+		testPrim('js-call', id, [types.jsObject('jsnums.greaterThan', jsnums.greaterThan), 4, runtime.rational(3, 2)], true);
+		testPrim('js-call', id, [types.jsObject('types.hash', types.hash), runtime.EMPTY], types.hash(runtime.EMPTY));
+
+		var state = new runtime.State();
+		var results = [];
+		state.pushControl(makeApplication(makePrimval('js-call'),
+						  [makeConstant(types.jsObject('setInterval', setInterval)),
+						   makeConstant(function() { results.push('tick'); }),
+						   makeConstant(500)]));
+		var watchId = run(state);
+		setTimeout(function() {
+			clearInterval(watchId);
+			assert.deepEqual(results, ['tick', 'tick', 'tick', 'tick', 'tick']);
+		}, 2600);
+	});
+		
+
+
 
 
 
@@ -3263,6 +3399,7 @@ schedule a break.
 
 Only after the interpreter breaks do we print "END TESTS".
 */
+/*
 runTest("closure application, testing break",
 	// (define (f) (f)) (begin (f)) --> infinite loop, but with bounded control stack.
 	function() {
@@ -3294,3 +3431,4 @@ runTest("closure application, testing break",
 	    };
 	    waitTillBreak();
 	});
+*/
