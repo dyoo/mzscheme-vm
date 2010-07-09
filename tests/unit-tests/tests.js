@@ -238,9 +238,9 @@ var runTest = function(name, thunk) {
 	sys.print(" FAIL\n");
 	sys.print(e);
 	if (EXIT_ON_FIRST_ERROR) {
-		if (console && console.log && e.stack) {
-			console.log(e.stack);
-		}
+//		if (console && console.log && e.stack) {
+//			console.log(e.stack);
+//		}
 	    throw e;
 	}
     }
@@ -3329,6 +3329,7 @@ runTest('structure equality',
  ***************************/
 
 
+/*
 runTest('get-js-object',
 	function() {
 		testPrim('get-js-object', id, ['setInterval'], types.jsObject('setInterval', setInterval));
@@ -3371,6 +3372,7 @@ runTest('js-call',
 			assert.deepEqual(results, ['tick', 'tick', 'tick', 'tick', 'tick']);
 		}, 2600);
 	});
+*/
 		
 
 
@@ -3399,7 +3401,6 @@ schedule a break.
 
 Only after the interpreter breaks do we print "END TESTS".
 */
-/*
 runTest("closure application, testing break",
 	// (define (f) (f)) (begin (f)) --> infinite loop, but with bounded control stack.
 	function() {
@@ -3431,4 +3432,3 @@ runTest("closure application, testing break",
 	    };
 	    waitTillBreak();
 	});
-*/
