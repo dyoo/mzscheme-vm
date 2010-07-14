@@ -238,7 +238,7 @@ var runTest = function(name, thunk) {
 	sys.print(" FAIL\n");
 	sys.print(e);
 	if (EXIT_ON_FIRST_ERROR) {
-		if (console && console.log && e.stack) {
+	    if (typeof(console) !== 'undefined' && console.log && e.stack) {
 			console.log(e.stack);
 		}
 	    throw e;
