@@ -1,11 +1,11 @@
 
 var parent = types.makeStructureType('parent', 1, 0, false, false, function(arg, name) { return arg; });
 var child1 = types.makeStructureType('child1', 1, 1, parent, 'auto1',
-		function(arg1, arg2, name) { return new types.ValuesWrapper([arg1+'-1', arg2+'-2']); });
+		function(arg1, arg2, name) { return new types.ValuesWrapper([arg1+'-g1a', arg2+'-g1b']); });
 var child2 = types.makeStructureType('child2', 2, 1, parent, 'auto2', false);
 
 var subchild1 = types.makeStructureType('subchild1', 0, 0, child1, false,
-		function(arg1, arg2, name) { return new types.ValuesWrapper([arg1+'-3', arg2+'-4']); });
+		function(arg1, arg2, name) { return new types.ValuesWrapper([arg1+'-g2a', arg2+'-g2b']); });
 var subchild2 = types.makeStructureType('subchild2', 2, 2, child2, 'auto2b', false);
 
 
@@ -58,14 +58,14 @@ assert.ok( subchild2.predicate(subchild2Instance) );
 
 // Accessors
 assert.deepEqual(parent.accessor(parentInstance, 0), 'a');
-assert.deepEqual(parent.accessor(child1Instance, 0), 'b-1');
+assert.deepEqual(parent.accessor(child1Instance, 0), 'b-g1a');
 assert.deepEqual(parent.accessor(child2Instance, 0), 'c');
-assert.deepEqual(parent.accessor(subchild1Instance, 0), 'd-3-1');
+assert.deepEqual(parent.accessor(subchild1Instance, 0), 'd-g2a-g1a');
 assert.deepEqual(parent.accessor(subchild2Instance, 0), 'e');
 
-assert.deepEqual(child1.accessor(child1Instance, 0), '1-2');
+assert.deepEqual(child1.accessor(child1Instance, 0), '1-g1b');
 assert.deepEqual(child1.accessor(child1Instance, 1), 'auto1');
-assert.deepEqual(child1.accessor(subchild1Instance, 0), '4-4-2');
+assert.deepEqual(child1.accessor(subchild1Instance, 0), '4-g2b-g1b');
 assert.deepEqual(child1.accessor(subchild1Instance, 1), 'auto1');
 
 assert.deepEqual(child2.accessor(child2Instance, 0), '2');
