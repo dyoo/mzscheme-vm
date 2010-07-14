@@ -31,6 +31,7 @@ Add fields to errors to display arguments better (using toDomNode instead of toW
 * Low Priority *
 Make errors report what (other) arguments were given
 Get make-struct-field-accessor and make-struct-field-mutator to return procs with correct names
+make get-js-array-field not break on bignums
 
 
 
