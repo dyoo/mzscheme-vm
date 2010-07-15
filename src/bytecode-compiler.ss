@@ -311,7 +311,8 @@
     [(struct lam (name flags num-params param-types 
                        rest? closure-map closure-types 
                        max-let-depth body))
-     (make-ht 'lam `((flags ,(make-vec (map make-lit flags)))
+     (make-ht 'lam `((name ,(make-lit name))
+		     (flags ,(make-vec (map make-lit flags)))
                      (num-params ,(make-int num-params))
                      (param-types ,(make-vec (map make-lit param-types)))
                      (rest? ,(make-lit rest?))
