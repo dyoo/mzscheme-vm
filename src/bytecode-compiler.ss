@@ -121,6 +121,8 @@
   (match a-form
     [(? def-values?)
      (compile-def-values a-form)]
+    [(? req?)
+     (compile-req a-form)]
     [(? seq?)
      (compile-seq a-form)]
     [(? splice?)
@@ -403,6 +405,18 @@
      (make-ht 'branch `((test ,(compile-at-expression-position test))
 			(then ,(compile-at-expression-position then))
 			(else ,(compile-at-expression-position else))))]))
+
+
+
+
+;; compile-req: req -> jsexp
+(define (compile-req a-seq)
+  (match a-seq
+    [(struct req (path toplevel))
+     (make-ht 'req 
+              `((reqs ,(make-lit (syntax->datum path)))
+		(dummy ,(compile-toplevel toplevel))))]))
+
 
 
 ;; compile-seq: seq -> jsexp
