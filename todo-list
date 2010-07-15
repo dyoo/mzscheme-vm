@@ -18,6 +18,7 @@ Get primitives tested using PLT test suite
 Test for performance on different platforms
 Get effects working in jsworld again
 Fix on-key so it recognizes shift being held down
+Gracefully catch errors in procedure->{cps,void}-js-fun instead of just throwing
 
 
 ** Medium Priority **
@@ -31,7 +32,6 @@ Add fields to errors to display arguments better (using toDomNode instead of toW
 * Low Priority *
 Make errors report what (other) arguments were given
 Get make-struct-field-accessor and make-struct-field-mutator to return procs with correct names
-make get-js-array-field not break on bignums
 
 
 
