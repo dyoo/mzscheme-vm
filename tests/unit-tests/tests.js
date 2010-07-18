@@ -3317,9 +3317,9 @@ runTest('posn-y',
 
 runTest('structure equality',
 	function() {
-		var ParentType = types.makeStructureType('parent', 2, 0, false, false, false);
+		var ParentType = types.makeStructureType('parent', false, 2, 0, false, false);
 		var makeParent = ParentType.constructor;
-		var ChildType = types.makeStructureType('child', 0, 0, ParentType, false, false);
+		var ChildType = types.makeStructureType('child', ParentType, 0, 0, false, false);
 		var makeChild = ChildType.constructor;
 
 		testPrim('equal?', id, [makeParent('a', 5), makeParent('a', 5)], true);
