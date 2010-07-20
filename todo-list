@@ -26,7 +26,6 @@ Add fields to errors to display arguments better (using toDomNode instead of toW
 
 
 * Low Priority *
-Make errors report what (other) arguments were given
 
 
 
