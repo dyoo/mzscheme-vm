@@ -526,7 +526,7 @@
 
 ;; test: path -> state
 ;; exercising function
-(define (test path)
+#;(define (test path)
   (let ([parsed (translate-compilation-top (internal:zo-parse (open-input-file path)))])
     (compile-top parsed)))
 
