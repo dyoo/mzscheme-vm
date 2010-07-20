@@ -3,6 +3,7 @@
          "sexp.ss"
          "batch-wrap.ss"
          "bytecode-structs.ss"
+         "translate-bytecode-structs.ss"
          (prefix-in internal: compiler/zo-parse)
          scheme/file
          scheme/path
