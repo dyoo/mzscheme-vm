@@ -121,6 +121,8 @@
   (match a-form
     [(? def-values?)
      (compile-def-values a-form)]
+    [(? req?)
+     (compile-req a-form)]
     [(? seq?)
      (compile-seq a-form)]
     [(? splice?)
@@ -309,7 +311,8 @@
     [(struct lam (name flags num-params param-types 
                        rest? closure-map closure-types 
                        max-let-depth body))
-     (make-ht 'lam `((flags ,(make-vec (map make-lit flags)))
+     (make-ht 'lam `((name ,(make-lit name))
+		     (flags ,(make-vec (map make-lit flags)))
                      (num-params ,(make-int num-params))
                      (param-types ,(make-vec (map make-lit param-types)))
                      (rest? ,(make-lit rest?))
@@ -403,6 +406,18 @@
      (make-ht 'branch `((test ,(compile-at-expression-position test))
 			(then ,(compile-at-expression-position then))
 			(else ,(compile-at-expression-position else))))]))
+
+
+
+
+;; compile-req: req -> jsexp
+(define (compile-req a-seq)
+  (match a-seq
+    [(struct req (path toplevel))
+     (make-ht 'req 
+              `((reqs ,(make-lit (syntax->datum path)))
+		(dummy ,(compile-toplevel toplevel))))]))
+
 
 
 ;; compile-seq: seq -> jsexp
@@ -511,7 +526,7 @@
 
 ;; test: path -> state
 ;; exercising function
-(define (test path)
+#;(define (test path)
   (let ([parsed (translate-compilation-top (internal:zo-parse (open-input-file path)))])
     (compile-top parsed)))
 
