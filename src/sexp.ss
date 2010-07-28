@@ -219,7 +219,7 @@
 ;; number->java-string: number -> string
 (define (number->js a-num)
   (cond 
-    [(rational? a-num)
+    [(and (exact? a-num) (rational? a-num))
      (rational-number->js a-num)]
     
     [(real? a-num)
