@@ -1,4 +1,6 @@
+json2.js
 helpers.js
+world/jsworld/jsworld.js
 js-numbers.js
 jshashtable.js
 types.js
@@ -6,7 +8,6 @@ state.js
 world/world-config.js
 world/world-stimuli.js
 world/world.js
-world/jsworld/jsworld.js
 world/jsworld.js
 primitive.js
 control.js

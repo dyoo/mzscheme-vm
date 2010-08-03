@@ -15,6 +15,7 @@ Get primitives tested using PLT test suite
 Test for performance on different platforms
 Fix on-key so it recognizes shift being held down
 Gracefully catch errors in procedure->{cps,void}-js-fun instead of just throwing
+Change API for make-effect-type to the more sensable one
 
 
 ** Medium Priority **
