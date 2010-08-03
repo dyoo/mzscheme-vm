@@ -2,9 +2,6 @@ This is a list of stuff that needs to get done
 
 
 **** Very High Priority **** (stuff Emmanuel needs)
-Fully test the following:
-    on-redraw (pretty much done)
-    programs Emmanuel sends us
 Make sure all errors are emitting reasonable locations
 Test for correctness on IE 6, IE 7, and IE 8
 Robustly test all non-world primitives
@@ -16,12 +13,13 @@ put in vertical scroll bar on definitions window (and maybe interactions too?)
 *** High Priority ***
 Get primitives tested using PLT test suite
 Test for performance on different platforms
-Get effects working in jsworld again
 Fix on-key so it recognizes shift being held down
+Gracefully catch errors in procedure->{cps,void}-js-fun instead of just throwing
+Change API for make-effect-type to the more sensable one
 
 
 ** Medium Priority **
-Get newlines to display properly with js-text
+(probably fixed) Get newlines to display properly with js-text
 Rewrite jsworld to work with cooperative and reentrant big-bangs
 	Fix extraneous manual poll (after world stops) on text inputs (around line 1180 in jsworld/jsworld.js)
 Add in missing jsworld procedures (on-mouse, on-mouse!, image-rotate)
@@ -29,7 +27,6 @@ Add fields to errors to display arguments better (using toDomNode instead of toW
 
 
 * Low Priority *
-Make errors report what (other) arguments were given
 
 
 

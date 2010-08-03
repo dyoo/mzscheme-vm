@@ -562,10 +562,10 @@
         [table (make-hash)])
     (for ([b (in-list bindings)])
       (let ([v (and (cdr b)
-                    (zo-parse (let-values ([(in out) (make-pipe)])
+                    (zo-parse (let ([out (open-output-bytes)])
                                 (write (cdr b) out)
                                 (close-output-port out)
-                                in)))])
+                                (open-input-bytes (get-output-bytes out)))))])
         (let ([n (match v
                    [(struct compilation-top (_ prefix (struct primval (n)))) n]
                    [else #f])])
