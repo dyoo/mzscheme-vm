@@ -2509,7 +2509,7 @@ runTest('caar, cadr, cdar, cddr, etc.',
 			if ( !(a instanceof Array) ) {
 				return a;
 			}
-			return runtime.list( helpers.map(a, deepArrayToList) );
+			return runtime.list( helpers.map(deepArrayToList, a) );
 		}
 
 		testPrim('car', runtime.list, [[1, 2, 3]], 1);

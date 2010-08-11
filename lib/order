@@ -1,5 +1,6 @@
-world/jsworld/jsworld.js
+json2.js
 helpers.js
+world/jsworld/jsworld.js
 js-numbers.js
 jshashtable.js
 types.js
