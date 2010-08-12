@@ -1,12 +1,13 @@
 
-var parent = types.makeStructureType('parent', 1, 0, false, false, function(arg, name) { return arg; });
-var child1 = types.makeStructureType('child1', 1, 1, parent, 'auto1',
-		function(arg1, arg2, name) { return new types.ValuesWrapper([arg1+'-g1a', arg2+'-g1b']); });
-var child2 = types.makeStructureType('child2', 2, 1, parent, 'auto2', false);
+var parent = types.makeStructureType('parent', false, 1, 0, false, function(args, name, k) { return k(args); });
+var child1 = types.makeStructureType('child1', parent, 1, 1, 'auto1',
+		function(args, name, k) { return k([args[0]+'-g1a', args[1]+'-g1b']); });
+var child2 = types.makeStructureType('child2', parent, 2, 1, 'auto2', false);
 
-var subchild1 = types.makeStructureType('subchild1', 0, 0, child1, false,
-		function(arg1, arg2, name) { return new types.ValuesWrapper([arg1+'-g2a', arg2+'-g2b']); });
-var subchild2 = types.makeStructureType('subchild2', 2, 2, child2, 'auto2b', false);
+var subchild1 = types.makeStructureType('subchild1', child1, 0, 0, false,
+		function(args, name, k) { return k([args[0]+'-g2a', args[1]+'-g2b']); });
+//		function(arg1, arg2, name) { return new types.ValuesWrapper([arg1+'-g2a', arg2+'-g2b']); });
+var subchild2 = types.makeStructureType('subchild2', child2, 2, 2, 'auto2b', false);
 
 
 
