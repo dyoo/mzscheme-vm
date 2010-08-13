@@ -3422,14 +3422,19 @@ runTest("closure application, testing break",
 						    makeApplication(makeToplevel(0, 0),
 								    []))));
 	    var isTerminated = false;
-	    interpret.run(state,
-			  function() {
-			  }, 
-			  function(err) {
-			      assert.ok(types.isSchemeError(err));
-			      assert.ok(types.isExnBreak(err.val));
-			      isTerminated = true;
-			  });
+	    state.onFail = function(e) {
+	    	assert.ok(types.isSchemeError(e));
+		assert.ok(types.isExnBreak(e.val));
+		isTerminated = true;
+	    };
+	    interpret.run(state);
+//			  function() {
+//			  }, 
+//			  function(err) {
+//			      assert.ok(types.isSchemeError(err));
+//			      assert.ok(types.isExnBreak(err.val));
+//			      isTerminated = true;
+//			  });
 	    var waitTillBreak = function() {
 		if (isTerminated) {
 		    sys.print("\nEND TESTS\n")
