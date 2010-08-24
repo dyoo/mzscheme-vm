@@ -1,4 +1,4 @@
-#lang s-exp "../../src/moby-lang.ss"
+#lang s-exp "../../src/lang/moby-lang.ss"
 
 ;; Simple falling ball example.  A red ball falls down the screen
 ;; until hitting the bottom.
@@ -40,6 +40,6 @@
 
 ;; Start up a big bang, 15 frames a second.
 (js-big-bang INITIAL-WORLD
-             (on-tick 1/15 tick)
+             (on-tick tick 1/15)
              (on-redraw render)
              (stop-when hits-floor?))
