@@ -16,7 +16,6 @@
      (syntax/loc stx
        (#%datum . x))]))
 
-
 ;; application
 (define-syntax (-#%app stx)
   (syntax-case stx ()
@@ -32,6 +31,8 @@
        (define x ...))]))
 
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Primitive function stubs
 
 ;; provide-stub-function
 (define-syntax (provide-stub-function stx)
@@ -43,15 +44,11 @@
               (provide name)))]))
 
 
-
-;; Stub functions
-(provide-stub-function printf)
-(provide-stub-function *)
-
-
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (provide (rename-out (-#%module-begin #%module-begin)
                      (-#%datum #%datum)
                      (-#%app #%app)
                      (-define define)))
-
+(provide-stub-function printf)
+(provide-stub-function *)

@@ -56,6 +56,10 @@
       #:exists 'replace)))
 
 
-(moby (command-line #:program "mzjs" 
-              #:args (filename)
-              filename))
+
+
+
+(let ([a-path (command-line #:program "mzjs" 
+                            #:args (filename)
+                            filename)])
+  (moby a-path))
