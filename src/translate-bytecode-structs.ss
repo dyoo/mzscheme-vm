@@ -1,10 +1,12 @@
 #lang scheme/base
 
 (require "bytecode-structs.ss"
+         scheme/contract
          scheme/match
+         scheme/list
          (prefix-in internal: compiler/zo-structs))
 
-;; Translation from mzscheme 4.2.5 bytecode structures to our own.
+;; Translation from mzscheme 5.0.1 bytecode structures to our own.
 
 (define current-indirect-map (make-parameter (make-hasheq)))
 
@@ -260,6 +262,7 @@
 (define (translate-mod a-mod)
   (match a-mod
     [(struct internal:mod (name
+                           srcname
                            self-modidx
                            prefix
                            provides
@@ -466,7 +469,7 @@
 
 (define (translate-let-one a-let-one)
   (match a-let-one
-    [(struct internal:let-one (rhs body flonum?))
+    [(struct internal:let-one (rhs body flonum? unused?))
      (make-let-one (translate-at-expression-position rhs)
                    (translate-at-expression-position body)
                    flonum?)]))
