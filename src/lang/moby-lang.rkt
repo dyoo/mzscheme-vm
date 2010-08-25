@@ -62,11 +62,11 @@
        (quote x ...))]))
 
 ;; constants
-(define -true #t)
-(define -false #f)
-(define -pi math:pi)
-(define -e math:e)
-(define -empty '())
+(define true #t)
+(define false #f)
+(define pi math:pi)
+(define e math:e)
+(define empty '())
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Primitive function stubs
@@ -91,14 +91,15 @@
                      (-define define)
                      (-if if)
                      (-cond cond)
+                     (else else)
                      (-case case)
                      (-quote quote)
                      
-                     (-true true)
-                     (-false false)
-                     (-pi pi)
-                     (-e e)
-                     (-empty empty))
-         else)
+                     (true true)
+                     (false false)
+                     (pi pi)
+                     (e e)
+                     (empty empty)))
+
 (provide-stub-function printf)
 (provide-stub-function *)

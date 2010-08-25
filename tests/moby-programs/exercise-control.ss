@@ -3,6 +3,10 @@
 		   'ok
 		   'not-ok))
 
+(printf "~s~n" (if false
+		   'not-ok
+		   'ok))
+
 (printf "~s~n" (cond [true 'ok]
 		     [else 'not-ok]))
 
