@@ -284,7 +284,8 @@
                     provides)
                requires
                (map translate-at-form-position body)
-               (map (lambda (a-body) 
+               ;; FIXME: we don't handle syntax objects yet.
+               empty #;(map (lambda (a-body) 
                       (match a-body 
                         [(? internal:def-syntaxes?)
                          (translate-def-syntaxes a-body)]
