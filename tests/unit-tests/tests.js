@@ -1241,7 +1241,7 @@ runTest("let-rec",
 	    var state = new runtime.State();
 	    state.pushControl(makeLetVoid(2,
 					  false,
-					  makeLetrec([makeLam(1, [0],
+					  makeLetrec([makeLam(1, [1],
 							      makeBranch
 							      (makeApplication(makePrimval("zero?"),
 									       [makeLocalRef(2)]),
@@ -1250,7 +1250,7 @@ runTest("let-rec",
 									       [makeApplication
 										(makePrimval("sub1"),
 										 [makeLocalRef(3)])]))),
-						      makeLam(1, [1],
+						      makeLam(1, [0],
 							      makeBranch
 							      (makeApplication(makePrimval("zero?"),
 									       [makeLocalRef(2)]),
@@ -1259,7 +1259,7 @@ runTest("let-rec",
 									       [makeApplication
 										(makePrimval("sub1"),
 										 [makeLocalRef(3)])])))],
-						     makeLocalRef(1))));
+						     makeLocalRef(0))));
 	    var evenValue = run(state);
 	    var e = function(x) {
 		state.pushControl(makeApplication(makeConstant(evenValue),

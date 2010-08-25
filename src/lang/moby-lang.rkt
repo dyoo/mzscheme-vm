@@ -75,6 +75,7 @@
                      (else else)
                      (case case)
                      (quote quote)
+                     (lambda lambda)
                      (let let)
                      (let* let*)
                      (letrec letrec)
@@ -86,4 +87,8 @@
                      (empty empty)))
 
 (provide-stub-function printf)
+(provide-stub-function format)
 (provide-stub-function *)
+(provide-stub-function =)
+(provide-stub-function sub1)
+(provide-stub-function add1)
