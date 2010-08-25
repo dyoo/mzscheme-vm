@@ -245,7 +245,7 @@
 (define (translate-def-syntaxes a-def-syntaxes)
   (match a-def-syntaxes
     [(struct internal:def-syntaxes (ids rhs prefix max-let-depth))
-     (make-def-syntaxes (map translate-toplevel ids)
+     (make-def-syntaxes ids #;(map translate-toplevel ids)
                         (translate-at-expression-position rhs)
                         (translate-prefix prefix)
                         max-let-depth)]))

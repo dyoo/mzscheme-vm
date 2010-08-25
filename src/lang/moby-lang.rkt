@@ -54,6 +54,13 @@
      (syntax/loc stx
        (define x ...))]))
 
+;; define-struct
+(define-syntax (-define-struct stx)
+  (syntax-case stx ()
+    [(_ x ...)
+     (syntax/loc stx
+       (define-struct x ...))]))
+
 ;; quotations
 (define-syntax (-quote stx)
   (syntax-case stx ()
@@ -94,6 +101,7 @@
                      (else else)
                      (-case case)
                      (-quote quote)
+                     (-define-struct define-struct)
                      
                      (true true)
                      (false false)
