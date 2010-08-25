@@ -5,6 +5,8 @@
          racket/port)
 
 (define-runtime-path library-path "../lib")
+(define-runtime-path support-directory "../support")
+
 
 ;; cat-to-port: path output-port -> void
 ;; Write out contents of path to output port.
@@ -12,9 +14,20 @@
   (call-with-input-file a-path (lambda (ip) (copy-port ip out-port))))
 
 
+;; copy-support-files: path -> void
+;; Write out the support files to the given directory.
+(define (copy-support-files a-path)
+  (for ([p (directory-list support-directory)])
+    (when (file-exists? (build-path a-path p))
+      (delete-file (build-path a-path p)))
+    
+    (copy-file (build-path support-directory p)
+               (build-path a-path p))))
+
+
 ;; write-platform-libraries: string output-port -> void
 ;; Writes out the platform-specific libraries out to the given output port.
-(define (write-support a-platform out-port)
+(define (write-runtime a-platform out-port)
   (let ([platform-specific-js-path
          (build-path library-path (string-append a-platform "-platform.js"))])
     
@@ -26,7 +39,11 @@
            (for ([filename (in-lines order-ip)])
              (cat-to-port (build-path library-path filename) out-port))))]
       [else
-       (error 'mobyc (format "No support for platform ~s" a-platform))])))
+       (error 'mobyc (format "No runtime for platform ~s" a-platform))])))
 
 
-(provide/contract [write-support (string? output-port? . -> . any)])
+
+
+
+(provide/contract [write-runtime (string? output-port? . -> . any)]
+                  [copy-support-files (path? . -> . any)])

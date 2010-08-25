@@ -3,33 +3,35 @@
          "sexp.ss"
          "non-batch-wrap.ss"
          "translate-bytecode-structs.ss"
+         "write-runtime.rkt"
          (prefix-in internal: compiler/zo-parse)
-         scheme/file
          scheme/path
          scheme/cmdline
          scheme/runtime-path)
 
-(define-runtime-path lib-directory "../lib")
-
 ;; make-output-file-path: path -> path
 ;; Given the normalized name of the Scheme program, produce a normalized path
-;; of the output javascript program.
-(define (make-output-file-path a-file-path)
-  (let-values ([(base file dir?)
-                (split-path a-file-path)])
-    (build-path base
-                (regexp-replace #px"\\.\\w+$" 
-                                (path->string (file-name-from-path file))
-                                ".js"))))
+;; of the output javascript application.
+(define (make-output-file-dir-path a-file-path)
+  (let*-values ([(base file dir?)
+                 (split-path a-file-path)]
+                [(new-directory-path) 
+                 (normalize-path
+                  (build-path base 
+                              (remove-filename-extension
+                               (file-name-from-path file))))])
+    (unless (directory-exists? new-directory-path)
+      (make-directory new-directory-path))
+    new-directory-path))
 
 
-;; copy-lib-files: path -> void
-;; copy the files in lib to the directory.
-(define (copy-lib-files a-dir)
-  (when (directory-exists? (build-path a-dir "lib"))
-    (delete-directory/files (build-path a-dir "lib")))
-  (copy-directory/files lib-directory (build-path a-dir "lib")))
-
+;; remove-filename-extension: path-string -> path-string
+;; Removes the filename extension portion.
+(define (remove-filename-extension a-path)
+  (let ([p (if (path? a-path)
+               (path->string a-path)
+               a-path)])
+    (regexp-replace #px"\\.\\w+$" p "")))
 
   
 ;; moby: path -> void
@@ -37,8 +39,9 @@
 ;; and generate the javascript program.
 (define (moby a-path)
   (let*-values ([(a-path) (normalize-path a-path)]
-                [(zo-path) (unbatched-compile a-path)]
+                [(output-directory) (make-output-file-dir-path a-path)]
                 [(base-dir file dir?) (split-path a-path)]
+                [(zo-path) (unbatched-compile a-path)]
                 [(translated-program)
                  (jsexp->js 
                   (parameterize ([current-directory base-dir]
@@ -46,13 +49,26 @@
                     (compile-top
                      (translate-compilation-top
                       (internal:zo-parse (open-input-file zo-path))))))])
-    (copy-lib-files base-dir)
-    (call-with-output-file (make-output-file-path a-path)
+
+    ;; FIXME: we want to change the flow to
+    ;; program -> set of module records
+    ;; And then have a separate pass that goes from module records to writing
+    ;; out to the file system...
+    
+    ;; Write out the support runtime.
+    (call-with-output-file (build-path output-directory "runtime.js")
       (lambda (op)
-        (fprintf op "var _runtime = require('./lib');")
-        (fprintf op "var program = _runtime.load(~a);" 
-                 translated-program)
-        (fprintf op "_runtime.run(program);"))
+        (write-runtime "browser" op))
+      #:exists 'replace)
+
+    (copy-support-files output-directory)
+    
+    ;; Write out the translated program.
+    ;; FIXME: write out all the other used modules too.
+    (call-with-output-file (build-path output-directory "program.js")
+      (lambda (op)
+        (fprintf op "var program = (~a);" 
+                 translated-program))
       #:exists 'replace)))
 
 
