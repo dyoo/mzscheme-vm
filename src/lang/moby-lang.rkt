@@ -1,4 +1,6 @@
 #lang racket/base
+(require (prefix-in math: (only-in racket/math pi))
+         (prefix-in math: (only-in mzlib/math e)))
 
 (require (for-syntax racket/base))
 
@@ -23,15 +25,50 @@
      (syntax/loc stx
        (#%app operator operands ...))]))
 
+;; branches
+(define-syntax (-if stx)
+  (syntax-case stx ()
+    [(_ t b1 b2)
+     (syntax/loc stx
+       (if t b1 b2))]))
 
+;; conds
+(define-syntax (-cond stx)
+  (syntax-case stx ()
+    [(_ clauses ...)
+     (syntax/loc stx
+       (cond clauses ...))]))
+
+;; case
+(define-syntax (-case stx)
+  (syntax-case stx ()
+    [(_ clauses ...)
+     (syntax/loc stx
+       (case clauses ...))]))
+
+
+;; definitions
 (define-syntax (-define stx)
   (syntax-case stx ()
     [(_ x ...)
      (syntax/loc stx
        (define x ...))]))
 
+;; quotations
+(define-syntax (-quote stx)
+  (syntax-case stx ()
+    [(_ x ...)
+     (syntax/loc stx
+       (quote x ...))]))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; constants
+(define -true #t)
+(define -false #f)
+(define -pi math:pi)
+(define -e math:e)
+(define -empty '())
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Primitive function stubs
 
 ;; provide-stub-function
@@ -44,11 +81,24 @@
               (provide name)))]))
 
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; 
 (provide (rename-out (-#%module-begin #%module-begin)
                      (-#%datum #%datum)
                      (-#%app #%app)
-                     (-define define)))
+                     (-define define)
+                     (-if if)
+                     (-cond cond)
+                     (-case case)
+                     (-quote quote)
+                     
+                     (-true true)
+                     (-false false)
+                     (-pi pi)
+                     (-e e)
+                     (-empty empty))
+         else)
 (provide-stub-function printf)
 (provide-stub-function *)
