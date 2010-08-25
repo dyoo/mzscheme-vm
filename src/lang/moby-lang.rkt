@@ -28,6 +28,7 @@
 
 ;; definitions
 (define-syntax (-define stx)
+  ;; FIXME: restrict define since we don't yet support keywords
   (syntax-case stx ()
     [(_ x ...)
      (syntax/loc stx
@@ -35,6 +36,7 @@
 
 ;; define-struct
 (define-syntax (-define-struct stx)
+  ;; FIXME: restrict define-struct since we don't yet support keywords
   (syntax-case stx ()
     [(_ x ...)
      (syntax/loc stx
@@ -48,23 +50,25 @@
 (define e math:e)
 (define empty '())
 
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Primitive function stubs
 
 ;; provide-stub-function
 (define-syntax (provide-stub-function stx)
   (syntax-case stx ()
-    [(_ name)
+    [(_ name ...)
      (syntax/loc stx
-       (begin (define (name . args) 
-                'this-is-a-stub)
-              (provide name)))]))
+       (begin (begin (define (name . args) 
+                       'this-is-a-stub)
+                     (provide name))
+              ...))]))
 
 
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; 
+;; Provides
 (provide (rename-out (-#%module-begin #%module-begin)
                      (-#%datum #%datum)
                      (-#%app #%app)
@@ -84,11 +88,358 @@
                      (false false)
                      (pi pi)
                      (e e)
-                     (empty empty)))
+                     (empty empty)
+                     (eof eof)
+                     (null null)))
 
-(provide-stub-function printf)
-(provide-stub-function format)
-(provide-stub-function *)
-(provide-stub-function =)
-(provide-stub-function sub1)
-(provide-stub-function add1)
+
+(provide-stub-function print-values
+                       check-expect
+                       EXAMPLE
+                       check-within
+                       write
+                       display
+                       newline
+                       current-print
+                       current-continuation-marks
+                       continuation-mark-set->list
+                       for-each
+                       make-thread-cell
+                       make-continuation-prompt-tag
+                       make-struct-type
+                       make-struct-field-accessor
+                       make-struct-field-mutator
+                       struct-type?
+                       struct-constructor-procedure?
+                       struct-predicate-procedure?
+                       struct-accessor-procedure?
+                       struct-mutator-procedure?
+                       procedure-arity
+                       apply
+                       values
+                       call-with-values
+                       compose
+                       current-inexact-milliseconds
+                       current-seconds
+                       not
+                       void
+                       random
+                       sleep
+                       identity
+                       raise
+                       error
+                       make-exn
+                       exn-message
+                       exn-continuation-marks
+                       make-exn:fail
+                       make-exn:fail:contract
+                       make-exn:fail:contract:division-by-zero
+                       *
+                       -
+                       +
+                       =
+                       =~
+                       /
+                       sub1
+                       add1
+                       <
+                       >
+                       <=
+                       >=
+                       abs
+                       quotient
+                       remainder
+                       modulo
+                       max
+                       min
+                       gcd
+                       lcm
+                       floor
+                       ceiling
+                       round
+                       numerator
+                       denominator
+                       expt
+                       exp
+                       log
+                       sin
+                       cos
+                       tan
+                       asin
+                       acos
+                       atan
+                       sinh
+                       cosh
+                       sqr
+                       sqrt
+                       integer-sqrt
+                       make-rectangular
+                       make-polar
+                       real-part
+                       imag-part
+                       angle
+                       magnitude
+                       conjugate
+                       sgn
+                       inexact->exact
+                       exact->inexact
+                       number->string
+                       string->number
+                       xml->s-exp
+                       procedure?
+                       pair?
+                       cons?
+                       empty?
+                       null?
+                       undefined?
+                       void?
+                       symbol?
+                       string?
+                       char?
+                       boolean?
+                       vector?
+                       struct?
+                       eof-object?
+                       posn?
+                       bytes?
+                       byte?
+                       number?
+                       complex?
+                       real?
+                       rational?
+                       integer?
+                       exact?
+                       inexact?
+                       odd?
+                       even?
+                       zero?
+                       positive?
+                       negative?
+                       box?
+                       hash?
+                       eq?
+                       eqv?
+                       equal?
+                       equal~?
+                       false?
+                       boolean=?
+                       symbol=?
+                       js-object?
+                       cons
+                       car
+                       cdr
+                       caar
+                       cadr
+                       cdar
+                       cddr
+                       caaar
+                       caadr
+                       cadar
+                       cdaar
+                       cdadr
+                       cddar
+                       caddr
+                       cdddr
+                       cadddr
+                       rest
+                       first
+                       second
+                       third
+                       fourth
+                       fifth
+                       sixth
+                       seventh
+                       eighth
+                       length
+                       list?
+                       list
+                       list*
+                       list-ref
+                       list-tail
+                       append
+                       reverse
+                       map
+                       andmap
+                       ormap
+                       memq
+                       memv
+                       member
+                       memf
+                       assq
+                       assv
+                       assoc
+                       remove
+                       filter
+                       foldl
+                       foldr
+                       quicksort
+                       sort
+                       argmax
+                       argmin
+                       build-list
+                       box
+                       box-immutable
+                       unbox
+                       set-box!
+                       make-hash
+                       make-hasheq
+                       hash-set!
+                       hash-ref
+                       hash-remove!
+                       hash-map
+                       hash-for-each
+                       make-string
+                       replicate
+                       string
+                       string-length
+                       string-ref
+                       string=?
+                       string-ci=?
+                       string<?
+                       string>?
+                       string<=?
+                       string>=?
+                       string-ci<?
+                       string-ci>?
+                       string-ci<=?
+                       string-ci>=?
+                       substring
+                       string-append
+                       string->list
+                       list->string
+                       string-copy
+                       string->symbol
+                       symbol->string
+                       format
+                       printf
+                       string->int
+                       int->string
+                       explode
+                       implode
+                       string-alphabetic?
+                       string-ith
+                       string-lower-case?
+                       string-numeric?
+                       string-upper-case?
+                       string-whitespace?
+                       build-string
+                       string->immutable-string
+                       string-set!
+                       string-fill!
+                       make-bytes
+                       bytes
+                       bytes->immutable-bytes
+                       bytes-length
+                       bytes-ref
+                       bytes-set!
+                       subbytes
+                       bytes-copy
+                       bytes-fill!
+                       bytes-append
+                       bytes->list
+                       list->bytes
+                       bytes=?
+                       bytes<?
+                       bytes>?
+                       make-vector
+                       vector
+                       vector-length
+                       vector-ref
+                       vector-set!
+                       vector->list
+                       list->vector
+                       build-vector
+                       char=?
+                       char<?
+                       char>?
+                       char<=?
+                       char>=?
+                       char-ci=?
+                       char-ci<?
+                       char-ci>?
+                       char-ci<=?
+                       char-ci>=?
+                       char-alphabetic?
+                       char-numeric?
+                       char-whitespace?
+                       char-upper-case?
+                       char-lower-case?
+                       char->integer
+                       integer->char
+                       char-upcase
+                       char-downcase
+                       make-posn
+                       posn-x
+                       posn-y
+                       image?
+                       image=?
+                       make-color
+                       color-red
+                       color-green
+                       color-blue
+                       empty-scene
+                       place-image
+                       put-pinhole
+                       circle
+                       star
+                       nw:rectangle
+                       rectangle
+                       triangle
+                       ellipse
+                       line
+                       overlay
+                       overlay/xy
+                       underlay
+                       underlay/xy
+                       key=?
+                       text
+                       open-image-url
+                       image-width
+                       image-height
+                       on-tick
+                       on-tick!
+                       on-key
+                       on-key!
+                       stop-when
+                       stop-when!
+                       on-redraw
+                       on-draw
+                       initial-effect
+                       js-p
+                       js-div
+                       js-button
+                       js-button!
+                       js-input
+                       js-img
+                       js-text
+                       js-select
+                       js-big-bang
+                       empty-page
+                       place-on-page
+                       make-world-config
+                       make-effect-type
+                       effect-type?
+                       effect?
+                       make-render-effect-type
+                       render-effect-type?
+                       render-effect?
+                       world-with-effects
+                       make-render-effect
+                       render-effect-dom-node
+                       render-effect-effects
+                       scheme->prim-js
+                       prim-js->scheme
+                       procedure->cps-js-fun
+                       procedure->void-js-fun
+                       js-===
+                       js-get-named-object
+                       js-get-field
+                       js-set-field!
+                       js-typeof
+                       js-instanceof
+                       js-call
+                       js-new
+                       js-make-hash
+                       js-undefined
+                       js-null
+                       call/cc)
