@@ -25,27 +25,6 @@
      (syntax/loc stx
        (#%app operator operands ...))]))
 
-;; branches
-(define-syntax (-if stx)
-  (syntax-case stx ()
-    [(_ t b1 b2)
-     (syntax/loc stx
-       (if t b1 b2))]))
-
-;; conds
-(define-syntax (-cond stx)
-  (syntax-case stx ()
-    [(_ clauses ...)
-     (syntax/loc stx
-       (cond clauses ...))]))
-
-;; case
-(define-syntax (-case stx)
-  (syntax-case stx ()
-    [(_ clauses ...)
-     (syntax/loc stx
-       (case clauses ...))]))
-
 
 ;; definitions
 (define-syntax (-define stx)
@@ -61,12 +40,6 @@
      (syntax/loc stx
        (define-struct x ...))]))
 
-;; quotations
-(define-syntax (-quote stx)
-  (syntax-case stx ()
-    [(_ x ...)
-     (syntax/loc stx
-       (quote x ...))]))
 
 ;; constants
 (define true #t)
@@ -96,12 +69,15 @@
                      (-#%datum #%datum)
                      (-#%app #%app)
                      (-define define)
-                     (-if if)
-                     (-cond cond)
-                     (else else)
-                     (-case case)
-                     (-quote quote)
                      (-define-struct define-struct)
+                     (if if)
+                     (cond cond)
+                     (else else)
+                     (case case)
+                     (quote quote)
+                     (let let)
+                     (let* let*)
+                     (letrec letrec)
                      
                      (true true)
                      (false false)
