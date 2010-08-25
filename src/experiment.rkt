@@ -1,4 +1,4 @@
-#lang scheme
+#lang racket
 
 (require compiler/decompile
          compiler/zo-parse

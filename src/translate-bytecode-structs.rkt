@@ -1,9 +1,9 @@
-#lang scheme/base
+#lang racket/base
 
-(require "bytecode-structs.ss"
-         scheme/contract
-         scheme/match
-         scheme/list
+(require "bytecode-structs.rkt"
+         racket/contract
+         racket/match
+         racket/list
          (prefix-in internal: compiler/zo-structs))
 
 ;; Translation from mzscheme 5.0.1 bytecode structures to our own.

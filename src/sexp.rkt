@@ -1,9 +1,9 @@
-#lang scheme/base
-(require scheme/string
-         scheme/list
-         scheme/contract
-         scheme/match
-         "jsexp.ss")
+#lang racket/base
+(require racket/string
+         racket/list
+         racket/contract
+         racket/match
+         "jsexp.rkt")
 
 (provide/contract [jsexp->js (jsexp? . -> . string?)]
                   [sexp->js (any/c . -> . string?)])

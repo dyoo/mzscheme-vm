@@ -1,5 +1,5 @@
-#lang scheme/base
-(require scheme/contract)
+#lang racket/base
+(require racket/contract)
 
 ;; a jsexp is either a ht, a vec, or a datum.
 (define-struct ht (name key-values) #:transparent)

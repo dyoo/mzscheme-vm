@@ -1,13 +1,12 @@
-#lang scheme/base
-(require "bytecode-compiler.ss"
-         "sexp.ss"
-         "non-batch-wrap.ss"
-         "translate-bytecode-structs.ss"
+#lang racket/base
+(require "bytecode-compiler.rkt"
+         "sexp.rkt"
+         "non-batch-wrap.rkt"
+         "translate-bytecode-structs.rkt"
          "write-runtime.rkt"
          (prefix-in internal: compiler/zo-parse)
-         scheme/path
-         scheme/cmdline
-         scheme/runtime-path)
+         racket/path
+         racket/cmdline)
 
 ;; make-output-file-path: path -> path
 ;; Given the normalized name of the Scheme program, produce a normalized path

@@ -1,11 +1,11 @@
-#lang scheme/base
+#lang racket/base
 
-(require scheme/match
-         scheme/contract
-         scheme/list
-         "bytecode-structs.ss"
-         "jsexp.ss"
-         "primitive-table.ss"
+(require racket/match
+         racket/contract
+         racket/list
+         "bytecode-structs.rkt"
+         "jsexp.rkt"
+         "primitive-table.rkt"
          (prefix-in internal: compiler/zo-parse))
 
 
