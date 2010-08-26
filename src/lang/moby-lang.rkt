@@ -95,6 +95,8 @@
                      (or or)
                      (when when)
                      (unless unless)
+                     (require require)
+                     (provide provide)
                      
                      (true true)
                      (false false)

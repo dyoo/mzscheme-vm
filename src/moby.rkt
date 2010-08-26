@@ -1,12 +1,7 @@
 #lang racket/base
-(require "bytecode-translator.rkt"
-         "sexp.rkt"
-         "non-batch-wrap.rkt"
-         "translate-bytecode-structs.rkt"
-         "write-runtime.rkt"
+(require "write-runtime.rkt"
          "compile-moby-module.rkt"
          "module-record.rkt"
-         (prefix-in internal: compiler/zo-parse)
          racket/path
          racket/cmdline)
 
@@ -42,21 +37,8 @@
   (let*-values ([(a-path) (normalize-path a-path)]
                 [(output-directory) (make-output-file-dir-path a-path)]
                 [(base-dir file dir?) (split-path a-path)]
-                [(module-records) (compile-moby-modules a-path)]
-                #;[(zo-path) (unbatched-compile a-path)]
-                #;[(translated-program)
-                   (jsexp->js 
-                    (parameterize ([current-directory base-dir]
-                                   [current-load-relative-directory base-dir])
-                      (translate-top
-                       (translate-compilation-top
-                        (internal:zo-parse (open-input-file zo-path))))))])
+                [(module-records) (compile-moby-modules a-path)])
 
-    ;; FIXME: we want to change the flow to
-    ;; program -> set of module records
-    ;; And then have a separate pass that goes from module records to writing
-    ;; out to the file system...
-    
     ;; Write out the support runtime.
     (call-with-output-file (build-path output-directory "runtime.js")
       (lambda (op)

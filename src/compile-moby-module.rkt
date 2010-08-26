@@ -18,6 +18,8 @@
 ;; and generate the javascript module modules.
 ;;
 ;; FIXME: transitively include required modules up to moby-lang.ss.
+;; FIXME: use a temporary directory to avoid munging directories with
+;; a bunch of zos.
 (define (compile-moby-modules a-path)
   (let*-values ([(a-path) (normalize-path a-path)]
                 [(output-directory) 
@@ -26,15 +28,14 @@
                  (split-path a-path)]
                 [(zo-path) 
                  (unbatched-compile a-path)]
-                [(translated-program)
-                 (jsexp->js 
+                [(translated-compilation-top 
                   (parameterize ([current-directory base-dir]
                                  [current-load-relative-directory base-dir])
-                    (translate-top
-                     (translate-compilation-top
-                      (internal:zo-parse (open-input-file zo-path))))))])
-    (list 
-     (make-module-record #f translated-program))))
+                    (translate-compilation-top
+                     (internal:zo-parse (open-input-file zo-path)))))]
+                [(translated-program)
+                 (jsexp->js (translate-top translated-compilation-top))])
+    (list (make-module-record #f translated-program))))
 
 
 
