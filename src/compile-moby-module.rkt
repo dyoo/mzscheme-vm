@@ -10,8 +10,12 @@
          racket/list
          racket/path
          racket/contract
+         racket/runtime-path
          syntax/modcode
          syntax/modresolve)
+
+(define-runtime-path hardcoded-moby-language-path
+  "lang/moby-lang.rkt")
 
 
 (provide/contract [compile-moby-modules
@@ -26,17 +30,45 @@
 ;; a bunch of zos.
 (define (compile-moby-modules a-path)
   (let*-values ([(a-path) (normalize-path a-path)])    
-    (let loop ([module-record-path #f]
-               [a-path a-path])
-      (let* ([translated-compilation-top
-              (lookup&parse a-path)]
-             [translated-program
-              (jsexp->js (translate-top translated-compilation-top))])
-        (printf "~s\n" (get-module-phase-0-requires translated-compilation-top a-path))
-        (cond
-          [else
-           (list (make-module-record module-record-path translated-program))])))))
+    (let loop ([to-visit (list a-path)]
+               [acc empty])
+      (cond
+        [(empty? to-visit)
+         acc]
+        [else
+         (let* ([translated-compilation-top
+                 (lookup&parse (first to-visit))]
+                [translated-program
+                 (jsexp->js (translate-top translated-compilation-top))]
+                [neighbors 
+                 (filter-already-visited-modules (get-module-phase-0-requires
+                                                  translated-compilation-top (first to-visit))
+                                                 (map module-record-path acc))])
+           (loop (append neighbors (rest to-visit))
+                 (cons (make-module-record (first to-visit) translated-program)
+                       acc)))]))))
 
+
+;; filter-already-visited-modules: (listof path) (listof path) -> (listof path)
+(define (filter-already-visited-modules paths visited-paths)
+  (filter (lambda (p1)
+            (and (not (findf (lambda (p2) (same-path? p1 p2))
+                        visited-paths))
+                 (not (known-hardcoded-module-path? p1))))
+          paths))
+
+
+;; known-hardcoded-module-path: path -> boolean
+(define (known-hardcoded-module-path? p)
+  (same-path? p hardcoded-moby-language-path))
+  
+
+
+;; same-path?: path path -> boolean
+;; Produces true if both paths are pointing to the same file.
+(define (same-path? p1 p2)
+  (string=? (path->string (normalize-path p1))
+            (path->string (normalize-path p2))))
 
 ;; lookup&parse: path -> compilation-top
 (define (lookup&parse a-path)

@@ -279,8 +279,10 @@
                (translate-prefix prefix)
                (map (lambda (a-provide) 
                       (list (first a-provide)
-                            (translate-provided (second a-provide))
-                            (translate-provided (third a-provide))))
+                            ;; exported variables
+                            (map translate-provided (second a-provide))
+                            ;; exported syntax
+                            (map translate-provided (third a-provide))))
                     provides)
                requires
                (map translate-at-form-position body)

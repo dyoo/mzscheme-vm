@@ -2,6 +2,7 @@
 (require "write-runtime.rkt"
          "compile-moby-module.rkt"
          "module-record.rkt"
+         "private/json.rkt"
          racket/path
          racket/cmdline)
 
@@ -53,16 +54,30 @@
       (lambda (op)
         (for ([r module-records])
           (cond
-            [(equal? (module-record-path r) #f)
-             (fprintf op "var program = (~a);" 
+            [(string=? (path->string (module-record-path r))
+                       (path->string a-path))
+             (fprintf op "var program = (~a);\n\n" 
                       (module-record-impl r))]
             [else
-             (error 'moby "Modules not supported yet")])))
+             (fprintf op "COLLECTIONS[~s] = ~a;\n\n"
+                      (path->string (find-relative-path base-dir (module-record-path r)))
+                      (encode-module-record r base-dir))])))
       #:exists 'replace)))
 
 
+;; encode-module-record: module-record path -> string
+(define (encode-module-record r base-path)
+  (jsexpr->json (make-hash `(("provides" . ()) ;; FIXME
+                             ("name" . ,(path->string 
+                                         (find-relative-path base-path
+                                                             (module-record-path r))))
+                             ("bytecode" . ,(module-record-impl r))))))
 
 
+
+
+
+#;(moby "../tests/moby-programs/require.rkt")
 
 (let ([a-path (command-line #:program "mzjs" 
                             #:args (filename)
