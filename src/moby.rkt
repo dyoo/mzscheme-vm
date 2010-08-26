@@ -45,7 +45,7 @@
                  (jsexp->js 
                   (parameterize ([current-directory base-dir]
                                  [current-load-relative-directory base-dir])
-                    (compile-top
+                    (translate-top
                      (translate-compilation-top
                       (internal:zo-parse (open-input-file zo-path))))))])
 

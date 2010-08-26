@@ -2,14 +2,15 @@
 (require (prefix-in math: (only-in racket/math pi))
          (prefix-in math: (only-in mzlib/math e)))
 
-(require (for-syntax racket/base))
+(require (for-syntax racket/base)
+         racket/local)
 
 ;; Special forms
 (define-syntax (-#%module-begin stx)
   (syntax-case stx ()
     [(_ body ...)
      (syntax/loc stx 
-       (#%plain-module-begin body ...))]))
+       (#%module-begin body ...))]))
 
 ;; datums
 (define-syntax (-#%datum stx)
@@ -79,10 +80,21 @@
                      (else else)
                      (case case)
                      (quote quote)
+                     (unquote unquote)
+                     (unquote-splicing unquote-splicing)
                      (lambda lambda)
+                     (case-lambda case-lambda)
                      (let let)
                      (let* let*)
                      (letrec letrec)
+                     (local local)
+                     (quasiquote quasiquote)
+                     (begin begin)
+                     (set! set!)
+                     (and and)
+                     (or or)
+                     (when when)
+                     (unless unless)
                      
                      (true true)
                      (false false)
