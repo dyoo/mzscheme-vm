@@ -9,7 +9,7 @@
          (prefix-in internal: compiler/zo-parse))
 
 
-(provide/contract [compile-top (compilation-top? . -> . any/c)])
+(provide/contract [translate-top (compilation-top? . -> . any/c)])
 
 
 ;; The structure of the code follows the type definitions in:
@@ -23,7 +23,7 @@
 
 
 ;; compile-top: top -> jsexp
-(define (compile-top a-top)
+(define (translate-top a-top)
   (parameterize ([seen-indirects (make-hasheq)])
     (match a-top
       [(struct compilation-top (max-let-depth prefix code))

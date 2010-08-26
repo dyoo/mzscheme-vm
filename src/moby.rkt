@@ -1,5 +1,5 @@
 #lang racket/base
-(require "bytecode-compiler.rkt"
+(require "bytecode-translator.rkt"
          "sexp.rkt"
          "non-batch-wrap.rkt"
          "translate-bytecode-structs.rkt"
