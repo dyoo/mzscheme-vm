@@ -67,11 +67,12 @@
 
 ;; encode-module-record: module-record path -> string
 (define (encode-module-record r base-path)
-  (jsexpr->json (make-hash `(("provides" . ()) ;; FIXME
-                             ("name" . ,(path->string 
-                                         (find-relative-path base-path
-                                                             (module-record-path r))))
-                             ("bytecode" . ,(module-record-impl r))))))
+  (format "{ name: ~s, provides : ~a, bytecode : ~a }"
+          (path->string 
+           (find-relative-path base-path
+                               (module-record-path r)))
+          (jsexpr->json  '()) ;; FIXME: we need a set of provides
+          (module-record-impl r)))
 
 
 
