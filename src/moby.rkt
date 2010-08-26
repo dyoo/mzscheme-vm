@@ -4,6 +4,8 @@
          "non-batch-wrap.rkt"
          "translate-bytecode-structs.rkt"
          "write-runtime.rkt"
+         "compile-moby-module.rkt"
+         "module-record.rkt"
          (prefix-in internal: compiler/zo-parse)
          racket/path
          racket/cmdline)
@@ -40,14 +42,15 @@
   (let*-values ([(a-path) (normalize-path a-path)]
                 [(output-directory) (make-output-file-dir-path a-path)]
                 [(base-dir file dir?) (split-path a-path)]
-                [(zo-path) (unbatched-compile a-path)]
-                [(translated-program)
-                 (jsexp->js 
-                  (parameterize ([current-directory base-dir]
-                                 [current-load-relative-directory base-dir])
-                    (translate-top
-                     (translate-compilation-top
-                      (internal:zo-parse (open-input-file zo-path))))))])
+                [(module-records) (compile-moby-modules a-path)]
+                #;[(zo-path) (unbatched-compile a-path)]
+                #;[(translated-program)
+                   (jsexp->js 
+                    (parameterize ([current-directory base-dir]
+                                   [current-load-relative-directory base-dir])
+                      (translate-top
+                       (translate-compilation-top
+                        (internal:zo-parse (open-input-file zo-path))))))])
 
     ;; FIXME: we want to change the flow to
     ;; program -> set of module records
@@ -66,8 +69,13 @@
     ;; FIXME: write out all the other used modules too.
     (call-with-output-file (build-path output-directory "program.js")
       (lambda (op)
-        (fprintf op "var program = (~a);" 
-                 translated-program))
+        (for ([r module-records])
+          (cond
+            [(equal? (module-record-path r) #f)
+             (fprintf op "var program = (~a);" 
+                      (module-record-impl r))]
+            [else
+             (error 'moby "Modules not supported yet")])))
       #:exists 'replace)))
 
 
