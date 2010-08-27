@@ -10,6 +10,7 @@
          racket/path
          racket/contract
          racket/runtime-path
+         racket/match
          syntax/modcode
          syntax/modresolve)
 
@@ -23,10 +24,6 @@
   
 ;; Given the path of a scheme program, run it through the compiler
 ;; and generate the javascript module modules.
-;;
-;; FIXME: transitively include required modules up to moby-lang.ss.
-;; FIXME: use a temporary directory to avoid munging directories with
-;; a bunch of zos.
 (define (compile-moby-modules a-path)
   (let*-values ([(a-path) (normalize-path a-path)])    
     (let loop ([to-visit (list a-path)]
@@ -38,7 +35,9 @@
          (let* ([translated-compilation-top
                  (lookup&parse (first to-visit))]
                 [translated-program
-                 (jsexp->js (translate-top translated-compilation-top))]
+                 (jsexp->js (translate-top 
+                             (rewrite-module-locations translated-compilation-top
+                                                       (first to-visit))))]
                 [provides
                  (collect-provided-names translated-compilation-top)]
                 [neighbors 
@@ -80,6 +79,102 @@
     (write (get-module-code a-path) op)
     (translate-compilation-top
      (internal:zo-parse (open-input-bytes (get-output-bytes op))))))
+
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; rewrite-module-locations: compilation-top -> compilation-top
+(define (rewrite-module-locations a-top self-path)
+  (match a-top
+    [(struct compilation-top (max-let-depth prefix code))
+     (make-compilation-top max-let-depth 
+                           (rewrite-module-locations/prefix prefix self-path)
+                           (rewrite-module-locations/code code self-path))]))
+
+(define (rewrite-module-locations/prefix a-prefix self-path)
+  (match a-prefix
+    [(struct prefix (num-lifts toplevels stxs))
+     (make-prefix num-lifts 
+                  (map (lambda (t) (rewrite-module-locations/toplevel t self-path))
+                       toplevels)
+                  stxs)]))
+
+(define (rewrite-module-locations/toplevel a-toplevel self-path)
+  (cond
+    [(eq? a-toplevel #f)
+     a-toplevel]
+    [(symbol? a-toplevel)
+     a-toplevel]
+    [(global-bucket? a-toplevel)
+     a-toplevel]
+    [(module-variable? a-toplevel)
+     (rewrite-module-locations/module-variable a-toplevel self-path)]))
+  
+          
+(define (rewrite-module-locations/module-variable a-module-variable self-path)
+  (match a-module-variable
+    [(struct module-variable (modidx sym pos phase))
+     (make-module-variable (rewrite-module-locations/modidx modidx self-path) sym pos phase)]))
+
+
+(define (rewrite-module-locations/modidx a-modidx self-path)
+  ;; fixme
+  (let ([resolved-path (resolve-module-path-index a-modidx self-path)])
+    (cond
+      [(same-path? resolved-path hardcoded-moby-language-path)
+       ;; rewrite to a collection named moby/moby-lang
+       (module-path-index-join 'moby/moby-lang
+                               (module-path-index-join #f #f))]
+      [else
+       a-modidx])))
+
+
+(define (rewrite-module-locations/code a-code self-path)
+  (match a-code
+    [(struct mod (name self-modidx prefix provides requires body syntax-body unexported max-let-depth dummy lang-info internal-context))
+     (make-mod name 
+               (rewrite-module-locations/modidx self-modidx self-path)
+               (rewrite-module-locations/prefix prefix self-path)
+               (map (lambda (phase+provided) 
+                      (list (first phase+provided)
+                            (map (lambda (p) (rewrite-module-locations/provided p self-path))
+                                 (second phase+provided))
+                            (map (lambda (p) (rewrite-module-locations/provided p self-path))
+                                 (third phase+provided))))
+                    provides)
+               (map (lambda (phase+requires) 
+                      (cons (first phase+requires)
+                            (map (lambda (p) (rewrite-module-locations/modidx p self-path))
+                                 (rest phase+requires))))
+                    requires)
+               body 
+               syntax-body 
+               unexported 
+               max-let-depth
+               dummy 
+               lang-info 
+               internal-context)]
+    [else
+     a-code]))
+
+(define (rewrite-module-locations/provided a-provided self-path)
+  (match a-provided
+    [(struct provided (name src src-name nom-src src-phase protected? insp))
+     (make-provided name 
+                    (if src (rewrite-module-locations/modidx src) src)
+                    src-name
+                    nom-src
+                    src-phase 
+                    protected? 
+                    insp)]))
+                                          
+
+
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
 
 
 ;; get-module-phase-0-requires: compilation-top path? -> (listof path)
