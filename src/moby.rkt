@@ -71,7 +71,7 @@
           (path->string 
            (find-relative-path base-path
                                (module-record-path r)))
-          (jsexpr->json  '()) ;; FIXME: we need a set of provides
+          (jsexpr->json  (map symbol->string (module-record-provides r)))
           (module-record-impl r)))
 
 

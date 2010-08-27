@@ -3,7 +3,6 @@
 (require "bytecode-translator.rkt"
          "bytecode-structs.rkt"
          "sexp.rkt"
-         "non-batch-wrap.rkt"
          "translate-bytecode-structs.rkt"
          "module-record.rkt"
          (prefix-in internal: compiler/zo-parse)
@@ -40,12 +39,16 @@
                  (lookup&parse (first to-visit))]
                 [translated-program
                  (jsexp->js (translate-top translated-compilation-top))]
+                [provides
+                 (collect-provided-names translated-compilation-top)]
                 [neighbors 
                  (filter-already-visited-modules (get-module-phase-0-requires
                                                   translated-compilation-top (first to-visit))
                                                  (map module-record-path acc))])
            (loop (append neighbors (rest to-visit))
-                 (cons (make-module-record (first to-visit) translated-program)
+                 (cons (make-module-record (first to-visit) 
+                                           translated-program 
+                                           provides)
                        acc)))]))))
 
 
@@ -62,6 +65,7 @@
 (define (known-hardcoded-module-path? p)
   (same-path? p hardcoded-moby-language-path))
   
+
 
 
 ;; same-path?: path path -> boolean
@@ -98,6 +102,29 @@
           (map resolve (rest phase0+paths))]))]
     [else
      empty]))
+
+
+;; collect-provided-names: compilation-top -> (listof symbol)
+(define (collect-provided-names a-top)
+  (define (get-name a-provided)
+    (provided-name a-provided))
+  (cond
+    [(mod? (compilation-top-code a-top))
+     (let* ([a-mod (compilation-top-code a-top)]
+            [provides (mod-provides a-mod)]
+            [phase0+provides
+             (findf (lambda (phase+provides)
+                      (= (first phase+provides) 0))
+                    provides)])
+       (cond
+         [(eq? phase0+provides #f)
+          empty]
+         [else
+          ;; FIXME: currently ignoring exported syntax.
+          (map get-name (second phase0+provides))]))]
+    [else
+     empty]))
+
 
 
 
