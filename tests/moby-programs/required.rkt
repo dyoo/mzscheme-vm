@@ -3,3 +3,6 @@
 
 (define (f x)
   (* x x))
+
+
+(define h 'something-else)

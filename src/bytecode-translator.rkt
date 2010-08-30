@@ -150,6 +150,7 @@
                   internal-context))
      (make-ht 'mod `((name ,(make-lit name))
                      (requires ,(compile-requires requires))
+                     (provides ,(compile-provides provides))
                      (prefix ,(compile-prefix prefix))
                      (body ,(make-vec (map compile-at-form-position
                                            body)))))]))
@@ -160,6 +161,24 @@
                                    (map compile-module-path-index (rest a-require)))))
                  requires)))
        
+
+(define (compile-provides provides)
+  (make-vec 
+   (map (lambda (phase+variables&syntax)
+          (make-ht 'provided 
+                   `((phase ,(make-lit (first phase+variables&syntax)))
+                     (variables ,(make-vec (map compile-provided (second phase+variables&syntax))))
+                     (syntax ,(make-vec (map compile-provided (third phase+variables&syntax)))))))
+        provides)))
+
+(define (compile-provided a-provided)
+  (match a-provided 
+    [(struct provided (name src src-name nom-mod src-phase protected? insp))
+     (make-ht 'provided `((name ,(make-lit name))
+                          (src ,(if src 
+                                    (compile-module-path-index src)
+                                    (make-lit src)))
+                          (src-name ,(make-lit src-name))))]))
 
 
 (define (compile-module-path-index mpi)

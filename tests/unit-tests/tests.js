@@ -37,7 +37,7 @@ var makePrefix = function(n) {
 };
 
 var makeMod = function(prefix, body) {
-    return new control.ModControl(prefix, body);
+    return new control.ModControl(prefix, [], body);
 };
 
 var makeConstant = function(c) {
@@ -1120,12 +1120,18 @@ runTest("assign",
 runTest("varref",
 	function() {
 	    var state = new runtime.State();
-	    state.pushControl(makeMod(makePrefix(1),
+	    state.pushControl(makeMod(makePrefix(2),
 				      [makeSeq(makeAssign(makeToplevel(0, 0),
 						makeConstant("a toplevel value"),
 							  true),
-					       makeVarref(makeToplevel(0, 0)))]));
-	    var result = run(state);
+					       makeAssign(
+						   makeToplevel(0, 1),
+						   makeVarref(makeToplevel(0, 0))))]));
+	    var prefixValue = run(state);
+	    // WARNING: breaking abstractions.
+	    // Let's look directly at the representation structures
+	    // and make sure we are dealing with a variable reference.
+	    var result = prefixValue.slots[1];
 	    assert.ok(result instanceof runtime.VariableReference);
 	    assert.equal(result.ref(), "a toplevel value");
 	    result.set("something else!");

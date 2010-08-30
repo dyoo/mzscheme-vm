@@ -161,7 +161,7 @@
   (match a-provided
     [(struct provided (name src src-name nom-src src-phase protected? insp))
      (make-provided name 
-                    (if src (rewrite-module-locations/modidx src) src)
+                    (if src (rewrite-module-locations/modidx src self-path) src)
                     src-name
                     nom-src
                     src-phase 

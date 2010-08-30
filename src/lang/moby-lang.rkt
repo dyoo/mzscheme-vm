@@ -96,7 +96,12 @@
                      (when when)
                      (unless unless)
                      (require require)
+		     ; (prefix-in prefix-in)
+		     ; (only-in only-in)
                      (provide provide)
+		     (all-defined-out all-defined-out)
+		     (rename-out rename-out)    
+		     
                      
                      (true true)
                      (false false)
@@ -410,10 +415,10 @@
                        open-image-url
                        image-width
                        image-height
-                       on-tick
-                       on-tick!
-                       on-key
-                       on-key!
+		       ; on-tick
+                       ; on-tick!
+                       ; on-key
+                       ; on-key!
                        stop-when
                        stop-when!
                        on-redraw
