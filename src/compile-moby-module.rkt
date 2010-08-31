@@ -17,6 +17,12 @@
 (define-runtime-path hardcoded-moby-language-path
   "lang/moby-lang.rkt")
 
+(define racket-path
+  (resolve-module-path 'racket #f))
+
+(define racket/base-path
+  (resolve-module-path 'racket/base #f))
+
 
 (provide/contract [compile-moby-modules
                    (path? . -> . (listof module-record?))])
@@ -60,9 +66,7 @@
           paths))
 
 
-;; known-hardcoded-module-path: path -> boolean
-(define (known-hardcoded-module-path? p)
-  (same-path? p hardcoded-moby-language-path))
+
   
 
 
@@ -117,14 +121,30 @@
      (make-module-variable (rewrite-module-locations/modidx modidx self-path) sym pos phase)]))
 
 
+;; known-hardcoded-module-path: path -> boolean
+(define (known-hardcoded-module-path? p)
+  (let ([hardcoded-modules
+         (list hardcoded-moby-language-path
+               #;racket-path
+               #;racket/base-path)])
+    (ormap (lambda (h)
+             (same-path? p h))
+           hardcoded-modules)))
+
+
+;; rewrite-to-hardcoded-module-path: module-path-index path -> module-path-index
 (define (rewrite-module-locations/modidx a-modidx self-path)
-  ;; fixme
   (let ([resolved-path (resolve-module-path-index a-modidx self-path)])
     (cond
       [(same-path? resolved-path hardcoded-moby-language-path)
-       ;; rewrite to a collection named moby/moby-lang
+       ;; rewrite to a (possibly fictional) collection named moby/moby-lang
+       ;; The runtime will recognize this collection.
        (module-path-index-join 'moby/moby-lang
                                (module-path-index-join #f #f))]
+      [(same-path? resolved-path racket-path)
+       a-modidx]
+      [(same-path? resolved-path racket/base-path)
+       a-modidx]
       [else
        a-modidx])))
 
@@ -168,7 +188,6 @@
                     protected? 
                     insp)]))
                                           
-
 
 
 
