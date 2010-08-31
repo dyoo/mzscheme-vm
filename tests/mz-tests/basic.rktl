@@ -1,7 +1,7 @@
 #lang s-exp "../../src/lang/moby-lang.rkt"
-#;(load-relative "loadtest.rktl")
+(require "testing.rkt")
 
-#;(Section 'basic)
+(Section 'basic)
 
 #;(require scheme/flonum
            racket/private/norm-arity)

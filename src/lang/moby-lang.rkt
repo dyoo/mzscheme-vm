@@ -134,6 +134,8 @@
                        struct-accessor-procedure?
                        struct-mutator-procedure?
                        procedure-arity
+		       arity-at-least?
+		       arity-at-least-value
                        apply
                        values
                        call-with-values
