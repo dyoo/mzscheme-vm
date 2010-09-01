@@ -136,6 +136,7 @@
 (define (rewrite-module-locations/modidx a-modidx self-path)
   (printf "~s~n" a-modidx)
   (let ([resolved-path (resolve-module-path-index a-modidx self-path)])
+    (printf "~s~n" resolved-path)
     (cond
       [(same-path? resolved-path hardcoded-moby-language-path)
        ;; rewrite to a (possibly fictional) collection named moby/moby-lang
