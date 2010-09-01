@@ -1,9 +1,13 @@
 #lang s-exp "../../src/lang/moby-lang.rkt"
 
 
-(provide test Section record-error arity-test)
+(provide test test-values Section record-error arity-test err/rt-test disable)
+
+(require (for-syntax racket/base))
 
 (define number-of-tests 0)
+(define number-of-error-tests 0)
+
 
 (define Section-prefix "")
 
@@ -47,13 +51,15 @@
 
 
 
-
+(define (test-values l thunk)
+  (test l call-with-values thunk list))
 
 
 (define arity-test
   (case-lambda
    [(f min max except)
-    (letrec ([aok?
+    (void)
+    #;(letrec ([aok?
 	      (lambda (a)
 		(cond
 		 [(integer? a) (= a min max)]
@@ -76,14 +82,15 @@
 		   a)]
 		 [else #f]))]
 	     [make-ok?
-	      (lambda (v)
-		(lambda (e)
-		  (exn:application:arity? e)))]
+                (lambda (v)
+                  (lambda (e)
+                    (exn:application:arity? e)))]
 	     [do-test
 	      (lambda (f args check?)
 		(set! number-of-error-tests (add1 number-of-error-tests))
 		(printf "(apply ~s '~s)  =e=> " f args)
-		(let/ec done
+                
+                (let/ec done
 		  (let ([v (with-handlers ([void
 					    (lambda (exn)
 					      (if (check? exn)
@@ -123,3 +130,22 @@
 		   (make-ok? (add1 max)))
 	  (test #t procedure-arity-includes? f (arithmetic-shift 1 100))))]
    [(f min max) (arity-test f min max null)]))
+
+
+
+;; err/rt-test currently a stub that doesn't do anything.
+(define-syntax (err/rt-test stx)
+  (syntax-case stx ()
+    [(_ expr)
+     (syntax/loc stx
+       (void))]
+    [(_ expr test?)
+     (syntax/loc stx
+       (void))]))
+
+
+(define-syntax (disable stx)
+  (syntax-case stx ()
+    [(_ e ...)
+     (syntax/loc stx
+       (void))]))

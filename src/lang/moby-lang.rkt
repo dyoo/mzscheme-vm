@@ -96,12 +96,14 @@
                      (when when)
                      (unless unless)
                      (require require)
+                     (for-syntax for-syntax)
 		     ; (prefix-in prefix-in)
 		     ; (only-in only-in)
                      (provide provide)
 		     (all-defined-out all-defined-out)
 		     (rename-out rename-out)    
-		     
+                     (define-syntax define-syntax)
+                     (let/cc let/cc)
                      
                      (true true)
                      (false false)
@@ -463,4 +465,5 @@
                        js-make-hash
                        js-undefined
                        js-null
+                       call-with-current-continuation
                        call/cc)
