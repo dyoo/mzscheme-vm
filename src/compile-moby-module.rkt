@@ -134,10 +134,10 @@
 
 ;; rewrite-to-hardcoded-module-path: module-path-index path -> module-path-index
 (define (rewrite-module-locations/modidx a-modidx self-path)
-  (printf "~s~n" a-modidx)
   (let ([resolved-path (resolve-module-path-index a-modidx self-path)])
-    (printf "~s~n" resolved-path)
     (cond
+      [(eq? resolved-path '#%kernel)
+       a-modidx]
       [(same-path? resolved-path hardcoded-moby-language-path)
        ;; rewrite to a (possibly fictional) collection named moby/moby-lang
        ;; The runtime will recognize this collection.
@@ -200,9 +200,9 @@
 
 ;; get-module-phase-0-requires: compilation-top path? -> (listof path)
 (define (get-module-phase-0-requires a-top relative-to)
+  ;; resolve: module-path-index -> (path | '#%kernel) 
   (define (resolve mpi)
-    (normalize-path 
-     (resolve-module-path-index mpi relative-to)))
+    (resolve-module-path-index mpi relative-to))
   (cond
     [(mod? (compilation-top-code a-top))
      (let* ([a-mod (compilation-top-code a-top)]
@@ -215,7 +215,8 @@
          [(eq? phase0+paths #f)
           empty]
          [else
-          (map resolve (rest phase0+paths))]))]
+          (map normalize-path
+               (filter path? (map resolve (rest phase0+paths))))]))]
     [else
      empty]))
 
