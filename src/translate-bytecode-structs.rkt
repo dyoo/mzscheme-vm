@@ -80,7 +80,10 @@
     [(struct internal:module-rename (phase kind set-id unmarshals renames mark-renames plus-kern?))
      (make-module-rename phase kind set-id 
                          (map translate-all-from-module unmarshals)
-                         (map translate-module-binding renames)
+                         (map (lambda (sym+binding)
+                                (cons (car sym+binding)
+                                      (translate-module-binding (cdr sym+binding))))
+                                renames)
                          mark-renames
                          plus-kern?)]))
 
@@ -298,7 +301,10 @@
                max-let-depth
                (translate-toplevel dummy)
                lang-info
-               internal-context)]))
+               (cond [(boolean? internal-context)
+                      internal-context]
+                     [else
+                      (translate-stx internal-context)]))]))
                
 (define (translate-provided a-provided)
   (match a-provided
@@ -481,7 +487,16 @@
 (define (translate-case-lam a-case-lam)
   (match a-case-lam
     [(struct internal:case-lam (name clauses))
-     (make-case-lam name (map translate-lam clauses))]))
+     (make-case-lam name
+                    (map (lambda (a-clause) 
+                           (cond [(internal:lam? a-clause)
+                                  (translate-lam a-clause)]
+                                 [(internal:indirect? a-clause)
+                                  (translate-indirect a-clause)]
+                                 [else
+                                  (error 'translate-case-lam "~s" a-clause)]))
+                         clauses))]))
+
 
 
 

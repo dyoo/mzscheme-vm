@@ -33,9 +33,11 @@
     (regexp-replace #px"\\.\\w+$" p "")))
 
 
-#;(moby "../tests/moby-programs/require.rkt")
+#;(create-javascript-package "../tests/moby-programs/require.rkt")
+(create-javascript-package (build-path "../tests/mz-tests/basic.rktl")
+                           (build-path "test-output"))
 
-(let ([a-path (command-line #:program "mzjs" 
+#;(let ([a-path (command-line #:program "mzjs" 
                             #:args (filename)
                             filename)])
   (create-javascript-package (build-path a-path)

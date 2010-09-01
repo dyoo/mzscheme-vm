@@ -5,9 +5,7 @@
          racket/list
          "bytecode-structs.rkt"
          "jsexp.rkt"
-         "primitive-table.rkt"
-         (prefix-in internal: compiler/zo-parse))
-
+         "primitive-table.rkt")
 
 (provide/contract [translate-top (compilation-top? . -> . any/c)])
 
@@ -346,7 +344,14 @@
   (match a-case-lam
     [(struct case-lam (name clauses))
      (make-ht 'case-lam `((name ,(make-lit name))
-                          (clauses ,(make-vec (map compile-lam clauses)))))]))
+                          (clauses ,(make-vec (map (lambda (a-clause)
+                                                     (cond [(lam? a-clause)
+                                                            (compile-lam a-clause)]
+                                                           [(indirect? a-clause)
+                                                            (compile-indirect a-clause)]
+                                                           [else
+                                                            (error 'compile-case-lam "~s" a-clause)]))
+                                                   clauses)))))]))
               
 
 

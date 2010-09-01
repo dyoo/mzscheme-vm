@@ -24,7 +24,8 @@
 (define REGEXP-CONSTRUCTOR "types.regexp")
 (define BYTE-REGEXP-CONSTRUCTOR "types.byteRegexp")
 (define BYTES-CONSTRUCTOR "types.bytes")
-
+(define HASH-CONSTRUCTOR "types.hash")
+(define HASHEQ-CONSTRUCTOR "types.hasheq")
 
 (define EMPTY "types.EMPTY")
 (define TRUE "true")
@@ -154,8 +155,18 @@
      (string-append BYTE-REGEXP-CONSTRUCTOR "("
                     (sexp->js (object-name expr))
                     ")")]
+    ;; hashes
+    [(hash-eq? expr)
+     (string-append HASHEQ-CONSTRUCTOR "("
+                    (sexp->js (hash-map expr (lambda (k v)
+                                               (cons k v))))
+                    ")")]
+    [(hash? expr)
+     (string-append HASH-CONSTRUCTOR "("
+                    (sexp->js (hash-map expr (lambda (k v)
+                                               (cons k v))))
+                    ")")]
 
-    
     [else
      (error 'sexp->js (format "Can't translate ~s" expr))]))
 

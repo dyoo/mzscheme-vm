@@ -32,7 +32,13 @@
            (lit-value? (car x))
            (lit-value? (cdr x)))
       (and (vector? x) 
-           (andmap lit-value? (vector->list x)))))
+           (andmap lit-value? (vector->list x)))
+      (and (hash-equal? x) 
+           (andmap lit-value? 
+                   (apply append (hash-map x (lambda (k v) (list k v))))))
+      (and (hash-eq? x)
+           (andmap lit-value?
+                   (apply append (hash-map x (lambda (k v) (list k v))))))))
 
 
 
