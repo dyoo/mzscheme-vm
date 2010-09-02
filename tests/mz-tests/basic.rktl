@@ -116,7 +116,7 @@
 (arity-test eqv? 2 2)
 (arity-test equal? 2 2)
 
-(err/rt-test (set-mcdr! (list 1 2) 4))
+(disable (err/rt-test (set-mcdr! (list 1 2) 4)))
 
 (test '(a b c d e) 'dot '(a . (b . (c . (d . (e . ()))))))
 (disable (define x (mcons 'a (mcons 'b (mcons 'c null))))
@@ -167,9 +167,9 @@
 (err/rt-test (length '(1 . 2)))
 (err/rt-test (length "a"))
 ; (err/rt-test (length (quote #0=(1 . #0#))))
-(err/rt-test (let ([p (cons 1 (make-placeholder #f))]) 
+(disable (err/rt-test (let ([p (cons 1 (make-placeholder #f))]) 
                (placeholder-set! (cdr p) p)
-               (length (make-reader-graph p))))
+               (length (make-reader-graph p)))))
 (define x (cons 4 0))
 (err/rt-test (length x))
 
@@ -1352,7 +1352,7 @@
  (map-tests ormap))
 
 (test-values (list (void)) (lambda () (for-each (lambda (x) (values 1 2)) '(1 2))))
-(err/rt-test (map (lambda (x) (values 1 2)) '(1 2)) arity?)
+(disable (err/rt-test (map (lambda (x) (values 1 2)) '(1 2)) arity?))
 
 (test #t andmap add1 null)
 (test #t andmap < null null)
@@ -1371,8 +1371,8 @@
 (test #t andmap < '(1 -2 3) '(2 2 4) '(5 6 7))
 (test #t ormap < '(1 -2 3) '(0 -2 4) '(0 0 8))
 
-(err/rt-test (ormap (lambda (x) (values 1 2)) '(1 2)) arity?)
-(err/rt-test (andmap (lambda (x) (values 1 2)) '(1 2)) arity?)
+(disable (err/rt-test (ormap (lambda (x) (values 1 2)) '(1 2)) arity?))
+(disable (err/rt-test (andmap (lambda (x) (values 1 2)) '(1 2)) arity?))
 
 (test-values '(1 2) (lambda () (ormap (lambda (x) (values 1 2)) '(1))))
 (test-values '(1 2) (lambda () (andmap (lambda (x) (values 1 2)) '(1))))
@@ -2268,9 +2268,9 @@
            (hash-ref ht (integer->char a) #f))
          (reverse l))))
 
-(err/rt-test (hash-eq? 5))
-(err/rt-test (hash-eqv? 5))
-(err/rt-test (hash-weak? 5))
+(disable (err/rt-test (hash-eq? 5)))
+(disable (err/rt-test (hash-eqv? 5)))
+(disable (err/rt-test (hash-weak? 5)))
 
 (disable 
  (let ([a (expt 2 500)]
@@ -2307,7 +2307,7 @@
   (disable (test-del-eq make-weak-hasheq))
   (disable (test-del-eq make-weak-hash)))
 
-(err/rt-test (hash-count 0))
+(disable (err/rt-test (hash-count 0)))
 (err/rt-test (hash-set! 1 2 3))
 (err/rt-test (hash-ref 1 2))
 (err/rt-test (hash-remove! 1 2))
@@ -2355,12 +2355,13 @@
 (test #f equal? #hash((x . 0)) #hash((y . 0)))
 (test #t equal? #hash((y . 0)) #hash((y . 0)))
 
-(err/rt-test (hash-set! im-t 1 2))
-(err/rt-test (hash-remove! im-t 1))
-(err/rt-test (make-immutable-hasheq '(1)))
-(err/rt-test (make-immutable-hasheq '((1 . 2) . 2)))
-(err/rt-test (make-immutable-hasheq '((1 . 2) 3)))
-(disable
+(disable 
+ (err/rt-test (hash-set! im-t 1 2))
+ (err/rt-test (hash-remove! im-t 1))
+ (err/rt-test (make-immutable-hasheq '(1)))
+ (err/rt-test (make-immutable-hasheq '((1 . 2) . 2)))
+ (err/rt-test (make-immutable-hasheq '((1 . 2) 3)))
+ 
  (define cyclic-alist (read (open-input-string "#0=((1 . 2) . #0#)")))
  (err/rt-test (make-immutable-hasheq cyclic-alist))
  (err/rt-test (make-immutable-hasheq '((1 . 2)) 'weak)))

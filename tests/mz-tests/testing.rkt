@@ -1,7 +1,8 @@
 #lang s-exp "../../src/lang/moby-lang.rkt"
 
 
-(provide test test-values Section record-error arity-test err/rt-test disable)
+(provide test test-values Section record-error arity-test err/rt-test disable
+         exn:application:mismatch? exn:application:type? exn:application:arity?)
 
 (require (for-syntax racket/base))
 
@@ -146,10 +147,11 @@
   (syntax-case stx ()
     [(_ expr)
      (syntax/loc stx
-       (void))]
+       (void (lambda () expr)))]
     [(_ expr test?)
      (syntax/loc stx
-       (void))]))
+       (void (lambda () expr)
+             test?))]))
 
 
 (define-syntax (disable stx)
