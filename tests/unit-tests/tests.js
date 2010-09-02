@@ -2249,7 +2249,7 @@ runTest('memq',
 				      runtime.list([runtime.char('c'),
 						    runtime.char('b'),
 						    runtime.char('a')])],
-			 false);
+			 runtime.list([runtime.char('a')]));
 		testPrim('memq', id, [runtime.string('a'),
 				      runtime.list([runtime.string('c'),
 						    runtime.string('b'),
@@ -3196,7 +3196,7 @@ runTest('eq?',
 		testPrim('eq?', runtime.string, ['a', 'a'], false);
 		testPrim('eq?', id, [testStr, testStr], true);
 		testPrim('eq?', id, [testChar, testChar], true);
-		testPrim('eq?', id, [testChar, runtime.char('H')], false);
+		testPrim('eq?', id, [testChar, runtime.char('H')], true);
 	});
 
 
