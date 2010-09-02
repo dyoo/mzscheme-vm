@@ -228,6 +228,7 @@
                        empty?
                        null?
                        undefined?
+		       immutable?
                        void?
                        symbol?
                        string?
