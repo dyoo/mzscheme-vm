@@ -55,6 +55,14 @@
   (test l call-with-values thunk list))
 
 
+
+(define exn:application:mismatch? exn:fail:contract?)
+(define exn:application:type? exn:fail:contract?)
+(define exn:application:arity? exn:fail:contract:arity?)
+
+
+
+
 (define arity-test
   (case-lambda
    [(f min max except)

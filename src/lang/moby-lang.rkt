@@ -151,12 +151,25 @@
                        identity
                        raise
                        error
+
                        make-exn
-                       exn-message
-                       exn-continuation-marks
                        make-exn:fail
                        make-exn:fail:contract
+                       make-exn:fail:contract:arity
+                       make-exn:fail:contract:variable
                        make-exn:fail:contract:division-by-zero
+
+                       exn-message
+                       exn-continuation-marks
+
+		       exn?
+		       exn:fail?
+		       exn:fail:contract?
+		       exn:fail:contract:arity?
+		       exn:fail:contract:variable?
+		       exn:fail:contract:division-by-zero?
+
+
                        *
                        -
                        +
