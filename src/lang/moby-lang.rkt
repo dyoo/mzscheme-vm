@@ -480,4 +480,7 @@
                        js-undefined
                        js-null
                        call-with-current-continuation
-                       call/cc)
+                       call/cc
+
+
+		       abort-current-continuation)
