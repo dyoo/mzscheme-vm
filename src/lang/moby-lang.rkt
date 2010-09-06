@@ -479,8 +479,8 @@
                        js-make-hash
                        js-undefined
                        js-null
+
                        call-with-current-continuation
                        call/cc
-
-
+		       call-with-continuation-prompt
 		       abort-current-continuation)
