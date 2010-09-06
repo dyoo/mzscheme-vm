@@ -483,4 +483,5 @@
                        call-with-current-continuation
                        call/cc
 		       call-with-continuation-prompt
-		       abort-current-continuation)
+		       abort-current-continuation
+		       default-continuation-prompt-tag)
