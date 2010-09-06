@@ -126,7 +126,6 @@
                        continuation-mark-set->list
                        for-each
                        make-thread-cell
-                       make-continuation-prompt-tag
                        make-struct-type
                        make-struct-field-accessor
                        make-struct-field-mutator
@@ -484,4 +483,5 @@
                        call/cc
 		       call-with-continuation-prompt
 		       abort-current-continuation
-		       default-continuation-prompt-tag)
+		       default-continuation-prompt-tag
+                       make-continuation-prompt-tag)
