@@ -11,7 +11,7 @@
 
 (define LIST-CONSTRUCTOR "types.list")
 (define PAIR-CONSTRUCTOR "types.pair")
-(define VECTOR-CONSTRUCTOR "types.vector")
+(define VECTOR-CONSTRUCTOR "types.vectorImmutable")
 (define SYMBOL-CONSTRUCTOR "types.symbol")
 (define KEYWORD-CONSTRUCTOR "types.keyword")
 (define FLOAT-CONSTRUCTOR "types.float")
@@ -20,10 +20,10 @@
 (define COMPLEX-CONSTRUCTOR "types.complex")
 (define CHARACTER-CONSTRUCTOR "types.char")
 (define PATH-CONSTRUCTOR "types.path")
-(define BOX-CONSTRUCTOR "types.box")
+(define BOX-CONSTRUCTOR "types.boxImmutable")
 (define REGEXP-CONSTRUCTOR "types.regexp")
 (define BYTE-REGEXP-CONSTRUCTOR "types.byteRegexp")
-(define BYTES-CONSTRUCTOR "types.bytes")
+(define BYTES-CONSTRUCTOR "types.bytesImmutable")
 (define HASH-CONSTRUCTOR "types.hash")
 (define HASHEQ-CONSTRUCTOR "types.hasheq")
 

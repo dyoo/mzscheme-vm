@@ -37,8 +37,6 @@ for i in `cat order`; do
 	cat $i >> $target;
 done;
 
-echo 'Adding exports for testing'
-cat exports.js >> $target;
 
 
 echo
