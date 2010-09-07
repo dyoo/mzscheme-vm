@@ -17,6 +17,9 @@
 (define-runtime-path hardcoded-moby-kernel-path
   "lang/kernel.rkt")
 
+(define-runtime-path hardcoded-moby-paramz-path
+  "lang/paramz.rkt")
+
 (define racket-path
   (resolve-module-path 'racket #f))
 
@@ -142,6 +145,11 @@
        ;; rewrite to a (possibly fictional) collection named moby/moby-lang
        ;; The runtime will recognize this collection.
        (module-path-index-join 'moby/kernel
+                               (module-path-index-join #f #f))]
+      [(same-path? resolved-path hardcoded-moby-paramz-path)
+       ;; rewrite to a (possibly fictional) collection named moby/moby-lang
+       ;; The runtime will recognize this collection.
+       (module-path-index-join 'moby/paramz
                                (module-path-index-join #f #f))]
       [(same-path? resolved-path racket-path)
        a-modidx]

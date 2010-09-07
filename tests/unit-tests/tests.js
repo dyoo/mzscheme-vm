@@ -472,7 +472,7 @@ runTest("primval (current-print)",
 	    var state = new StateModule.State();
 	    state.pushControl(makePrimval("current-print"));
 	    var result = run(state);
-	    assert.ok(result instanceof primitive.Primitive);
+	    assert.ok(result instanceof types.PrimProc);
 	});
 
 
@@ -492,7 +492,7 @@ runTest("Primval on *",
 	    var state = new StateModule.State();
 	    state.pushControl(makePrimval("*"));
 	    var result = run(state);
-	    assert.ok(result instanceof primitive.Primitive);
+	    assert.ok(result instanceof types.PrimProc);
 	});
 
 
@@ -2818,7 +2818,7 @@ runTest('hash-for-each',
 		var ret = [];
 		state.pushControl(makeApplication(makePrimval('hash-for-each'),
 						  [makeConstant(hash1),
-						   makeConstant(new primitive.Primitive('', 2, false, false,
+						   makeConstant(new types.PrimProc('', 2, false, false,
 								function(key, val) {
 								  	ret.push( helpers.format('~s - ~s!~n', [key, val]) );
 								}))]));
@@ -3271,23 +3271,23 @@ runTest('procedure-arity',
 		assert.deepEqual(run(state), types.list([2, 3]));
 
 		var testProc = new types.CaseLambdaValue('',
-			[new primitive.Primitive('', 1, false, false, function() {}),
-			 new primitive.Primitive('', 2, true, false, function() {})]);
+			[new types.PrimProc('', 1, false, false, function() {}),
+			 new types.PrimProc('', 2, true, false, function() {})]);
 		state.pushControl(makeApplication(makePrimval('procedure-arity'), [makeConstant(testProc)]));
 		assert.deepEqual(run(state), types.list([1, types.arityAtLeast(2)]));
 
 		var testProc2 = new types.CaseLambdaValue('',
-			[new primitive.Primitive('', 1, false, false, function() {}),
-			 new primitive.Primitive('', 0, true, false, function() {})]);
+			[new types.PrimProc('', 1, false, false, function() {}),
+			 new types.PrimProc('', 0, true, false, function() {})]);
 		state.pushControl(makeApplication(makePrimval('procedure-arity'), [makeConstant(testProc2)]));
 		assert.deepEqual(run(state), types.arityAtLeast(0));
 
 		var testProc3 = new types.CaseLambdaValue('',
-			[new primitive.Primitive('', 1, false, false, function() {}),
-			 new primitive.Primitive('', 4, true, false, function() {}),
-			 new primitive.Primitive('', 0, false, false, function() {}),
-			 new primitive.Primitive('', 3, true, false, function() {}),
-			 new primitive.Primitive('', 3, false, false, function() {})]);
+			[new types.PrimProc('', 1, false, false, function() {}),
+			 new types.PrimProc('', 4, true, false, function() {}),
+			 new types.PrimProc('', 0, false, false, function() {}),
+			 new types.PrimProc('', 3, true, false, function() {}),
+			 new types.PrimProc('', 3, false, false, function() {})]);
 		state.pushControl(makeApplication(makePrimval('procedure-arity'), [makeConstant(testProc3)]));
 		assert.deepEqual(run(state), types.list([0, 1, types.arityAtLeast(3)]));
 	});
