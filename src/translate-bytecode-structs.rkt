@@ -149,18 +149,18 @@
 
 (define (translate-nominal-path a-nominal-path)
   (match a-nominal-path
-    [(? simple-nominal-path?)
+    [(? internal:simple-nominal-path?)
      (translate-simple-nominal-path a-nominal-path)]
-    [(? imported-nominal-path?)
+    [(? internal:imported-nominal-path?)
      (translate-imported-nominal-path a-nominal-path)]
-    [(? phased-nominal-path?)
+    [(? internal:phased-nominal-path?)
      (translate-phased-nominal-path a-nominal-path)]))
 
 
 (define (translate-simple-nominal-path a-path)
   (match a-path
     [(struct internal:simple-nominal-path (value))
-     (make-simple-nominal-path (value))]))
+     (make-simple-nominal-path value)]))
 
 
 (define (translate-imported-nominal-path a-path)

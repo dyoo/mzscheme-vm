@@ -40,12 +40,34 @@
 ;; emit-indirects: -> jsexp
 ;; Writes out all the indirect lambdas that we've seen.
 (define (emit-indirects)
+  
+  ;; First, make sure we've walked all the indirects.
+  (let loop ()
+    (let ([original-keys (get-hash-keys (seen-indirects))])
+      (for ([key original-keys])
+        (compile-lam (hash-ref (seen-indirects) key)))
+      (let ([new-keys (get-hash-keys (seen-indirects))])
+        (cond
+          [(equal? original-keys new-keys)
+           (void)]
+          [else
+           (loop)]))))
+  
   (let ([ht (seen-indirects)])
     (make-vec 
      (for/list ([id+lam (in-hash-pairs ht)])
        (make-ht 'labeled-indirect 
                 `((id ,(make-lit (car id+lam)))
                   (lam ,(compile-lam (cdr id+lam)))))))))
+
+
+;; get-hash-keys: (hashtableof symbol X) -> (listof symbol)
+(define (get-hash-keys a-hash)
+  (sort (for/list ([key (in-hash-keys a-hash)])
+          key)
+        (lambda (x y)
+          (string<? (symbol->string x)
+                    (symbol->string y)))))
 
 
 ;; compile-prefix: prefix -> jsexp
@@ -360,7 +382,7 @@
   (match a-closure 
     [(struct closure (lam gen-id))
      (begin
-       (hash-set! (seen-indirects) gen-id lam)
+       (mark-indirect-seen! gen-id lam)
        (make-ht 'closure `((lam ,(compile-lam lam))
                            (gen-id ,(make-lit gen-id)))))]))
 
@@ -371,8 +393,14 @@
     [(struct indirect ((struct closure (lam gen-id))))
      (begin
        ;; Keep track of the indirect.  We'll need to generate the s-expression for it in a moment
-       (hash-set! (seen-indirects) gen-id lam)
+       (mark-indirect-seen! gen-id lam)
        (make-ht 'indirect `((value ,(make-lit gen-id)))))]))
+
+
+;; mark-indirect-seen!: symbol lam -> void
+(define (mark-indirect-seen! gen-id lam)
+  (unless (hash-has-key? (seen-indirects) gen-id)
+    (hash-set! (seen-indirects) gen-id lam)))
 
 
 
