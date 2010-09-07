@@ -107,6 +107,7 @@
 		     (rename-out rename-out)    
                      (define-syntax define-syntax)
                      (let/cc let/cc)
+		     (with-continuation-mark with-continuation-mark)
                      
                      (true true)
                      (false false)
