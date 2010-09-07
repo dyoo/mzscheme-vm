@@ -128,6 +128,7 @@
 (define (known-hardcoded-module-path? p)
   (let ([hardcoded-modules
          (list hardcoded-moby-kernel-path
+               hardcoded-moby-paramz-path
                #;racket-path
                #;racket/base-path)])
     (ormap (lambda (h)
