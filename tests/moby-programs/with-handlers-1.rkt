@@ -16,11 +16,17 @@
  	         (lambda (exn)
 		   (printf "I'm in the handler and saying ok\n")
 		   'not-ok)]
-		[void
-		 'ok])
+		[(lambda (exn)
+		   (printf "second test\n")
+		   true)
+		 (lambda (exn)
+		   'ok)])
   (/ 1 0))				   
 
 
 
-(with-handlers ([void 'not-ok])
+(with-handlers ([void (lambda (exn) 'not-ok)])
   'ok)				   
+
+
+(/ 1 0)
