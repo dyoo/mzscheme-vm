@@ -13,17 +13,18 @@
     [(_ ([test? exn-handler] ...) body ...)
      (syntax/loc stx
        (let ([prompt-tag (make-continuation-prompt-tag)])
-         (with-continuation-mark exception-handler-key
-           (lambda (exn)
-             (abort-current-continuation prompt-tag exn))
-           (call-with-continuation-prompt 
-            (lambda ()
-              (begin body ...))
-            prompt-tag
-            (lambda (exn)
-              (cond
-                [(test? exn)
-                 (exn-handler exn)]
-                ...
-                [else
-                 (raise exn)]))))))]))
+         (call-with-continuation-prompt 
+          (lambda ()
+            (begin
+              (with-continuation-mark exception-handler-key
+                (lambda (exn)
+                  (abort-current-continuation prompt-tag exn))
+                body ...)))
+          prompt-tag
+          (lambda (exn)
+            (cond
+              [(test? exn)
+               (exn-handler exn)]
+              ...
+              [else
+               (raise exn)])))))]))
