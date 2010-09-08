@@ -30,6 +30,8 @@
 
 
 (define (report-errs)
+  (printf "\n\nran ~s normal tests, and ~s error-trapping tests\n"
+          number-of-tests number-of-error-tests)
   (printf "\n\nErrors during the run:\n")
   (printf "~s\n" errs)) 
 
@@ -165,14 +167,19 @@
     [(_ e exn?)
      (with-syntax ([stx-datum (syntax->datum #'e)])
        (syntax/loc stx
-         (begin 
-                (with-handlers ([exn? (lambda (exn) (void))])
-                  e
-                  (printf "BUT EXPECTED ERROR: ~s\n" (quote stx-datum))
-		  (record-error (list 'Error (quote stx-datum)))))))]
+         (err/rt-test-helper (lambda () e) exn? (quote stx-datum))))]
     [(_ e)
      (syntax/loc stx
        (err/rt-test e exn:application:type?))]))
+
+
+
+(define (err/rt-test-helper thunk exn? datum)
+  (set! number-of-error-tests (add1 number-of-tests))
+  (with-handlers ([exn? (lambda (exn) (void))])
+    (thunk)
+    (printf "BUT EXPECTED ERROR: ~s\n" datum)
+    (record-error (list 'Error datum))))
 
 
 
