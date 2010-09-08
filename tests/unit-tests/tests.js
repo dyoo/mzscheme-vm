@@ -3404,6 +3404,14 @@ runTest("topsyntax",
 
 
 
+runTest("Error structure hierarchy",
+	function() {
+	    assert.ok(types.isExnFail(types.exnFail("hello", types.continuationMarkSet())));
+	    assert.ok(types.isExnFail(types.exnFailContract("hello", types.continuationMarkSet())));
+	    assert.ok(types.isExnFail(types.exnFailContractDivisionByZero("hello", types.continuationMarkSet())));
+	});
+
+
 
 
 
