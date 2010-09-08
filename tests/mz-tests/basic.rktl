@@ -2581,6 +2581,6 @@
 
 ;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(disable (report-errs))
+(report-errs)
 
 "last item in file"

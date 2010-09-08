@@ -2,7 +2,8 @@
 
 
 (provide test test-values Section record-error arity-test err/rt-test disable
-         exn:application:mismatch? exn:application:type? exn:application:arity?)
+         exn:application:mismatch? exn:application:type? exn:application:arity?
+	 report-errs)
 
 (require (for-syntax racket/base))
 
@@ -26,6 +27,11 @@
     #;(flush-output p))
   (set! cur-section args)
   #t)
+
+
+(define (report-errs)
+  (printf "\n\nErrors during the run:\n")
+  (printf "~s\n" errs)) 
 
 
 (define test
@@ -157,10 +163,13 @@
 (define-syntax (err/rt-test stx)
   (syntax-case stx ()
     [(_ e exn?)
-     (syntax/loc stx
-       (with-handlers ([exn? (lambda (exn) (void))])
-         e
-         (error 'expected-error)))]
+     (with-syntax ([stx-datum (syntax->datum #'e)])
+       (syntax/loc stx
+         (begin 
+                (with-handlers ([exn? (lambda (exn) (void))])
+                  e
+                  (printf "BUT EXPECTED ERROR: ~s\n" (quote stx-datum))
+		  (record-error (list 'Error (quote stx-datum)))))))]
     [(_ e)
      (syntax/loc stx
        (err/rt-test e exn:application:type?))]))
