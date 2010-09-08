@@ -19,7 +19,7 @@
               (with-continuation-mark exception-handler-key
                 (lambda (exn)
                   (abort-current-continuation prompt-tag exn))
-                body ...)))
+		(begin body ...))))
           prompt-tag
           (lambda (exn)
             (cond

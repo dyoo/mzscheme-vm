@@ -143,15 +143,28 @@
 
 
 ;; err/rt-test currently a stub that doesn't do anything.
+#;(define-syntax err/rt-test
+  (lambda (stx)
+    (syntax-case stx ()
+      [(_ e exn?)
+       (syntax
+	(thunk-error-test (err:mz:lambda () e) (quote-syntax e) exn?))]
+      [(_ e)
+       (syntax
+	(err/rt-test e exn:application:type?))])))
+
+
 (define-syntax (err/rt-test stx)
   (syntax-case stx ()
-    [(_ expr)
+    [(_ e exn?)
      (syntax/loc stx
-       (void (lambda () expr)))]
-    [(_ expr test?)
+       (with-handlers ([exn? (lambda (exn) (void))])
+         e
+         (error 'expected-error)))]
+    [(_ e)
      (syntax/loc stx
-       (void (lambda () expr)
-             test?))]))
+       (err/rt-test e exn:application:type?))]))
+
 
 
 (define-syntax (disable stx)
