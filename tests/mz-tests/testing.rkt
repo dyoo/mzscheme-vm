@@ -3,7 +3,7 @@
 
 (provide test test-values Section record-error arity-test err/rt-test disable
          exn:application:mismatch? exn:application:type? exn:application:arity?
-	 report-errs)
+	 report-errs type? arity?)
 
 (require (for-syntax racket/base))
 
@@ -69,6 +69,8 @@
 (define exn:application:type? exn:fail:contract?)
 (define exn:application:arity? exn:fail:contract:arity?)
 
+(define type? exn:application:type?)
+(define arity? exn:application:arity?)
 
 
 

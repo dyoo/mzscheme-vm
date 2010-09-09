@@ -1328,7 +1328,6 @@
                   '(0 1 2 3 4))
         v))
 
-(disable 
  (define (map-tests map)
    (let ([size? exn:application:mismatch?]
          [non-list? type?])
@@ -1349,7 +1348,7 @@
  (map-tests map)
  (map-tests for-each)
  (map-tests andmap)
- (map-tests ormap))
+ (map-tests ormap)
 
 (test-values (list (void)) (lambda () (for-each (lambda (x) (values 1 2)) '(1 2))))
 (disable (err/rt-test (map (lambda (x) (values 1 2)) '(1 2)) arity?))
