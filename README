@@ -7,9 +7,10 @@ Summary
 Prerequisites:
 
     * node.js: http://nodejs.org
+    If you want to run the unit tests (tests/unit-tests), install node.js.
 
-    * mzscheme 4.2.5
-        use mzscheme 4.2.5, as the VM may change from version to version.
+    * mzscheme 5.0.1
+        use mzscheme 5.0.1, as the VM may change from version to version.
 
 ##################################################
 Installation:
@@ -30,6 +31,14 @@ Running core opcode tests:
 
     $ cd tests/unit-tests
     $ ./run-tests
+
+
+Running mz-tests basic test suite
+
+    $ cd tests/mz-tests
+    $ racket ../../src/moby.rkt basic.rktl
+    $ google-chrome basic/index.html
+
 
 ##################################################
 
