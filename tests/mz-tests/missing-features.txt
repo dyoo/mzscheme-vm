@@ -24,8 +24,9 @@ exn:fail:out-of-memory?
 
 regular expressions: regexp-match, regexp-match-positions, ...
 
-call-with-escape-continuation, dynamic-wind
+call-with-escape-continuation, dynamic-wind, let/ec, call/ec
 
+call-with-exception-handler, uncaught-exception-handler
 
 make-arity-at-least
 
@@ -35,8 +36,8 @@ read
 
 make-placeholder
 
-arity?
-
-version, banner, system-type, current-command-line-arguments, system-library-subpath
+version, banner, system-type, current-command-line-arguments, system-library-subpath, current-output-port
 
 eval, eval-jit-enabled
+
+

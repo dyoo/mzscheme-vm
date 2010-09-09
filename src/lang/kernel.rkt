@@ -90,6 +90,7 @@
                      (local local)
                      (quasiquote quasiquote)
                      (begin begin)
+                     (begin0 begin0)
                      (set! set!)
                      (and and)
                      (or or)
@@ -140,6 +141,7 @@
                        struct-mutator-procedure?
                        procedure-arity
 		       procedure-arity-includes?
+		       make-arity-at-least
 		       arity-at-least?
 		       arity-at-least-value
                        apply

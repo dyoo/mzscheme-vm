@@ -1395,7 +1395,7 @@
 
 ;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; exceptions
-(disable 
+
  (test 10 'exns
        (with-handlers ([integer? (lambda (x) 10)])
          (raise 12)))
@@ -1407,25 +1407,25 @@
        (with-handlers ([void (lambda (x) (list x))])
          (with-handlers ([integer? (lambda (x) (raise (list x)))])
            (raise 10))))
- (test '((10)) 'exns
+(disable (test '((10)) 'exns
        (let/ec esc
          (parameterize ([uncaught-exception-handler (lambda (x) (esc (list x)))])
            (with-handlers ([integer? (lambda (x) (raise (list x)))])
-             (raise 10)))))
- (test '#((10)) 'exns
+             (raise 10))))))
+(disable (test '#((10)) 'exns
        (let/ec esc
          (with-handlers ([void (lambda (x) (vector x))])
            (parameterize ([uncaught-exception-handler (lambda (x) (esc (list x)))])
              (with-handlers ([integer? (lambda (x) (raise (list x)))])
-               (raise 10))))))
+               (raise 10)))))))
  
- (test '(except) 'escape
+(disable (test '(except) 'escape
        (let/ec k
          (call-with-exception-handler
           (lambda (exn)
             (k (list exn)))
-          (lambda () (raise 'except)))))
- (test '#&except 'escape
+          (lambda () (raise 'except))))))
+(disable (test '#&except 'escape
        (let/ec k
          (call-with-exception-handler
           (lambda (exn)
@@ -1435,16 +1435,16 @@
              (lambda (exn)
                (k (box exn)))
              (lambda ()
-               (raise 'except)))))))
- (test '#(except) 'escape
+               (raise 'except))))))))
+(disable (test '#(except) 'escape
        (with-handlers ([void (lambda (x) x)])
          (values
           (call-with-exception-handler
            (lambda (exn)
              (vector exn))
            (lambda ()
-             (raise 'except))))))
- (test '#((except)) 'escape
+             (raise 'except)))))))
+(disable (test '#((except)) 'escape
        (with-handlers ([void (lambda (x) x)])
          (values
           (call-with-exception-handler
@@ -1456,8 +1456,8 @@
               (lambda (exn)
                 (list exn))
               (lambda ()
-                (raise 'except))))))))
- (test '#((except)) 'escape
+                (raise 'except)))))))))
+(disable (test '#((except)) 'escape
        (with-handlers ([void (lambda (x) x)])
          (values
           (call-with-exception-handler
@@ -1708,8 +1708,8 @@
  
  
  (test-cc-values call/cc)
- (test-cc-values call/ec)
- )
+ (test-cc-values call/ec))
+ 
 
 
 (disable
@@ -1781,7 +1781,7 @@
          v))
  )
 
-(disable
+
  ;; Check interaction of map and call/cc
  (let ()
    (define (try n m)
@@ -1822,7 +1822,7 @@
    (try 10 2)
    (try 5 3)
    (try 3 5)
-   (try 10 5)))
+   (try 10 5))
 
 
 ;; Make sure let doesn't allocate a mutatble cell too early:
@@ -1858,14 +1858,17 @@
 
 (test 1 procedure-arity procedure-arity)
 (test 2 procedure-arity cons)
-(disable (test (make-arity-at-least 2) procedure-arity >)
-         (test (list 0 1) procedure-arity current-output-port)
-         (test (list 1 3 (make-arity-at-least 5))
-               procedure-arity (case-lambda [(x) 0] [(x y z) 1] [(x y z w u . rest) 2]))
-         (test (make-arity-at-least 0) procedure-arity (lambda x 1))
-         (test (make-arity-at-least 0) procedure-arity (case-lambda [() 10] [x 1]))
-         (test (make-arity-at-least 0) procedure-arity (lambda x x))
-         (arity-test procedure-arity 1 1))
+(test (make-arity-at-least 2) procedure-arity >)
+(disable (test (list 0 1) procedure-arity current-output-port))
+(test (list 1 3 (make-arity-at-least 5))
+      procedure-arity (case-lambda [(x) 0] [(x y z) 1] [(x y z w u . rest) 2]))
+;; dyoo: note: the following three tests are disabled because
+;; zo-parse is actually giving us bad data on the following lambdas with rest args.
+;; I've reported the bug; as soon as this is fixed, I'll re-enable the test.
+(disable (test (make-arity-at-least 0) procedure-arity (lambda x 1)))
+(disable (test (make-arity-at-least 0) procedure-arity (case-lambda [() 10] [x 1])))
+(disable (test (make-arity-at-least 0) procedure-arity (lambda x x)))
+(arity-test procedure-arity 1 1)
 
 (disable
  (test '() normalize-arity '())
@@ -1967,7 +1970,7 @@
        (unless (normalized-arity? res)
          (error 'normalize-arity-failed "input ~s; output ~s" l res))))))
 
-(disable 
+
  (test #t procedure-arity-includes? cons 2)
  (test #f procedure-arity-includes? cons 0)
  (test #f procedure-arity-includes? cons 3)
@@ -1983,7 +1986,7 @@
  (err/rt-test (procedure-arity-includes? cons 1.0))
  (err/rt-test (procedure-arity-includes? 'cons 1))
  
- (arity-test procedure-arity-includes? 2 2))
+ (arity-test procedure-arity-includes? 2 2)
 
 (newline)
 (display ";testing scheme 4 functions; ")
