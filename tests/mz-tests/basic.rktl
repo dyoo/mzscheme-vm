@@ -1351,7 +1351,7 @@
  (map-tests ormap)
 
 (test-values (list (void)) (lambda () (for-each (lambda (x) (values 1 2)) '(1 2))))
-(disable (err/rt-test (map (lambda (x) (values 1 2)) '(1 2)) arity?))
+(err/rt-test (map (lambda (x) (values 1 2)) '(1 2)) arity?)
 
 (test #t andmap add1 null)
 (test #t andmap < null null)
@@ -1370,8 +1370,8 @@
 (test #t andmap < '(1 -2 3) '(2 2 4) '(5 6 7))
 (test #t ormap < '(1 -2 3) '(0 -2 4) '(0 0 8))
 
-(disable (err/rt-test (ormap (lambda (x) (values 1 2)) '(1 2)) arity?))
-(disable (err/rt-test (andmap (lambda (x) (values 1 2)) '(1 2)) arity?))
+(err/rt-test (ormap (lambda (x) (values 1 2)) '(1 2)) arity?)
+(err/rt-test (andmap (lambda (x) (values 1 2)) '(1 2)) arity?)
 
 (test-values '(1 2) (lambda () (ormap (lambda (x) (values 1 2)) '(1))))
 (test-values '(1 2) (lambda () (andmap (lambda (x) (values 1 2)) '(1))))
