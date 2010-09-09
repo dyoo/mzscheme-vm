@@ -1,7 +1,3 @@
-exception handling: can't do any of the err/rt-test functions.
-
-with-handlers, raise
-
 mcons, mcar, mcdr, set-mcar!, set-mcdr!
 
 make-weak-box, weak-box-value, weak-box?
@@ -28,8 +24,6 @@ call-with-escape-continuation, dynamic-wind, let/ec, call/ec
 
 call-with-exception-handler, uncaught-exception-handler
 
-make-arity-at-least
-
 normalize-arity
 
 read
@@ -39,5 +33,3 @@ make-placeholder
 version, banner, system-type, current-command-line-arguments, system-library-subpath, current-output-port
 
 eval, eval-jit-enabled
-
-
