@@ -145,7 +145,7 @@
 			   l
 			   (loop (add1 n) (cons 1 l))))
 		   (make-ok? (add1 max)))
-	  (test #t procedure-arity-includes? f (arithmetic-shift 1 100))))]
+	  (test #t procedure-arity-includes? f 1267650600228229401496703205376 #;(arithmetic-shift 1 100))))]
    [(f min max) (arity-test f min max null)]))
 
 
