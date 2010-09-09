@@ -139,6 +139,7 @@
                        struct-accessor-procedure?
                        struct-mutator-procedure?
                        procedure-arity
+		       procedure-arity-includes?
 		       arity-at-least?
 		       arity-at-least-value
                        apply

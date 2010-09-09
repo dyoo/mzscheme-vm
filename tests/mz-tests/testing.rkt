@@ -75,8 +75,8 @@
 (define arity-test
   (case-lambda
    [(f min max except)
-    (void)
-    #;(letrec ([aok?
+    #;(void)
+    (letrec ([aok?
 	      (lambda (a)
 		(cond
 		 [(integer? a) (= a min max)]
@@ -107,7 +107,7 @@
 		(set! number-of-error-tests (add1 number-of-error-tests))
 		(printf "(apply ~s '~s)  =e=> " f args)
                 
-                (let/ec done
+                (let/cc done
 		  (let ([v (with-handlers ([void
 					    (lambda (exn)
 					      (if (check? exn)
