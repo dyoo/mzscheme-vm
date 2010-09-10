@@ -32,8 +32,9 @@
 (define (report-errs)
   (printf "\n\nran ~s normal tests, and ~s error-trapping tests\n"
           number-of-tests number-of-error-tests)
-  (printf "\n\nErrors during the run:\n")
-  (printf "~s\n" errs)) 
+  (printf "\n\n~a errors during the run:\n" (length errs))
+  (for-each (lambda (err) (printf "~s\n\n" err)) errs))
+
 
 
 (define test
