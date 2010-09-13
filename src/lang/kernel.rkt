@@ -99,7 +99,8 @@
                      (require require)
                      (for-syntax for-syntax)
 		     (define-for-syntax define-for-syntax)
-		     ; (prefix-in prefix-in)
+                     (begin-for-syntax begin-for-syntax)
+                     ; (prefix-in prefix-in)
 		     ; (only-in only-in)
                      (provide provide)
 		     (all-defined-out all-defined-out)
@@ -436,7 +437,7 @@
                        underlay/xy
                        key=?
                        text
-                       open-image-url
+                       image-url
                        image-width
                        image-height
 		       ; on-tick

@@ -29,16 +29,20 @@
     ;; FIXME: write out all the other used modules too.
     (call-with-output-file (build-path output-directory "program.js")
       (lambda (op)
+        ;; First, write out all the collections.
+        (for ([r module-records])
+          (fprintf op "COLLECTIONS[~s] = ~a;\n\n"
+                   (path->string (find-relative-path base-dir (module-record-path r)))
+                   (encode-module-record r base-dir)))
+        ;; Designate one of the collections:
         (for ([r module-records])
           (cond
             [(string=? (path->string (module-record-path r))
                        (path->string a-path))
-             (fprintf op "var program = (~a);\n\n" 
-                      (module-record-impl r))]
+             (fprintf op "var programModuleName = (~a);\n\n" 
+                      (path->string (find-relative-path base-dir (module-record-path r))))]
             [else
-             (fprintf op "COLLECTIONS[~s] = ~a;\n\n"
-                      (path->string (find-relative-path base-dir (module-record-path r)))
-                      (encode-module-record r base-dir))])))
+             (void)])))
       #:exists 'replace)))
 
 

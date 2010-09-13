@@ -5,6 +5,7 @@
          "sexp.rkt"
          "translate-bytecode-structs.rkt"
          "module-record.rkt"
+         "lang/permissions/query.rkt"
          (prefix-in internal: compiler/zo-parse)
          racket/list
          racket/path
@@ -30,7 +31,8 @@
 (provide/contract [compile-moby-modules
                    (path? . -> . (listof module-record?))])
 
-  
+
+;; compile-module-modules: path -> (listof module-record)
 ;; Given the path of a scheme program, run it through the compiler
 ;; and generate the javascript module modules.
 (define (compile-moby-modules a-path)
@@ -47,6 +49,8 @@
                  (jsexp->js (translate-top 
                              (rewrite-module-locations translated-compilation-top
                                                        (first to-visit))))]
+                [permissions
+                 (query `(file ,(path->string (first to-visit))))]
                 [provides
                  (collect-provided-names translated-compilation-top)]
                 [neighbors 
@@ -56,7 +60,8 @@
            (loop (append neighbors (rest to-visit))
                  (cons (make-module-record (first to-visit) 
                                            translated-program 
-                                           provides)
+                                           provides
+                                           permissions)
                        acc)))]))))
 
 
@@ -68,6 +73,22 @@
                  (not (known-hardcoded-module-path? p1))))
           paths))
 
+
+
+
+;; known-hardcoded-module-path: path -> boolean
+;; Returns true if the module should be considered hardcoded,
+;; where module visiting should consider the given module as a
+;; leaf.
+(define (known-hardcoded-module-path? p)
+  (let ([hardcoded-modules
+         (list hardcoded-moby-kernel-path
+               hardcoded-moby-paramz-path
+               #;racket-path
+               #;racket/base-path)])
+    (ormap (lambda (h)
+             (same-path? p h))
+           hardcoded-modules)))
 
 
   
@@ -123,17 +144,6 @@
     [(struct module-variable (modidx sym pos phase))
      (make-module-variable (rewrite-module-locations/modidx modidx self-path) sym pos phase)]))
 
-
-;; known-hardcoded-module-path: path -> boolean
-(define (known-hardcoded-module-path? p)
-  (let ([hardcoded-modules
-         (list hardcoded-moby-kernel-path
-               hardcoded-moby-paramz-path
-               #;racket-path
-               #;racket/base-path)])
-    (ormap (lambda (h)
-             (same-path? p h))
-           hardcoded-modules)))
 
 
 ;; rewrite-to-hardcoded-module-path: module-path-index path -> module-path-index
