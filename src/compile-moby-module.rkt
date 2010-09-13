@@ -5,7 +5,8 @@
          "sexp.rkt"
          "translate-bytecode-structs.rkt"
          "module-record.rkt"
-         "lang/permissions/query.rkt"
+         (prefix-in permissions: "lang/permissions/query.rkt")
+         (prefix-in js-impl: "lang/js-impl/query.rkt")
          (prefix-in internal: compiler/zo-parse)
          racket/list
          racket/path
@@ -41,47 +42,64 @@
 (define (compile-moby-modules a-path)
   (let*-values ([(a-path) (normalize-path a-path)])    
     (let loop ([to-visit (list a-path)]
-               [acc empty])
+               [module-records empty])
       (cond
         [(empty? to-visit)
-         acc]
+         module-records]
         [else
          (let ([record (compile-moby-module (first to-visit))]
                [neighbors (filter-already-visited-modules
                            (module-neighbors (first to-visit))
-                           (map module-record-path acc))])
+                           (map module-record-path module-records))])
            (loop (append neighbors (rest to-visit))
-                 (cons record acc)))]))))
+                 (cons record module-records)))]))))
 
 
 
 ;; module-neighbors: path -> (listof path)
 (define (module-neighbors a-path)
-  (let* ([translated-compilation-top
-          (lookup&parse a-path)]
-         [neighbors 
-          (get-module-phase-0-requires
-           translated-compilation-top a-path)])
-    neighbors))
+  (cond
+    [(looks-like-js-implemented-module? a-path)
+     '()]
+    [else
+     (let* ([translated-compilation-top
+             (lookup&parse a-path)]
+            [neighbors 
+             (get-module-phase-0-requires
+              translated-compilation-top a-path)])
+       neighbors)]))
                                                    
 ;; compile-moby-module: path -> module-record
 (define (compile-moby-module a-path)
-  (let* ([translated-compilation-top
-          (lookup&parse a-path)]
-         [translated-program
-          (jsexp->js (translate-top 
-                      (rewrite-module-locations translated-compilation-top
-                                                a-path)))]
-         [permissions
-          (query `(file ,(path->string a-path)))]
-         [provides
-          (collect-provided-names translated-compilation-top)])
-    (make-module-record a-path
-                        translated-program 
-                        provides
-                        permissions)))
+  (cond
+    [(looks-like-js-implemented-module? a-path)
+     =>
+     (lambda (a-js-impl-record)
+       (make-js-module-record a-path
+                              (apply string-append (js-impl:js-module-impls a-js-impl-record))
+                              (js-impl:js-module-exports a-js-impl-record)
+                              '()))]
+    [else
+     (let* ([translated-compilation-top
+             (lookup&parse a-path)]
+            [translated-program
+             (jsexp->js (translate-top 
+                         (rewrite-module-locations translated-compilation-top
+                                                   a-path)))]
+            [permissions
+             (permissions:query `(file ,(path->string a-path)))]
+            [provides
+             (collect-provided-names translated-compilation-top)])
+       (make-module-record a-path
+                           translated-program 
+                           provides
+                           permissions))]))
 
-  
+
+;; looks-like-js-implemented-module?: path -> (or false
+(define (looks-like-js-implemented-module? a-path)
+  (js-impl:query a-path))
+
 
 ;; filter-already-visited-modules: (listof path) (listof path) -> (listof path)
 (define (filter-already-visited-modules paths visited-paths)
