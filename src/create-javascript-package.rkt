@@ -31,7 +31,7 @@
       (lambda (op)
         ;; First, write out all the collections.
         (for ([r module-records])
-          (fprintf op "COLLECTIONS[~s] = ~a;\n\n"
+          (fprintf op "MODULES[~s] = ~a;\n\n"
                    (path->string (find-relative-path base-dir (module-record-path r)))
                    (encode-module-record r base-dir)))
         ;; Designate one of the collections:

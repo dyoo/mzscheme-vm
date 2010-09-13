@@ -66,7 +66,7 @@ var mainPageLoad = function() {
     var onFail = function(exn) {
 	reportError(exn);
     };
-    evaluator.executeCompiledProgram(COLLECTIONS[programModuleName].bytecode,
+    evaluator.executeCompiledProgram(MODULES[programModuleName].bytecode,
 				     onSuccess,
 				     onFail);
 };
