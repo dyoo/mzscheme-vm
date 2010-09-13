@@ -21,6 +21,9 @@
 (define-runtime-path hardcoded-moby-paramz-path
   "lang/paramz.rkt")
 
+(define-runtime-path hardcoded-js-impl-path
+  "lang/src/js-impl.rkt")
+
 (define racket-path
   (resolve-module-path 'racket #f))
 
@@ -84,6 +87,7 @@
   (let ([hardcoded-modules
          (list hardcoded-moby-kernel-path
                hardcoded-moby-paramz-path
+               hardcoded-js-impl-path
                #;racket-path
                #;racket/base-path)])
     (ormap (lambda (h)
