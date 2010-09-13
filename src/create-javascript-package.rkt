@@ -39,7 +39,7 @@
           (cond
             [(string=? (path->string (module-record-path r))
                        (path->string a-path))
-             (fprintf op "var programModuleName = (~a);\n\n" 
+             (fprintf op "var programModuleName = ~s;\n\n" 
                       (path->string (find-relative-path base-dir (module-record-path r))))]
             [else
              (void)])))
@@ -48,12 +48,13 @@
 
 ;; encode-module-record: module-record path -> string
 (define (encode-module-record r base-path)
-  (format "{ name: ~s, provides : ~a, bytecode : ~a }"
+  (format "{ name: ~s, provides : ~a, bytecode : ~a, permissions: ~a }"
           (path->string 
            (find-relative-path base-path
                                (module-record-path r)))
           (jsexpr->json  (map symbol->string (module-record-provides r)))
-          (module-record-impl r)))
+          (module-record-impl r)
+          (jsexpr->json (module-record-permissions r))))
 
 
 

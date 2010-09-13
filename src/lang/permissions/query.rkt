@@ -20,6 +20,5 @@
       (dynamic-require a-module-path (void)) ;; get the compile-time code running.
       (let ([result
              ((dynamic-require-for-syntax record.rkt 'lookup) resolved-path)])
-        (printf "Looked up ~s, got ~s~n" resolved-path result)
         result))))
   
