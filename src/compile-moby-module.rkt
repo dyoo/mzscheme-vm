@@ -22,7 +22,7 @@
   "lang/paramz.rkt")
 
 (define-runtime-path hardcoded-js-impl-path
-  "lang/src/js-impl.rkt")
+  "lang/js-impl/js-impl.rkt")
 
 (define racket-path
   (resolve-module-path 'racket #f))
