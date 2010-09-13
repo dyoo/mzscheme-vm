@@ -46,27 +46,42 @@
         [(empty? to-visit)
          acc]
         [else
-         (let* ([translated-compilation-top
-                 (lookup&parse (first to-visit))]
-                [translated-program
-                 (jsexp->js (translate-top 
-                             (rewrite-module-locations translated-compilation-top
-                                                       (first to-visit))))]
-                [permissions
-                 (query `(file ,(path->string (first to-visit))))]
-                [provides
-                 (collect-provided-names translated-compilation-top)]
-                [neighbors 
-                 (filter-already-visited-modules (get-module-phase-0-requires
-                                                  translated-compilation-top (first to-visit))
-                                                 (map module-record-path acc))])
+         (let ([record (compile-moby-module (first to-visit))]
+               [neighbors (filter-already-visited-modules
+                           (module-neighbors (first to-visit))
+                           (map module-record-path acc))])
            (loop (append neighbors (rest to-visit))
-                 (cons (make-module-record (first to-visit) 
-                                           translated-program 
-                                           provides
-                                           permissions)
-                       acc)))]))))
+                 (cons record acc)))]))))
 
+
+
+;; module-neighbors: path -> (listof path)
+(define (module-neighbors a-path)
+  (let* ([translated-compilation-top
+          (lookup&parse a-path)]
+         [neighbors 
+          (get-module-phase-0-requires
+           translated-compilation-top a-path)])
+    neighbors))
+                                                   
+;; compile-moby-module: path -> module-record
+(define (compile-moby-module a-path)
+  (let* ([translated-compilation-top
+          (lookup&parse a-path)]
+         [translated-program
+          (jsexp->js (translate-top 
+                      (rewrite-module-locations translated-compilation-top
+                                                a-path)))]
+         [permissions
+          (query `(file ,(path->string a-path)))]
+         [provides
+          (collect-provided-names translated-compilation-top)])
+    (make-module-record a-path
+                        translated-program 
+                        provides
+                        permissions)))
+
+  
 
 ;; filter-already-visited-modules: (listof path) (listof path) -> (listof path)
 (define (filter-already-visited-modules paths visited-paths)
