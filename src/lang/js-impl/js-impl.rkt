@@ -9,9 +9,10 @@
 
 
 (define-for-syntax (read-implementation a-module-path)
-  (let ([a-path (resolve-module-path a-module-path (or (current-load-relative-directory)
-                                                       (current-directory)))])
-    (file->string (open-input-file a-path))))
+  (let ([a-path (parameterize ([current-directory (or (current-load-relative-directory)
+                                                      (current-directory))])
+                  (resolve-module-path a-module-path #f))])
+    (file->string a-path)))
     
 
 (define-syntax (require-js stx)
@@ -40,7 +41,10 @@
            (let* ([this-module (variable-reference->resolved-module-path (#%variable-reference))]
                     [key (resolved-module-path-name this-module)])
                (record-exports! key (list (#%datum . name) ...))))
-         (void)))]))
+         (provide name ...)
+         (begin (define name (lambda args 
+                               (error (quote name) 
+                                      "Must be evaluated within Javascript"))) ...)))]))
 
 
 

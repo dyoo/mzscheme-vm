@@ -98,7 +98,7 @@
 
 ;; looks-like-js-implemented-module?: path -> (or false
 (define (looks-like-js-implemented-module? a-path)
-  (js-impl:query a-path))
+  (js-impl:query `(file ,(path->string a-path))))
 
 
 ;; filter-already-visited-modules: (listof path) (listof path) -> (listof path)

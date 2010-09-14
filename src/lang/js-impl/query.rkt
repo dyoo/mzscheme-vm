@@ -9,7 +9,7 @@
 (define-struct js-module (impls exports))
 
 (provide/contract [query
-                   (module-path? . -> . (or/c js-module false/c))]
+                   (module-path? . -> . (or/c js-module? false/c))]
                   [struct js-module ([impls (listof string?)]
                                      [exports (listof symbol?)])])
 
