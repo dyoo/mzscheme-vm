@@ -66,7 +66,11 @@ var mainPageLoad = function() {
     var onFail = function(exn) {
 	reportError(exn);
     };
-    evaluator.executeCompiledProgram(MODULES[programModuleName].bytecode,
-				     onSuccess,
-				     onFail);
+    if (MODULES[programModuleName].bytecode) {
+	evaluator.executeCompiledProgram(MODULES[programModuleName].bytecode,
+					 onSuccess,
+					 onFail);
+    } else {
+	alert("Can not find module " + programModuleName);
+    }
 };

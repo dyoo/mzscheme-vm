@@ -31,6 +31,9 @@
 (define racket/base-path
   (resolve-module-path 'racket/base #f))
 
+(define racket-private-modbeg-path
+  (resolve-module-path 'racket/private/modbeg #f))
+
 
 (provide/contract [compile-moby-modules
                    (path? . -> . (listof module-record?))])
@@ -228,9 +231,16 @@
        ;; The runtime will recognize this collection.
        (module-path-index-join 'moby/paramz
                                (module-path-index-join #f #f))]
- 
+
+      ;; KLUDGE!!! We should NOT be reusing the private implementation of module
+      ;; begin.  I have to fix this as soon as I have time and priority.
+      [(same-path? resolved-path racket-private-modbeg-path)
+       (module-path-index-join 'moby/kernel
+                               (module-path-index-join #f #f))]
+                   
       [else
-       (let* ([renamed-path-symbol (munge-resolved-module-path-to-symbol resolved-path main-module-path)])
+       (let* ([renamed-path-symbol 
+               (munge-resolved-module-path-to-symbol resolved-path main-module-path)])
          (module-path-index-join renamed-path-symbol
                                  (module-path-index-join #f #f)))])))
 
