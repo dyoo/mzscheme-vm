@@ -23,21 +23,39 @@
                       exports)))
 
 
+(define (my-foldl f acc lst)
+  (cond
+    [(null? lst)
+     acc]
+    [else
+     (my-foldl f (f (car lst) acc) (cdr lst))]))
+                    
+
+(define (my-filter f lst)
+  (cond
+    [(null? lst)
+     '()]
+    [(f (car lst))
+     (cons (car lst) (my-filter f (cdr lst)))]
+    [else
+     (my-filter f (cdr lst))]))
+
+
 ;; lookup-implementations: path -> (listof string)
 (define (lookup-implementations a-path)
-  (foldl (lambda (a-record perms)
+  (my-foldl (lambda (a-record perms)
            (append (record-impls a-record) perms))
          '()
-         (filter (lambda (a-record)
+         (my-filter (lambda (a-record)
                    (equal? a-path (record-path a-record)))
                  records)))
 
 
 ;; lookup-exports: path -> (listof symbol)
 (define (lookup-exports a-path)
-  (foldl (lambda (an-export exports)
+  (my-foldl (lambda (an-export exports)
            (append (export-exports an-export) exports))
          '()
-         (filter (lambda (an-export)
+         (my-filter (lambda (an-export)
                    (equal? a-path (export-path an-export)))
                  exports)))
