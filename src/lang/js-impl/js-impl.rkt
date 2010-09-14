@@ -9,7 +9,8 @@
 
 
 (define-for-syntax (read-implementation a-module-path)
-  (let ([a-path (resolve-module-path a-module-path (current-load-relative-directory))])
+  (let ([a-path (resolve-module-path a-module-path (or (current-load-relative-directory)
+                                                       (current-directory)))])
     (file->string (open-input-file a-path))))
     
 
