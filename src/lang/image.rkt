@@ -14,7 +14,7 @@
 	 circle
 	 star
 	 nw:rectangle
-	 rectange
+	 rectangle
 	 triangle
 	 ellipse
 	 line
