@@ -2,6 +2,7 @@
  *** Image Primitives ***
  ************************/
 
+alert("loading image.js");
 
 
 
@@ -523,3 +524,6 @@ EXPORTS['image-height'] =
 			return img.getHeight();
 		 });
 
+
+
+alert("done loading image.js");
