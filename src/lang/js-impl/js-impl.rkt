@@ -29,7 +29,7 @@
            (void))))]))
 
                                        
-(define-syntax (provide stx)
+(define-syntax (-provide stx)
   (syntax-case stx ()
     [(_ name ...)
      (andmap (compose symbol? syntax-e) (syntax->list #'(name ...)))
@@ -41,7 +41,10 @@
                (record-exports! key (list (#%datum . name) ...))))
          (void)))]))
 
-      
-      
 
-(provide require-js provide)
+
+
+           
+(provide require-js 
+	 (rename-out (-provide provide)
+                     (#%plain-module-begin #%module-begin)))
