@@ -32,7 +32,8 @@
         ;; First, write out all the collections.
         (for ([r module-records])
           (fprintf op "MODULES[~s] = ~a;\n\n"
-                   (path->string (find-relative-path base-dir (module-record-path r)))
+                   (symbol->string (module-record-name r))
+                   #;(path->string (find-relative-path base-dir (module-record-path r)))
                    (encode-module-record r base-dir)))
         ;; Designate one of the collections:
         (for ([r module-records])
@@ -40,7 +41,8 @@
             [(string=? (path->string (module-record-path r))
                        (path->string a-path))
              (fprintf op "var programModuleName = ~s;\n\n" 
-                      (path->string (find-relative-path base-dir (module-record-path r))))]
+                      (symbol->string (module-record-name r))
+                      #;(path->string (find-relative-path base-dir (module-record-path r))))]
             [else
              (void)])))
       #:exists 'replace)))
@@ -51,7 +53,8 @@
   (cond
     [(js-module-record? r)
      (format "{ name: ~s, provides : ~a, jsImplementation : (function(EXPORTS){ (function() { ~a })() }), permissions: ~a }"
-             (path->string 
+             (symbol->string (module-record-name r))
+             #;(path->string 
               (find-relative-path base-path
                                   (module-record-path r)))
              (jsexpr->json  (map symbol->string (module-record-provides r)))
@@ -59,7 +62,8 @@
              (jsexpr->json (module-record-permissions r)))]
     [else
      (format "{ name: ~s, provides : ~a, bytecode : ~a, permissions: ~a }"
-             (path->string 
+             (symbol->string (module-record-name r))
+             #;(path->string 
               (find-relative-path base-path
                                   (module-record-path r)))
              (jsexpr->json  (map symbol->string (module-record-provides r)))
