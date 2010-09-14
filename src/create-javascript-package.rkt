@@ -50,7 +50,7 @@
 (define (encode-module-record r base-path)
   (cond
     [(js-module-record? r)
-     (format "{ name: ~s, provides : ~a, js-implementation : (function(EXPORTS){ ~a }), permissions: ~a }"
+     (format "{ name: ~s, provides : ~a, jsImplementation : (function(EXPORTS){ ~a }), permissions: ~a }"
              (path->string 
               (find-relative-path base-path
                                   (module-record-path r)))
