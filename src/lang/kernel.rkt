@@ -415,31 +415,7 @@
                        make-posn
                        posn-x
                        posn-y
-                       image?
-                       image=?
-                       make-color
-                       color-red
-                       color-green
-                       color-blue
-                       empty-scene
-                       place-image
-                       put-pinhole
-                       circle
-                       star
-                       nw:rectangle
-                       rectangle
-                       triangle
-                       ellipse
-                       line
-                       overlay
-                       overlay/xy
-                       underlay
-                       underlay/xy
                        key=?
-                       text
-                       image-url
-                       image-width
-                       image-height
 		       ; on-tick
                        ; on-tick!
                        ; on-key

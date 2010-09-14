@@ -19,8 +19,9 @@
 
 
 
-
-
+;; Pull in the image primitives too.
+(require "image.rkt")
+(provide (all-from-out "image.rkt"))
 ;; For compatibility, re-exports image-url as open-image-url.
 (define open-image-url image-url)
 (provide open-image-url)
