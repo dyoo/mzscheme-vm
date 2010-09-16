@@ -3444,13 +3444,6 @@ runTest("closure application, testing break",
 		isTerminated = true;
 	    };
 	    interpret.run(state);
-//			  function() {
-//			  }, 
-//			  function(err) {
-//			      assert.ok(types.isSchemeError(err));
-//			      assert.ok(types.isExnBreak(err.val));
-//			      isTerminated = true;
-//			  });
 	    var waitTillBreak = function() {
 		if (isTerminated) {
 		    sys.print("\nEND TESTS\n")
