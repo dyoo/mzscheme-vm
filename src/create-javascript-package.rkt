@@ -59,7 +59,7 @@
              (module-record-impl r)
              (jsexpr->json (module-record-permissions r)))]
     [else
-     (format "{ name: ~s, provides : ~a, requries: ~a, bytecode : ~a, permissions: ~a }"
+     (format "{ name: ~s, provides : ~a, requires: ~a, bytecode : ~a, permissions: ~a }"
              (symbol->string (module-record-name r))
              (jsexpr->json  (map symbol->string (module-record-provides r)))
              (jsexpr->json  (map symbol->string (module-record-requires r)))

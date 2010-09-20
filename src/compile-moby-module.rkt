@@ -84,7 +84,8 @@
                               (js-impl:js-module-exports a-js-impl-record)
                               (map (lambda (a-path) 
                                      (munge-resolved-module-path-to-symbol a-path main-module-path)) 
-                                   (module-neighbors a-path))
+                                   (filter (negate known-hardcoded-module-path?) 
+                                           (module-neighbors a-path)))
                               '()))]
     [else
      (let* ([translated-compilation-top
@@ -103,9 +104,16 @@
                            translated-program 
                            provides
                            (map (lambda (a-path) 
-                                     (munge-resolved-module-path-to-symbol a-path main-module-path)) 
-                                   (module-neighbors a-path))                           
+                                  (munge-resolved-module-path-to-symbol a-path main-module-path)) 
+                                (filter (negate known-hardcoded-module-path?)
+                                        (module-neighbors a-path)))
                            permissions))]))
+
+;; negate: (X -> boolean) -> (X -> boolean)
+;; Negates a predicate.
+(define (negate pred)
+  (lambda (x)
+    (not (pred x))))
 
 
 ;; looks-like-js-implemented-module?: path -> (or false
@@ -257,7 +265,7 @@
 
 
 
-;; rewrite-to-hardcoded-module-path: module-path-index path -> module-path-index
+;; rewrite-module-locations/modidx: module-path-index path -> module-path-index
 (define (rewrite-module-locations/modidx a-modidx self-path main-module-path)
   (let ([resolved-path (resolve-module-path-index a-modidx self-path)])
     (cond
@@ -270,11 +278,17 @@
        (module-path-index-join 'moby/kernel
                                (module-path-index-join #f #f))]
       [(same-path? resolved-path hardcoded-moby-paramz-path)
-       ;; rewrite to a (possibly fictional) collection named moby/moby-lang
+       ;; rewrite to a (possibly fictional) collection named moby/paramz
        ;; The runtime will recognize this collection.
        (module-path-index-join 'moby/paramz
                                (module-path-index-join #f #f))]
 
+      [(same-path? resolved-path hardcoded-js-impl-path)
+       ;; rewrite to a (possibly fictional) collection named moby/js-impl
+       ;; The runtime will recognize this collection.
+       (module-path-index-join 'moby/js-impl
+                               (module-path-index-join #f #f))]
+      
       ;; KLUDGE!!! We should NOT be reusing the private implementation of module
       ;; begin.  I have to fix this as soon as I have time and priority.
       [(same-path? resolved-path racket-private-modbeg-path)
