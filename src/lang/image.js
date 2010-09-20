@@ -2,8 +2,6 @@
  *** Image Primitives ***
  ************************/
 
-alert("loading image.js");
-
 
 
 //////////////////////////////////////////////////////////////////////
@@ -526,4 +524,3 @@ EXPORTS['image-height'] =
 
 
 
-alert("done loading image.js");

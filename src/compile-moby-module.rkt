@@ -54,7 +54,7 @@
         [else
          (let* ([record (compile-moby-module (first to-visit) (normalize-path main-module-path))]
                 [neighbors (filter-already-visited-modules
-                            (module-record-requires record)
+                            (module-neighbors (first to-visit))
                             (map module-record-path module-records))])
            (loop (append neighbors (rest to-visit))
                  (cons record module-records)))]))))
@@ -82,7 +82,9 @@
                               a-path
                               (apply string-append (js-impl:js-module-impls a-js-impl-record))
                               (js-impl:js-module-exports a-js-impl-record)
-                              (module-neighbors a-path)
+                              (map (lambda (a-path) 
+                                     (munge-resolved-module-path-to-symbol a-path main-module-path)) 
+                                   (module-neighbors a-path))
                               '()))]
     [else
      (let* ([translated-compilation-top
@@ -100,7 +102,9 @@
                            a-path
                            translated-program 
                            provides
-                           (module-neighbors a-path)
+                           (map (lambda (a-path) 
+                                     (munge-resolved-module-path-to-symbol a-path main-module-path)) 
+                                   (module-neighbors a-path))                           
                            permissions))]))
 
 

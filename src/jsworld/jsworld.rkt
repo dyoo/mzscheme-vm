@@ -6,6 +6,8 @@
 	    "world-stimuli.js"
 	    "jsworld.js")
 
+(require "../lang/image.rkt")
+
 (provide key=?
 	 on-tick on-tick!
 	 on-key on-key!

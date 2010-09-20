@@ -50,6 +50,7 @@
 
 
            
-(provide require-js 
+(provide require-js
+         require
 	 (rename-out (-provide provide)
                      (#%plain-module-begin #%module-begin)))

@@ -16,13 +16,13 @@
                         (path path?)
                         (impl string?)
                         (provides (listof symbol?))
-                        (requires (listof path?))
+                        (requires (listof symbol?))
                         (permissions (listof string?))]]
  [struct (js-module-record module-record) [(name symbol?)
                                            (path path?) 
                                            (impl string?)
                                            (provides (listof symbol?))
-                                           (requires (listof path?))
+                                           (requires (listof symbol?))
                                            (permissions (listof string?))]])
 
 
