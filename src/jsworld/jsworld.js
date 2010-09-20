@@ -404,7 +404,7 @@ EXPORTS['js-big-bang'] =
 					}
 			 	     },
 				     handlers);
-		     return types.internalPause(function(restarter, caller) {
+		     return types.internalPause(function(caller, restarter, onFail) {
 			 var bigBangController;
 			 var onBreak = function() {
 			     bigBangController.breaker();

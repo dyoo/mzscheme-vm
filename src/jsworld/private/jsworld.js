@@ -12,11 +12,11 @@
     var caller;
     var setCaller = function(c) {
     	caller = function(op, args, k) {
-		c(op, args, k, handleError);
+	    c(op, args, k, handleError);
 	};
     };
     var unsetCaller = function() {
-    	caller = function() {
+    	caller = function(op, args, k) {
 		throw new Error('caller not defined!');
 	};
     };
@@ -337,7 +337,7 @@
 
 
     // bigBang: world dom (listof (list string string)) (arrayof handler) -> world
-    Jsworld.bigBang = function(initWorld, toplevelNode, handlers, theCaller, theRestarter) {
+    Jsworld.bigBang = function(initWorld, toplevelNode, handlers, theCaller, theRestarter, onFail) {
 
 
 	// shutdownListeners: arrayof (-> void)
@@ -505,7 +505,9 @@
 
 	if (config.lookup('tickDelay')) {
 	    var wrappedTick = function(w, k) {
-		caller(config.lookup('onTick'), [w], k);
+		caller(config.lookup('onTick'),
+		       [w], 
+		       k);
 	    }
 	    var wrappedDelay = jsnums.toFixnum( config.lookup('tickDelay') );
 	    wrappedHandlers.push(_js.on_tick(wrappedDelay, wrappedTick));
