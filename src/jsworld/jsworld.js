@@ -5,6 +5,7 @@
 
 var PrimProc = types.PrimProc;
 var CasePrimitive = types.CasePrimitive;
+var makeOptionPrimitive = types.makeOptionPrimitive;
 var checkListOf = helpers.checkListOf;
 var procArityContains = helpers.procArityContains;
 var raise = helpers.raise;
@@ -403,7 +404,7 @@ EXPORTS['js-big-bang'] =
 					}
 			 	     },
 				     handlers);
-		     return PAUSE(function(restarter, caller) {
+		     return types.internalPause(function(restarter, caller) {
 			 var bigBangController;
 			 var onBreak = function() {
 			     bigBangController.breaker();

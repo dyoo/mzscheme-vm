@@ -16,6 +16,8 @@
          syntax/modcode
          syntax/modresolve)
 
+(define-runtime-path mzscheme-vm-src-directory ".")
+
 (define-runtime-path hardcoded-moby-kernel-path
   "lang/kernel.rkt")
 
@@ -50,27 +52,24 @@
         [(empty? to-visit)
          module-records]
         [else
-         (let ([record (compile-moby-module (first to-visit) (normalize-path main-module-path))]
-               [neighbors (filter-already-visited-modules
-                           (module-neighbors (first to-visit))
-                           (map module-record-path module-records))])
+         (let* ([record (compile-moby-module (first to-visit) (normalize-path main-module-path))]
+                [neighbors (filter-already-visited-modules
+                            (module-record-requires record)
+                            (map module-record-path module-records))])
            (loop (append neighbors (rest to-visit))
                  (cons record module-records)))]))))
 
 
 
 ;; module-neighbors: path -> (listof path)
+;; Returns a list of the required modules needed by the module of the given a-path.
 (define (module-neighbors a-path)
-  (cond
-    [(looks-like-js-implemented-module? a-path)
-     '()]
-    [else
-     (let* ([translated-compilation-top
+  (let* ([translated-compilation-top
              (lookup&parse a-path)]
             [neighbors 
              (get-module-phase-0-requires
               translated-compilation-top a-path)])
-       neighbors)]))
+       neighbors))
                            
 
 ;; compile-moby-module: path path -> module-record
@@ -83,6 +82,7 @@
                               a-path
                               (apply string-append (js-impl:js-module-impls a-js-impl-record))
                               (js-impl:js-module-exports a-js-impl-record)
+                              (module-neighbors a-path)
                               '()))]
     [else
      (let* ([translated-compilation-top
@@ -100,6 +100,7 @@
                            a-path
                            translated-program 
                            provides
+                           (module-neighbors a-path)
                            permissions))]))
 
 
@@ -163,9 +164,41 @@
       [(symbol? a-resolved-module-path)
        a-resolved-module-path]
       [else
-       (let ([relative (find-relative-path base (normalize-path a-resolved-module-path))])
-         (string->symbol (replace-dots
-                          (replace-up-dirs (path->string relative)))))])))
+       (cond 
+         ;; If a subdirectory to the mzscheme-vm path, 
+         ;; rename relative to it.
+         [(subdirectory-of? (let-values ([(d name dir?)
+                                          (split-path a-resolved-module-path)])
+                              d)
+                            mzscheme-vm-src-directory)
+          (let ([relative (find-relative-path (normalize-path mzscheme-vm-src-directory)
+                                              (normalize-path a-resolved-module-path))])
+            (string->symbol (string-append "mzscheme-vm/"
+                                           (remove-extension (path->string relative)))))]
+         [else
+          (let ([relative (find-relative-path base
+                                              (normalize-path a-resolved-module-path))])
+            (string->symbol (string-append "relative/"
+                                           (replace-dots
+                                            (replace-up-dirs 
+                                             (remove-extension 
+                                              (path->string relative)))))))])])))
+
+
+(define filesystem-roots (filesystem-root-list))
+
+;; subdirectory-of?: directory-path directory-path -> boolean
+;; Returns true if a-file-path lives within base-dir somewhere.
+(define (subdirectory-of? a-dir parent-dir)
+  (let loop ([a-dir a-dir])
+    (cond
+      [(same-path? a-dir parent-dir)
+       #t]
+      [(member a-dir filesystem-roots)
+       #f]
+      [else
+       (loop (normalize-path (build-path a-dir 'up)))])))
+
 
 
 ;; replace-up-dirs: string -> string
@@ -174,7 +207,13 @@
 
 ;; replace-dots: string -> string
 (define (replace-dots a-str)
-    (regexp-replace* #px"\\." a-str "-dot-"))
+  (regexp-replace* #px"\\." a-str "-dot-"))
+
+;; remove-extension: string -> string
+(define (remove-extension a-str)
+  (regexp-replace* #px"\\.[^\\.]+$" a-str ""))
+
+
 
 
 

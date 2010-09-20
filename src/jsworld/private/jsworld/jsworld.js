@@ -1,4 +1,3 @@
-
 var jsworld = {};
 
 // Stuff here is copy-and-pasted from Chris's JSWorld.  We

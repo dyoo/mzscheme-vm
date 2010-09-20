@@ -54,18 +54,12 @@
     [(js-module-record? r)
      (format "{ name: ~s, provides : ~a, jsImplementation : (function(EXPORTS){ (function() { ~a })() }), permissions: ~a }"
              (symbol->string (module-record-name r))
-             #;(path->string 
-              (find-relative-path base-path
-                                  (module-record-path r)))
              (jsexpr->json  (map symbol->string (module-record-provides r)))
              (module-record-impl r)
              (jsexpr->json (module-record-permissions r)))]
     [else
      (format "{ name: ~s, provides : ~a, bytecode : ~a, permissions: ~a }"
              (symbol->string (module-record-name r))
-             #;(path->string 
-              (find-relative-path base-path
-                                  (module-record-path r)))
              (jsexpr->json  (map symbol->string (module-record-provides r)))
              (module-record-impl r)
              (jsexpr->json (module-record-permissions r)))]))

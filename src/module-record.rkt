@@ -2,7 +2,7 @@
 
 (require racket/contract)
 
-(define-struct module-record (name path impl provides permissions))
+(define-struct module-record (name path impl provides requires permissions))
 
 ;; A js-module-record is a special kind of module record whose impl
 ;; is Javascript rather than bytecode.
@@ -16,11 +16,13 @@
                         (path path?)
                         (impl string?)
                         (provides (listof symbol?))
+                        (requires (listof path?))
                         (permissions (listof string?))]]
  [struct (js-module-record module-record) [(name symbol?)
                                            (path path?) 
                                            (impl string?)
                                            (provides (listof symbol?))
+                                           (requires (listof path?))
                                            (permissions (listof string?))]])
 
 
