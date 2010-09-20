@@ -842,7 +842,9 @@ var jsworld = {};
 	    var ticker = {
 		watchId: -1,
 		onRegister: function (top) { 
-		    ticker.watchId = setInterval(function() { change_world(tick, doNothing); }, delay);
+		    ticker.watchId = setInterval(function() { 
+			change_world(tick, doNothing); }, 
+						 delay);
 		},
 
 		onUnregister: function (top) {

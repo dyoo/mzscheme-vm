@@ -796,10 +796,11 @@ var isEqv = function(x, y) {
 	return x === y;
 }
 
-var isImage = world.Kernel.isImage;
-var isScene = world.Kernel.isScene;
-var isColor = world.Kernel.isColor;
-var colorDb = world.Kernel.colorDb;
+
+
+
+
+
 var isStyle = function(x) {
 	return ((isString(x) || isSymbol(x)) &&
 		(x.toString().toLowerCase() == "solid" ||
