@@ -1,4 +1,4 @@
-#lang s-exp "js-impl/js-impl.rkt"
+#lang s-exp "../lang/js-impl/js-impl.rkt"
 
 (require-js "image.js")
 
