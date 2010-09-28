@@ -272,7 +272,7 @@ EXPORTS['circle'] =
 			if (colorDb.get(aColor)) {
 				aColor = colorDb.get(aColor);
 			}
-			return world.Kernel.circleImage(jsnums.toFixnum(aRadius), aStyle, aColor);
+		     return world.Kernel.circleImage(jsnums.toFixnum(aRadius), aStyle.toString(), aColor);
 		 });
 
 
