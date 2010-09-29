@@ -24,10 +24,10 @@
 
 (define (draw w)
   (list (js-div)
-        c1
-        c2
-        c3
-        (list (js-text (format "The world is: ~s" w)))))
+       ; c1
+       ; c2
+       ; c3
+       #; (list (js-text (format "The world is: ~s" w)))))
 
 (define (draw-css w)
   '())

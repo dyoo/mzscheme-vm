@@ -271,10 +271,15 @@ var jsdiv = function(attribList) {
 	node.toDomNode = function(cache) { return node; };
 	return helpers.wrapJsValue(node);
 };
+
 EXPORTS['js-div'] =
     new CasePrimitive('js-div',
-	[new PrimProc('js-div', 0, false, false, function() { return jsdiv(types.EMPTY); }),
-	 new PrimProc('js-div', 1, false, false, jsdiv)]);
+		      [new PrimProc('js-div', 0, false, false, function() {
+			  var result =  jsdiv(types.EMPTY); 
+			  return result;
+		      }),
+		       new PrimProc('js-div', 1, false, false, jsdiv)
+		      ]);
 
 
 var jsButtonBang = function(funName) {

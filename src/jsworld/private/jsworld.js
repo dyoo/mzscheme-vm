@@ -234,7 +234,7 @@
     // isNode: any -> boolean
     // Returns true if the thing has a nodeType.
     var isNode = function(thing) {
-	return typeof(thing.nodeType) != 'undefined';
+	return thing && typeof(thing.nodeType) != 'undefined';
     }
 
 
