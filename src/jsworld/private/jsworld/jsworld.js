@@ -769,7 +769,7 @@ var jsworld = {};
     // Notes: big_bang maintains a stack of activation records; it should be possible
     // to call big_bang re-entrantly.
     function big_bang(top, init_world, handlerCreators, attribs, k) {
-	clear_running_state();
+	// clear_running_state();
 
 	// Construct a fresh set of the handlers.
 	var handlers = map(handlerCreators, function(x) { return x();} );
@@ -982,6 +982,7 @@ var jsworld = {};
 						     doNothing); },
 			   0);
 	};
+
 	attachEvent(node, event, eventHandler);
 	eventDetachers.push(function() { detachEvent(node, event, eventHandler); });
     }
@@ -1239,16 +1240,15 @@ var jsworld = {};
     var checkbox_input = function(type, updateF, attribs) {
 	var n = document.createElement('input');
 	n.type = type;
-
 	var onCheck = function(w, e, k) {
 	    updateF(w, n.checked, k);
 	};
 	// This established the widget->world direction
 	add_ev_after(n, 'change', onCheck);
 	
-	attachEvent(n, 'click', function(e) {
-		stopPropagation(e);
-	    });
+ 	attachEvent(n, 'click', function(e) {
+ 	    stopPropagation(e);
+ 	});
 
 	return copy_attribs(n, attribs);
     };
@@ -1279,7 +1279,6 @@ var jsworld = {};
     
 
     function text(s, attribs) {
-//	var result = document.createTextNode(s);
 	var result = document.createElement("div");
 	result.appendChild(document.createTextNode(s));
 	result.style['white-space'] = 'pre';

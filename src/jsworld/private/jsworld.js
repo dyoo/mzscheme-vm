@@ -695,7 +695,6 @@
 
     Jsworld.input = function(type, updateF, attribs) {
 	    var wrappedUpdater = function(w, evt, k) {
-//		    console.log(e);
 		    caller(updateF, [w, evt], k);
 	    }
 	    return _js.input(type, wrappedUpdater, attribs);

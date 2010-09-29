@@ -6,12 +6,11 @@
 
 (define (make-ingredient-checkbox-sexp ingredient)
   (local [(define (on-check w v)
-            (begin (printf "on-check\n")
                    (cond
                      [v
                       (cons ingredient w)]
                      [else
-                      (remove ingredient w)])))]
+                      (remove ingredient w)]))]
     (list (js-div)
           (list (js-text ingredient))
           (list (js-input "checkbox"
