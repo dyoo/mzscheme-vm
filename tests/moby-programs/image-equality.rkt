@@ -209,6 +209,111 @@
 (check-fail-contract (lambda () (empty-scene 10)))
 
 
+;; place images
+(check-fail-contract (lambda () (place-image)))
+(check-fail-contract (lambda () (place-image 10)))
+(check-fail-contract (lambda () (place-image (circle 20 'solid 'green))))
+(check-fail-contract (lambda () (place-image (circle 20 'solid 'green) 10)))
+(check-fail-contract (lambda () (place-image (circle 20 'solid 'green) 10 20)))
+(check-fail-contract 
+ (lambda () 
+   (place-image (circle 20 'solid 'green) 10 20 (empty-scene 3 4) 
+                "too-many-args")))
+(check-fail-contract 
+ (lambda () 
+   (place-image 10 20 (circle 20 'solid 'green) (empty-scene 3 4))))
+
+
+(check-expect (place-image (circle 10 'solid 'green)
+                           50
+                           50
+                           (empty-scene 100 100))
+              (place-image (circle 10 'solid 'green)
+                           50
+                           50
+                           (empty-scene 100 100)))
+                         
+(check-expect (equal? (place-image (circle 10 'solid 'green)
+                                   50
+                                   50
+                                   (empty-scene 100 100))
+                      (place-image (circle 10 'solid 'green)
+                                   50
+                                   50
+                                   (empty-scene 100 100)))
+              true)
+
+(check-expect (equal? (place-image (circle 9 'solid 'green)
+                                   50
+                                   50
+                                   (empty-scene 100 100))
+                      (place-image (circle 10 'solid 'green)
+                                   50
+                                   50
+                                   (empty-scene 100 100)))
+              false)
+
+
+(check-expect (equal? (place-image (circle 10 'solid 'green)
+                                   50
+                                   50
+                                   (empty-scene 100 100))
+                      (place-image (circle 10 'solid 'green)
+                                   40
+                                   50
+                                   (empty-scene 100 100)))
+              false)
+
+(check-expect (equal? (place-image (circle 10 'solid 'green)
+                                   50
+                                   50
+                                   (empty-scene 100 100))
+                      (place-image (circle 10 'solid 'green)
+                                   50
+                                   40
+                                   (empty-scene 100 100)))
+              false)
+
+(check-expect (equal? (place-image (circle 10 'solid 'green)
+                                   50
+                                   50
+                                   (empty-scene 100 100))
+                      (place-image (circle 10 'solid 'green)
+                                   50
+                                   50
+                                   (empty-scene 100 99)))
+              false)
+
+
+
+;; overlay
+(check-fail-contract (lambda () (overlay)))
+
+(check-expect (overlay (rectangle 10 20 'solid 'blue)
+                       (circle 20 'solid 'green))
+              (overlay (rectangle 10 20 'solid 'blue)
+                       (circle 20 'solid 'green)))
+(check-expect (equal? (overlay (rectangle 10 20 'solid 'blue)
+                               (circle 20 'solid 'green))
+                      (overlay (circle 20 'solid 'green)
+                               (rectangle 10 20 'solid 'blue)))
+              false)
+
+
+
+;; underlay
+(check-fail-contract (lambda () (underlay)))
+(check-expect (underlay (rectangle 10 20 'solid 'blue)
+                        (circle 20 'solid 'green))
+              (underlay (rectangle 10 20 'solid 'blue)
+                        (circle 20 'solid 'green)))
+(check-expect (equal? (underlay (rectangle 10 20 'solid 'blue)
+                                (circle 20 'solid 'green))
+                      (underlay (circle 20 'solid 'green)
+                                (rectangle 10 20 'solid 'blue)))
+              false)
+
+
 
 
 (printf "ran image comparison tests\n")
