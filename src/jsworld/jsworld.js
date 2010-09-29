@@ -252,7 +252,7 @@ var jsp = function(attribList) {
 	node.toWrittenString = function(cache) { return "(js-p)"; };
 	node.toDisplayedString = node.toWrittenString;
 	node.toDomNode = function(cache) { return node; };
-	return helpers.wrapJsObject(node);
+	return helpers.wrapJsValue(node);
 };
 EXPORTS['js-p'] =
     new CasePrimitive('js-p',
@@ -269,7 +269,7 @@ var jsdiv = function(attribList) {
 	node.toWrittenString = function(cache) { return "(js-div)"; };
 	node.toDisplayedString = node.toWrittenString;
 	node.toDomNode = function(cache) { return node; };
-	return helpers.wrapJsObject(node);
+	return helpers.wrapJsValue(node);
 };
 EXPORTS['js-div'] =
     new CasePrimitive('js-div',
@@ -289,7 +289,7 @@ var jsButtonBang = function(funName) {
 		node.toWrittenString = function(cache) { return '(' + funName + ' ...)'; };
 		node.toDisplayedString = node.toWrittenString;
 		node.toDomNode = function(cache) { return node; };
-		return helpers.wrapJsObject(node);
+		return helpers.wrapJsValue(node);
 	}
 };
 var jsButton = function(updateWorldF, attribList) {
@@ -319,7 +319,7 @@ var jsInput = function(type, updateF, attribList) {
 	node.toWrittenString = function(cache) { return "(js-input ...)"; }
 	node.toDisplayedString = node.toWrittenString;
 	node.toDomNode = function(cache) { return node; }
-	return helpers.wrapJsObject(node);
+	return helpers.wrapJsValue(node);
 };
 EXPORTS['js-input'] =
 	new CasePrimitive('js-input', 
@@ -338,7 +338,7 @@ var jsImg = function(src, attribList) {
 	node.toWrittenString = function(cache) { return "(js-img ...)"; }
 	node.toDisplayedString = node.toWrittenString;
 	node.toDomNode = function(cache) { return node; }
-	return helpers.wrapJsObject(node);
+	return helpers.wrapJsValue(node);
 };
 EXPORTS['js-img'] =
     new CasePrimitive('js-img',
@@ -358,7 +358,7 @@ EXPORTS['js-text'] =
 			node.toWrittenString = function(cache) { return "(js-text ...)"; }
 			node.toDisplayedString = node.toWrittenString;
 			node.toDomNode = function(cache) { return node; }
-			return helpers.wrapJsObject(node);
+			return helpers.wrapJsValue(node);
 		 });
 
 
@@ -374,7 +374,7 @@ var jsSelect = function(optionList, updateF, attribList) {
 	node.toWrittenString = function(cache) { return '(js-select ...)'; };
 	node.toDisplayedString = node.toWrittenString;
 	node.toDomNode = function(cache) { return node; };
-	return helpers.wrapJsObject(node);
+	return helpers.wrapJsValue(node);
 };
 EXPORTS['js-select'] =
     new CasePrimitive('js-select',
@@ -434,7 +434,7 @@ var emptyPage = function(attribList) {
 // 	node.toWrittenString = function(cache) { return "(js-div)"; };
 // 	node.toDisplayedString = node.toWrittenString;
 // 	node.toDomNode = function(cache) { return node; };
-// 	return helpers.wrapJsObject(node);
+// 	return helpers.wrapJsValue(node);
 	return node;
     };
 
@@ -524,7 +524,7 @@ EXPORTS['make-effect-type'] =
 //				changeWorld(function(w, k) {
 //					var args = [w];
 //					for (var i = 0; i < externalArgs.length; i++) {
-//						args.push( helpers.wrapJsObject(externalArgs[i]) );
+//						args.push( helpers.wrapJsValue(externalArgs[i]) );
 //					}
 //					caller(handler, args, k);
 //				});
@@ -817,9 +817,9 @@ var isCompoundEffect = function(x) {
 	return ( types.isEffect(x) || isListOf(x, isCompoundEffect) );
 };
 
-var isJsObject = types.isJsObject;
+var isJsValue = types.isJsValue;
 var isJsFunction = function(x) {
-	return isJsObject(x) && typeof(x.obj) == 'function';
+	return isJsValue(x) && typeof(x.obj) == 'function';
 };
 
 

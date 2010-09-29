@@ -85,10 +85,10 @@
     }
 
     var expandHandler = function(handler) {
-	return types.jsObject('function', function() {
+	return types.jsValue('function', function() {
 		var wrappedStimulusArgs = [];
 		for (var i = 0; i < arguments.length; i++) {
-			wrappedStimulusArgs.push( helpers.wrapJsObject(arguments[i]) );
+			wrappedStimulusArgs.push( helpers.wrapJsValue(arguments[i]) );
 		}
 
 		Jsworld.updateWorld(
@@ -124,12 +124,12 @@
 //    };
 
 
-    var deepUnwrapJsObjects = function(x, k) {
-	    if ( types.isJsObject(x) ) {
+    var deepUnwrapJsValues = function(x, k) {
+	    if ( types.isJsValue(x) ) {
 		    k(x.obj);
 	    }
 	    else if ( types.isRenderEffect(x) ) {
-		    x.callImplementation(caller, function(y) { deepUnwrapJsObjects(y, k); });
+		    x.callImplementation(caller, function(y) { deepUnwrapJsValues(y, k); });
 	    }
 //		    var effects = helpers.schemeListToArray( types.renderEffectEffects(x) ).reverse();
 //		    types.setRenderEffectEffects(x, types.EMPTY);
@@ -137,11 +137,11 @@
 //		    helpers.forEachK(effects,
 //				     function(ef, k2) { caller(ef, [], k2); },
 //				     handleError,
-//				     function() { deepUnwrapJsObjects(types.renderEffectDomNode(x), k); });
+//				     function() { deepUnwrapJsValues(types.renderEffectDomNode(x), k); });
 //	    }
 	    else if ( types.isPair(x) ) {
-		deepUnwrapJsObjects(x.first(), function(first) {
-			deepUnwrapJsObjects(x.rest(), function(rest) {
+		deepUnwrapJsValues(x.first(), function(first) {
+			deepUnwrapJsValues(x.rest(), function(rest) {
 				k( types.cons(first, rest) );
 			});
 		});
@@ -415,7 +415,7 @@
 		    caller(config.lookup('onDraw'), [w],
 			    function(newDomTree) {
 //				plt.Kernel.setLastLoc(undefined);
-			    	deepUnwrapJsObjects(newDomTree, function(unwrappedTree) {
+			    	deepUnwrapJsValues(newDomTree, function(unwrappedTree) {
 					checkWellFormedDomTree(unwrappedTree, unwrappedTree, undefined);
 					var result = [toplevelNode, 
 						      helpers.deepListToArray(unwrappedTree)];
@@ -743,7 +743,7 @@
     Jsworld.emptyPage = _js.emptyPage;
 
     Jsworld.placeOnPage = function(elt, left, top, page) { 
-	elt = types.toDomNode(deepUnwrapJsObjects(elt));
+	elt = types.toDomNode(deepUnwrapJsValues(elt));
  	return _js.placeOnPage(elt, left, top, page);
     };
 
