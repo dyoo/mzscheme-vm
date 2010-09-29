@@ -92,7 +92,7 @@
              (lookup&parse a-path)]
             [translated-program
              (jsexp->js (translate-top 
-                         (rewrite-module-locations translated-compilation-top
+                         (rewrite-module-locations/compilation-top translated-compilation-top
                                                    a-path
                                                    main-module-path)))]
             [permissions
@@ -230,7 +230,7 @@
 
 
 ;; rewrite-module-locations: compilation-top -> compilation-top
-(define (rewrite-module-locations a-top self-path main-module-path)
+(define (rewrite-module-locations/compilation-top a-top self-path main-module-path)
   (match a-top
     [(struct compilation-top (max-let-depth prefix code))
      (make-compilation-top max-let-depth 

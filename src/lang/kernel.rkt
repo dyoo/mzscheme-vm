@@ -73,6 +73,8 @@
 (provide (rename-out (-#%module-begin #%module-begin)
                      (-#%datum #%datum)
                      (-#%app #%app)
+                     (#%top-interaction #%top-interaction)
+                     (#%top #%top)
                      (-define define)
                      (-define-struct define-struct)
                      (if if)

@@ -1,23 +1,38 @@
 #lang racket/base
 
-;; Experiments: trying to figure out how to get the compiler to produce
-;; bytecode appropriate with interactive REPLs.
+(require racket/contract)
 
-(define ns (module->namespace 'racket/base))
+(provide/contract [compile-an-interaction
+                   (any/c #:language-module module-path? . -> . bytes?)])
 
-;; compile-an-interaction: any -> compiled-code
-(define (compile-an-interaction x)
-  (parameterize ([current-namespace ns])
-    (compile (namespace-syntax-introduce 
-              (datum->syntax #f (cons '#%top-interaction x))))))
+;; Get the compiler to produce bytecode appropriate with interactive REPLs.
+
+(define ns (make-base-empty-namespace))
+
+;; compile-an-interaction: any -> bytes
+(define (compile-an-interaction x #:language-module 
+                                (language-module 'racket/base))
+  (let ([module-namespace
+         (parameterize ([current-namespace ns])
+           (dynamic-require language-module #f)
+           (module->namespace language-module))])
+    (parameterize ([current-namespace module-namespace])
+      (serialize-compiled-code
+       (compile (namespace-syntax-introduce 
+                 (datum->syntax #f (cons '#%top-interaction x))))))))
 
 
+;; serialize-compiled-code: compiled-code -> bytes
 (define (serialize-compiled-code a-compiled-code)
   (let ([op (open-output-bytes)])
     (write a-compiled-code op)
     (get-output-bytes op)))
   
 
-(require compiler/zo-parse)
 
-(zo-parse (open-input-bytes (serialize-compiled-code (compile-an-interaction 'x))))
+;;(require compiler/zo-parse)
+;;(zo-parse (open-input-bytes (compile-an-interaction 'x 
+;;                                  #:language-module "lang/wescheme.rkt")))
+
+#;(zo-parse (open-input-bytes 
+             (serialize-compiled-code (compile-an-interaction 'x))))
