@@ -468,7 +468,7 @@ EXPORTS['text'] =
 		 false, false,
 		 function(aString, aSize, aColor) {
 			check(aString, isString, "text", "string", 1, arguments);
-			check(aSize, function(x) { return jsnums.greaterThan(x, 0) && isByte(x); },
+		     check(aSize, function(x) { return isNatural(x) && jsnums.greaterThan(x, 0) && isByte(x); },
 			      "text", "exact integer between 1 and 255", 2, arguments);
 			check(aColor, isColor, "text", "color", 3, arguments);
 
