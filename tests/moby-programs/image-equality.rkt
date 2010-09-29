@@ -51,7 +51,10 @@
 (check-fail-contract (lambda () (circle 20 "outline" "not-a-color")))
 (check-fail-contract (lambda () (circle 20 'green 'outline)))
 (check-fail-contract (lambda () (circle 'green 'outline 20)))
-
+(check-fail-contract (lambda () (circle)))
+(check-fail-contract (lambda () (circle 20)))
+(check-fail-contract (lambda () (circle 20 'outline)))
+(check-fail-contract (lambda () (circle 20 'outline "black" "too-many-args")))
 
 
 ;; star
@@ -74,6 +77,12 @@
 (check-fail-contract (lambda () (star 20 10 60 "outline" 'not-a-color)))
 (check-fail-contract (lambda () (star 20 10 60 "green" 'outline)))
 (check-fail-contract (lambda () (star 10 60 "green" 'outline 20)))
+(check-fail-contract (lambda () (star)))
+(check-fail-contract (lambda () (star 10)))
+(check-fail-contract (lambda () (star 10 60)))
+(check-fail-contract (lambda () (star 10 60 50)))
+(check-fail-contract (lambda () (star 10 60 50 'outline)))
+(check-fail-contract (lambda () (star 10 60 50 'outline 'green 'too-many-args)))
  
 
 ;; nw:rect
@@ -96,6 +105,12 @@
 (check-fail-contract (lambda () (nw:rectangle 10 20 "outline" 'not-a-color)))
 (check-fail-contract (lambda () (nw:rectangle 10 20 'green 'outline)))
 (check-fail-contract (lambda () (nw:rectangle 20 'green 'outline 10)))
+(check-fail-contract (lambda () (nw:rectangle)))
+(check-fail-contract (lambda () (nw:rectangle 10)))
+(check-fail-contract (lambda () (nw:rectangle 10 20)))
+(check-fail-contract (lambda () (nw:rectangle 10 20 'solid)))
+(check-fail-contract 
+ (lambda () (nw:rectangle 10 20 'solid 'green 'too-many-args)))
 
 
 ;; rect
@@ -118,7 +133,13 @@
 (check-fail-contract (lambda () (rectangle 10 20 "outline" 'not-a-color)))
 (check-fail-contract (lambda () (rectangle 10 20 'green 'outline)))
 (check-fail-contract (lambda () (rectangle 20 'green 'outline 10)))
-
+(check-fail-contract (lambda () (rectangle)))
+(check-fail-contract (lambda () (rectangle 10)))
+(check-fail-contract (lambda () (rectangle 10 20)))
+(check-fail-contract (lambda () (rectangle 10 20 'solid)))
+(check-fail-contract (lambda () (rectangle 10 20 'solid 'green 'too-many-args)))
+ 
+ 
 
 ;; triangle
 (check-expect (equal? (triangle 10 'solid 'green)
@@ -138,6 +159,11 @@
 (check-fail-contract (lambda () (triangle 10 'outline 'not-a-color)))
 (check-fail-contract (lambda () (triangle 10 'green 'outline)))
 (check-fail-contract (lambda () (triangle 'green 'outline 10)))
+(check-fail-contract (lambda () (triangle)))
+(check-fail-contract (lambda () (triangle 'outline)))
+(check-fail-contract (lambda () (triangle 10)))
+(check-fail-contract (lambda () (triangle 10 'outline)))
+(check-fail-contract (lambda () (triangle 10 'outline 'green 'too-many-args)))
 
 
 ;; line
@@ -149,6 +175,10 @@
               false)
 (check-fail-contract (lambda () (line 10 20 'not-a-color)))
 (check-fail-contract (lambda () (line 'not-a-color 20 10)))
+(check-fail-contract (lambda () (line)))
+(check-fail-contract (lambda () (line 10)))
+(check-fail-contract (lambda () (line 10 20)))
+(check-fail-contract (lambda () (line 10 20 "black" "too-many-args")))
 
 
 ;; text
@@ -159,11 +189,26 @@
 (check-expect (equal? (text "hello" 20 'yellow)
                       (text "hi" 20 'yellow))
               false)
+(check-fail-contract (lambda () (text "hello")))
+(check-fail-contract (lambda () (text "hello" 20)))
+(check-fail-contract (lambda () (text "hello" 20 'yellow 'too-many-args)))
 (check-fail-contract (lambda () (text 'hi 20 'yellow)))
 (check-fail-contract (lambda () (text "hello" 'yellow 20)))
 
 
               
+
+;; empty scenes
+(check-expect (empty-scene 10 20)
+              (empty-scene 10 20))
+(check-expect (equal? (empty-scene 10 20)
+                      (empty-scene 11 20))
+              false)
+(check-fail-contract (lambda () (empty-scene 'one 'two)))
+(check-fail-contract (lambda () (empty-scene 10 20 30)))
+(check-fail-contract (lambda () (empty-scene 10)))
+
+
 
 
 (printf "ran image comparison tests\n")
