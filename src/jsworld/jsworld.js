@@ -824,7 +824,7 @@ var isCompoundEffect = function(x) {
 
 var isJsValue = types.isJsValue;
 var isJsFunction = function(x) {
-	return isJsValue(x) && typeof(x.obj) == 'function';
+    return isJsValue(x) && typeof(x.unbox()) == 'function';
 };
 
 

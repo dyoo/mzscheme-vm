@@ -1,4 +1,3 @@
-
 // Depends on world.js, world-config.js
 
 (function() {
@@ -126,7 +125,7 @@
 
     var deepUnwrapJsValues = function(x, k) {
 	    if ( types.isJsValue(x) ) {
-		    k(x.obj);
+		k(x.unbox());
 	    }
 	    else if ( types.isRenderEffect(x) ) {
 		    x.callImplementation(caller, function(y) { deepUnwrapJsValues(y, k); });
@@ -414,7 +413,6 @@
 		try {
 		    caller(config.lookup('onDraw'), [w],
 			    function(newDomTree) {
-//				plt.Kernel.setLastLoc(undefined);
 			    	deepUnwrapJsValues(newDomTree, function(unwrappedTree) {
 					checkWellFormedDomTree(unwrappedTree, unwrappedTree, undefined);
 					var result = [toplevelNode, 
