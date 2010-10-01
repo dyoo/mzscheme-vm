@@ -525,48 +525,8 @@
 		    caller(config.lookup('onKey'), [w, helpers.getKeyCodeName(e)], k);
 	    }
 	    wrappedHandlers.push(_js.on_key(wrappedKey));
-//	    // Add event handlers that listen in on key events that are applied
-//	    // directly on the toplevelNode.  We pay attention to keydown, and
-//	    // omit keypress.
-//	    attachEvent(toplevelNode,
-//			'keydown',
-//			function(e) {
-//			    stimuli.onKey([e], function() {});
-//			    preventDefault(e);
-//			    stopPropagation(e);
-//			    return false;
-//			});
-//	    attachEvent(toplevelNode,
-//			'keypress',
-//			function(e) {
-//			    preventDefault(e);
-//			    stopPropagation(e);
-//			    return false;
-//			});
-//	    attachEvent(toplevelNode,
-//			'keyup',
-//			function(e) {
-//			    console.log(e);
-//			    preventDefault(e);
-//			    stopPropagation(e);
-//			    return false;
-//			});
 	    toplevelNode.focus();
 	}
-
-
-// 	if (config.lookup('initialEffect')) {
-// 	    var updaters =
-// 		world.Kernel.applyEffect(config.lookup('initialEffect'));
-// 	    for (var i = 0 ; i < updaters.length; i++) {
-// 		if (config.lookup('stopWhen') && 
-// 		    config.lookup('stopWhen')([initWorld])) {
-// 		    break;
-// 		} else {
-// 		    initWorld = updaters[i](initWorld);
-// 		}
-// 	    }
-// 	}
 	
 
 	startUserConfigs(function() {
@@ -589,15 +549,8 @@
 
 
     var handleError = function(e) {
-//	helpers.reportError(e);
-	// When something bad happens, shut down 
-	// the world computation.
-//	helpers.reportError("Shutting down jsworld computations");
-//	world.stimuli.onShutdown(); 
 	world.stimuli.massShutdown();
 	shutdownUserConfigs(function() {
-//		console.log('Got an error, the error was:');
-//		console.log(e);
 		if (typeof(console) !== 'undefined' && console.log) {
 			if (e.stack) {
 				console.log(e.stack);
@@ -744,19 +697,6 @@
  	return _js.placeOnPage(elt, left, top, page);
     };
 
-
-    // fixme: add support for textarea, h1, canvas
-
-
-//    // raw_node: scheme-value assoc -> node
-//    Jsworld.rawNode = function(x, args) {
-//	var attribs = getAttribs(args);
-//	var node = _js.raw_node(types.toDomNode(x), attribs);
-//	node.toWrittenString = function(cache) { return "(js-raw-node ...)"; }
-//	node.toDisplayedString = node.toWrittenString;
-//	node.toDomNode = function(cache) { return node; }
-//	return node;
-//    };
 
 
 

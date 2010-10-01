@@ -427,6 +427,46 @@ EXPORTS['js-big-bang'] =
 		 });
 
 
+EXPORTS['async-js-big-bang'] =
+    new PrimProc('async-js-big-bang',
+		 1,
+		 true, true,
+		 function(state, initW, handlers) {
+		 	arrayEach(handlers,
+				function(x, i) {
+					check(x, function(y) { return isWorldConfigOption(y) || isList(y) || types.isWorldConfig(y); },
+					      'js-big-bang', 'handler or attribute list', i+2);
+				});
+		     var unwrappedConfigs = 
+			 helpers.map(function(x) {
+					if ( isWorldConfigOption(x) ) {
+						return function(config) { return x.configure(config); };
+					}
+					else {
+						return x;
+					}
+			 	     },
+				     handlers);
+		     return types.internalPause(function(caller, restarter, onFail) {
+			 var bigBangController;
+			 var onBreak = function() {
+			     bigBangController.breaker();
+			 }
+			 state.addBreakRequestedListener(onBreak);
+			 bigBangController = jsworld.MobyJsworld.bigBang(initW, 
+						     state.getToplevelNodeHook()(),
+						     unwrappedConfigs,
+						     caller, 
+						     function(v) {
+							 state.removeBreakRequestedListener(onBreak);
+						     });
+			 restarter(bigBangController);
+		     })
+		 });
+
+
+
+
 //////////////////////////////////////////////////////////////////////
 
 

@@ -27,3 +27,6 @@
 (provide open-image-url)
 
 
+;; Pull in the jsworld primitives
+(require "../jsworld/jsworld.rkt")
+(provide (all-from-out "../jsworld/jsworld.rkt"))

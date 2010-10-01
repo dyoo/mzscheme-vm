@@ -24,6 +24,7 @@
 	 js-text
 	 js-select
 	 js-big-bang
+	 async-js-big-bang
 
 	 empty-page
 	 place-on-page
