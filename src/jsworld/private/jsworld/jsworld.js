@@ -62,7 +62,6 @@ var jsworld = {};
 
 
 
-    var world = new InitialWorld();
     var worldListeners = [];
     var eventDetachers = [];
 //    var runningBigBangs = [];
@@ -70,12 +69,22 @@ var jsworld = {};
 
 
     // Close all world computations.
-    Jsworld.shutdown = function(worldListeners, eventDetachers) {
+    Jsworld.shutdown = function(activationRecord, worldListeners, eventDetachers) {
 // 	while(runningBigBangs.length > 0) {
 // 	    var currentRecord = runningBigBangs.pop();
 // 	    if (currentRecord) { currentRecord.pause(); }
 // 	}
 	clear_running_state(worldListeners, eventDetachers);
+
+
+
+	activationRecord.world = new InitialWorld();
+	worldListeners = [];
+
+	for (var i = 0; i < eventDetachers.length; i++) {
+		eventDetachers[i]();
+	}
+	eventDetachers = [];
     }
 
 
@@ -92,22 +101,12 @@ var jsworld = {};
 	}
     }
 
-    function clear_running_state(worldListeners, eventDetachers) {
-	world = new InitialWorld();
-	worldListeners = [];
-
-	for (var i = 0; i < eventDetachers.length; i++) {
-		eventDetachers[i]();
-	}
-	eventDetachers = [];
-    }
-
 
 
     // change_world: CPS( CPS(world -> world) -> void )
     // Adjust the world, and notify all listeners.
-    function change_world(updater, k) {
-	var originalWorld = world;
+    function change_world(activationRecord, updater, k) {
+	var originalWorld = activationRecord.world;
 
 	var changeWorldHelp = function() {
 		if (world instanceof WrappedWorldWithEffects) {
@@ -116,7 +115,7 @@ var jsworld = {};
 				 function(anEffect, k2) { anEffect.invokeEffect(change_world, k2); },
 				 function (e) { throw e; },
 				 function() {
-				 	world = world.getWorld();
+				 	activationRecord.world = activationRecord.world.getWorld();
 					changeWorldHelp2();
 				 });
 		} else {
@@ -126,18 +125,18 @@ var jsworld = {};
 	
 	var changeWorldHelp2 = function() {
 		helpers.forEachK(worldListeners,
-			 function(listener, k2) { listener(world, originalWorld, k2); },
-			 function(e) { world = originalWorld; throw e; },
+			 function(listener, k2) { listener(activationRecord.world, originalWorld, k2); },
+			 function(e) { activationRecord.world = originalWorld; throw e; },
 			 k);
 	};
 
 	try {
-		updater(world, function(newWorld) {
-				world = newWorld;
+		updater(activationRecord.world, function(newWorld) {
+				activationRecord.world = newWorld;
 				changeWorldHelp();
 			});
 	} catch(e) {
-		world = originalWorld;
+	    activationRecord.world = originalWorld;
 
 	    if (typeof(console) !== 'undefined' && console.log && e.stack) {
 			console.log(e.stack);
@@ -446,7 +445,7 @@ var jsworld = {};
 
 
     // update_dom(nodes(Node), relations(Node)) = void
-    function update_dom(toplevelNode, nodes, relations) {
+    function update_dom(activationRecord, toplevelNode, nodes, relations) {
 
 	// TODO: rewrite this to move stuff all in one go... possible? necessary?
 	
@@ -567,7 +566,7 @@ var jsworld = {};
 	}
 
 	
-	refresh_node_values(nodes);
+	refresh_node_values(activationRecord, nodes);
     }
 
     function mergeNodeValues(node, foundNode) {
@@ -633,17 +632,17 @@ var jsworld = {};
 
 
     // If any node cares about the world, send it in.
-    function refresh_node_values(nodes) {
+    function refresh_node_values(activationRecord, nodes) {
 	for (var i = 0; i < nodes.length; i++) {
 	    if (nodes[i].onWorldChange) {
-		nodes[i].onWorldChange(world);
+		nodes[i].onWorldChange(activationRecord.world);
 	    }
 	}
     }
 
 
 
-    function do_redraw(world, oldWorld, toplevelNode, redraw_func, redraw_css_func, k) {
+    function do_redraw(activationRecord, world, oldWorld, toplevelNode, redraw_func, redraw_css_func, k) {
 	if (oldWorld instanceof InitialWorld) {
 	    // Simple path
 	    redraw_func(world,
@@ -654,7 +653,7 @@ var jsworld = {};
 	    		redraw_css_func(world,
 				function(css) {
 					update_css(ns, sexp2css(css));
-					update_dom(toplevelNode, ns, relations(t));
+				    update_dom(activationRecord, toplevelNode, ns, relations(t));
 					k();
 				});
 		});
@@ -709,7 +708,7 @@ var jsworld = {};
 							// clears the content of the canvas, so we do this first before
 							// attaching the dom element.
 							update_css(ns, sexp2css(newRedrawCss));
-							update_dom(toplevelNode, ns, relations(t));
+							update_dom(activationRecord, toplevelNode, ns, relations(t));
 						    } else {
 							if (oldRedrawCss !== newRedrawCss) {
 							    update_css(ns, sexp2css(newRedrawCss));
@@ -815,7 +814,7 @@ var jsworld = {};
 	    stopWhen.test(w,
 		function(stop) {
 		    if (stop) {
-			Jsworld.shutdown(worldListeners, eventDetachers);
+			Jsworld.shutdown(activationRecord, worldListeners, eventDetachers);
 		        k(w);
 	/*
 			stopWhen.receiver(world,
@@ -838,9 +837,10 @@ var jsworld = {};
 
 	// Finally, begin the big-bang.
 	copy_attribs(top, attribs);
-	change_world(function(w, k2) { k2(init_world); }, doNothing);
+	change_world(activationRecord, function(w, k2) { k2(init_world); }, doNothing);
 
 
+	return activationRecord;
     }
     Jsworld.big_bang = big_bang;
 
@@ -855,7 +855,7 @@ var jsworld = {};
 		watchId: -1,
 		onRegister: function (activationRecord, top) { 
 		    ticker.watchId = setInterval(function() { 
-			change_world(tick, doNothing); }, 
+			change_world(activationRecord, tick, doNothing); }, 
 						 delay);
 		},
 
@@ -874,7 +874,7 @@ var jsworld = {};
 	    var wrappedPress = function(e) {
 		    preventDefault(e);
 		    stopPropagation(e);
-		    change_world(function(w, k) { press(w, e, k); }, doNothing);
+		    // change_world(function(w, k) { press(w, e, k); }, doNothing);
 	    };
 	    return {
 		onRegister: function(activationRecord, top) {
@@ -901,11 +901,14 @@ var jsworld = {};
 	return function() {
 	    var drawer = {
 		_top: null,
+		_activationRecord: null,
 		_listener: function(w, oldW, k2) { 
-		    do_redraw(w, oldW, drawer._top, wrappedRedraw, redraw_css, k2); 
+		    do_redraw(drawer._activationRecord,
+			      w, oldW, drawer._top, wrappedRedraw, redraw_css, k2); 
 		},
 		onRegister: function (activationRecord, top) { 
 		    drawer._top = top;
+		    drawer._activationRecord = activationRecord;
 		    add_world_listener(worldListeners, drawer._listener);
 		},
 
@@ -1161,20 +1164,6 @@ var jsworld = {};
     Jsworld.button = button;
 
 
-//     function bidirectional_input(type, toVal, updateVal, attribs) {
-// 	var n = document.createElement('input');
-// 	n.type = type;
-// 	function onKey(w, e) {
-// 	    return updateVal(w, n.value);
-// 	}
-// 	// This established the widget->world direction
-// 	add_ev_after(n, 'keypress', onKey);
-// 	// and this establishes the world->widget.
-// 	n.onWorldChange = function(w) {n.value = toVal(w)};
-// 	return addFocusTracking(copy_attribs(n, attribs));
-//     }
-//     Jsworld.bidirectional_input = bidirectional_input;
-
 
     var preventDefault = function(event) {
 	if (event.preventDefault) {
@@ -1241,9 +1230,9 @@ var jsworld = {};
 	    }
 	    if (lastVal != n.value) {
 		lastVal = n.value;
-		change_world(function (w, k) {
-		    updateF(w, n.value, k);
-		}, doNothing);
+		//change_world(function (w, k) {
+		//    updateF(w, n.value, k);
+		//}, doNothing);
 	    }
 	},
 		    delay);
