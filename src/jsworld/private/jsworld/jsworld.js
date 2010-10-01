@@ -27,6 +27,41 @@ var jsworld = {};
 
     function InitialWorld() {}
 
+
+
+
+
+    //////////////////////////////////////////////////////////////////////
+
+    function BigBangRecord(top, world, handlerCreators, handlers, attribs) {    
+	this.top = top;
+	this.world = world;
+	this.handlers = handlers;
+	this.handlerCreators = handlerCreators;
+	this.attribs = attribs;
+	this.worldListeners = [];
+	this.eventDetachers = [];
+    };
+
+
+
+    BigBangRecord.prototype.restart = function() {
+	big_bang(this.top, this.world, this.handlerCreators, this.attribs);
+    }
+    
+    BigBangRecord.prototype.pause = function() {
+	for(var i = 0 ; i < this.handlers.length; i++) {
+	    if (this.handlers[i] instanceof StopWhenHandler) {
+		// Do nothing for now.
+	    } else {
+		this.handlers[i].onUnregister(this, top);
+	    }
+	}
+    };
+
+
+
+
     var world = new InitialWorld();
     var worldListeners = [];
     var eventDetachers = [];
@@ -35,12 +70,12 @@ var jsworld = {};
 
 
     // Close all world computations.
-    Jsworld.shutdown = function() {
+    Jsworld.shutdown = function(worldListeners, eventDetachers) {
 // 	while(runningBigBangs.length > 0) {
 // 	    var currentRecord = runningBigBangs.pop();
 // 	    if (currentRecord) { currentRecord.pause(); }
 // 	}
-	clear_running_state(worldListeners);
+	clear_running_state(worldListeners, eventDetachers);
     }
 
 
@@ -57,7 +92,7 @@ var jsworld = {};
 	}
     }
 
-    function clear_running_state(worldListeners) {
+    function clear_running_state(worldListeners, eventDetachers) {
 	world = new InitialWorld();
 	worldListeners = [];
 
@@ -743,29 +778,6 @@ var jsworld = {};
 
     //////////////////////////////////////////////////////////////////////
 
-    function BigBangRecord(top, world, handlerCreators, handlers, attribs) {    
-	this.top = top;
-	this.world = world;
-	this.handlers = handlers;
-	this.handlerCreators = handlerCreators;
-	this.attribs = attribs;
-    }
-
-    BigBangRecord.prototype.restart = function() {
-	big_bang(this.top, this.world, this.handlerCreators, this.attribs);
-    }
-    
-    BigBangRecord.prototype.pause = function() {
-	for(var i = 0 ; i < this.handlers.length; i++) {
-	    if (this.handlers[i] instanceof StopWhenHandler) {
-		// Do nothing for now.
-	    } else {
-		this.handlers[i].onUnregister(top);
-	    }
-	}
-    };
-    //////////////////////////////////////////////////////////////////////
-
     // Notes: big_bang maintains a stack of activation records; it should be possible
     // to call big_bang re-entrantly.
     function big_bang(top, init_world, handlerCreators, attribs, k) {
@@ -779,6 +791,7 @@ var jsworld = {};
 	// Create an activation record for this big-bang.
 	var activationRecord = 
 	    new BigBangRecord(top, init_world, handlerCreators, handlers, attribs);
+
 //	runningBigBangs.push(activationRecord);
 	function keepRecordUpToDate(w, oldW, k2) {
 	    activationRecord.world = w;
@@ -795,14 +808,14 @@ var jsworld = {};
 	    if (handlers[i] instanceof StopWhenHandler) {
 		stopWhen = handlers[i];
 	    } else {
-		handlers[i].onRegister(top);
+		handlers[i].onRegister(activationRecord, top);
 	    }
 	}
 	function watchForTermination(w, oldW, k2) {
 	    stopWhen.test(w,
 		function(stop) {
 		    if (stop) {
-			Jsworld.shutdown();
+			Jsworld.shutdown(worldListeners, eventDetachers);
 		        k(w);
 	/*
 			stopWhen.receiver(world,
@@ -840,13 +853,13 @@ var jsworld = {};
 	return function() {
 	    var ticker = {
 		watchId: -1,
-		onRegister: function (top) { 
+		onRegister: function (activationRecord, top) { 
 		    ticker.watchId = setInterval(function() { 
 			change_world(tick, doNothing); }, 
 						 delay);
 		},
 
-		onUnregister: function (top) {
+		onUnregister: function (activationRecord, top) {
 		    clearInterval(ticker.watchId);
 		}
 	    };
@@ -864,8 +877,11 @@ var jsworld = {};
 		    change_world(function(w, k) { press(w, e, k); }, doNothing);
 	    };
 	    return {
-		onRegister: function(top) { attachEvent(top, 'keydown', wrappedPress); },
-		onUnregister: function(top) { detachEvent(top, 'keydown', wrappedPress); }
+		onRegister: function(activationRecord, top) {
+		    attachEvent(top, 'keydown', wrappedPress); 
+		},
+		onUnregister: function(activationRecord, top) {
+		    detachEvent(top, 'keydown', wrappedPress); }
 	    };
 	}
     }
@@ -888,12 +904,12 @@ var jsworld = {};
 		_listener: function(w, oldW, k2) { 
 		    do_redraw(w, oldW, drawer._top, wrappedRedraw, redraw_css, k2); 
 		},
-		onRegister: function (top) { 
+		onRegister: function (activationRecord, top) { 
 		    drawer._top = top;
 		    add_world_listener(worldListeners, drawer._listener);
 		},
 
-		onUnregister: function (top) {
+		onUnregister: function (activationRecord, top) {
 		    remove_world_listener(worldListeners, drawer._listener);
 		}
 	    };
@@ -925,9 +941,9 @@ var jsworld = {};
 	var listener = function(world, oldW, k) { f(world, k); };
 	return function() {
 	    return { 
-		onRegister: function (top) { 
+		onRegister: function (activationRecord, top) { 
 		    add_world_listener(worldListeners, listener); },
-		onUnregister: function (top) {
+		onUnregister: function (activationRecord, top) {
 		    remove_world_listener(worldListeners, listener)}
 	    };
 	};
@@ -963,28 +979,28 @@ var jsworld = {};
     // DOM CREATION STUFFS
     //
 
-    // add_ev: node string CPS(world event -> world) -> void
-    // Attaches a world-updating handler when the world is changed.
-    function add_ev(node, event, f) {
-	var eventHandler = function(e) { change_world(function(w, k) { f(w, e, k); },
-						       doNothing); };
-	attachEvent(node, event, eventHandler);
-	eventDetachers.push(function() { detachEvent(node, event, eventHandler); });
-    }
+//     // add_ev: node string CPS(world event -> world) -> void
+//     // Attaches a world-updating handler when the world is changed.
+//     function add_ev(node, event, f, eventDetachers) {
+// 	var eventHandler = function(e) { change_world(function(w, k) { f(w, e, k); },
+// 						       doNothing); };
+// 	attachEvent(node, event, eventHandler);
+// 	eventDetachers.push(function() { detachEvent(node, event, eventHandler); });
+//     }
 
-    // add_ev_after: node string CPS(world event -> world) -> void
-    // Attaches a world-updating handler when the world is changed, but only
-    // after the fired event has finished.
-    function add_ev_after(node, event, f) {
-	var eventHandler = function(e) {
-		setTimeout(function() { change_world(function(w, k) { f(w, e, k); },
-						     doNothing); },
-			   0);
-	};
+//     // add_ev_after: node string CPS(world event -> world) -> void
+//     // Attaches a world-updating handler when the world is changed, but only
+//     // after the fired event has finished.
+//     function add_ev_after(node, event, f, eventDetachers) {
+// 	var eventHandler = function(e) {
+// 		setTimeout(function() { change_world(function(w, k) { f(w, e, k); },
+// 						     doNothing); },
+// 			   0);
+// 	};
 
-	attachEvent(node, event, eventHandler);
-	eventDetachers.push(function() { detachEvent(node, event, eventHandler); });
-    }
+// 	attachEvent(node, event, eventHandler);
+// 	eventDetachers.push(function() { detachEvent(node, event, eventHandler); });
+//     }
 
 
     function addFocusTracking(node) {
@@ -1109,9 +1125,9 @@ var jsworld = {};
 	if (attribs)
 	    for (a in attribs) {
 		if (attribs.hasOwnProperty(a)) {
-		    if (typeof attribs[a] == 'function')
-			add_ev(node, a, attribs[a]);
-		    else{
+		    if (typeof attribs[a] == 'function') {
+			//add_ev(node, a, attribs[a]);
+		    } else {
 			node[a] = attribs[a];//eval("node."+a+"='"+attribs[a]+"'");
 		    }
 		}
@@ -1139,7 +1155,7 @@ var jsworld = {};
     function button(f, attribs) {
 	var n = document.createElement('button');
 	n.onclick = function(e) {return false;};
-	add_ev(n, 'click', f);
+	//add_ev(n, 'click', f);
 	return addFocusTracking(copy_attribs(n, attribs));
     }
     Jsworld.button = button;
@@ -1213,7 +1229,7 @@ var jsworld = {};
 	    updateF(w, n.value, k);
 	}
 	// This established the widget->world direction
-	add_ev_after(n, 'keypress', onKey);
+	//add_ev_after(n, 'keypress', onKey);
 
 	// Every second, do a manual polling of the object, just in case.
 	var delay = 1000;
@@ -1243,7 +1259,7 @@ var jsworld = {};
 	    updateF(w, n.checked, k);
 	};
 	// This established the widget->world direction
-	add_ev_after(n, 'change', onCheck);
+	//	add_ev_after(n, 'change', onCheck);
 	
  	attachEvent(n, 'click', function(e) {
  	    stopPropagation(e);
@@ -1255,7 +1271,7 @@ var jsworld = {};
 
     var button_input = function(type, updateF, attribs) {
 	var n = document.createElement('button');
-	add_ev(n, 'click', function(w, e, k) { updateF(w, n.value, k); });
+	//add_ev(n, 'click', function(w, e, k) { updateF(w, n.value, k); });
 	return addFocusTracking(copy_attribs(n, attribs));
     };
 
@@ -1270,7 +1286,7 @@ var jsworld = {};
 	function monitor(w, e, k) {
 	    updateF(w, n.value, k);
 	}
-	add_ev(n, 'keypress', monitor);
+	//add_ev(n, 'keypress', monitor);
 	return stopClickPropagation(
 	    addFocusTracking(
 		copy_attribs(n, attribs)));
@@ -1292,7 +1308,7 @@ var jsworld = {};
 	    n.add(option({value: opts[i]}), null);
 	}
 	n.jsworldOpaque = true;
-	add_ev(n, 'change', f);
+	//add_ev(n, 'change', f);
 	var result = addFocusTracking(copy_attribs(n, attribs));
 	return result;
     }
