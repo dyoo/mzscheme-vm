@@ -30,34 +30,34 @@ var jsworld = {};
     var world = new InitialWorld();
     var worldListeners = [];
     var eventDetachers = [];
-    var runningBigBangs = [];
+//    var runningBigBangs = [];
 
 
 
     // Close all world computations.
     Jsworld.shutdown = function() {
-	while(runningBigBangs.length > 0) {
-	    var currentRecord = runningBigBangs.pop();
-	    if (currentRecord) { currentRecord.pause(); }
-	}
-	clear_running_state();
+// 	while(runningBigBangs.length > 0) {
+// 	    var currentRecord = runningBigBangs.pop();
+// 	    if (currentRecord) { currentRecord.pause(); }
+// 	}
+	clear_running_state(worldListeners);
     }
 
 
 
-    function add_world_listener(listener) {
+    function add_world_listener(worldListeners, listener) {
 	worldListeners.push(listener);
     }
 
 
-    function remove_world_listener(listener) {
+    function remove_world_listener(worldListeners, listener) {
 	var index = worldListeners.indexOf(listener);
 	if (index != -1) {
 	    worldListeners.splice(index, 1);
 	}
     }
 
-    function clear_running_state() {
+    function clear_running_state(worldListeners) {
 	world = new InitialWorld();
 	worldListeners = [];
 
@@ -769,23 +769,22 @@ var jsworld = {};
     // Notes: big_bang maintains a stack of activation records; it should be possible
     // to call big_bang re-entrantly.
     function big_bang(top, init_world, handlerCreators, attribs, k) {
-	// clear_running_state();
 
 	// Construct a fresh set of the handlers.
 	var handlers = map(handlerCreators, function(x) { return x();} );
-	if (runningBigBangs.length > 0) { 
-	    runningBigBangs[runningBigBangs.length - 1].pause();
-	}
+// 	if (runningBigBangs.length > 0) { 
+// 	    runningBigBangs[runningBigBangs.length - 1].pause();
+// 	}
 
 	// Create an activation record for this big-bang.
 	var activationRecord = 
 	    new BigBangRecord(top, init_world, handlerCreators, handlers, attribs);
-	runningBigBangs.push(activationRecord);
+//	runningBigBangs.push(activationRecord);
 	function keepRecordUpToDate(w, oldW, k2) {
 	    activationRecord.world = w;
 	    k2();
 	}
-	add_world_listener(keepRecordUpToDate);
+	add_world_listener(worldListeners, keepRecordUpToDate);
 
 
 
@@ -821,7 +820,7 @@ var jsworld = {};
 		    else { k2(); }
 		});
 	};
-	add_world_listener(watchForTermination);
+	add_world_listener(worldListeners, watchForTermination);
 
 
 	// Finally, begin the big-bang.
@@ -891,11 +890,11 @@ var jsworld = {};
 		},
 		onRegister: function (top) { 
 		    drawer._top = top;
-		    add_world_listener(drawer._listener);
+		    add_world_listener(worldListeners, drawer._listener);
 		},
 
 		onUnregister: function (top) {
-		    remove_world_listener(drawer._listener);
+		    remove_world_listener(worldListeners, drawer._listener);
 		}
 	    };
 	    return drawer;
@@ -927,9 +926,9 @@ var jsworld = {};
 	return function() {
 	    return { 
 		onRegister: function (top) { 
-		    add_world_listener(listener); },
+		    add_world_listener(worldListeners, listener); },
 		onUnregister: function (top) {
-		    remove_world_listener(listener)}
+		    remove_world_listener(worldListeners, listener)}
 	    };
 	};
     }
