@@ -62,24 +62,23 @@ var jsworld = {};
 
 
 
-    var worldListeners = [];
     var eventDetachers = [];
 //    var runningBigBangs = [];
 
 
 
     // Close all world computations.
-    Jsworld.shutdown = function(activationRecord, worldListeners, eventDetachers) {
+    Jsworld.shutdown = function(activationRecord, eventDetachers) {
 // 	while(runningBigBangs.length > 0) {
 // 	    var currentRecord = runningBigBangs.pop();
 // 	    if (currentRecord) { currentRecord.pause(); }
 // 	}
-	clear_running_state(worldListeners, eventDetachers);
+	clear_running_state(activationRecord.worldListeners, eventDetachers);
 
 
 
 	activationRecord.world = new InitialWorld();
-	worldListeners = [];
+	activationRecord.worldListeners = [];
 
 	for (var i = 0; i < eventDetachers.length; i++) {
 		eventDetachers[i]();
@@ -124,7 +123,7 @@ var jsworld = {};
 	};
 	
 	var changeWorldHelp2 = function() {
-		helpers.forEachK(worldListeners,
+		helpers.forEachK(activationRecord.worldListeners,
 			 function(listener, k2) { listener(activationRecord.world, originalWorld, k2); },
 			 function(e) { activationRecord.world = originalWorld; throw e; },
 			 k);
@@ -796,7 +795,7 @@ var jsworld = {};
 	    activationRecord.world = w;
 	    k2();
 	}
-	add_world_listener(worldListeners, keepRecordUpToDate);
+	add_world_listener(activationRecord.worldListeners, keepRecordUpToDate);
 
 
 
@@ -814,7 +813,7 @@ var jsworld = {};
 	    stopWhen.test(w,
 		function(stop) {
 		    if (stop) {
-			Jsworld.shutdown(activationRecord, worldListeners, eventDetachers);
+			Jsworld.shutdown(activationRecord, eventDetachers);
 		        k(w);
 	/*
 			stopWhen.receiver(world,
@@ -832,7 +831,7 @@ var jsworld = {};
 		    else { k2(); }
 		});
 	};
-	add_world_listener(worldListeners, watchForTermination);
+	add_world_listener(activationRecord.worldListeners, watchForTermination);
 
 
 	// Finally, begin the big-bang.
@@ -909,11 +908,11 @@ var jsworld = {};
 		onRegister: function (activationRecord, top) { 
 		    drawer._top = top;
 		    drawer._activationRecord = activationRecord;
-		    add_world_listener(worldListeners, drawer._listener);
+		    add_world_listener(activationRecord.worldListeners, drawer._listener);
 		},
 
 		onUnregister: function (activationRecord, top) {
-		    remove_world_listener(worldListeners, drawer._listener);
+		    remove_world_listener(activationRecord.worldListeners, drawer._listener);
 		}
 	    };
 	    return drawer;
@@ -945,9 +944,9 @@ var jsworld = {};
 	return function() {
 	    return { 
 		onRegister: function (activationRecord, top) { 
-		    add_world_listener(worldListeners, listener); },
+		    add_world_listener(activationRecord.worldListeners, listener); },
 		onUnregister: function (activationRecord, top) {
-		    remove_world_listener(worldListeners, listener)}
+		    remove_world_listener(activationRecord.worldListeners, listener)}
 	    };
 	};
     }
