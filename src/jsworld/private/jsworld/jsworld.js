@@ -62,28 +62,28 @@ var jsworld = {};
 
 
 
-    var eventDetachers = [];
 //    var runningBigBangs = [];
 
 
 
     // Close all world computations.
-    Jsworld.shutdown = function(activationRecord, eventDetachers) {
+    Jsworld.shutdown = function(activationRecord) {
 // 	while(runningBigBangs.length > 0) {
 // 	    var currentRecord = runningBigBangs.pop();
 // 	    if (currentRecord) { currentRecord.pause(); }
 // 	}
-	clear_running_state(activationRecord.worldListeners, eventDetachers);
+	clear_running_state(activationRecord.worldListeners, 
+			    activationRecord.eventDetachers);
 
 
 
 	activationRecord.world = new InitialWorld();
 	activationRecord.worldListeners = [];
 
-	for (var i = 0; i < eventDetachers.length; i++) {
-		eventDetachers[i]();
+	for (var i = 0; i < activationRecord.eventDetachers.length; i++) {
+		activationRecord.eventDetachers[i]();
 	}
-	eventDetachers = [];
+	activationRecord.eventDetachers = [];
     }
 
 
@@ -813,7 +813,7 @@ var jsworld = {};
 	    stopWhen.test(w,
 		function(stop) {
 		    if (stop) {
-			Jsworld.shutdown(activationRecord, eventDetachers);
+			Jsworld.shutdown(activationRecord);
 		        k(w);
 	/*
 			stopWhen.receiver(world,
