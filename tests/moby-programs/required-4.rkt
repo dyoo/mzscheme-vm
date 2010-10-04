@@ -1,4 +1,4 @@
-#lang s-exp "../../src/lang/moby-lang.ss"
+#lang s-exp "../../src/lang/base.ss"
 
 (provide (all-defined-out))
 

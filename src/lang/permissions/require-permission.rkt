@@ -1,4 +1,4 @@
-#lang s-exp "../moby-lang.rkt"
+#lang s-exp "../base.rkt"
 
 (require (for-syntax racket/base)
          (for-syntax "record.rkt"))
