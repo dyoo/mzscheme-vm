@@ -1,4 +1,4 @@
-#lang s-exp "../../src/lang/moby-lang.rkt"
+#lang s-exp "../../src/lang/base.rkt"
 (require "testing.rkt")
 
 (Section 'basic)
