@@ -1,10 +1,14 @@
 #lang racket/base
 
 (require file/zip
-         racket/file)
+         racket/file
+         racket/contract)
+
+(provide/contract
+ [call-with-temporary-directory->zip (string? (path-string? . -> . any) . -> . (values input-port? any/c))])
 
 
-;; call-with-temporary-directory->zip: string (path -> X) -> (values output-port X)
+;; call-with-temporary-directory->zip: string (path -> X) -> (values input-port X)
 (define (call-with-temporary-directory->zip dirname with-path-f)  
   (let* ([tempdir
           (make-temporary-file "mztmp~a" 'directory #f)]

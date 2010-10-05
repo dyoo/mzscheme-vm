@@ -3,8 +3,12 @@
 (require racket/gui/base
          racket/unit
          racket/class
-         racket/path
-         drracket/tool)
+         racket/port
+         framework
+         drracket/tool
+         
+         "create-javascript-package.rkt"
+         "zip-temp-dir.rkt")
 
 ;; This tool adds a "Create Javascript Package" button to the Racket menu.
 
@@ -36,8 +40,10 @@
                 get-definitions-text)
     
        
-       ;; create-javascript-package: menu-item% control-event% -> void
-       (define (create-javascript-package a-menu-item a-control-event)
+       ;; click!: menu-item% control-event% -> void
+       ;; On selection, prompts for a output zip file name, and then writes a zip
+       ;; with the contents.
+       (define (click! a-menu-item a-control-event)
          (let* ([a-text (get-definitions-text)]
                 [a-filename (send a-text get-filename)])
            (cond
@@ -49,9 +55,24 @@
               (message-box "Create Javascript Package"
                            "Your program has changed since your last save or load; please save before packaging.")]
              [else
-              (printf "Asked to generate package for ~s\n"
+              #;(printf "Asked to generate package for ~s\n"
                       (normalize-path a-filename))
-              ])))
+              
+              (let ([output-file
+                     (finder:put-file "package.zip"
+                                      #f
+                                      #f
+                                      "Where should the Javascript package be written to?")])
+                (let-values ([(ip result)
+                              (call-with-temporary-directory->zip
+                               "package"
+                               (lambda (output-path)                                 
+                                 (create-javascript-package a-filename
+                                                            output-path)))])
+                  (call-with-output-file output-file
+                    (lambda (op) (copy-port ip op))
+                    #:exists 'replace)))])))
+
                   
        
        
@@ -62,4 +83,4 @@
          (new menu-item% 
               [parent racket-menu]
               [label "Create Javascript Package"]
-              [callback create-javascript-package]))))))
+              [callback click!]))))))
