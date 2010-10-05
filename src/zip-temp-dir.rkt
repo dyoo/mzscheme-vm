@@ -3,8 +3,6 @@
 (require file/zip
          racket/file)
 
-(zip-verbose #t)
-
 
 ;; call-with-temporary-directory->zip: string (path -> X) -> (values output-port X)
 (define (call-with-temporary-directory->zip dirname with-path-f)  
@@ -22,7 +20,7 @@
        (let ([result (with-path-f workdir)])
          (let-values ([(inp outp) (make-pipe)])
            (parameterize ([current-directory tempdir])
-             (zip->output (list workdir) outp)
+             (zip->output (pathlist-closure (list dirname)) outp)
              (close-output-port outp)
              (values inp result)))))
      
