@@ -22,8 +22,13 @@
 ;; Pull in the image primitives too.
 (require "../image/image.rkt")
 (provide (all-from-out "../image/image.rkt"))
+
 ;; For compatibility, re-exports image-url as open-image-url.
 (define open-image-url image-url)
 (provide open-image-url)
 
+
+;; re-export jsworld
+(require "../jsworld/jsworld.rkt")
+(provide (all-from-out "../jsworld/jsworld.rkt"))
 

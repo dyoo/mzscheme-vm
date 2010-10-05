@@ -63,12 +63,33 @@
                                       #f
                                       #f
                                       "Where should the Javascript package be written to?")])
-                (let-values ([(ip result)
+                (let-values ([(ip dont-care)
                               (call-with-temporary-directory->zip
                                "package"
                                (lambda (output-path)                                 
+                                 ;; FIXME: handle error conditions!  Bad things 
+                                 ;; might happen here!
                                  (create-javascript-package a-filename
-                                                            output-path)))])
+                                                              output-path)
+                                   
+                                 #;(let ([output-dialog (new dialog% 
+                                                           [label "Creating Javascript package"]
+                                                           [width 300]
+                                                           [height 300])])
+                                   
+                                   
+                                   (send output-dialog show #t)
+                                   
+                                   (new message% 
+                                        [label "Package is being built.  Please wait."]
+                                        [parent output-dialog])
+                                   
+
+
+                                   (new message% 
+                                        [label "Package constructed!"]
+                                        [parent output-dialog])
+                                   )))])
                   (call-with-output-file output-file
                     (lambda (op) (copy-port ip op))
                     #:exists 'replace)))])))
