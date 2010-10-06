@@ -43,7 +43,7 @@
      (mapset collect forms)]
     [(struct splice (forms))
      (mapset collect forms)]
-    [(struct mod (name self-od-indx prefix provides requires body syntax-body unexported max-let-depth dummy lang-info internal-context))
+    [(struct mod (name srcname self-modidx prefix provides requires body syntax-body unexported max-let-depth dummy lang-info internal-context))
      (mapset collect body)]
     [(struct lam (name flags num-params param-types rest? closure-map closure-types max-let-depth body))
      (union '(lam)
@@ -61,7 +61,7 @@
     [(struct case-lam (name clauses))
      (union '(case-lam)
              (mapset collect clauses))]
-    [(struct let-one (rhs body flonum?))
+    [(struct let-one (rhs body flonum? unused?))
      (union '(let-one)
             (collect body))]
     [(struct let-void (count boxes? body))

@@ -1,5 +1,6 @@
 #lang racket/base
 (require "create-javascript-package.rkt"
+         "misc.rkt"
          racket/path
          racket/cmdline)
 
@@ -24,13 +25,6 @@
       (make-directory new-directory-path))
     new-directory-path))
 
-;; remove-filename-extension: path-string -> path-string
-;; Removes the filename extension portion.
-(define (remove-filename-extension a-path)
-  (let ([p (if (path? a-path)
-               (path->string a-path)
-               a-path)])
-    (regexp-replace #px"\\.\\w+$" p "")))
 
 
 #;(create-javascript-package "../tests/moby-programs/require.rkt")
