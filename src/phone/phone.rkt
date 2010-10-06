@@ -1,6 +1,6 @@
 #lang s-exp "../lang/base.rkt"
 
-(require "../lang/permission/require-permission.rkt")
+(require "../lang/permissions/require-permission.rkt")
 
 (provide on-acceleration!
 	 on-acceleration
@@ -52,7 +52,7 @@
                          (let ([x (prim-js->scheme js-x)]
                                [y (prim-js->scheme js-y)]
                                [z (prim-js->scheme js-z)])
-                           (effect-updater w x y z)))
+                           (world-updater w x y z)))
                        (lambda (w e)
                          (error 'on-acceleration "an error occured with the accelerometer")))))
 

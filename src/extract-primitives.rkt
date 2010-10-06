@@ -85,6 +85,7 @@
 (define (extract-mod a-mod)
   (match a-mod
     [(struct mod (name
+                  srcname
                   self-modidx
                   prefix
                   provides
@@ -285,7 +286,7 @@
 
 (define (extract-let-one a-let-one)
   (match a-let-one
-    [(struct let-one (rhs body flonum?))
+    [(struct let-one (rhs body flonum? unused?))
      (append (match rhs
                [(? expr?)
                 (extract-expr rhs)]
