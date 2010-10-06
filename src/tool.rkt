@@ -7,6 +7,7 @@
          framework
          drracket/tool
          
+         "misc.rkt"
          "create-javascript-package.rkt"
          "zip-temp-dir.rkt"
          "notification-window.rkt")
@@ -15,6 +16,22 @@
 
 
 (provide tool@)
+
+
+
+;; make-reasonable-package-name: path -> string
+;; Tries to pick a reasonable default for the zip file name.
+(define (make-reasonable-package-name a-path)
+  (let-values ([(base name dir?)
+                (split-path a-path)])
+    (string-append (remove-filename-extension name)
+                   ".zip")))
+
+;; make-package-subdirectory-name: path -> path
+(define (make-package-subdirectory-name a-path)
+  (let-values ([(base name dir?)
+                (split-path a-path)])
+    (remove-filename-extension name)))
 
 
 
@@ -56,7 +73,7 @@
                            "Your program has changed since your last save or load; please save before packaging.")]
              [else
               (let ([output-file
-                     (finder:put-file "package.zip"
+                     (finder:put-file (make-reasonable-package-name a-filename)
                                       #f
                                       #f
                                       "Where should the Javascript package be written to?")])
@@ -64,21 +81,29 @@
                   [(eq? output-file #f)
                    (void)]
                   [else
-                   (let ([notify-port (make-notification-window #:title "Creating Javascript Package")])
-                     (let-values ([(ip dont-care)
-                                   (call-with-temporary-directory->zip
-                                    "package"
-                                    (lambda (output-path)                                 
-                                      ;; FIXME: handle error conditions!  Bad things 
-                                      ;; might happen here!
-                                      (fprintf notify-port "Building zip package\n")
-                                      (create-javascript-package a-filename
-                                                                 output-path)))])
-                       (call-with-output-file output-file
-                         (lambda (op) 
-                           (fprintf notify-port "Writing package to file\n")
-                           (copy-port ip op))
-                         #:exists 'replace)))]))])))
+                   (let ([notify-port 
+                          (make-notification-window 
+                           #:title "Creating Javascript Package")])
+                     (with-handlers
+                         ([exn:fail? 
+                           (lambda (exn)
+                             (fprintf notify-port
+                                      "An internal error occurred during compilation: ~a"
+                                      (exn-message exn))
+                             (raise exn))])
+                       (let-values ([(ip dont-care)
+                                     (call-with-temporary-directory->zip
+                                      (make-package-subdirectory-name output-file)
+                                      (lambda (output-path)                                 
+                                        (fprintf notify-port "Building zip package...\n")
+                                        (create-javascript-package a-filename
+                                                                   output-path)))])
+                         (call-with-output-file output-file
+                           (lambda (op) 
+                             (fprintf notify-port "Writing package to file...\n")
+                             (copy-port ip op))
+                           #:exists 'replace)
+                         (fprintf notify-port "Done!"))))]))])))
        
        
        (super-new)
