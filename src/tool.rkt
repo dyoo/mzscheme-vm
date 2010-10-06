@@ -76,7 +76,8 @@
                      (finder:put-file (make-reasonable-package-name a-filename)
                                       #f
                                       #f
-                                      "Where should the Javascript package be written to?")])
+                                      "Where should the Javascript package be written to?"
+                                      )])
                 (cond
                   [(eq? output-file #f)
                    (void)]
@@ -95,12 +96,12 @@
                                      (call-with-temporary-directory->zip
                                       (make-package-subdirectory-name output-file)
                                       (lambda (output-path)                                 
-                                        (fprintf notify-port "Building zip package...\n")
+                                        (fprintf notify-port "Compiling Javascript...\n")
                                         (create-javascript-package a-filename
                                                                    output-path)))])
                          (call-with-output-file output-file
                            (lambda (op) 
-                             (fprintf notify-port "Writing package to file...\n")
+                             (fprintf notify-port "Writing package to file ~a...\n" output-file)
                              (copy-port ip op))
                            #:exists 'replace)
                          (fprintf notify-port "Done!"))))]))])))
