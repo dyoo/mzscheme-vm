@@ -56,7 +56,7 @@ Running examples:
 
     It's a simple program that should display 42.  Let's compile it.
 
-    $ mzscheme ../../src/moby.ss 42.ss
+    $ racket ../../src/moby.ss 42.ss
 
     This should produce a file, 42.js, which we can now run.
 
