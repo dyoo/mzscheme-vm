@@ -8,7 +8,8 @@
          drracket/tool
          
          "create-javascript-package.rkt"
-         "zip-temp-dir.rkt")
+         "zip-temp-dir.rkt"
+         "notification-window.rkt")
 
 ;; This tool adds a "Create Javascript Package" button to the Racket menu.
 
@@ -49,52 +50,35 @@
            (cond
              [(not (path-string? a-filename))
               (message-box "Create Javascript Package"
-                           "Your program needs to be saved first before packaging.")
-              ]
+                           "Your program needs to be saved first before packaging.")]
              [(send a-text is-modified?)
               (message-box "Create Javascript Package"
                            "Your program has changed since your last save or load; please save before packaging.")]
              [else
-              #;(printf "Asked to generate package for ~s\n"
-                      (normalize-path a-filename))
-              
               (let ([output-file
                      (finder:put-file "package.zip"
                                       #f
                                       #f
                                       "Where should the Javascript package be written to?")])
-                (let-values ([(ip dont-care)
-                              (call-with-temporary-directory->zip
-                               "package"
-                               (lambda (output-path)                                 
-                                 ;; FIXME: handle error conditions!  Bad things 
-                                 ;; might happen here!
-                                 (create-javascript-package a-filename
-                                                              output-path)
-                                   
-                                 #;(let ([output-dialog (new dialog% 
-                                                           [label "Creating Javascript package"]
-                                                           [width 300]
-                                                           [height 300])])
-                                   
-                                   
-                                   (send output-dialog show #t)
-                                   
-                                   (new message% 
-                                        [label "Package is being built.  Please wait."]
-                                        [parent output-dialog])
-                                   
-
-
-                                   (new message% 
-                                        [label "Package constructed!"]
-                                        [parent output-dialog])
-                                   )))])
-                  (call-with-output-file output-file
-                    (lambda (op) (copy-port ip op))
-                    #:exists 'replace)))])))
-
-                  
+                (cond
+                  [(eq? output-file #f)
+                   (void)]
+                  [else
+                   (let ([notify-port (make-notification-window #:title "Creating Javascript Package")])
+                     (let-values ([(ip dont-care)
+                                   (call-with-temporary-directory->zip
+                                    "package"
+                                    (lambda (output-path)                                 
+                                      ;; FIXME: handle error conditions!  Bad things 
+                                      ;; might happen here!
+                                      (fprintf notify-port "Building zip package\n")
+                                      (create-javascript-package a-filename
+                                                                 output-path)))])
+                       (call-with-output-file output-file
+                         (lambda (op) 
+                           (fprintf notify-port "Writing package to file\n")
+                           (copy-port ip op))
+                         #:exists 'replace)))]))])))
        
        
        (super-new)

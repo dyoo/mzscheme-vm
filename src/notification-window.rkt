@@ -1,7 +1,11 @@
 #lang racket/base
 (require racket/gui/base
-         racket/class)
+         racket/class
+         racket/contract)
 
+;; Creates a window that we can write unbuffered output to.
+(provide/contract [make-notification-window
+                   (#:title string? . -> . output-port?)])
 
 ;; make-notification-window: #:title string -> output-port
 (define (make-notification-window #:title title)
