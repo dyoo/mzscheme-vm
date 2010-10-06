@@ -1,4 +1,4 @@
-#lang s-exp "moby-lang.rkt"
+#lang s-exp "base.rkt"
 
 ;; This is the default language module for WeScheme programs.
 ;;
@@ -7,9 +7,9 @@
 ;; doing things with require.
 
 
-(provide (except-out (all-from-out "moby-lang.rkt")
+(provide (except-out (all-from-out "base.rkt")
                      
-                     ;; We provide everything from moby-lang except
+                     ;; We provide everything from base except
                      ;; syntax stuff, because it's not quite safe
                      ;; to do arbitrary server-side compilation.
                      define-syntax
@@ -22,8 +22,13 @@
 ;; Pull in the image primitives too.
 (require "../image/image.rkt")
 (provide (all-from-out "../image/image.rkt"))
+
 ;; For compatibility, re-exports image-url as open-image-url.
 (define open-image-url image-url)
 (provide open-image-url)
 
+
+;; re-export jsworld
+(require "../jsworld/jsworld.rkt")
+(provide (all-from-out "../jsworld/jsworld.rkt"))
 

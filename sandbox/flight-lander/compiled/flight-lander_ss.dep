@@ -1,1 +1,1 @@
-("4.2.5" (collects #"lang" #"htdp-beginner.ss") (collects #"teachpack" #"htdp" #"world.ss") (collects #"lang" #"htdp-beginner-reader.ss"))
+("5.0.1" ("4c1faf446adc34a40721034745478672eefa2202" . "2e1b9cbcf2ff894f00588179acef61b2aa7330f2") (collects #"lang" #"htdp-beginner.rkt") (collects #"teachpack" #"htdp" #"world.rkt") (collects #"lang" #"htdp-beginner-reader.rkt"))
