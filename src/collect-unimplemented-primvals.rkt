@@ -2,13 +2,14 @@
 (require racket/match
          racket/bool
          racket/list
+         racket/contract
          "jsexp.rkt"
          "get-implemented-primitives.rkt")
 
 (provide/contract [collect-unimplemented-primvals (jsexp? . -> . (listof symbol?))])
 
 
-(define known-primvals (make-ht))
+(define known-primvals (make-hash))
 (for ([name primitive-names])
   (hash-set! known-primvals name #t))
 
@@ -26,13 +27,14 @@
 ;; primvals-in-jsexp: jsexp -> (listof symbol)
 ;; Produces a list of the primitives used in the program.
 (define (primvals-in-jsexp a-jsexp)
-  (let ([seen-primvals (make-ht)])
-    (let walk ()
+  (let ([seen-primvals (make-hash)])
+    (let walk ([a-jsexp a-jsexp])
       (match a-jsexp
         [(struct ht (name pairs))
          (cond
            [(symbol=? name 'primval)
-            (let ([prim-sym (second (first pairs))])
+            (let ([prim-sym 
+                   (string->symbol (lit-v (second (first pairs))))])
               (hash-set! seen-primvals prim-sym #t))]
            [else
             (for ([p pairs])
