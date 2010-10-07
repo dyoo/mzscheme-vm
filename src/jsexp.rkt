@@ -1,7 +1,7 @@
 #lang racket/base
 (require racket/contract)
 
-;; a jsexp is either a ht, a vec, or a datum.
+;; a jsexp is either a ht, a vec, an int, or a datum.
 (define-struct ht (name key-values) #:transparent)
 (define-struct vec (items) #:transparent)
 (define-struct int (v) #:transparent)

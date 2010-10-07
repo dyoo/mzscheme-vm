@@ -10,7 +10,8 @@
          "misc.rkt"
          "create-javascript-package.rkt"
          "zip-temp-dir.rkt"
-         "notification-window.rkt")
+         "notification-window.rkt"
+         "log-port.rkt")
 
 ;; This tool adds a "Create Javascript Package" button to the Racket menu.
 
@@ -85,26 +86,27 @@
                    (let ([notify-port 
                           (make-notification-window 
                            #:title "Creating Javascript Package")])
-                     (with-handlers
-                         ([exn:fail? 
-                           (lambda (exn)
-                             (fprintf notify-port
-                                      "An internal error occurred during compilation: ~a"
-                                      (exn-message exn))
-                             (raise exn))])
-                       (let-values ([(ip dont-care)
-                                     (call-with-temporary-directory->zip
-                                      (make-package-subdirectory-name output-file)
-                                      (lambda (output-path)                                 
-                                        (fprintf notify-port "Compiling Javascript...\n")
-                                        (create-javascript-package a-filename
-                                                                   output-path)))])
-                         (call-with-output-file output-file
-                           (lambda (op) 
-                             (fprintf notify-port "Writing package to file ~a...\n" output-file)
-                             (copy-port ip op))
-                           #:exists 'replace)
-                         (fprintf notify-port "Done!"))))]))])))
+                     (parameterize ([current-log-port notify-port])
+                       (with-handlers
+                           ([exn:fail? 
+                             (lambda (exn)
+                               (fprintf notify-port
+                                        "An internal error occurred during compilation: ~a\n"
+                                        (exn-message exn))
+                               (raise exn))])
+                         (let-values ([(ip dont-care)
+                                       (call-with-temporary-directory->zip
+                                        (make-package-subdirectory-name output-file)
+                                        (lambda (output-path)                                 
+                                          (fprintf notify-port "Compiling Javascript...\n")
+                                          (create-javascript-package a-filename
+                                                                     output-path)))])
+                           (call-with-output-file output-file
+                             (lambda (op) 
+                               (fprintf notify-port "Writing package to file ~a...\n" output-file)
+                               (copy-port ip op))
+                             #:exists 'replace)
+                           (fprintf notify-port "Done!\n")))))]))])))
        
        
        (super-new)

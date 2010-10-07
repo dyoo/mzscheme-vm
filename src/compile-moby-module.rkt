@@ -5,6 +5,7 @@
          "sexp.rkt"
          "translate-bytecode-structs.rkt"
          "module-record.rkt"
+         "collect-unimplemented-primvals.rkt"
          (prefix-in permissions: "lang/permissions/query.rkt")
          (prefix-in js-impl: "lang/js-impl/query.rkt")
          (prefix-in internal: compiler/zo-parse)
@@ -86,15 +87,20 @@
                                      (munge-resolved-module-path-to-symbol a-path main-module-path)) 
                                    (filter (negate known-hardcoded-module-path?) 
                                            (module-neighbors a-path)))
+                              '()
                               '()))]
     [else
      (let* ([translated-compilation-top
              (lookup&parse a-path)]
+            [translated-jsexp
+             (translate-top 
+              (rewrite-module-locations/compilation-top translated-compilation-top
+                                                        a-path
+                                                        main-module-path))]
             [translated-program
-             (jsexp->js (translate-top 
-                         (rewrite-module-locations/compilation-top translated-compilation-top
-                                                   a-path
-                                                   main-module-path)))]
+             (jsexp->js translated-jsexp)]
+            [unimplemented-primvals
+             (collect-unimplemented-primvals translated-jsexp)]
             [permissions
              (permissions:query `(file ,(path->string a-path)))]
             [provides
@@ -107,7 +113,8 @@
                                   (munge-resolved-module-path-to-symbol a-path main-module-path)) 
                                 (filter (negate known-hardcoded-module-path?)
                                         (module-neighbors a-path)))
-                           permissions))]))
+                           permissions
+                           unimplemented-primvals))]))
 
 ;; negate: (X -> boolean) -> (X -> boolean)
 ;; Negates a predicate.

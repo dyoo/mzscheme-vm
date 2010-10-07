@@ -5,6 +5,8 @@
          "compile-moby-module.rkt"
          "module-record.rkt"
          "private/json.rkt"
+         "log-port.rkt"
+         racket/list
          racket/path
          racket/contract)
 
@@ -50,6 +52,11 @@
 
 ;; encode-module-record: module-record path -> string
 (define (encode-module-record r base-path)
+  (when (not (empty? (module-record-unimplemented-primval-references r)))
+    (log-warning 
+     (format "WARNING: while compiling ~a, we ran across the following problem:\nThe following primitives are not yet implemented in the Javascript runtime:\n~a\nThe resulting Javascript will likely not evaluate.\n"
+             (module-record-path r)
+             (module-record-unimplemented-primval-references r))))
   (cond
     [(js-module-record? r)
      (format "{ name: ~s, provides : ~a, requires: ~a, jsImplementation : (function(STATE, EXPORTS){ (function() { ~a })() }), permissions: ~a }"

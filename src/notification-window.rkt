@@ -3,7 +3,7 @@
          racket/class
          racket/contract)
 
-;; Creates a window that we can write unbuffered output to.
+;; Creates a window that we can write to.
 (provide/contract [make-notification-window
                    (#:title string? . -> . output-port?)])
 
@@ -15,18 +15,24 @@
     (define c (new editor-canvas%
                    [parent f]
                    [editor t]))
+    (new button% 
+         [label "Close"] 
+         [parent f]
+         [callback (lambda (b c) 
+                     (send f show #f))]) 
     (send f show #t)
     (send t lock #t)
     (let-values ([(ip op) (make-pipe)])
       (thread (lambda ()
                 (let loop ()
-                  (let ([ch (read-char ip)])
-                    (cond [(eof-object? ch)
+                  (let ([line (read-line ip)])
+                    (cond [(eof-object? line)
                            (void)]
                           [else
-                           (queue-callback (lambda () 
+                           (queue-callback (lambda ()
                                              (send t lock #f)
-                                             (send t insert (string ch))
+                                             (send t insert line)
+                                             (send t insert "\n")
                                              (send t lock #t)))
                            (loop)])))))
       op)))
