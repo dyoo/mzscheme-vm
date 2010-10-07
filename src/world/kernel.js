@@ -183,7 +183,7 @@ world.Kernel.bigBang = function(width, height, aWorld, handlers) {
 
     if (config.lookup('onKey')) {
 	newWindow.onkeydown = function(e) {
-	    world.stimuli.onKey(e);
+	    world.Kernel.stimuli.onKey(e);
 	}
     }
 
@@ -236,7 +236,7 @@ var scheduleTimerTick = function(window, config) {
 		timerInterval = false;
 	    }
 	    else {
-		world.stimuli.onTick();
+		world.Kernel.stimuli.onTick();
 	    }
 	},
 	config.lookup('tickDelay'));
@@ -1253,6 +1253,31 @@ colorDb.put("BLACK", types.color(0, 0, 0));
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 ///////////////////////////////////////////////////////////////
 // Exports
 
@@ -1308,3 +1333,550 @@ world.Kernel.isOverlayImage = function(x) { return x instanceof OverlayImage; };
 world.Kernel.isTextImage = function(x) { return x instanceof TextImage; };
 world.Kernel.isFileImage = function(x) { return x instanceof FileImage; };
 
+
+
+
+
+
+
+//////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////
+
+
+// Feeds stimuli inputs into the world.  The functions here
+// are responsible for converting to Scheme values.
+//
+// NOTE and WARNING: make sure to really do the coersions, even for
+// strings.  Bad things happen otherwise, as in the sms stuff, where
+// we're getting string-like values that aren't actually strings.
+
+
+
+world.stimuli = {};
+world.Kernel.stimuli = world.stimuli;
+
+
+(function() {
+    var handlers = [];
+
+    var doNothing = function() {};
+
+
+    var StimuliHandler = function(config, caller, restarter) {
+	this.config = config;
+	this.caller = caller;
+	this.restarter = restarter;
+	handlers.push(this);
+    };
+
+    //    StimuliHandler.prototype.failHandler = function(e) {
+    //	this.onShutdown();
+    //    	this.restarter(e);
+    //    };	
+
+    // doStimuli: CPS( (world -> effect) (world -> world) -> void )
+    //
+    // Processes a stimuli by compute the effect and applying it, and
+    // computing a new world to replace the old.
+    StimuliHandler.prototype.doStimuli = function(computeEffectF, computeWorldF, restArgs, k) {
+	var effectUpdaters = [];
+	var that = this;
+	try {
+	    that.change(function(w, k2) {
+		var args = [w].concat(restArgs);
+		var doStimuliHelper = function() {
+		    if (computeWorldF) {
+			that.caller(computeWorldF, args, k2);
+		    } else {
+			k2(w);
+		    }
+		};
+		doStimuliHelper();
+	    }, k);
+ 	    // if (computeEffectF) {
+	    // 		    that.caller(computeEffectF, [args],
+	    // 			    function(effect) {
+	    // 			    	effectUpdaters = applyEffect(effect);
+	    // 				doStimuliHelper();
+	    // 			    },
+	    //	    		    this.failHandler);
+	    // 		}
+	    // 		else { doStimuliHelper(); }
+	    // 	    },
+	    // 	    function() {
+	    // 	    	helpers.forEachK(effectUpdaters,
+	    // 				 function(effect, k2) { that.change(effect, k2); },
+	    // 				 function(e) { throw e; },
+	    // 				 k);
+	    // 	    });
+	} catch (e) { 
+	    //		if (console && console.log && e.stack) {
+	    //			console.log(e.stack);
+	    //		}
+	    this.onShutdown();
+	}
+    }
+
+
+    // Orientation change
+    // args: [azimuth, pitch, roll]
+    StimuliHandler.prototype.onTilt = function(args, k) {
+	var onTilt = this.lookup("onTilt");
+	var onTiltEffect = this.lookup("onTiltEffect");
+	this.doStimuli(onTiltEffect, onTilt, helpers.map(flt, args), k);
+    };
+
+
+    // Accelerations
+    // args: [x, y, z]
+    StimuliHandler.prototype.onAcceleration = function(args, k) {
+	var onAcceleration = this.lookup('onAcceleration');
+	var onAccelerationEffect = this.lookup('onAccelerationEffect');
+	this.doStimuli(onAccelerationEffect, onAcceleration, helpers.map(flt, args), k);
+    };
+
+
+    // Shakes
+    // args: []
+    StimuliHandler.prototype.onShake = function(args, k) {
+	var onShake = this.lookup('onShake');
+	var onShakeEffect = this.lookup('onShakeEffect');
+	this.doStimuli(onShakeEffect, onShake, [], k);
+    };
+
+
+    // Sms receiving
+    // args: [sender, message]
+    StimuliHandler.prototype.onSmsReceive = function(args, k) {
+	var onSmsReceive = this.lookup('onSmsReceive');
+	var onSmsReceiveEffect = this.lookup('onSmsReceiveEffect');
+	// IMPORTANT: must coerse to string by using x+"".  Do not use
+	// toString(): it's not safe.
+	this.doStimuli(onSmsReceiveEffect, onSmsReceive, [args[0]+"", args[1]+""], k);
+    };
+
+
+    // Locations
+    // args: [lat, lng]
+    StimuliHandler.prototype.onLocation = function(args, k) {
+	var onLocationChange = this.lookup('onLocationChange');
+	var onLocationChangeEffect = this.lookup('onLocationChangeEffect');
+	this.doStimuli(onLocationChangeEffect, onLocationChange, helpers.map(flt, args), k);
+    };
+
+
+
+    // Keystrokes
+    // args: [e]
+    StimuliHandler.prototype.onKey = function(args, k) {
+	// getKeyCodeName: keyEvent -> String
+	// Given an event, try to get the name of the key.
+	var getKeyCodeName = function(e) {
+	    var code = e.charCode || e.keyCode;
+	    var keyname;
+	    switch(code) {
+	    case 16: keyname = "shift"; break;
+	    case 17: keyname = "control"; break;
+	    case 19: keyname = "pause"; break;
+	    case 27: keyname = "escape"; break;
+	    case 33: keyname = "prior"; break;
+	    case 34: keyname = "next"; break;
+	    case 35: keyname = "end"; break;
+	    case 36: keyname = "home"; break;
+	    case 37: keyname = "left"; break;
+	    case 38: keyname = "up"; break;
+	    case 39: keyname = "right"; break;
+	    case 40: keyname = "down"; break;
+	    case 42: keyname = "print"; break;
+	    case 45: keyname = "insert"; break;
+	    case 46: keyname = String.fromCharCode(127); break;
+	    case 106: keyname = "*"; break;
+	    case 107: keyname = "+"; break;
+	    case 109: keyname = "-"; break;
+	    case 110: keyname = "."; break;
+	    case 111: keyname = "/"; break;
+	    case 144: keyname = "numlock"; break;
+	    case 145: keyname = "scroll"; break;
+	    case 186: keyname = ";"; break;
+	    case 187: keyname = "="; break;
+	    case 188: keyname = ","; break;
+	    case 189: keyname = "-"; break;
+	    case 190: keyname = "."; break;
+	    case 191: keyname = "/"; break;
+	    case 192: keyname = "`"; break;
+	    case 219: keyname = "["; break;
+	    case 220: keyname = "\\"; break;
+	    case 221: keyname = "]"; break;
+	    case 222: keyname = "'"; break;
+	    default: if (code >= 96 && code <= 105) {
+		keyname = (code - 96).toString();
+	    }
+		else if (code >= 112 && code <= 123) {
+		    keyname = "f" + (code - 111);
+		}
+		else {
+		    keyname = String.fromCharCode(code).toLowerCase();
+		}
+		break;
+	    }
+	    return keyname;
+	}
+	var keyname = getKeyCodeName(args[0]);
+	var onKey = this.lookup('onKey');
+	var onKeyEffect = this.lookup('onKeyEffect');
+	this.doStimuli(onKeyEffect, onKey, [keyname], k);
+    };
+
+
+
+    //    // Time ticks
+    //    // args: []
+    //    StimuliHandler.prototype.onTick = function(args, k) {
+    //	var onTick = this.lookup('onTick');
+    //	var onTickEffect = this.lookup('onTickEffect');
+    //	this.doStimuli(onTickEffect, onTick, [], k);
+    //    };
+
+
+
+    // Announcements
+    // args: [eventName, vals]
+    StimuliHandler.prototype.onAnnounce = function(args, k) {
+	var vals = args[1];
+	var valsList = types.EMPTY;
+	for (var i = 0; i < vals.length; i++) {
+	    valsList = types.cons(vals[vals.length - i - 1], valsList);
+	}
+
+	var onAnnounce = this.lookup('onAnnounce');
+	var onAnnounceEffect = this.lookup('onAnnounceEffect');	
+	this.doStimuli(onAnnounce, onAnnounceEffect, [args[0], valsList], k);
+    };
+
+
+
+    // The shutdown stimuli: special case that forces a world computation to quit.
+    // Also removes this instance from the list of handlers
+    StimuliHandler.prototype.onShutdown = function() {	
+	var index = handlers.indexOf(this);
+	if (index != -1) {
+	    handlers.splice(index, 1);
+	}
+
+	var shutdownWorld = this.lookup('shutdownWorld');
+	if (shutdownWorld) {
+	    shutdownWorld();
+	}
+    };
+
+
+    //////////////////////////////////////////////////////////////////////
+    // Helpers
+    var flt = types.float;
+
+    StimuliHandler.prototype.lookup = function(s) {
+	return this.config.lookup(s);
+    };
+
+    StimuliHandler.prototype.change = function(f, k) {
+	if (this.lookup('changeWorld')) {
+	    this.lookup('changeWorld')(f, k);
+	}
+	else { k(); }
+    };
+
+    // applyEffect: compound-effect: (arrayof (world -> world))
+    var applyEffect = function(e) {
+	return world.Kernel.applyEffect(e);
+    };
+
+    var makeStimulusHandler = function(funName) {
+	return function() {
+	    var args = arguments;
+	    for (var i = 0; i < handlers.length; i++) {
+		(handlers[i])[funName](args, doNothing);
+	    }
+	    //		helpers.forEachK(handlers,
+	    //				 function(h, k) { h[funName](args, k); },
+	    //				 function(e) { throw e; },
+	    //				 doNothing);
+	}
+    };
+
+    //////////////////////////////////////////////////////////////////////
+    // Exports
+
+    world.stimuli.StimuliHandler = StimuliHandler;
+
+    world.stimuli.onTilt = makeStimulusHandler('onTilt');
+    world.stimuli.onAcceleration = makeStimulusHandler('onAcceleration');
+    world.stimuli.onShake = makeStimulusHandler('onShake');
+    world.stimuli.onSmsReceive = makeStimulusHandler('onSmsReceive');
+    world.stimuli.onLocation = makeStimulusHandler('onLocation');
+    world.stimuli.onKey = makeStimulusHandler('onKey');
+    //    world.stimuli.onTick = makeStimulusHandler('onTick');
+    world.stimuli.onAnnounce = makeStimulusHandler('onAnnounce');
+
+    world.stimuli.massShutdown = function() {
+	for (var i = 0; i < handlers.length; i++) {
+	    var shutdownWorld = handlers[i].lookup('shutdownWorld');
+	    if (shutdownWorld) {
+		shutdownWorld();
+	    }
+	}
+	handlers = [];
+    };
+
+
+})();
+
+//////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////
+
+
+
+
+
+
+
+(function() {
+
+//     var make_dash_effect_colon_none =
+// 	(plt.Kernel.invokeModule("moby/runtime/effect-struct")
+// 	 .EXPORTS['make-effect:none']);
+
+    world.config = {};
+    world.Kernel.config = world.config;
+
+
+    // augment: hash hash -> hash
+    // Functionally extend a hashtable with another one.
+    var augment = function(o, a) {
+	var oo = {};
+	for (var e in o) {
+	    if (o.hasOwnProperty(e)) {
+		oo[e] = o[e];
+	    }
+	}
+	for (var e in a) {
+	    if (a.hasOwnProperty(e)) {
+		oo[e] = a[e];
+	    }
+	}
+	return oo;
+    }
+
+
+
+    var WorldConfig = function() {
+	// The following handler values are initially false until they're updated
+	// by configuration.
+      
+	// A handler is a function:
+	//     handler: world X Y ... -> Z
+
+
+	this.vals = {
+	    // changeWorld: (world -> world) -> void
+	    // When called, this will update the world based on the
+	    // updater passed to it.
+	    changeWorld: false,
+
+	    // shutdownWorld: -> void
+	    // When called, this will shut down the world computation.
+	    shutdownWorld: false,
+
+	    // initialEffect: effect
+	    // The initial effect to invoke when the world computation
+	    // begins.
+	    initialEffect: false,
+
+
+	    // onRedraw: world -> scene
+	    onRedraw: false,
+
+	    // onDraw: world -> (sexpof dom)
+	    onDraw: false,
+
+	    // onDrawCss: world -> (sexpof css-style)
+	    onDrawCss: false,
+
+
+	    // tickDelay: number
+	    tickDelay: false,
+	    // onTick: world -> world
+	    onTick: false,
+	    // onTickEffect: world -> effect
+	    onTickEffect: false,
+
+	    // onKey: world key -> world
+	    onKey: false,
+	    // onKeyEffect: world key -> effect
+	    onKeyEffect : false,
+
+	    // onTilt: world number number number -> world
+	    onTilt: false,
+	    // onTiltEffect: world number number number -> effect
+	    onTiltEffect: false,
+
+	    // onAcceleration: world number number number -> world
+	    onAcceleration: false,
+	    // onAccelerationEffect: world number number number -> effect
+	    onAccelerationEffect: false,
+
+	    // onShake: world -> world
+	    onShake: false,
+	    // onShakeEffect: world -> effect
+	    onShakeEffect: false,
+
+	    // onSmsReceive: world -> world
+	    onSmsReceive: false,
+	    // onSmsReceiveEffect: world -> effect
+	    onSmsReceiveEffect: false,
+
+	    // onLocationChange: world number number -> world
+	    onLocationChange : false,
+	    // onLocationChangeEffect: world number number -> effect
+	    onLocationChangeEffect: false,
+
+
+	    // onAnnounce: world string X ... -> world
+	    onAnnounce: false,
+	    // onAnnounce: world string X ... -> effect
+	    onAnnounceEffect: false,
+
+	    // stopWhen: world -> boolean
+	    stopWhen: false,
+	    // stopWhenEffect: world -> effect
+	    stopWhenEffect: false,
+
+
+
+	    //////////////////////////////////////////////////////////////////////
+	    // For universe game playing
+
+	    // connectToGame: string
+	    // Registers with some universe, given an identifier
+	    // which is a URL to a Universe server.
+	    connectToGame: false,
+	    onGameStart: false,
+	    onOpponentTurn: false,
+	    onMyTurn: false,
+	    afterMyTurn: false,
+	    onGameFinish: false
+	};
+    }
+
+  
+    // WorldConfig.lookup: string -> handler
+    // Looks up a value in the configuration.
+    WorldConfig.prototype.lookup = function(key) {
+//	plt.Kernel.check(key, plt.Kernel.isString, "WorldConfig.lookup", "string", 1);
+	if (key in this.vals) {
+	    return this.vals[key];
+	} else {
+	    throw Error("Can't find " + key + " in the configuration");
+	}
+    }
+  
+
+
+    // WorldConfig.updateAll: (hashof string handler) -> WorldConfig
+    WorldConfig.prototype.updateAll = function(aHash) {
+	var result = new WorldConfig();
+	result.vals = augment(this.vals, aHash);
+	return result;
+    }
+
+  
+    world.config.WorldConfig = WorldConfig;
+
+    // The following global variable CONFIG is mutated by either
+    // big-bang from the regular world or the one in jsworld.
+    world.config.CONFIG = new WorldConfig();
+
+
+    // A handler is a function that consumes a config and produces a
+    // config.
+
+
+    //////////////////////////////////////////////////////////////////////
+
+    var getNoneEffect = function() {
+	throw new Error("getNoneEffect: We should not be calling effects!");
+	//	return make_dash_effect_colon_none();
+    }
+
+
+
+    //////////////////////////////////////////////////////////////////////
+
+    world.config.Kernel = world.config.Kernel || {};
+    world.config.Kernel.getNoneEffect = getNoneEffect;
+
+
+/*
+    // makeSimplePropertyUpdater: (string (X -> boolean) string string) -> (X -> handler)
+    var makeSimplePropertyUpdater = function(propertyName,
+					     propertyPredicate,
+					     propertyTypeName,
+					     updaterName) {
+	return function(val) {
+	    plt.Kernel.check(val, propertyPredicate, updaterName, propertyTypeName, 1);
+	    return addStringMethods(
+		function(config) {
+		    return config.updateAll({propertyName: val });
+		}, updaterName);
+	}
+    };
+
+    // connects to the game
+    world.config.Kernel.connect_dash_to_dash_game = 
+	makeSimplePropertyUpdater('connectToGame',
+				  plt.Kernel.isString,
+				  "string",
+				  "connect-to-game");
+
+
+    // Registers a handler for game-start events.
+    world.config.Kernel.on_dash_game_dash_start = 
+	makeSimplePropertyUpdater('onGameStart',
+				  plt.Kernel.isFunction,
+				  "function",
+				  "on-game-start");
+
+
+    // Registers a handler for opponent-turn events.
+    world.config.Kernel.on_dash_opponent_dash_turn = 
+	makeSimplePropertyUpdater('onOpponentTurn',
+				  plt.Kernel.isFunction,
+				  "function",
+				  "on-opponent-turn");
+
+
+    // Registers a handler for my turn.
+    world.config.Kernel.on_dash_my_dash_turn = 
+	makeSimplePropertyUpdater('onMyTurn',
+				  plt.Kernel.isFunction,
+				  "function",
+				  "on-my-turn");
+
+    // Register a handler after I make a move.
+    world.config.Kernel.after_dash_my_dash_turn = 
+	makeSimplePropertyUpdater('afterMyTurn',
+				  plt.Kernel.isFunction,
+				  "function",
+				  "after-my-turn");
+
+    world.config.Kernel.on_dash_game_dash_finish = 
+	makeSimplePropertyUpdater('onGameFinish',
+				  plt.Kernel.isFunction,
+				  "function",
+				  "on-game-finish");
+*/
+
+
+
+})();

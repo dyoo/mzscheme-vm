@@ -2,6 +2,11 @@
 
 (function() {
 
+    var world = {};
+    world.Kernel = STATE.invokedModules["mzscheme-vm/world/kernel"].lookup("kernel");
+
+
+
     var Jsworld = jsworld.MobyJsworld = {};
 
     // The real low-level jsworld module:
@@ -386,7 +391,7 @@
 
 
 
-	var config = new world.config.WorldConfig();
+	var config = new world.Kernel.config.WorldConfig();
 	for(var i = 0; i < handlers.length; i++) {
 	    if (isList(handlers[i])) {
 		attribs = handlers[i];
@@ -401,7 +406,7 @@
 	}
 	config = config.updateAll({'changeWorld': Jsworld.updateWorld,
 				   'shutdownWorld': Jsworld.shutdownWorld});
-	var stimuli = new world.stimuli.StimuliHandler(config, caller, restarter);
+	var stimuli = new world.Kernel.stimuli.StimuliHandler(config, caller, restarter);
 	
 	var wrappedHandlers = [];
 	var wrappedRedraw;
@@ -593,8 +598,8 @@
 	// When something bad happens, shut down 
 	// the world computation.
 //	helpers.reportError("Shutting down jsworld computations");
-//	world.stimuli.onShutdown(); 
-	world.stimuli.massShutdown();
+//	world.Kernel.stimuli.onShutdown(); 
+	world.Kernel.stimuli.massShutdown();
 	shutdownUserConfigs(function() {
 //		console.log('Got an error, the error was:');
 //		console.log(e);

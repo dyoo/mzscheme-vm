@@ -7,8 +7,6 @@
 
 (require-js "private/jsworld/jsworld.js"
 	    "private/jsworld.js"
-	    "world-config.js"
-	    "world-stimuli.js"
 	    "jsworld.js")
 
 
