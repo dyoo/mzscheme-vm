@@ -59,7 +59,7 @@
              (module-record-unimplemented-primval-references r))))
   (cond
     [(js-module-record? r)
-     (format "{ name: ~s, provides : ~a, requires: ~a, jsImplementation : (function(EXPORTS){ (function() { ~a })() }), permissions: ~a }"
+     (format "{ name: ~s, provides : ~a, requires: ~a, jsImplementation : (function(STATE, EXPORTS){ (function() { ~a })() }), permissions: ~a }"
              (symbol->string (module-record-name r))
              (jsexpr->json  (map symbol->string (module-record-provides r)))
              (jsexpr->json  (map symbol->string (module-record-requires r)))
