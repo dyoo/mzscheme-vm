@@ -1,19 +1,23 @@
 #lang s-exp "../../src/lang/base.rkt"
 
 
+(printf "Testing with-handlers-2.rkt\n");
+
 (with-handlers ([void (lambda (exn) 'ok)])
   (with-handlers ([1 2])
-    (/ 1 0)))
+    (/ 1 0)
+    (error "expected an error")))
 
 
 (with-handlers ([void (lambda (exn) 'ok)])
   (with-handlers ([void 2])
-    (/ 1 0)))
+    (/ 1 0)
+    (error "expected an error")))
 
 (with-handlers ([void (lambda (exn)
 	                (printf "outer\n")
-			 'not-ok)])
+			 (error 'not-ok))])
   (with-handlers ([void (lambda (exn)
-                           (printf "inner\n")
-			    'ok)])
-    (/ 1 0)))
+    		          'ok)])
+    (/ 1 0)
+    (error "expected an error")))
