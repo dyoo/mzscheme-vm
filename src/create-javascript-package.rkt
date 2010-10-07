@@ -54,7 +54,7 @@
 (define (encode-module-record r base-path)
   (when (not (empty? (module-record-unimplemented-primval-references r)))
     (log-warning 
-     (format "WARNING: while compiling ~a, we ran across the following problem:\nThe following primitives are not yet implemented in the Javascript runtime:\n~a\n\n and the resulting Javascript will likely not evaluate.\n"
+     (format "WARNING: while compiling ~a, we ran across the following problem:\nThe following primitives are not yet implemented in the Javascript runtime:\n~a\nThe resulting Javascript will likely not evaluate.\n"
              (module-record-path r)
              (module-record-unimplemented-primval-references r))))
   (cond
