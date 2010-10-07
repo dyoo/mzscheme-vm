@@ -2,13 +2,15 @@
 (require "required.rkt")
 (require "required-2.rkt")
 
+(printf "require.rkt\n")
+
 (define (blah)
   'blaaargh)
 
-(blah)
+(check-expect (blah) 'blaaargh)
 
-(f 42)
+(check-expect (f 42) (* 42 42))
 
-(hypo 3 4)
+(check-expect (hypo 3 4) 5)
 
-(h 16)
+(check-expect (h 16) (expt 16 5))

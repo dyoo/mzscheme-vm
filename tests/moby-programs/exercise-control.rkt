@@ -1,24 +1,33 @@
-#lang s-exp "../../src/lang/moby-lang.ss"
-(printf "~s~n" (if true
-		   'ok
-		   'not-ok))
+#lang s-exp "../../src/lang/base.ss"
 
-(printf "~s~n" (if false
-		   'not-ok
-		   'ok))
+(printf "exercise-control.rkt\n")
 
-(printf "~s~n" (cond [true 'ok]
-		     [else 'not-ok]))
+(check-expect (if true
+		  'ok
+		  'not-ok)
+	      'ok)
 
-(printf "~s~n" (cond [false 'not-ok]
-		     [else 'ok]))
+(check-expect (if false
+		  'not-ok
+		  'ok)
+	      'ok)
 
-(printf "~s~n" (case 42
-		 [(1) 'not-ok]
-		 [(2) 'not-ok]
-		 [(42) 'ok]))
+(check-expect (cond [true 'ok]
+		    [else 'not-ok])
+	      'ok)
 
-(printf "~s~n" (case 42
-		 [(1) 'not-ok]
-		 [(2) 'not-ok]
-		 [(42) 'ok]))
+(check-expect (cond [false 'not-ok]
+		    [else 'ok])
+	      'ok)
+
+(check-expect (case 42
+		[(1) 'not-ok]
+		[(2) 'not-ok]
+		[(42) 'ok])
+	      'ok)
+
+(check-expect (case 42
+		[(1) 'not-ok]
+		[(2) 'not-ok]
+		[(42) 'ok])
+	      'ok)

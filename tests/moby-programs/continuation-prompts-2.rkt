@@ -7,7 +7,7 @@
    (lambda () v)))
 
 
-(printf "Running tests...\n")
+(printf "continuation-prompts-2.rkt\n")
 
 
 
@@ -38,4 +38,4 @@
 
 
 
-(printf "tests done!\n")
+(printf "continuation-prompts-2 tests done!\n")

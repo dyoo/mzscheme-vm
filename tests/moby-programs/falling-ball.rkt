@@ -4,6 +4,8 @@
 ;; until hitting the bottom.
 
 
+(printf "falling-ball.rkt\n")
+
 (define-struct world (radius y))
 
 
@@ -39,7 +41,8 @@
                (empty-scene WIDTH HEIGHT)))
 
 ;; Start up a big bang, 15 frames a second.
-(js-big-bang INITIAL-WORLD
-             (on-tick tick 1/15)
-             (on-redraw render)
-             (stop-when hits-floor?))
+(check-expect (js-big-bang INITIAL-WORLD
+			   (on-tick tick 1/15)
+			   (on-redraw render)
+			   (stop-when hits-floor?))
+	      (make-world 15 480))

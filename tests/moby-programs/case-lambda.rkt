@@ -1,4 +1,6 @@
-#lang s-exp "../../src/lang/moby-lang.ss"
+#lang s-exp "../../src/lang/base.ss"
+
+(printf "case-lambda.rkt\n")
 
 (define f
   (case-lambda
@@ -6,6 +8,6 @@
    [(x y) (list y x)]
    [(x y z) (list z y x)]))
 
-(f 3)
-(f 3 4)
-(f 3 4 5)
+(check-expect (f 3) (list 3))
+(check-expect (f 3 4) (list 4 3))
+(check-expect (f 3 4 5) (list 5 4 3))

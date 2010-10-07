@@ -1,10 +1,12 @@
 #lang s-exp "../../src/lang/base.rkt"
 
+(printf "42.rkt\n")
 
 (define (f x)
   (* x x))
 
-(printf "~s ~s ~s\n" 
-        (f 16) 
-        (f -5)
-        (f 42))
+(check-expect (format "~s ~s ~s\n" 
+	              (f 16)
+        	      (f -5)
+        	      (f 42))
+	      "256 25 1764\n")

@@ -1,4 +1,7 @@
-#lang s-exp "../../src/lang/moby-lang.ss"
+#lang s-exp "../../src/lang/base.ss"
 
-(and true "hello")
-(or #f #f "world" 'dontcomehere)
+(printf "and-or.rkt\n")
+
+(check-expect (and true "hello") "hello")
+(check-expect (or #f #f "world" 'dontcomehere)
+	      "world")
