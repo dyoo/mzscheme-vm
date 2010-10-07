@@ -103,7 +103,7 @@
 		     (define-for-syntax define-for-syntax)
                      (begin-for-syntax begin-for-syntax)
                      ; (prefix-in prefix-in)
-		     ; (only-in only-in)
+		     (only-in only-in)
                      (provide provide)
 		     (all-defined-out all-defined-out)
 		     (all-from-out all-from-out)

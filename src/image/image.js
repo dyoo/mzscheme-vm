@@ -2,6 +2,9 @@
  *** Image Primitives ***
  ************************/
 
+var world = {};
+world.Kernel = STATE.invokedModules["mzscheme-vm/world/kernel"].lookup("kernel");
+
 
 
 //////////////////////////////////////////////////////////////////////
