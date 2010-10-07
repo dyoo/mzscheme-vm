@@ -6,7 +6,10 @@
 	    "world-stimuli.js"
 	    "jsworld.js")
 
+
+;; Loaded so we have access to image library stuff.
 (require "../image/image.rkt")
+
 
 (provide key=?
 	 on-tick on-tick!
