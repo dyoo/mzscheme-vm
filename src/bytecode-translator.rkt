@@ -31,7 +31,7 @@
               [compiled-indirects (emit-indirects)])
          (void)
          (make-ht 'compilation-top
-                  `((max-let-depth ,(make-int max-let-depth))
+                  `(#;(max-let-depth ,(make-int max-let-depth))
                     (prefix ,(compile-prefix prefix))
                     (compiled-indirects ,compiled-indirects)
                     (code ,compiled-code))))])))
@@ -76,7 +76,7 @@
     [(struct prefix (num-lifts toplevels stxs))
      ;; FIXME: handle stxs?
      (make-ht 'prefix 
-              `((num-lifts ,(make-int num-lifts))
+              `(#;(num-lifts ,(make-int num-lifts))
                 (toplevels ,(compile-toplevels toplevels))
                 (stxs ,(compile-stxs stxs))))]))
 
@@ -357,7 +357,7 @@
                      (rest? ,(make-lit rest?))
                      (closure-map ,(make-vec (map make-lit (vector->list closure-map))))
                      (closure-types ,(make-vec (map make-lit closure-types)))
-                     (max-let-depth ,(make-int max-let-depth))
+                     #;(max-let-depth ,(make-int max-let-depth))
                      (body ,(compile-at-expression-position body))))]))
 
 
@@ -410,9 +410,9 @@
     [(struct localref (unbox? pos clear? other-clears? flonum?))
      (make-ht 'localref `((unbox? ,(make-lit unbox?))
                           (pos ,(make-int pos))
-                          (clear ,(make-lit clear?))
-                          (other-clears? ,(make-lit other-clears?))
-                          (flonum? ,(make-lit flonum?))))]))
+                          #;(clear ,(make-lit clear?))
+                          #;(other-clears? ,(make-lit other-clears?))
+                          #;(flonum? ,(make-lit flonum?))))]))
 
 
 ;; compile-toplevel: toplevel -> jsexp
@@ -421,8 +421,8 @@
     [(struct toplevel (depth pos const? ready?))
      (make-ht 'toplevel `((depth ,(make-int depth))
                           (pos ,(make-int pos))
-                          (const? ,(make-lit const?))
-                          (ready? ,(make-lit ready?))))]))
+                          #;(const? ,(make-lit const?))
+                          #;(ready? ,(make-lit ready?))))]))
 
 
 ;; compile-application: application -> jsexp
@@ -509,7 +509,7 @@
      (make-ht 'let-one 
               `((rhs ,(compile-at-expression-position rhs))
                 (body ,(compile-at-expression-position body))
-                (flonum? ,(make-lit flonum?))))]))
+                #;(flonum? ,(make-lit flonum?))))]))
 
 
 ;; compile-let-void: let-void -> jsexp
