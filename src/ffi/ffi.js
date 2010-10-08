@@ -2,6 +2,18 @@
  *** Scheme -> Javascript FFI ***
  ********************************/
 
+/**
+
+WARNING WARNING
+
+This code won't work yet and is in the middle of being modularized.
+
+This code was just lifted out of primitives.js, and so there are
+unbound references everywhere.
+
+*/
+
+
 EXPORTS['scheme->prim-js'] =
     new PrimProc('scheme->prim-js',
 		 1,

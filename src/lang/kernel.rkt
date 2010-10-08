@@ -415,22 +415,7 @@
                        char-upcase
                        char-downcase
 
-                       scheme->prim-js
-                       prim-js->scheme
-                       procedure->cps-js-fun
-                       procedure->void-js-fun
-                       js-===
-                       js-get-named-object
-                       js-get-field
-                       js-set-field!
-                       js-typeof
-                       js-instanceof
-                       js-call
-                       js-new
-                       js-make-hash
-                       js-undefined
-                       js-null
-
+                       
                        call-with-current-continuation
                        call/cc
 		       call-with-continuation-prompt
