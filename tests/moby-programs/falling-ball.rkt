@@ -41,8 +41,8 @@
                (empty-scene WIDTH HEIGHT)))
 
 ;; Start up a big bang, 15 frames a second.
-(check-expect (js-big-bang INITIAL-WORLD
+(check-expect (big-bang INITIAL-WORLD
 			   (on-tick tick 1/15)
-			   (on-redraw render)
+			   (to-draw render)
 			   (stop-when hits-floor?))
 	      (make-world 15 480))

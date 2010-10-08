@@ -5,7 +5,7 @@
 
 (printf "js-big-bang-timer.rkt\n")
 (printf "number should be counting up to ten\n")
-(check-expect (js-big-bang 1 
+(check-expect (big-bang 1 
 			   (on-tick (lambda (w)
 				      #;(printf "~s~n" w)
 				      (add1 w))
