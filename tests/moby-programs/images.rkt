@@ -34,3 +34,7 @@
 				   50
 				   50
 				   (empty-scene 100 100))
+
+
+"should be a text:" (text "hello world" 20 'black)
+"should be a text as well:" (text (string-copy "hello world") 20 'black)
