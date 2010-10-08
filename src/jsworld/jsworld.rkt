@@ -10,11 +10,15 @@
 	    "jsworld.js")
 
 
-(provide key=?
+(provide big-bang
+	 to-draw
+         to-draw-page
+         
+         key=?
 	 on-tick on-tick!
 	 on-key on-key!
 	 stop-when stop-when!
-	 on-redraw on-draw
+
 	 initial-effect
 
 	 js-p
@@ -25,7 +29,7 @@
 	 js-img
 	 js-text
 	 js-select
-	 js-big-bang
+
 
 	 empty-page
 	 place-on-page

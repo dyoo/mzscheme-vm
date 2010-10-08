@@ -169,15 +169,15 @@ EXPORTS['stop-when!'] = new PrimProc('stop-when!', 2, false, false,
 					onEventBang('stop-when!', 'stopWhen'));
 
 
-EXPORTS['on-redraw'] =
-    new PrimProc('on-redraw',
+EXPORTS['to-draw'] =
+    new PrimProc('to-draw',
 		 1,
 		 false, false,
 		 function(f) {
-		     check(f, isFunction, 'on-redraw', 'procedure', 1);
+		     check(f, isFunction, 'to-draw', 'procedure', 1);
 		     return new (WorldConfigOption.extend({
 				 init: function() {
-				     this._super('on-redraw');
+				     this._super('to-draw');
 				 },
 
 				 configure: function(config) {
@@ -187,31 +187,31 @@ EXPORTS['on-redraw'] =
 		 });
 
 
-EXPORTS['on-draw'] =
-    new CasePrimitive('on-draw',
-	[new PrimProc('on-draw',
+EXPORTS['to-draw-page'] =
+    new CasePrimitive('to-draw-page',
+	[new PrimProc('to-draw-page',
 		      1,
 		      false, false,
 		      function(domHandler) {
-			  check(domHandler, isFunction, 'on-draw', 'procedure', 1);
+			  check(domHandler, isFunction, 'to-draw-page', 'procedure', 1);
 			  return new (WorldConfigOption.extend({
 				    init: function() {
-					this._super('on-draw');
+					this._super('to-draw-page');
 				    },
 				    configure: function(config) {
 					return config.updateAll({'onDraw': domHandler});
 				    }
 				}))();
 		      }),
-	 new PrimProc('on-draw',
+	 new PrimProc('to-draw-page',
 		      2,
 		      false, false,
 		      function(domHandler, styleHandler) {
-		 	  check(domHandler, isFunction, 'on-draw', 'procedure', 1, arguments);
-			  check(styleHandler, isFunction, 'on-draw', 'procedure', 2, arguments);
+		 	  check(domHandler, isFunction, 'to-draw-page', 'procedure', 1, arguments);
+			  check(styleHandler, isFunction, 'to-draw-page', 'procedure', 2, arguments);
 			  return new (WorldConfigOption.extend({
 				    init: function() {
-					this._super('on-draw');
+					this._super('to-draw-page');
 				    },
 				    configure: function(config) {
 					return config.updateAll({'onDraw': domHandler,
@@ -388,8 +388,8 @@ EXPORTS['js-select'] =
 
 
 
-EXPORTS['js-big-bang'] =
-    new PrimProc('js-big-bang',
+EXPORTS['big-bang'] =
+    new PrimProc('big-bang',
 		 1,
 		 true, true,
 		 function(state, initW, handlers) {
@@ -1251,32 +1251,32 @@ PRIMITIVES['stop-when'] =
 //					onEventBang('stop-when!', 'stopWhen'));
 
 
-PRIMITIVES['on-redraw'] =
-    new PrimProc('on-redraw',
+PRIMITIVES['to-draw'] =
+    new PrimProc('to-draw',
 		 1,
 		 false, false,
 		 function(f) {
-		     check(f, isFunction, 'on-redraw', 'procedure', 1);
+		     check(f, isFunction, 'to-draw', 'procedure', 1);
 		     return jsworld.Jsworld.onDrawSceneConfig(f);
 
 		 });
 
 
-PRIMITIVES['on-draw'] =
-    new CasePrimitive('on-draw',
-	[new PrimProc('on-draw',
+PRIMITIVES['to-draw-page'] =
+    new CasePrimitive('to-draw-page',
+	[new PrimProc('to-draw-page',
 		      1,
 		      false, false,
 		      function(domHandler) {
-			  check(domHandler, isFunction, 'on-draw', 'procedure', 1);
+			  check(domHandler, isFunction, 'to-draw-page', 'procedure', 1);
 			  return jsworld.Jsworld.onDrawPageConfig(domHandler);
 		      }),
-	 new PrimProc('on-draw',
+	 new PrimProc('to-draw-page',
 		      2,
 		      false, false,
 		      function(domHandler, styleHandler) {
-		 	  check(domHandler, isFunction, 'on-draw', 'procedure', 1, arguments);
-			  check(styleHandler, isFunction, 'on-draw', 'procedure', 2, arguments);
+		 	  check(domHandler, isFunction, 'to-draw-page', 'procedure', 1, arguments);
+			  check(styleHandler, isFunction, 'to-draw-page', 'procedure', 2, arguments);
 			  return jsworld.Jsworld.onDrawPageConfig(domHandler, styleHandler);
 		      }) ]);
 
