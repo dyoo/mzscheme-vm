@@ -839,3 +839,463 @@ var arrayEach = function(arr, f) {
 var check = helpers.check;
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+//////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////
+
+
+
+
+
+/*
+
+
+
+PRIMITIVES['js-p'] =
+    makeOptionPrimitive('js-p',
+			0,
+			[types.EMPTY],
+			false,
+			function(userArgs, attribList) {
+				checkListOf(attribList, function(x) { return isList(x) && length(x) == 2; },
+					    'js-p', 'list of (list of X Y)', 1, userArgs);
+
+				var attribs = assocListToHash(attribList);
+				var node = helpers.wrapJsValue( jsworld.Jsworld.p(attribs) );
+
+				node.toWrittenString = function(cache) { return "(js-p)"; };
+				node.toDisplayedString = node.toWrittenString;
+			//	node.toDomNode = function(cache) { return node; };
+				return node;
+			});
+
+
+PRIMITIVES['js-div'] =
+    makeOptionPrimitive('js-div',
+			0,
+			[types.EMPTY],
+			false,
+			function(userArgs, attribList) {
+				checkListOf(attribList, isAssocList, 'js-div', '(listof X Y)', 1, userArgs);
+
+				var attribs = assocListToHash(attribList);
+				var node = helpers.wrapJsValue( jsworld.Jsworld.div(attribs) );
+				
+				node.toWrittenString = function(cache) { return "(js-div)"; };
+				node.toDisplayedString = node.toWrittenString;
+			//	node.toDomNode = function(cache) { return node; };
+				return node;
+			});
+
+
+var jsButtonBang = function(funName, worldUpdateF, effectF, attribList) {
+	var attribs = assocListToHash(attribList);
+	var node = helpers.wrapJsValue( jsworld.Jsworld.buttonBang(worldUpdateF, effectF, attribs) );
+
+	node.toWrittenString = function(cache) { return '(' + funName + ' ...)'; };
+	node.toDisplayedString = node.toWrittenString;
+//	node.toDomNode = function(cache) { return node; };
+	return node;
+};
+PRIMITIVES['js-button'] =
+    makeOptionPrimitive('js-button',
+			1,
+			[types.EMPTY],
+			false,
+			function(userArgs, updateWorldF, attribList) {
+				check(updateWorldF, isFunction, 'js-button', 'procedure', 1, userArgs);
+				checkListOf(attribList, isAssocList, 'js-button', '(listof X Y)', 2, userArgs);
+
+				var noneF = new types.PrimProc('', 1, false, false, function(w) { return types.EMPTY; });
+				return jsButtonBang('js-button', updateWorldF, noneF, attribList);
+			});
+
+PRIMITIVES['js-button!'] =
+    makeOptionPrimitive('js-button!',
+			2,
+			[types.EMPTY],
+			false,
+			function(userArgs, updateWorldF, effectF, attribList) {
+				check(worldUpdateF, isFunction, funName, 'procedure', 1, userArgs);
+				check(effectF, isFunction, funName, 'procedure', 2, userArgs);
+				checkListOf(attribList, isAssocList, funName, '(listof X Y)', 3, userArgs);
+
+				return jsButtonBang('js-button!', updateWorldF, effectF, attribList);
+			});
+
+
+PRIMITIVES['js-input'] =
+    makeOptionPrimitive('js-input',
+			2,
+			[types.EMPTY],
+			false,
+			function(userArgs, type, updateF, attribList) {
+				check(type, isString, 'js-input', 'string', 1, userArgs);
+				check(updateF, isFunction, 'js-input', 'procedure', 2, userArgs);
+				checkListOf(attribList, isAssocList, 'js-input', '(listof X Y)', 3, userArgs);
+
+				var attribs = assocListToHash(attribList);
+				var node = helpers.wrapJsValue( jsworld.Jsworld.input(type.toString(), updateF, attribs) );
+
+				node.toWrittenString = function(cache) { return "(js-input ...)"; }
+				node.toDisplayedString = node.toWrittenString;
+			//	node.toDomNode = function(cache) { return node; }
+				return node;
+			});
+
+
+PRIMITIVES['js-img'] =
+    makeOptionPrimitive('js-img',
+			1,
+			[types.EMPTY],
+			false,
+			function(userArgs, src, attribList) {
+				check(src, isString, "js-img", "string", 1, userArgs);
+				checkListOf(attribList, isAssocList, 'js-img', '(listof X Y)', 2, userArgs);
+
+				var attribs = assocListToHash(attribList);
+			        var node = helpers.wrapJsValue( jsworld.Jsworld.img(src.toString(), attribs) );
+
+				node.toWrittenString = function(cache) { return "(js-img ...)"; }
+				node.toDisplayedString = node.toWrittenString;
+			//	node.toDomNode = function(cache) { return node; }
+				return node;
+			});
+
+
+PRIMITIVES['js-text'] =
+    new PrimProc('js-text',
+		 1,
+		 false, false,
+		 function(s) {
+		 	check(s, isString, 'js-text', 'string', 1);
+
+		        var node = helpers.wrapJsValue( jsworld.Jsworld.text(s.toString(), []) );
+			node.toWrittenString = function(cache) { return "(js-text ...)"; }
+			node.toDisplayedString = node.toWrittenString;
+//			node.toDomNode = function(cache) { return node; }
+			return node;
+		 });
+
+
+PRIMITIVES['js-select'] =
+    makeOptionPrimitive('js-select',
+			2,
+			[types.EMPTY],
+			false,
+			function(userArgs, optionList, updateF, attribList) {
+				checkListOf(optionList, isString, 'js-select', 'listof string', 1, userArgs);
+				check(updateF, isFunction, 'js-select', 'procedure', 2, userArgs);
+				checkListOf(attribList, isAssocList, 'js-select', '(listof X Y)', 3, userArgs);
+
+				var attribs = assocListToHash(attribList);
+				var options = helpers.deepListToArray(optionList);
+			        for (var i = 0; i < options.length; i++) {
+				    options[i] = options[i].toString();
+				}
+				var node = helpers.wrapJsValue( jsworld.Jsworld.select(options, updateF, attribs) );
+
+				node.toWrittenString = function(cache) { return '(js-select ...)'; };
+				node.toDisplayedString = node.toWrittenString;
+			//	node.toDomNode = function(cache) { return node; };
+				return node;
+			});
+
+
+
+PRIMITIVES['js-big-bang'] =
+    new PrimProc('js-big-bang',
+		 1,
+		 true, true,
+		 function(aState, initW, configs) {
+		 	arrayEach(configs,
+				  function(x, i) {
+				  	check(x, function(y) { return (types.isWorldConfig(y) ||
+									jsworld.Jsworld.isBuiltInConfig(y)); },
+					      'js-big-bang', 'world configuration', i+2);
+				  });
+
+			return PAUSE(function(caller, onSuccess, onFail) {
+				var bigBangController = {};
+				var onBreak = function() {
+					bigBangController.breaker(aState);
+				}
+				aState.addBreakRequestedListener(onBreak);
+				aState.onSuccess = function(v) {
+					aState.removeBreakRequestedListener(onBreak);
+					onSuccess(v);
+				};
+				jsworld.Jsworld.bigBang(initW,
+//							aState.getToplevelNodeHook()(),
+							configs,
+							aState,
+							caller,
+							bigBangController);
+//							caller,
+//							function(v) {
+//								aState.removeBreakRequestedListener(onBreak);
+//								onSuccess(v);
+//							},
+//							onFail,
+//							bigBangController);
+			});
+		 });
+
+
+//////////////////////////////////////////////////////////////////////
+
+
+    var emptyPage = function(attribList) {
+	checkListOf(attribList, isAssocList, 'empty-page', '(listof X Y)', 1);
+
+	var attribs = assocListToHash(attribList);
+	var node = jsworld.MobyJsworld.emptyPage(attribs);
+	
+// 	node.toWrittenString = function(cache) { return "(js-div)"; };
+// 	node.toDisplayedString = node.toWrittenString;
+// 	node.toDomNode = function(cache) { return node; };
+// 	return helpers.wrapJsValue(node);
+	return node;
+    };
+
+    PRIMITIVES['empty-page'] =
+	new CasePrimitive('empty-page',
+			  [new PrimProc('empty-page', 0, false, false, 
+					function() {  return emptyPage(types.EMPTY); }),
+			   new PrimProc('empty-page', 1, false, false, emptyPage)]);
+
+    
+    PRIMITIVES['place-on-page'] = 
+	new PrimProc('empty-page',
+		     4,
+		     false, false,
+		     function(elt, left, top, page) {
+			 // FIXME: add type checking
+			 return jsworld.MobyJsworld.placeOnPage(
+			     elt, left, top, page);
+		     });
+					    
+
+
+
+
+//////////////////////////////////////////////////////////////////////
+
+
+
+
+
+PRIMITIVES['make-world-config'] =
+    makeOptionPrimitive('make-world-config',
+			2,
+			[false, false],
+			false,
+			function(userArgs, startup, shutdown, pause, restart) {
+				check(startup, procArityContains(1), 'make-world-config', 'procedure', 1, userArgs);
+				check(shutdown, procArityContains(1), 'make-world-config', 'procedure (arity 1)', 2, userArgs);
+				check(pause, function(x) { return (x === false || procArityContains(1)(x)); },
+				      'make-world-config', 'procedure (arity 1) or #f', 3, userArgs);
+				check(restart, function(x) { return (x === false || procArityContains(2)(x)); },
+				      'make-world-config', 'procedure (arity 2) or #f', 4, userArgs);
+
+				return types.worldConfig(startup, shutdown, pause, restart);
+			});
+
+PRIMITIVES['bb-info'] = types.BigBangInfo;
+PRIMITIVES['make-bb-info'] = new PrimProc('make-bb-info', 2, false, false, types.makeBigBangInfo);
+PRIMITIVES['bb-info?'] = new PrimProc('bb-info?', 1, false, false, types.isBigBangInfo);
+
+PRIMITIVES['bb-info-change-world'] =
+    new PrimProc('bb-info-change-world',
+		 1,
+		 false, false, 
+		 function(bbInfo) {
+		 	check(bbInfo, types.isBigBangInfo, 'bb-info-change-world', 'bb-info', 1);
+			return types.bbInfoChangeWorld(bbInfo);
+		 });
+
+PRIMITIVES['bb-info-toplevel-node'] =
+    new PrimProc('bb-info-toplevel-node',
+		 1,
+		 false, false, 
+		 function(bbInfo) {
+		 	check(bbInfo, types.isBigBangInfo, 'bb-info-toplevel-node', 'bb-info', 1);
+			return types.bbInfoToplevelNode(bbInfo);
+		 });
+
+
+PRIMITIVES['make-effect-type'] =
+	makeOptionPrimitive(
+	    'make-effect-type',
+	    4,
+	    [false],
+	    true,
+	    function(userArgs, aState, name, superType, fieldCnt, impl, guard) {
+		check(name, isSymbol, 'make-effect-type', 'string', 1, userArgs);
+		check(superType, function(x) { return x === false || types.isEffectType(x) },
+		      'make-effect-type', 'effect type or #f', 2, userArgs);
+		check(fieldCnt, isNatural, 'make-effect-type', 'exact non-negative integer', 3, userArgs);
+		check(impl, isFunction, 'make-effect-type', 'procedure', 4, userArgs);
+		check(guard, function(x) { return x === false || isFunction(x); }, 'make-effect-type', 'procedure or #f', 6, userArgs);
+
+		var numberOfGuardArgs = fieldCnt + 1 + (superType ? superType.numberOfArgs : 0);
+		var anEffectType = types.makeEffectType(name.toString(),
+							superType,
+							fieldCnt,
+							impl,
+							checkAndGetGuard('make-effect-type',
+									 guard,
+									 numberOfGuardArgs));
+		aState.v = getMakeStructTypeReturns(anEffectType);
+	    });
+
+
+PRIMITIVES['effect-type?'] = new PrimProc('effect-type?', 1, false, false, types.isEffectType);
+PRIMITIVES['effect?'] = new PrimProc('effect?', 1, false, false, types.isEffect);
+
+//PRIMITIVES['make-effect:do-nothing'] = new PrimProc('make-effect:do-nothing', 0, false, false, types.EffectDoNothing.constructor);
+//PRIMITIVES['effect:do-nothing?'] = new PrimProc('effect:do-nothing?', 1, false, false, types.EffectDoNothing.predicate);
+
+
+PRIMITIVES['make-render-effect-type'] =
+	makeOptionPrimitive(
+	    'make-render-effect-type',
+	    4,
+	    [false],
+	    true,
+	    function(userArgs, aState, name, superType, fieldCnt, impl, guard) {
+		check(name, isSymbol, 'make-render-effect-type', 'string', 1, userArgs);
+		check(superType, function(x) { return x === false || types.isEffectType(x) },
+		      'make-render-effect-type', 'effect type or #f', 2, userArgs);
+		check(fieldCnt, isNatural, 'make-render-effect-type', 'exact non-negative integer', 3, userArgs);
+		check(impl, isFunction, 'make-render-effect-type', 'procedure', 4, userArgs);
+		check(guard, function(x) { return x === false || isFunction(x); }, 'make-render-effect-type', 'procedure or #f', 6, userArgs);
+
+		var numberOfGuardArgs = fieldCnt + 1 + (superType ? superType.numberOfArgs : 0);
+		var aRenderEffectType =
+			types.makeRenderEffectType(name.toString(),
+						   superType,
+						   fieldCnt,
+						   impl,
+						   checkAndGetGuard('make-render-effect-type',
+								    guard,
+								    numberOfGuardArgs));
+		aState.v = getMakeStructTypeReturns(aRenderEffectType);
+	    });
+
+
+PRIMITIVES['render-effect-type?'] = new PrimProc('render-effect-type?', 1, false, false, types.isRenderEffectType);
+PRIMITIVES['render-effect?'] = new PrimProc('render-effect?', 1, false, false, types.isRenderEffect);
+
+
+PRIMITIVES['world-with-effects'] =
+    new PrimProc('world-with-effects',
+		 2,
+		 false, false,
+		 function(effects, w) {
+		 	check(effects, isCompoundEffect, 'world-with-effects', 'compound effect', 1, arguments);
+
+			return jsworld.Jsworld.worldWithEffects(helpers.flattenSchemeListToArray(effects), w);
+		 });
+
+
+
+PRIMITIVES['make-render-effect'] = new PrimProc('make-render-effect', 2, false, false, types.makeRenderEffect);
+
+PRIMITIVES['render-effect?'] = new PrimProc('render-effect?', 1, false, false, types.isRenderEffect);
+
+PRIMITIVES['render-effect-dom-node'] =
+    new PrimProc('render-effect-dom-node',
+		 1,
+		 false, false,
+		 function(effect) {
+		 	check(effect, types.isRenderEffect, 'render-effect-dom-node', 'render-effect', 1);
+			return types.renderEffectDomNode(effect);
+		 });
+
+PRIMITIVES['render-effect-effects'] =
+    new PrimProc('render-effect-effects',
+		 1,
+		 false, false,
+		 function(effect) {
+		 	check(effect, types.isRenderEffect, 'render-effect-effects', 'render-effect', 1);
+			return types.renderEffectEffects(effect);
+		 });
+
+
+
+
+
+
+
+
+PRIMITIVES['stop-when'] =
+    new PrimProc('stop-when', 1, false, false,
+		 function(test) {
+		 	check(test, isFunction, 'stop-when', 'procedure', 1);
+			return jsworld.Jsworld.stopWhenConfig(test);
+		 });
+//PRIMITIVES['stop-when!'] = new PrimProc('stop-when!', 2, false, false,
+//					onEventBang('stop-when!', 'stopWhen'));
+
+
+PRIMITIVES['on-redraw'] =
+    new PrimProc('on-redraw',
+		 1,
+		 false, false,
+		 function(f) {
+		     check(f, isFunction, 'on-redraw', 'procedure', 1);
+		     return jsworld.Jsworld.onDrawSceneConfig(f);
+
+		 });
+
+
+PRIMITIVES['on-draw'] =
+    new CasePrimitive('on-draw',
+	[new PrimProc('on-draw',
+		      1,
+		      false, false,
+		      function(domHandler) {
+			  check(domHandler, isFunction, 'on-draw', 'procedure', 1);
+			  return jsworld.Jsworld.onDrawPageConfig(domHandler);
+		      }),
+	 new PrimProc('on-draw',
+		      2,
+		      false, false,
+		      function(domHandler, styleHandler) {
+		 	  check(domHandler, isFunction, 'on-draw', 'procedure', 1, arguments);
+			  check(styleHandler, isFunction, 'on-draw', 'procedure', 2, arguments);
+			  return jsworld.Jsworld.onDrawPageConfig(domHandler, styleHandler);
+		      }) ]);
+
+
+//PRIMITIVES['initial-effect'] =
+//    new PrimProc('initial-effect',
+//		 1,
+//		 false, false,
+//		 function(effect) {
+//		     return new (WorldConfigOption.extend({
+//				 init: function() {
+//				     this._super("initial-effect");
+//				 },
+//				 configure: function(config) {
+//					return config.updateAll({'initialEffect': effect});
+//				 }
+//			     }))();
+//		 });
+
+
+*/

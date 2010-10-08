@@ -3300,30 +3300,30 @@ runTest('identity',
 	});
 
 
-runTest('make-posn',
-	function() {
-		testPrim('make-posn', id, [4, 5], types.posn(4, 5));
-		testPrim('make-posn', types.char, ['a', 'B'], types.posn(types.char('a'), types.char('B')));
-	});
+// runTest('make-posn',
+// 	function() {
+// 		testPrim('make-posn', id, [4, 5], types.posn(4, 5));
+// 		testPrim('make-posn', types.char, ['a', 'B'], types.posn(types.char('a'), types.char('B')));
+// 	});
 
-runTest('posn?',
-	function() {
-		testPrim('posn?', id, [4], false);
-		testPrim('posn?', types.box, [4], false);
-		testPrim('posn?', id, [types.posn(5, 4)], true);
-	});
+// runTest('posn?',
+// 	function() {
+// 		testPrim('posn?', id, [4], false);
+// 		testPrim('posn?', types.box, [4], false);
+// 		testPrim('posn?', id, [types.posn(5, 4)], true);
+// 	});
 
-runTest('posn-x',
-	function() {
-		testPrim('posn-x', id, [types.posn(5, 4)], 5);
-		testPrim('posn-x', id, [types.posn(types.char('a'), types.char('b'))], types.char('a'));
-	});
+// runTest('posn-x',
+// 	function() {
+// 		testPrim('posn-x', id, [types.posn(5, 4)], 5);
+// 		testPrim('posn-x', id, [types.posn(types.char('a'), types.char('b'))], types.char('a'));
+// 	});
 
-runTest('posn-y',
-	function() {	
-		testPrim('posn-y', id, [types.posn(5, 4)], 4);
-		testPrim('posn-y', id, [types.posn(types.char('a'), types.char('b'))], types.char('b'));
-	});
+// runTest('posn-y',
+// 	function() {	
+// 		testPrim('posn-y', id, [types.posn(5, 4)], 4);
+// 		testPrim('posn-y', id, [types.posn(types.char('a'), types.char('b'))], types.char('b'));
+// 	});
 
 
 runTest('structure equality',
