@@ -414,7 +414,6 @@
                        integer->char
                        char-upcase
                        char-downcase
-                       key=?
 
                        scheme->prim-js
                        prim-js->scheme

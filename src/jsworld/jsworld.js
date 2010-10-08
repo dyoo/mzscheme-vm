@@ -62,7 +62,6 @@ EXPORTS['key=?'] =
 
 
 
-
 var OnTickBang = WorldConfigOption.extend({
 	init: function(handler, effectHandler, aDelay) {
 	    this._super('on-tick');
