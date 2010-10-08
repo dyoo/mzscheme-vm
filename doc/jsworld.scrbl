@@ -1,6 +1,7 @@
 #lang scribble/manual
 
-@(require (for-label "../src/jsworld/jsworld.rkt"))
+@(require (for-label "../src/jsworld/jsworld.rkt")
+          (for-label "../src/image/image.rkt"))
 
 
 @title{jsworld}
@@ -10,10 +11,7 @@
 jsworld provides a world programming library that allows simple animation and games, as well
 as reactive HTML graphical user interfaces.
 
-@section{Examples}
 
-
-@section{Functions}
 
 
 @defproc[(big-bang (a-world world) (handlers handler) ...) void]{
@@ -28,6 +26,16 @@ customized view.
 The majority of the handlers register different stimuli that can
 trigger changes to the world.  One instance is @scheme[on-tick], which
 registers a function to update the world on a clock tick.  }
+
+
+
+                                 
+to-draw
+Same as single-argument to-draw:
+http://docs.racket-lang.org/teachpack/2htdpuniverse.html?q=on-tick#(form._((lib._2htdp/universe..rkt)._to-draw))
+
+to-draw-page
+initial-effect
 
 
 
@@ -90,6 +98,8 @@ counts up to ten and then stops.
 
 
 
+@defproc[(stop-when!) handler?]{Produces a handler that stops a @racket[big-bang] whenever
+the provided world function produces true.}                               
 
 
 
@@ -99,69 +109,42 @@ counts up to ten and then stops.
 
 
 
+@defproc[(key=? [key1 key?] [key2 key?]) boolean?]{Produces true if @racket[key1] is equal to @racket[key2].}
+
+
+@section{Event handlers}
+
+@defproc[(on-tick) handler?]{Produces a handler that responds to clock ticks.}
+
+@defproc[(on-tick!) handler?]{Produces a handler that responds to clock ticks.}
+
+@defproc[(on-key) handler?]{Produces a handler that responds to key events.}
+
+@defproc[(on-key!) handler?]{Produces a handler that responds to key events.}
+
+@defproc[(on-click) handler?]{Produces a handler that responds to click events.}
+
+@defproc[(on-click!) handler?]{Produces a handler that response to click events.}
 
 
 
+@section{HTML user interface constructors}
 
 
+@defproc[(js-p) ...]{}
+@defproc[(js-div) ...]{}
+@defproc[(js-button) ...]{}
+@defproc[(js-input) ...]{}
+@defproc[(js-img) ...]{}
+@defproc[(js-text) ...]{}
+@defproc[(js-select) ...]{}
 
 
-
-
-
-
-
-
-API
-
-big-bang
-
-key=?
-Same as on-key:
-http://docs.racket-lang.org/teachpack/2htdpuniverse.html?q=on-tick#(def._((lib._2htdp/universe..rkt)._key~3d~3f))
-
-
-on-tick
-
-Same as on-tick: http://docs.racket-lang.org/teachpack/2htdpuniverse.html?q=on-tick#(form._((lib._2htdp/universe..rkt)._on-tick))
-
-on-tick!
-
-on-key
-
-Same as on-key:
-http://docs.racket-lang.org/teachpack/2htdpuniverse.html?q=on-tick#(form._((lib._2htdp/universe..rkt)._on-key))
-
-on-key!
-
-
-on-click
-
-
-on-click!
-
-stop-when
-stop-when!
-
-to-draw
-Same as single-argument to-draw:
-http://docs.racket-lang.org/teachpack/2htdpuniverse.html?q=on-tick#(form._((lib._2htdp/universe..rkt)._to-draw))
-
-to-draw-page
-initial-effect
-
-js-p
-js-div
-js-button
-js-input
-js-img
-js-text
-js-select
-
+@section{Miscellaneous functions}
 world-with-effects
 
 
 
 
-Examples
+@section{Examples}
 
