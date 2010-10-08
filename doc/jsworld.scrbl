@@ -2,7 +2,10 @@
 
 @(require (for-label "../src/jsworld/jsworld.rkt"))
 
+
 @title{jsworld}
+
+@defmodule[jsworld]
 
 jsworld provides a world programming library that allows simple animation and games, as well
 as reactive HTML graphical user interfaces.
@@ -63,7 +66,7 @@ The following program shows a ball falling down a scene.
                (empty-scene WIDTH HEIGHT)))
 
 (big-bang INITIAL-WORLD
-             (on-tick 1/15 tick)
+             (on-tick tick 1/15)
              (to-draw render)
              (stop-when hits-floor?)))
 }
@@ -79,7 +82,7 @@ The program:
   (>= x 10))
 
 (big-bang 0
-             (on-tick 1 add1)
+             (on-tick add1 1)
              (stop-when at-ten))
 )
 counts up to ten and then stops.
@@ -130,6 +133,7 @@ Same as on-key:
 http://docs.racket-lang.org/teachpack/2htdpuniverse.html?q=on-tick#(form._((lib._2htdp/universe..rkt)._on-key))
 
 on-key!
+
 
 on-click
 
