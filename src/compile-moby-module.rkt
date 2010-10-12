@@ -163,10 +163,14 @@
   (string=? (path->string (normalize-path p1))
             (path->string (normalize-path p2))))
 
+(define ns (make-base-empty-namespace))
+
 ;; lookup&parse: path -> compilation-top
 (define (lookup&parse a-path)
   (let ([op (open-output-bytes)])
-    (write (get-module-code a-path) op)
+    (write (parameterize ([current-namespace ns])
+             (get-module-code a-path))
+           op)
     (translate-compilation-top
      (internal:zo-parse (open-input-bytes (get-output-bytes op))))))
 
