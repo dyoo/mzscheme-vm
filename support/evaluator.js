@@ -124,6 +124,16 @@ var Evaluator = (function() {
     };
 
 
+    // setGasLimit: number -> void
+    // Set the limit on how many steps are used between bounces.
+    // By default, 10000 steps.
+    // On a cell phone with limited CPU, set this to a lower value
+    // to keep the UI reactive enough for use.
+    Evaluator.prototype.setGasLimit = function(n) {
+	this.aState.MAX_STEPS_BEFORE_BOUNCE = n;
+    };
+
+
     Evaluator.prototype.requestBreak = function() {
 	this.aState.requestBreak();
     };
