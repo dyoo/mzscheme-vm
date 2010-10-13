@@ -1,6 +1,6 @@
 #lang scribble/manual
 
-@(require (for-label "../src/image/image.rkt"))
+@(require (for-label "../image/image.rkt"))
 
 
 @title{image}

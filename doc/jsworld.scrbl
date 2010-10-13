@@ -1,7 +1,7 @@
 #lang scribble/manual
 
-@(require (for-label "../src/jsworld/jsworld.rkt")
-          (for-label "../src/image/image.rkt"))
+@(require (for-label "../jsworld/jsworld.rkt")
+          (for-label "../image/image.rkt"))
 
 
 @title{jsworld}
