@@ -5,7 +5,7 @@
          racket/contract)
 ;; Get the list of primitives implemented in primitives.js
 
-(define-runtime-path primitive.js "../lib/primitive.js")
+(define-runtime-path primitive.js "lib/primitive.js")
 
 ;; sort&unique: (listof string) -> (listof string)
 (define (sort&unique names)

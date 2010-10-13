@@ -1,6 +1,6 @@
 #lang racket/base
-(require "create-javascript-package.rkt"
-         "misc.rkt"
+(require "private/create-javascript-package.rkt"
+         "private/misc.rkt"
          racket/path
          racket/cmdline)
 

@@ -1,4 +1,4 @@
-#lang s-exp "../../src/lang/base.rkt"
+#lang s-exp "../../lang/base.rkt"
 
 
 (provide test test-values Section record-error arity-test err/rt-test disable

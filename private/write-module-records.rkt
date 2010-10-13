@@ -1,7 +1,7 @@
 #lang racket/base
 
 (require "module-record.rkt"
-         "private/json.rkt"
+         "json.rkt"
          racket/list
          racket/contract)
          

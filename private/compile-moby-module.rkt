@@ -6,8 +6,8 @@
          "translate-bytecode-structs.rkt"
          "module-record.rkt"
          "collect-unimplemented-primvals.rkt"
-         (prefix-in permissions: "lang/permissions/query.rkt")
-         (prefix-in js-impl: "lang/js-impl/query.rkt")
+         (prefix-in permissions: "../lang/permissions/query.rkt")
+         (prefix-in js-impl: "../lang/js-impl/query.rkt")
          (prefix-in internal: compiler/zo-parse)
          racket/list
          racket/path
@@ -20,13 +20,13 @@
 (define-runtime-path mzscheme-vm-src-directory ".")
 
 (define-runtime-path hardcoded-moby-kernel-path
-  "lang/kernel.rkt")
+  "../lang/kernel.rkt")
 
 (define-runtime-path hardcoded-moby-paramz-path
-  "lang/paramz.rkt")
+  "../lang/paramz.rkt")
 
 (define-runtime-path hardcoded-js-impl-path
-  "lang/js-impl/js-impl.rkt")
+  "../lang/js-impl/js-impl.rkt")
 
 (define racket-path
   (resolve-module-path 'racket #f))

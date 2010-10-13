@@ -4,8 +4,8 @@
          racket/contract
          racket/port)
 
-(define-runtime-path library-path "../lib")
-(define-runtime-path support-directory "../support")
+(define-runtime-path library-path "lib")
+(define-runtime-path support-directory "support")
 
 
 ;; cat-to-port: path output-port -> void
