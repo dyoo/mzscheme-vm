@@ -488,7 +488,7 @@ EXPORTS['image-url'] =
 		 false, true,
 		 function(state, path) {
 		     check(path, isString, "image-url", "string", 1);
-		     return PAUSE(function(caller, success, fail) {
+		     return types.internalPause(function(caller, success, fail) {
 			 var rawImage = new Image();
 			 rawImage.onload = function() {
 			     success(world.Kernel.fileImage(
