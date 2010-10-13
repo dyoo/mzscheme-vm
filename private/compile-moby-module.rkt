@@ -6,7 +6,7 @@
          "translate-bytecode-structs.rkt"
          "module-record.rkt"
          "collect-unimplemented-primvals.rkt"
-         (prefix-in permissions: "../lang/permissions/query.rkt")
+         (prefix-in permissions: "../permissions/query.rkt")
          (prefix-in js-impl: "../lang/js-impl/query.rkt")
          (prefix-in internal: compiler/zo-parse)
          racket/list

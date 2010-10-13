@@ -4,8 +4,8 @@
 
 
 #:language (lambda (ip)
-	    `(file ,(path->string base-lang-path)))
+	    `(file ,(path->string lang-path)))
 
 
 (require racket/runtime-path)
-(define-runtime-path base-lang-path "../../lang/base.rkt")
+(define-runtime-path lang-path "../../lang/wescheme.rkt")

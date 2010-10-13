@@ -1,6 +1,6 @@
 #lang s-exp "../lang/base.rkt"
 
-(require "../lang/permissions/require-permission.rkt")
+(require "../permissions/require-permission.rkt")
 
 (provide on-acceleration!
 	 on-acceleration

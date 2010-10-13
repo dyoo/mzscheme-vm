@@ -5,6 +5,6 @@
 
 (printf "permissions.rkt\n")
 
-(require "../../lang/permissions/require-permission.rkt")
+(require "../../permissions/require-permission.rkt")
 
 (require-permission "network")

@@ -1,4 +1,4 @@
-#lang s-exp "../base.rkt"
+#lang s-exp "../lang/base.rkt"
 
 (require (for-syntax racket/base)
          (for-syntax "record.rkt"))
