@@ -27,7 +27,7 @@ rm -f $target
 
 echo 'Building support files'
 echo
-../../lib/build-test node $target
+../../private/lib/build-test node $target
 echo
 
 #cat imports.js >> $target

@@ -3248,7 +3248,10 @@ runTest('struct?',
 		testPrim('struct?', id, [1], false);
 		testPrim('struct?', id, [types.EMPTY], false);
 		testPrim('struct?', types.box, [2], false);
-		testPrim('struct?', id, [types.posn(2, 4)], true);
+
+	    var PosnType = types.makeStructureType(
+		'posn', false, 2, 0, false, false);
+	    testPrim('struct?', id, [PosnType.constructor(2, 4)], true);
 	});
 
 
