@@ -1,1 +1,1 @@
-("5.0.1" ("4c1faf446adc34a40721034745478672eefa2202" . "2e1b9cbcf2ff894f00588179acef61b2aa7330f2") (collects #"lang" #"htdp-beginner.rkt") (collects #"teachpack" #"htdp" #"world.rkt") (collects #"lang" #"htdp-beginner-reader.rkt"))
+("5.0.1" ("4c1faf446adc34a40721034745478672eefa2202" . "e07c007cc2dfbcfe97166d3c02937bfe3a2fd8c7") (collects #"lang" #"htdp-beginner.rkt") (collects #"teachpack" #"htdp" #"world.rkt") (collects #"lang" #"htdp-beginner-reader.rkt"))

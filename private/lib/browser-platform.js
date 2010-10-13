@@ -2,8 +2,10 @@
 var sys = {};
 
 sys.print = function(str) {
-	var s = str.toString().replace(new RegExp('\n', 'g'), '<br />');
-	document.write(s);
+    // var s = str.toString().replace(new RegExp('\n', 'g'), '<br />');
+    var span = document.createTextNode(s);
+    span.style["white-space"] = "pre";
+    document.body.appendChild(span);
 };
 
 sys.error = function(e) {
@@ -16,9 +18,10 @@ sys.error = function(e) {
 		}
 	}
 	else {
-		var s = e.toString().replace(new RegExp('\n', 'g'), '<br />');
-		s = "<br />Error: " + s + "<br />";
-		document.write(s);
+	    var s = "Error: " + e.toString() + "\n";
+	    var span = document.createTextNode(s);
+	    span.style["white-space"] = "pre";
+	    document.body.appendChild(span);
 	}
 };
 
@@ -34,40 +37,42 @@ var DEBUG_ON = false;
 
 var setDebug = function(v) {
     DEBUG_ON = v;
-}
+};
 
 var debug = function(s) {
     if (DEBUG_ON) {
 	sys.print(s);
     }
-}
+};
 
 var debugF = function(f_s) {
     if (DEBUG_ON) {
 	sys.print(f_s());
     }
-}
+};
 
 
 var deepEqual = function (obj1, obj2) {
+        var i;
 	if (obj1 === obj2) {
 		return true;
 	}
 
-	for (var i in obj1) {
+	for (i in obj1) {
 		if ( obj1.hasOwnProperty(i) ) {
-			if ( !(obj2.hasOwnProperty(i) && deepEqual(obj1[i], obj2[i])) )
+		    if ( !(obj2.hasOwnProperty(i) && deepEqual(obj1[i], obj2[i])) ) {
 				return false;
+		    }
 		}
 	}
-	for (var i in obj2) {
+	for (i in obj2) {
 		if ( obj2.hasOwnProperty(i) ) {
 			if ( !(obj1.hasOwnProperty(i) && deepEqual(obj1[i], obj2[i])) )
 				return false;
 		}
 	}
 	return true;
-}
+};
 
 
 var assert = {};
@@ -77,14 +82,14 @@ assert.equal = function(x, y) {
 		alert('AssertError: ' + x + ' equal ' + y);
 		throw new Error('AssertError: ' + x + ' equal ' + y);
 	}
-}
+};
 
 assert.deepEqual = function(x, y) {
 	if ( !deepEqual(x, y) ) {
 		alert('AssertError: ' + x + ' deepEqual ' + y);
 		throw new Error('AssertError: ' + x + ' deepEqual ' + y);
 	}
-}
+};
 
 
 assert.ok = function(x) {
@@ -92,7 +97,7 @@ assert.ok = function(x) {
 		alert('AssertError: not ok: ' + x);
 		throw new Error('AssertError: not ok: ' + x );
 	}
-}
+};
 
 
 assert.throws = function(f) {
@@ -102,6 +107,6 @@ assert.throws = function(f) {
 		return;
 	}
 	throw new Error('AssertError: Throw expected, none received.');
-}
+};
 
 

@@ -1,6 +1,8 @@
 #lang s-exp "../lang/base.rkt"
 
 (require "../permissions/require-permission.rkt")
+(require "../ffi/ffi.rkt")
+(require "../jsworld/jsworld.rkt")
 
 (provide on-acceleration!
 	 on-acceleration
@@ -21,7 +23,7 @@
 		    "PERMISSION:RECEIVE-SMS")
 
 (define (on-acceleration! world-updater effect-updater)
-  (let ([accelerometer (js-new (js-get-field (js-get-named-object "phonegap") "Accelerometer"))])
+  (let ([accelerometer (js-new (js-get-field (js-get-global-value "phonegap") "Accelerometer"))])
     (make-world-config (lambda (success error)
                          (js-call (js-get-field accelerometer "watchAcceleration")
                                   accelerometer
@@ -41,7 +43,7 @@
 
 
 (define (on-acceleration world-updater)
-  (let ([accelerometer (js-new (js-get-field (js-get-named-object "phonegap") "Accelerometer"))])
+  (let ([accelerometer (js-new (js-get-field (js-get-global-value "phonegap") "Accelerometer"))])
     (make-world-config (lambda (success error)
                          (js-call (js-get-field accelerometer "watchAcceleration")
                                   accelerometer
@@ -59,7 +61,7 @@
 
 
 (define (on-shake! world-updater effect-updater)
-  (let ([accelerometer (js-new (js-get-field (js-get-named-object "phonegap") "Accelerometer"))])
+  (let ([accelerometer (js-new (js-get-field (js-get-global-value "phonegap") "Accelerometer"))])
     (make-world-config (lambda (success error)
                          (js-call (js-get-field accelerometer "watchShake")
                                   accelerometer
@@ -76,7 +78,7 @@
                      
 
 (define (on-shake world-updater)
-  (let ([accelerometer (js-new (js-get-field (js-get-named-object "phonegap") "Accelerometer"))])
+  (let ([accelerometer (js-new (js-get-field (js-get-global-value "phonegap") "Accelerometer"))])
     (make-world-config (lambda (success error)
                          (js-call (js-get-field accelerometer "watchShake")
                                   accelerometer
@@ -89,7 +91,7 @@
 
 
 (define (on-tilt! world-updater effect-updater)
-  (let ([accelerometer (js-new (js-get-named-object "Accelerometer"))])
+  (let ([accelerometer (js-new (js-get-global-value "Accelerometer"))])
     (make-world-config (lambda (success error)
                          (js-call (js-get-field accelerometer "watchOrientation")
                                   accelerometer
@@ -108,7 +110,7 @@
 
 
 (define (on-tilt world-updater)
-  (let ([accelerometer (js-new (js-get-named-object "Accelerometer"))])
+  (let ([accelerometer (js-new (js-get-global-value "Accelerometer"))])
     (make-world-config (lambda (success error)
                          (js-call (js-get-field accelerometer "watchOrientation")
                                   accelerometer
@@ -126,7 +128,7 @@
 
 
 (define (on-location-change! world-updater effect-updater)
-  (let ([geolocation (js-get-field (js-get-named-object "navigator")
+  (let ([geolocation (js-get-field (js-get-global-value "navigator")
 				   "phonegap_geo")])
     (make-world-config (lambda (success error)
                          (js-call (js-get-field geolocation "watchPosition")
@@ -146,7 +148,7 @@
 
 
 (define (on-location-change world-updater)
-  (let ([geolocation (js-get-field (js-get-named-object "navigator")
+  (let ([geolocation (js-get-field (js-get-global-value "navigator")
 				   "phonegap_geo")])
     (make-world-config (lambda (success error)
                          (js-call (js-get-field geolocation "watchPosition")
@@ -165,7 +167,7 @@
 
 
 (define (on-sms-receive! world-updater effect-updater)
-  (let ([sms (js-new (js-get-field (js-get-named-object "phonegap") "Sms"))])
+  (let ([sms (js-new (js-get-field (js-get-global-value "phonegap") "Sms"))])
     (make-world-config (lambda (handler)
                          (js-call (js-get-field sms "addListener")
                                   sms
@@ -180,7 +182,7 @@
 
 
 (define (on-sms-receive world-updater)
-  (let ([sms (js-new (js-get-field (js-get-named-object "phonegap") "Sms"))])
+  (let ([sms (js-new (js-get-field (js-get-global-value "phonegap") "Sms"))])
     (make-world-config (lambda (handler)
                          (js-call (js-get-field sms "addListener")
                                   sms
