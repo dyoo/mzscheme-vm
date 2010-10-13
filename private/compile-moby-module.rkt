@@ -17,7 +17,7 @@
          syntax/modcode
          syntax/modresolve)
 
-(define-runtime-path mzscheme-vm-src-directory ".")
+(define-runtime-path mzscheme-vm-src-directory "..")
 
 (define-runtime-path hardcoded-moby-kernel-path
   "../lang/kernel.rkt")

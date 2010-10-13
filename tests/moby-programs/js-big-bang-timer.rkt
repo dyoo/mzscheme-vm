@@ -1,6 +1,6 @@
-#lang s-exp "../../src/lang/base.rkt"
+#lang s-exp "../../lang/base.rkt"
 
-(require "../../src/jsworld/jsworld.rkt")
+(require "../../jsworld/jsworld.rkt")
 
 
 (printf "js-big-bang-timer.rkt\n")

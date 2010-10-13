@@ -1,4 +1,4 @@
-#lang s-exp "../../src/lang/wescheme.ss"
+#lang s-exp "../../lang/wescheme.ss"
 
 ;; Simple falling ball example.  A red ball falls down the screen
 ;; until hitting the bottom.

@@ -1,4 +1,4 @@
-#lang s-exp "../../src/lang/base.rkt"
+#lang s-exp "../../lang/base.rkt"
 
 
 (printf "with-handlers-1.rkt\n")

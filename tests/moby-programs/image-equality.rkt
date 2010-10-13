@@ -1,5 +1,5 @@
-#lang s-exp "../../src/lang/base.rkt"
-(require "../../src/image/image.rkt")
+#lang s-exp "../../lang/base.rkt"
+(require "../../image/image.rkt")
 
 ;; Tests on images.
 ;;

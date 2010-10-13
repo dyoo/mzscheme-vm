@@ -1,4 +1,4 @@
-#lang s-exp "../../src/lang/base.ss"
+#lang s-exp "../../lang/base.ss"
 
 (require "required-3.rkt")
 

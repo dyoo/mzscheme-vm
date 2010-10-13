@@ -1,4 +1,4 @@
-#lang s-exp "../../src/lang/js-impl/js-impl.rkt"
+#lang s-exp "../../lang/js-impl/js-impl.rkt"
 
 (require-js "double.js")
 

@@ -1,4 +1,4 @@
-#lang s-exp "../../src/lang/wescheme.rkt"
+#lang s-exp "../../lang/wescheme.rkt"
 
 (printf "images.rkt\n")
 
