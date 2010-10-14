@@ -16,3 +16,5 @@
 (define repositories '("4.x"))
 (define blurb 
   '("Provides support for compiling Racket programs to run as Javascript on the browser."))
+(define release-notes
+  '("Experimental release; no documentation yet."))
