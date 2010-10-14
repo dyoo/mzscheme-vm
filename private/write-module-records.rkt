@@ -2,6 +2,7 @@
 
 (require "module-record.rkt"
          "json.rkt"
+         "log-port.rkt"
          racket/list
          racket/contract)
          
