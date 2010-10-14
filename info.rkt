@@ -5,14 +5,14 @@
 
 (define compile-omit-paths '("externals" "support" "lib" "tests" "sandbox"))
 
-(define scribblings '(("doc/jsworld.rkt")
-		      ("doc/image.rkt")))
+(define scribblings '(("doc/jsworld.scrbl")
+		      ("doc/image.scrbl")))
 
 
 (define categories '(devtools))
 (define can-be-loaded-with 'all)
 (define required-core-version "5.0.1")
-(define version "0.1alpha")
-(define repositories "4.x")
+(define version "1.0alpha")
+(define repositories '("4.x"))
 (define blurb 
   '("Provides support for compiling Racket programs to run as Javascript on the browser."))
