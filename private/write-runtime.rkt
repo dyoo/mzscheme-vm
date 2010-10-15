@@ -2,7 +2,8 @@
 
 (require racket/runtime-path
          racket/contract
-         racket/port)
+         racket/port
+         racket/path)
 
 (define-runtime-path library-path "lib")
 (define-runtime-path support-directory "support")
@@ -15,7 +16,8 @@
 
 
 ;; copy-support-files: path -> void
-;; Write out the support files to the given directory.
+;; Write out the support files (both javascript, the icons, and
+;; index.html) to the given directory.
 (define (copy-support-files a-path)
   (for ([p (directory-list support-directory)])
     (when (file-exists? (build-path a-path p))
@@ -25,11 +27,25 @@
                (build-path a-path p))))
 
 
+;; copy-support-js-files: path -> void
+;; Write out the javascript support files
+(define (copy-support-js-files a-path)
+  (for ([p (directory-list support-directory)])
+    (when (equal? (filename-extension a-path)
+                  #"js")
+      (when (file-exists? (build-path a-path p))
+        (delete-file (build-path a-path p)))
+      
+      (copy-file (build-path support-directory p)
+                 (build-path a-path p)))))
+
+
 ;; write-platform-libraries: string output-port -> void
 ;; Writes out the platform-specific libraries out to the given output port.
 (define (write-runtime a-platform out-port)
   (let ([platform-specific-js-path
-         (build-path library-path (string-append a-platform "-platform.js"))])
+         (build-path library-path 
+                     (string-append a-platform "-platform.js"))])
     
     (cond
       [(file-exists? platform-specific-js-path)
@@ -46,4 +62,5 @@
 
 
 (provide/contract [write-runtime (string? output-port? . -> . any)]
-                  [copy-support-files (path? . -> . any)])
+                  [copy-support-files (path? . -> . any)]
+                  [copy-support-js-files (path? . -> . any)])
