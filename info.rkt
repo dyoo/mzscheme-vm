@@ -5,7 +5,7 @@
 
 (define compile-omit-paths '("externals" "support" "lib" "tests" "sandbox"))
 
-(define scribblings '(("doc/jsworld.scrbl")
+#;(define scribblings '(("doc/jsworld.scrbl")
 		      ("doc/image.scrbl")))
 
 
