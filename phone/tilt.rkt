@@ -9,18 +9,11 @@
          on-shake!
          on-shake
 	 on-tilt!
-	 on-tilt
-	 on-location-change!
-	 on-location-change
-	 on-sms-receive!
-	 on-sms-receive)
+	 on-tilt)
 
 
 (require-permission "PERMISSION:TILT"
-		    "PERMISSION:SHAKE"
-		    "PERMISSION:LOCATION"
-		    "PERMISSION:SEND-SMS"
-		    "PERMISSION:RECEIVE-SMS")
+		    "PERMISSION:SHAKE")
 
 (define (on-acceleration! world-updater effect-updater)
   (let ([accelerometer (js-new (js-get-field (js-get-global-value "phonegap") "Accelerometer"))])
@@ -124,73 +117,4 @@
                            (world-updater w azimuth pitch roll)))
                        (lambda (w e)
                          (error 'on-tilt "an error occured with the accelerometer")))))
-
-
-
-(define (on-location-change! world-updater effect-updater)
-  (let ([geolocation (js-get-field (js-get-global-value "navigator")
-				   "phonegap_geo")])
-    (make-world-config (lambda (success error)
-                         (js-call (js-get-field geolocation "watchPosition")
-                                  geolocation
-                                  success
-                                  error))
-                       (lambda (id) (js-call (js-get-field geolocation "clearWatch")
-                                             geolocation
-                                             id))
-                       (lambda (w lat lng)
-                         (world-with-effects (effect-updater w (prim-js->scheme lat) (prim-js->scheme lng))
-                                             (world-updater w (prim-js->scheme lat) (prim-js->scheme lng))))
-                       (lambda (w e)
-                         (error 'on-location-change! "an error occurred with accessing GPS locations")))))
-
-
-
-
-(define (on-location-change world-updater)
-  (let ([geolocation (js-get-field (js-get-global-value "navigator")
-				   "phonegap_geo")])
-    (make-world-config (lambda (success error)
-                         (js-call (js-get-field geolocation "watchPosition")
-                                  geolocation
-                                  success
-                                  error))
-                       (lambda (id) (js-call (js-get-field geolocation "clearWatch")
-                                             geolocation
-                                             id))
-                       (lambda (w lat lng)
-                         (world-updater w (prim-js->scheme lat) (prim-js->scheme lng)))
-                       (lambda (w e)
-                         (error 'on-location-change "an error occurred with accessing GPS locations")))))
-
-
-
-
-(define (on-sms-receive! world-updater effect-updater)
-  (let ([sms (js-new (js-get-field (js-get-global-value "phonegap") "Sms"))])
-    (make-world-config (lambda (handler)
-                         (js-call (js-get-field sms "addListener")
-                                  sms
-                                  handler))
-                       void ;; FIXME: We need some sort of shutdown here!
-                       (lambda (w sender-js-str msg-js-str)
-                         (let ([sender (prim-js->scheme sender-js-str)]
-                               [msg (prim-js->scheme msg-js-str)])
-                         (world-with-effects (effect-updater w sender msg)
-                                             (world-updater w sender msg)))))))
-
-
-
-(define (on-sms-receive world-updater)
-  (let ([sms (js-new (js-get-field (js-get-global-value "phonegap") "Sms"))])
-    (make-world-config (lambda (handler)
-                         (js-call (js-get-field sms "addListener")
-                                  sms
-                                  handler))
-                       void ;; FIXME: We need some sort of shutdown here!
-                       (lambda (w sender-js-str msg-js-str)
-                         (let ([sender (prim-js->scheme sender-js-str)]
-                               [msg (prim-js->scheme msg-js-str)])
-                         (world-updater w sender msg))))))
-
 
