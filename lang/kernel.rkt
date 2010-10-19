@@ -1,6 +1,8 @@
 #lang racket/base
-(require (prefix-in math: (only-in racket/math pi))
-         (prefix-in math: (only-in mzlib/math e)))
+(require (prefix-in math: (only-in racket/math pi sinh))
+         (prefix-in math: (only-in mzlib/math e))
+         (prefix-in racket: racket/base)
+         (prefix-in advanced: lang/htdp-advanced))
 
 (require (for-syntax racket/base)
          racket/local)
@@ -58,12 +60,35 @@
 ;; provide-stub-function
 (define-syntax (provide-stub-function stx)
   (syntax-case stx ()
-    [(_ name ...)
-     (syntax/loc stx
-       (begin (begin (define (name . args) 
-                       'this-is-a-stub)
-                     (provide name))
-              ...))]))
+    [(_ name-or-name-pair ...)
+     (with-syntax ([(provided-name ...)
+                    (map (lambda (name-or-pair)
+                           (syntax-case name-or-pair ()
+                             [x
+                              (identifier? #'x)
+                              #'x]
+                             [(x y)
+                              #'x]))
+                         (syntax->list #'(name-or-name-pair ...)))]
+                   [(impl-name ...) 
+                    (map (lambda (name)
+                           (syntax-case name ()
+                             [an-id
+                              (identifier? #'an-id)
+                              (datum->syntax name 
+                                             (string->symbol
+                                              (string-append "racket:"
+                                                             (symbol->string 
+                                                              (syntax-e name))))
+                                             name)]
+                             [(an-id an-impl-name)
+                              #'an-impl-name]))
+                         (syntax->list #'(name-or-name-pair ...)))])
+       (syntax/loc stx
+         (begin (begin (define (provided-name . args) 
+                         (racket:apply impl-name args))
+                       (provide provided-name))
+                ...)))]))
 
 
 
@@ -102,9 +127,10 @@
                      (for-syntax for-syntax)
 		     (define-for-syntax define-for-syntax)
                      (begin-for-syntax begin-for-syntax)
-                     ; (prefix-in prefix-in)
+                     #;(prefix-in prefix-in)
 		     (only-in only-in)
                      (provide provide)
+		     (planet planet)
 		     (all-defined-out all-defined-out)
 		     (all-from-out all-from-out)
 		     (except-out except-out)
@@ -122,10 +148,20 @@
                      (null null)))
 
 
-(provide-stub-function print-values
-                       check-expect
-                       EXAMPLE
-                       check-within
+(define (-identity x) x)
+
+(define (-undefined? x)
+  (letrec ([y y])
+    (eq? x y)))
+
+
+(provide-stub-function #;print-values
+                       #;check-expect
+                       #;EXAMPLE
+                       #;check-within
+                       #;xml->s-exp
+                       #;js-object?
+
                        write
                        display
                        newline
@@ -157,7 +193,7 @@
                        void
                        random
                        sleep
-                       identity
+                       (identity -identity)
                        raise
                        error
 
@@ -166,7 +202,7 @@
                        make-exn:fail:contract
                        make-exn:fail:contract:arity
                        make-exn:fail:contract:variable
-                       make-exn:fail:contract:division-by-zero
+                       make-exn:fail:contract:divide-by-zero
 
                        exn-message
                        exn-continuation-marks
@@ -176,14 +212,14 @@
 		       exn:fail:contract?
 		       exn:fail:contract:arity?
 		       exn:fail:contract:variable?
-		       exn:fail:contract:division-by-zero?
+		       exn:fail:contract:divide-by-zero?
 
 
                        *
                        -
                        +
                        =
-                       =~
+                       (=~ advanced:=~)
                        /
                        sub1
                        add1
@@ -213,9 +249,9 @@
                        asin
                        acos
                        atan
-                       sinh
-                       cosh
-                       sqr
+                       (sinh advanced:sinh)
+                       (cosh advanced:cosh)
+                       (sqr advanced:sqr)
                        sqrt
                        integer-sqrt
                        make-rectangular
@@ -224,19 +260,18 @@
                        imag-part
                        angle
                        magnitude
-                       conjugate
-                       sgn
+                       (conjugate advanced:conjugate)
+                       (sgn advanced:sgn)
                        inexact->exact
                        exact->inexact
                        number->string
                        string->number
-                       xml->s-exp
                        procedure?
                        pair?
-                       cons?
-                       empty?
+                       (cons? advanced:cons?)
+                       (empty? advanced:empty?)
                        null?
-                       undefined?
+                       (undefined? -undefined?)
 		       immutable?
                        void?
                        symbol?
@@ -246,7 +281,6 @@
                        vector?
                        struct?
                        eof-object?
-                       posn?
                        bytes?
                        byte?
                        number?
@@ -266,11 +300,10 @@
                        eq?
                        eqv?
                        equal?
-                       equal~?
-                       false?
-                       boolean=?
-                       symbol=?
-                       js-object?
+                       (equal~? advanced:equal~?)
+                       (false? advanced:false?)
+                       (boolean=? advanced:boolean=?)
+                       (symbol=? advanced:symbol=?)
                        cons
                        car
                        cdr
@@ -287,15 +320,15 @@
                        caddr
                        cdddr
                        cadddr
-                       rest
-                       first
-                       second
-                       third
-                       fourth
-                       fifth
-                       sixth
-                       seventh
-                       eighth
+                       (rest advanced:rest)
+                       (first advanced:first)
+                       (second advanced:second)
+                       (third advanced:third)
+                       (fourth advanced:fourth)
+                       (fifth advanced:fifth)
+                       (sixth advanced:sixth)
+                       (seventh advanced:seventh)
+                       (eighth advanced:eighth)
                        length
                        list?
                        list
@@ -318,10 +351,10 @@
                        filter
                        foldl
                        foldr
-                       quicksort
+                       (quicksort advanced:quicksort)
                        sort
-                       argmax
-                       argmin
+                       (argmax advanced:argmax)
+                       (argmin advanced:argmin)
                        build-list
                        box
                        box-immutable
@@ -335,7 +368,7 @@
                        hash-map
                        hash-for-each
                        make-string
-                       replicate
+                       (replicate advanced:replicate)
                        string
                        string-length
                        string-ref
@@ -358,16 +391,16 @@
                        symbol->string
                        format
                        printf
-                       string->int
-                       int->string
-                       explode
-                       implode
-                       string-alphabetic?
-                       string-ith
-                       string-lower-case?
-                       string-numeric?
-                       string-upper-case?
-                       string-whitespace?
+                       (string->int advanced:string->int)
+                       (int->string advanced:int->string)
+                       (explode advanced:explode)
+                       (implode advanced:implode)
+                       (string-alphabetic? advanced:string-alphabetic?)
+                       (string-ith advanced:string-ith)
+                       (string-lower-case? advanced:string-lower-case?)
+                       (string-numeric? advanced:string-numeric?)
+                       (string-upper-case? advanced:string-upper-case?)
+                       (string-whitespace? advanced:string-whitespace?)
                        build-string
                        string->immutable-string
                        string-set!

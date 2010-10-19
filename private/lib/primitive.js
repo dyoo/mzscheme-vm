@@ -1307,8 +1307,8 @@ PRIMITIVES['make-exn:fail:contract'] = new PrimProc('make-exn:fail:contract', 2,
 
 
 
-PRIMITIVES['make-exn:fail:contract:division-by-zero'] =
-    new PrimProc('make-exn:fail:contract:division-by-zero', 
+PRIMITIVES['make-exn:fail:contract:divide-by-zero'] =
+    new PrimProc('make-exn:fail:contract:divide-by-zero', 
 		 2,
 		 false, 
 		 false,
@@ -1355,8 +1355,8 @@ PRIMITIVES['exn:fail:contract:variable?'] =
 		     types.isExnFailContractVariable);
 
 
-PRIMITIVES['exn:fail:contract:division-by-zero?'] = 
-	new PrimProc('exn:fail:contract:division-by-zero?',
+PRIMITIVES['exn:fail:contract:divide-by-zero?'] = 
+	new PrimProc('exn:fail:contract:divide-by-zero?',
 		     1,
 		     false,
 		     false,

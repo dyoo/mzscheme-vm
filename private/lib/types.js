@@ -2270,7 +2270,7 @@ types.exnFailContractVariable = ExnFailContract.constructor;
 types.isExnFailContractVariable = ExnFailContract.predicate;
 types.exnFailContractVariableId = function(exn) { return ExnFailContractVariable.accessor(exn, 0); };
 
-var ExnFailContractDivisionByZero = makeStructureType('exn:fail:contract:division-by-zero', ExnFailContract, 0, 0, false, false);
+var ExnFailContractDivisionByZero = makeStructureType('exn:fail:contract:divide-by-zero', ExnFailContract, 0, 0, false, false);
 types.exnFailContractDivisionByZero = ExnFailContractDivisionByZero.constructor;
 types.isExnFailContractDivisionByZero = ExnFailContractDivisionByZero.predicate;
 

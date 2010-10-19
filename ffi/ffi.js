@@ -15,7 +15,7 @@ unbound references everywhere.
 
 
 EXPORTS['scheme->prim-js'] =
-    new PrimProc('scheme->prim-js',
+    new types.PrimProc('scheme->prim-js',
 		 1,
 		 false, false,
 		 function(x) {
@@ -61,7 +61,7 @@ EXPORTS['scheme->prim-js'] =
 
 
 EXPORTS['prim-js->scheme'] =
-    new PrimProc('prim-js->scheme',
+    new types.PrimProc('prim-js->scheme',
 		 1,
 		 false, false,
 		 function(x) {
@@ -80,7 +80,7 @@ EXPORTS['prim-js->scheme'] =
 				return x.val;
 			}
 			else if ( typeof(x.val) === 'function' ) {
-				return new PrimProc('', 0, true, false, function(args) { return x.val.apply(null, args); });
+				return new types.PrimProc('', 0, true, false, function(args) { return x.val.apply(null, args); });
 			}
 			else if ( x.val instanceof Array ) {
 				return types.vector( helpers.map(helpers.wrapJsValue, x.val) );
@@ -89,7 +89,7 @@ EXPORTS['prim-js->scheme'] =
 
 
 EXPORTS['procedure->cps-js-fun'] =
-    new PrimProc('procedure->cps-js-fun',
+    new types.PrimProc('procedure->cps-js-fun',
 		 1,
 		 false, true,
 		 function(aState, proc) {
@@ -105,7 +105,7 @@ EXPORTS['procedure->cps-js-fun'] =
 		 });
 
 EXPORTS['procedure->void-js-fun'] =
-    new PrimProc('procedure->void-js-fun',
+    new types.PrimProc('procedure->void-js-fun',
 		 1,
 		 false, true,
 		 function(aState, proc) {
@@ -120,7 +120,7 @@ EXPORTS['procedure->void-js-fun'] =
 
 
 EXPORTS['js-==='] =
-    new PrimProc('js-===',
+    new types.PrimProc('js-===',
 		 2,
 		 false, false,
 		 function(v1, v2) {
@@ -132,7 +132,7 @@ EXPORTS['js-==='] =
 
 
 EXPORTS['js-get-global-value'] =
-    new PrimProc('js-get-global-value',
+    new types.PrimProc('js-get-global-value',
 		 1,
 		 false, false,
 		 function(name) {
@@ -146,7 +146,7 @@ EXPORTS['js-get-global-value'] =
 
 
 EXPORTS['js-get-field'] =
-    new PrimProc('js-get-field',
+    new types.PrimProc('js-get-field',
 		 2,
 		 true, false,
 		 function(root, firstSelector, selectors) {
@@ -189,7 +189,7 @@ EXPORTS['js-get-field'] =
 
 
 EXPORTS['js-set-field!'] =
-    new PrimProc('js-set-field!',
+    new types.PrimProc('js-set-field!',
 		 3,
 		 false, false,
 		 function(obj, field, v) {
@@ -203,7 +203,7 @@ EXPORTS['js-set-field!'] =
 
 
 EXPORTS['js-typeof'] =
-    new PrimProc('js-typeof',
+    new types.PrimProc('js-typeof',
 		 1,
 		 false, false,
 		 function(v) {
@@ -213,7 +213,7 @@ EXPORTS['js-typeof'] =
 
 
 EXPORTS['js-instanceof'] =
-    new PrimProc('js-instanceof',
+    new types.PrimProc('js-instanceof',
 		 2,
 		 false, false,
 		 function(v, type) {
@@ -225,7 +225,7 @@ EXPORTS['js-instanceof'] =
 
 
 EXPORTS['js-call'] =
-    new PrimProc('js-call',
+    new types.PrimProc('js-call',
 		 2,
 		 true, false,
 		 function(fun, parent, initArgs) {
@@ -247,7 +247,7 @@ EXPORTS['js-call'] =
 
 
 EXPORTS['js-new'] =
-    new PrimProc('js-new',
+    new types.PrimProc('js-new',
 		 1,
 		 true, false,
 		 function(constructor, initArgs) {
@@ -265,8 +265,8 @@ EXPORTS['js-new'] =
 
 EXPORTS['js-make-hash'] =
     new CasePrimitive('js-make-hash',
-	[new PrimProc('js-make-hash', 0, false, false, function() { return types.jsValue('hash', {}); }),
-	 new PrimProc('js-make-hash',
+	[new types.PrimProc('js-make-hash', 0, false, false, function() { return types.jsValue('hash', {}); }),
+	 new types.PrimProc('js-make-hash',
 		      1,
 		      false, false,
 		      function(bindings) {
