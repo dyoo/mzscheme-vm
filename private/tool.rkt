@@ -59,20 +59,42 @@
                 get-definitions-text)
     
        
-       ;; click!: menu-item% control-event% -> void
-       ;; On selection, prompts for a output zip file name, and then writes a zip
-       ;; with the contents.
-       (define (click! a-menu-item a-control-event)
+       ;; check-cleanliness: (-> X) (-> x) (-> X) -> void
+       ;; Does a check to see if the file being editing is unsaved
+       ;; or dirty.
+       (define (check-cleanliness #:on-unsaved on-unsaved 
+                                  #:on-dirty on-dirty 
+                                  #:on-ok on-ok)
          (let* ([a-text (get-definitions-text)]
                 [a-filename (send a-text get-filename)])
            (cond
              [(not (path-string? a-filename))
-              (message-box "Create Javascript Package"
-                           "Your program needs to be saved first before packaging.")]
+              (on-unsaved)]
              [(send a-text is-modified?)
-              (message-box "Create Javascript Package"
-                           "Your program has changed since your last save or load; please save before packaging.")]
+              (on-dirty)]
              [else
+              (on-ok)])))
+         
+       
+       ;; click!: menu-item% control-event% -> void
+       ;; On selection, prompts for a output zip file name,
+       ;; and then writes a zip with the contents.
+       (define (click! a-menu-item a-control-event)
+         (let* ([a-text (get-definitions-text)]
+                [a-filename (send a-text get-filename)])
+           (check-cleanliness 
+            #:on-unsaved
+            (lambda ()
+              (message-box "Create Javascript Package"
+                           "Your program needs to be saved first before packaging."))
+            
+            #:on-dirty
+            (lambda ()
+              (message-box "Create Javascript Package"
+                           "Your program has changed since your last save or load; please save before packaging."))
+            
+            #:on-ok
+            (lambda ()
               (let ([output-file
                      (finder:put-file (make-reasonable-package-name a-filename)
                                       #f
@@ -106,14 +128,41 @@
                                (fprintf notify-port "Writing package to file ~a...\n" output-file)
                                (copy-port ip op))
                              #:exists 'replace)
-                           (fprintf notify-port "Done!\n")))))]))])))
+                           (fprintf notify-port "Done!\n")))))]))))))
        
        
-       (super-new)
        
+       
+       (define (run! a-menu-item a-click-event)
+         (check-cleanliness 
+            #:on-unsaved
+            (lambda ()
+              (message-box "Run Javascript in Browser"
+                           "Your program needs to be saved first before we can Javascript-compile and run it."))
+            
+            #:on-dirty
+            (lambda ()
+              (message-box "Run Javascript in Browser"
+                           "Your program has changed since your last save or load; please save first."))
+            
+            #:on-ok
+            (lambda ()
+              (void))))
+       
+       
+       
+       ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+       ;;; Initialization
+       (super-new)       
        (let ([racket-menu (get-language-menu)])
          (new separator-menu-item% [parent racket-menu])
          (new menu-item% 
               [parent racket-menu]
               [label "Create Javascript Package"]
-              [callback click!]))))))
+              [callback click!])
+         
+         (new menu-item%
+              [parent racket-menu]
+              [label "Run Javascript in Browser"]
+              [callback run!])
+         )))))
