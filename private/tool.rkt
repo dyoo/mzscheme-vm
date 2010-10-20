@@ -5,6 +5,7 @@
          racket/class
          racket/port
          racket/file
+         net/sendurl
          framework
          drracket/tool
          
@@ -164,18 +165,29 @@
             
             #:on-ok
             (lambda ()
-              (let* ([a-text (get-definitions-text)]
-                     [a-filename (send a-text get-filename)]
-                     [dispatcher (make-web-serving-dispatcher a-filename)]
-                     [a-rep (get-interactions-text)]
-                     [user-custodian (send a-rep get-user-custodian)])
-                
-
-                ;; What about shutdown?
-                ;; We need to trigger on the reset
-                (parameterize ([current-custodian user-custodian])
-                  (serve #:dispatch dispatcher
-                         #:port 8888))))))
+              (let ([notify-port 
+                     (make-notification-window 
+                      #:title "Running Javascript")])
+                (parameterize ([current-log-port notify-port])
+                  (fprintf notify-port "Starting up web server.\n")
+                  (let* ([a-text (get-definitions-text)]
+                         [a-filename 
+                          (send a-text get-filename)]
+                         [dispatcher 
+                          (make-web-serving-dispatcher a-filename)]
+                         [a-rep (get-interactions-text)]
+                         [user-custodian (send a-rep get-user-custodian)])
+                    
+                    
+                    ;; What about shutdown?
+                    ;; We need to trigger on the reset
+                    (parameterize ([current-custodian user-custodian])
+                      (serve #:dispatch dispatcher
+                             #:port 8888))
+                    (send-url "http://localhost:8888/index.html")
+                    (fprintf notify-port 
+                             "Server should be running on port ~a\n"
+                             8888)))))))
        
               
        

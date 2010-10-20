@@ -7,6 +7,7 @@
          (prefix-in lift: web-server/dispatchers/dispatch-lift)
          
          web-server/http/request-structs
+         web-server/http/response-structs
          web-server/private/mime-types
          racket/runtime-path)
 
@@ -51,7 +52,11 @@
                           content)])
               a-response)]
            [else
-            (next-dispatcher)]))))))
+            (make-response/basic
+             404 
+             #"Not found"
+             (current-seconds)
+             TEXT/HTML-MIME-TYPE (list))]))))))
   
 #;(require web-server/web-server)
 #;(define (test)
