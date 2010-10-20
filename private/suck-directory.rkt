@@ -60,4 +60,8 @@
   
 
 (provide/contract [suck-directory
-                   (path-string? . -> . (hash/c string? bytes?))])
+                   (path-string? . -> . (hash/c string? bytes?))]
+                  [make-web-dispatcher
+                   ((path-string?)
+                    (#:path->mime-type (path? . -> . bytes?))
+                    . ->* . dispatcher/c)])

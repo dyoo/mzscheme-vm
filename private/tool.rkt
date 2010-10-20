@@ -4,6 +4,7 @@
          racket/unit
          racket/class
          racket/port
+         racket/file
          framework
          drracket/tool
          
@@ -11,7 +12,9 @@
          "create-javascript-package.rkt"
          "zip-temp-dir.rkt"
          "notification-window.rkt"
-         "log-port.rkt")
+         "log-port.rkt"
+         "suck-directory.rkt"
+         web-server/web-server)
 
 ;; This tool adds a "Create Javascript Package" button to the Racket menu.
 
@@ -56,8 +59,9 @@
     (drracket:get/extend:extend-unit-frame
      (mixin (unit-frame<%>) (unit-frame<%>)
        (inherit get-language-menu
-                get-definitions-text)
-    
+                get-definitions-text
+                get-interactions-text)       
+
        
        ;; check-cleanliness: (-> X) (-> x) (-> X) -> void
        ;; Does a check to see if the file being editing is unsaved
@@ -132,6 +136,19 @@
        
        
        
+       ;; make-web-serving-dispatcher: path -> dispatcher/c
+       (define (make-web-serving-dispatcher a-filename)
+         (let* ([tmpdir
+                 (make-temporary-file "mztmp~a"
+                                      'directory
+                                      #f)])
+           (dynamic-wind 
+            (lambda () (void))
+            (lambda ()
+              (create-javascript-package a-filename tmpdir)
+              (make-web-dispatcher tmpdir))
+            (lambda () (delete-directory/files tmpdir)))))
+       
        
        (define (run! a-menu-item a-click-event)
          (check-cleanliness 
@@ -147,9 +164,20 @@
             
             #:on-ok
             (lambda ()
-              (void))))
+              (let* ([a-text (get-definitions-text)]
+                     [a-filename (send a-text get-filename)]
+                     [dispatcher (make-web-serving-dispatcher a-filename)]
+                     [a-rep (get-interactions-text)]
+                     [user-custodian (send a-rep get-user-custodian)])
+                
+
+                ;; What about shutdown?
+                ;; We need to trigger on the reset
+                (parameterize ([current-custodian user-custodian])
+                  (serve #:dispatch dispatcher
+                         #:port 8888))))))
        
-       
+              
        
        ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
        ;;; Initialization
