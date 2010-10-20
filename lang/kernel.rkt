@@ -43,7 +43,7 @@
   (syntax-case stx ()
     [(_ x ...)
      (syntax/loc stx
-       (define-struct x ...))]))
+       (define-struct x ... #:transparent))]))
 
 
 ;; constants

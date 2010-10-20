@@ -2,11 +2,17 @@
 
 (provide record-javascript-implementation!
          has-javascript-implementation?
-         lookup-javascript-implementation)
+         lookup-javascript-implementation
+         
+         record-redirection!
+         follow-redirection)
 
 
 (define-struct record (path impl))
 (define records '())
+
+(define-struct redirection (from to))
+(define redirections '())
 
 ;; record-javascript-implementation!: path string -> void
 (define (record-javascript-implementation! a-path an-impl)
@@ -39,3 +45,18 @@
 ;; lookup-javascript-implementation: path -> module-path
 (define (lookup-javascript-implementation a-path)
   (record-impl (find a-path records)))
+
+
+(define (record-redirection! from to)
+  (set! redirections (cons (make-redirection from to) redirections)))
+
+
+(define (follow-redirection a-path)
+  (let loop ([redirections redirections])
+    (cond
+      [(null? redirections)
+       #f]
+      [(equal? (redirection-from (car redirections)) a-path)
+       (redirection-to (car redirections))]
+      [else
+       (loop (cdr redirections))])))
