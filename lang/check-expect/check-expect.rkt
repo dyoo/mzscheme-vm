@@ -1,5 +1,4 @@
-#lang s-exp "../js-conditional/js-conditional.rkt"
+#lang s-exp "../kernel.rkt"
 
-(declare-conditional-implementation 
- #:racket "racket-check-expect.rkt"
- #:javascript ("js-check-expect.js"))
+(require "private/check-expect.rkt")
+(provide (all-from-out "private/check-expect.rkt"))

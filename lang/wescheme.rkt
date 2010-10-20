@@ -33,6 +33,11 @@
 (provide (all-from-out "../jsworld/jsworld.rkt"))
 
 
-
+;; re-export posn
 (require "posn.rkt")
 (provide (all-from-out "posn.rkt"))
+
+
+;; re-export check-expect
+(require "check-expect/check-expect.rkt")
+(provide (all-from-out "check-expect/check-expect.rkt"))
