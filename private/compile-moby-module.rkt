@@ -8,6 +8,7 @@
          "collect-unimplemented-primvals.rkt"
          (prefix-in permissions: "../permissions/query.rkt")
          (prefix-in js-impl: "../lang/js-impl/query.rkt")
+         (prefix-in js-conditional: "../lang/js-conditional/query.rkt")
          (prefix-in internal: compiler/zo-parse)
          racket/list
          racket/path
@@ -27,6 +28,10 @@
 
 (define-runtime-path hardcoded-js-impl-path
   "../lang/js-impl/js-impl.rkt")
+
+(define-runtime-path hardcoded-js-conditional-path
+  "../lang/js-conditional/js-conditional.rkt")
+
 
 (define racket-path
   (resolve-module-path 'racket #f))
@@ -65,13 +70,16 @@
 ;; module-neighbors: path -> (listof path)
 ;; Returns a list of the required modules needed by the module of the given a-path.
 (define (module-neighbors a-path)
-  (let* ([translated-compilation-top
-             (lookup&parse a-path)]
-            [neighbors 
-             (get-module-phase-0-requires
-              translated-compilation-top a-path)])
-       neighbors))
-                           
+  (cond [(looks-like-js-conditional-module? a-path)
+         '()]
+        [else
+         (let* ([translated-compilation-top
+                 (lookup&parse a-path)]
+                [neighbors 
+                 (get-module-phase-0-requires
+                  translated-compilation-top a-path)])
+           neighbors)]))
+
 
 ;; compile-moby-module: path path -> module-record
 (define (compile-moby-module a-path main-module-path)
@@ -89,6 +97,16 @@
                                            (module-neighbors a-path)))
                               '()
                               '()))]
+    [(looks-like-js-conditional-module? a-path)
+     (let* ([translated-compilation-top (lookup&parse a-path)]
+            [exports (collect-provided-names translated-compilation-top)])
+       (make-js-module-record (munge-resolved-module-path-to-symbol a-path main-module-path)
+                              a-path
+                              (js-conditional:query `(file ,(path->string a-path)))
+                              exports
+                              (list)
+                              (list)
+                              (list)))]
     [else
      (let* ([translated-compilation-top
              (lookup&parse a-path)]
@@ -123,9 +141,14 @@
     (not (pred x))))
 
 
-;; looks-like-js-implemented-module?: path -> (or false
+;; looks-like-js-implemented-module?: path -> (or false list)
 (define (looks-like-js-implemented-module? a-path)
   (js-impl:query `(file ,(path->string a-path))))
+
+
+;; looks-like-js-conditional-module?: path -> boolean
+(define (looks-like-js-conditional-module? a-path)
+  (js-conditional:has-javascript-implementation? `(file ,(path->string a-path))))
 
 
 ;; filter-already-visited-modules: (listof path) (listof path) -> (listof path)
@@ -147,7 +170,8 @@
   (let ([hardcoded-modules
          (list hardcoded-moby-kernel-path
                hardcoded-moby-paramz-path
-               hardcoded-js-impl-path)])
+               hardcoded-js-impl-path
+               hardcoded-js-conditional-path)])
     (ormap (lambda (h)
              (same-path? p h))
            hardcoded-modules)))
@@ -298,6 +322,9 @@
        ;; rewrite to a (possibly fictional) collection named moby/js-impl
        ;; The runtime will recognize this collection.
        (module-path-index-join 'moby/js-impl
+                               (module-path-index-join #f #f))]
+      [(same-path? resolved-path hardcoded-js-conditional-path)
+       (module-path-index-join 'moby/js-conditional
                                (module-path-index-join #f #f))]
       
       ;; KLUDGE!!! We should NOT be reusing the private implementation of module
