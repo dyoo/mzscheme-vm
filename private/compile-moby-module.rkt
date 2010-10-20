@@ -210,30 +210,37 @@
     (cond
       [(symbol? a-resolved-module-path)
        a-resolved-module-path]
-
-      [(js-conditional:redirected? a-resolved-module-path)
-       (munge-resolved-module-path-to-symbol 
-        (js-conditional:follow-redirection a-resolved-module-path)
-        main-module-path)]
       
-      ;; If a subdirectory to the mzscheme-vm path, 
-      ;; rename relative to it.
-      [(subdirectory-of? (let-values ([(d name dir?)
-                                       (split-path a-resolved-module-path)])
-                           d)
-                         mzscheme-vm-src-directory)
-       (let ([relative (find-relative-path (normalize-path mzscheme-vm-src-directory)
-                                           (normalize-path a-resolved-module-path))])
-         (string->symbol (string-append "mzscheme-vm/"
-                                        (remove-extension (path->string relative)))))]
+      [(path? a-resolved-module-path)
+       (let ([normalized-resolved-module-path
+              (normalize-path a-resolved-module-path)])
+         (cond
+           [(js-conditional:redirected? normalized-resolved-module-path)
+            (munge-resolved-module-path-to-symbol 
+             (js-conditional:follow-redirection normalized-resolved-module-path)
+             main-module-path)]
+           
+           ;; If a subdirectory to the mzscheme-vm path, 
+           ;; rename relative to it.
+           [(subdirectory-of? (let-values ([(d name dir?)
+                                            (split-path normalized-resolved-module-path)])
+                                d)
+                              mzscheme-vm-src-directory)
+            (let ([relative (find-relative-path (normalize-path mzscheme-vm-src-directory)
+                                                normalized-resolved-module-path)])
+              (string->symbol 
+               (string-append "mzscheme-vm/"
+                              (remove-extension (path->string relative)))))]
+           [else
+            (let ([relative (find-relative-path base
+                                                normalized-resolved-module-path)])
+              (string->symbol (string-append "relative/"
+                                             (replace-dots
+                                              (replace-up-dirs 
+                                               (remove-extension 
+                                                (path->string relative)))))))]))]
       [else
-       (let ([relative (find-relative-path base
-                                           (normalize-path a-resolved-module-path))])
-         (string->symbol (string-append "relative/"
-                                        (replace-dots
-                                         (replace-up-dirs 
-                                          (remove-extension 
-                                           (path->string relative)))))))])))
+       (error 'munge-resolved-module-path-to-symbol a-resolved-module-path)])))
 
 
 (define filesystem-roots (filesystem-root-list))

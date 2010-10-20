@@ -32,7 +32,7 @@
   
 
 
-;; redirected? module-path -> boolean
+;; redirected? path -> boolean
 (define (redirected? a-module-path)
   (let ([resolved-path (resolve-module-path a-module-path #f)])
     (parameterize ([current-namespace ns])
