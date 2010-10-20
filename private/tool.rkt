@@ -5,6 +5,7 @@
          racket/class
          racket/port
          racket/file
+         racket/tcp
          net/sendurl
          framework
          drracket/tool
@@ -38,6 +39,29 @@
                 (split-path a-path)])
     (remove-filename-extension name)))
 
+
+
+;; find-open-port: -> number
+;; Tries to find an open port.
+(define (find-open-port)
+  (let* ([T 84]
+         [portno
+          (let loop (;; Numerology at work  (P = 80, L = 76, T=84).
+                     [portno 8076]
+                     [attempts 0]) 
+            (with-handlers ((exn:fail:network? (lambda (exn)
+                                                 (cond [(< attempts T)
+                                                        (loop (add1 portno)
+                                                              (add1 attempts))]
+                                                       [else
+                                                        (raise exn)]))))
+              ;; There's still a race condition here... Not sure how to do this right.
+              (let ([port (tcp-listen portno 4 #t #f)])
+                (tcp-close port)
+                portno)))])
+    portno))
+    
+    
 
 
 (define tool@
@@ -179,15 +203,17 @@
                          [user-custodian (send a-rep get-user-custodian)])
                     
                     
-                    ;; What about shutdown?
-                    ;; We need to trigger on the reset
                     (parameterize ([current-custodian user-custodian])
-                      (serve #:dispatch dispatcher
-                             #:port 8888))
-                    (send-url "http://localhost:8888/index.html")
-                    (fprintf notify-port 
-                             "Server should be running on port ~a\n"
-                             8888)))))))
+                      (let* ([port (find-open-port)]
+                             [url (format "http://localhost:~a/index.html" port)])
+                        ;; Runs the server under the user custodian
+                        ;; so it properly gets cleaned up.
+                        (serve #:dispatch dispatcher
+                               #:port port)
+                        (send-url url)
+                        (fprintf notify-port 
+                                 "Server should be running on ~a, and will stay up until the next Run.\n"
+                                 url)))))))))
        
               
        
