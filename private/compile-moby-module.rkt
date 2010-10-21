@@ -184,8 +184,13 @@
 ;; same-path?: path path -> boolean
 ;; Produces true if both paths are pointing to the same file.
 (define (same-path? p1 p2)
-  (string=? (path->string (normalize-path p1))
-            (path->string (normalize-path p2))))
+  (cond
+    [(eq? (system-path-convention-type) 'windows)
+     (string=? (string-downcase (path->string (normalize-path p1)))
+               (string-downcase (path->string (normalize-path p2))))]
+    [else
+     (string=? (path->string (normalize-path p1))
+               (path->string (normalize-path p2)))]))
 
 (define ns (make-base-empty-namespace))
 
@@ -253,7 +258,8 @@
     (cond
       [(same-path? a-dir parent-dir)
        #t]
-      [(member a-dir filesystem-roots)
+      [(ormap (lambda (r) (same-path? r a-dir))
+              filesystem-roots)
        #f]
       [else
        (loop (normalize-path (build-path a-dir 'up)))])))
