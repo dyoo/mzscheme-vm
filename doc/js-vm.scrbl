@@ -1,6 +1,12 @@
 #lang scribble/manual
 @(require unstable/scribble)
-@(require (for-label (planet dyoo/js-vm:1:3/image/image)))
+
+
+@(require (for-label (planet dyoo/js-vm/image/image))
+          (for-label (planet dyoo/js-vm/jsworld/jsworld))
+          (for-label (planet dyoo/js-vm/phone/location))
+          (for-label (planet dyoo/js-vm/phone/tilt))
+          (for-label (planet dyoo/js-vm/phone/sms)))
 
 
 @title{@bold{js-vm}: Javascript virtual machine for Racket}
@@ -19,7 +25,7 @@ At the moment, js-vm currently supports programs written in the
 further development on @bold{js-vm} will work toward supporting
 modules written in full Racket.
 
-To install @bold{js-vm},
+To install @bold{js-vm}, evaluate the following the DrRacket REPL.
 @racketblock[(require #,(schememodname/this-package info))]
 
 This  should install the library and its associated DrRacket tool;
@@ -71,13 +77,161 @@ This provides the bindings from
 @schememodname/this-package[jsworld/jsworld], and
 @schememodname/this-package[check-expect/check-expect].
 
-It also adds open-image-url and js-big-bang as aliases for image-url
-and big-bang respectively.
+It also adds @racket[open-image-url] and @racket[js-big-bang]
+as aliases for @racket[image-url]
+and @racket[big-bang] respectively.
 
 
-@section{Foreign Function Interface}
-@defmodule/this-package[ffi/ffi]
-The contents of this module need to run in a Javascript context.
+
+@section{Jsworld}
+
+
+jsworld provides a world programming library that allows simple
+animation and games, as well as reactive HTML graphical user
+interfaces.
+
+@defmodule/this-package[jsworld/jsworld]
+
+
+@defproc[(big-bang (a-world world) (handlers handler) ...) void]{
+Starts a reactive computation with @scheme[big-bang].
+The rest of the arguments hook into the reactive computation.
+
+By default, the page that's displayed contains a rendering of the
+world value.  In the presence of an @scheme[on-draw] or
+@scheme[to-draw] handler, @scheme[big-bang] will show a
+customized view.
+
+The majority of the handlers register different stimuli that can
+trigger changes to the world.  One instance is @scheme[on-tick], which
+registers a function to update the world on a clock tick.  }
+
+
+
+
+@defproc[(to-draw-page [to-dom (world -> (DOM-sexp))]
+		       [to-css (world -> (CSS-sexp))]) handler]{
+
+One of the main handlers to @scheme[big-bang] is @scheme[to-draw-page],
+which controls how the world is rendered on screen.  The first
+argument computes a rendering of the world as a DOM tree, and the
+second argument computes that tree's styling.  }
+
+
+                                                                                                                 
+@defproc[(to-draw [hook (world -> scene)]) handler]{
+For simple applications, @scheme[to-draw] is sufficient to draw a scene onto the display.
+The following program shows a ball falling down a scene.
+
+@(schemeblock
+(define WIDTH 320)
+(define HEIGHT 480)
+(define RADIUS 15)
+
+(define INITIAL-WORLD 0)
+
+(define (tick w)
+  (+ w 5))
+
+(define (hits-floor? w)
+  (>= w HEIGHT))
+
+(check-expect (hits-floor? 0) false)
+(check-expect (hits-floor? HEIGHT) true)
+
+(define (render w)
+  (place-image (circle RADIUS "solid" "red") (/ WIDTH 2) w
+               (empty-scene WIDTH HEIGHT)))
+
+(big-bang INITIAL-WORLD
+             (on-tick tick 1/15)
+             (to-draw render)
+             (stop-when hits-floor?)))
+}
+
+
+@defproc[(initial-effect [an-effect effect?]) handler?] {
+Produces a handler that tells big-bang to apply an effect on
+initialization.
+}
+
+
+@defproc[(stop-when [stop? (world -> boolean)]) handler?]{
+When the world should be stopped --- when @scheme[stop?] applied to the world
+produces @scheme[true] --- then the @scheme[big-bang] terminates.
+
+The program:
+@(schemeblock
+(define (at-ten x)
+  (>= x 10))
+
+(big-bang 0
+             (on-tick add1 1)
+             (stop-when at-ten))
+)
+counts up to ten and then stops.
+}
+
+
+
+@defproc[(stop-when!) handler?]{Produces a handler that stops a @racket[big-bang] whenever
+the provided world function produces true.}                               
+
+
+
+
+
+
+
+
+
+@defproc[(key=? [key1 key?] [key2 key?]) boolean?]{Produces true if @racket[key1] is equal to @racket[key2].}
+
+
+@subsection{Event handlers}
+
+@defproc[(on-tick) handler?]{Produces a handler that responds to clock ticks.}
+
+@defproc[(on-tick!) handler?]{Produces a handler that responds to clock ticks.}
+
+@defproc[(on-key) handler?]{Produces a handler that responds to key events.}
+
+@defproc[(on-key!) handler?]{Produces a handler that responds to key events.}
+
+@defproc[(on-button-click) handler?]{Produces a handler that responds to button click events.}
+
+@defproc[(on-button-click!) handler?]{Produces a handler that responds to button click events.}
+
+
+
+@subsection{HTML user interface constructors}
+
+
+@defproc[(js-p) ...]{}
+@defproc[(js-div) ...]{}
+@defproc[(js-button) ...]{}
+@defproc[(js-input) ...]{}
+@defproc[(js-img) ...]{}
+@defproc[(js-text) ...]{}
+@defproc[(js-select) ...]{}
+
+
+
+@subsection{Effects}
+
+
+
+
+@subsection{Miscellaneous functions}
+
+world-with-effects ...
+
+Wraps a world with a collection of effects.
+
+
+
+
+
 
 
 
@@ -88,8 +242,6 @@ The contents of this module need to run in a Javascript context.
 This module provides functions for creating images.  The design of the library is meant to
 follow 2htdp/image.
 
-
-@section{Image constructors}
 @defproc[(image? [x any/c]) boolean?]{
 Produces @racket[#t] if @racket[x] is an image, and @racket[#f] otherwise.}
 
@@ -128,7 +280,6 @@ Produces a circle image with the given radius, style, and color.
 
 
 
-@section{Image combinators}
 @defproc[(empty-scene [width number?] [height number?]) image?]{Produces an empty scene with a border.}
 
 @defproc[(place-image [x number?] [y number?] [an-image image?] [background image?]) image?]{
@@ -144,9 +295,6 @@ Places @racket[an-image] on top of @racket[background] at the given
 
 @defproc[(image-width [an-image image?]) number?]{Produces the width of an image.}
 @defproc[(image-height [an-image image?]) number?]{Produces the height of an image.}
-
-
-@section{Colors}
 
 Colors can be specified either by an RGB color structure, or by string name.  Both are described now.
 
@@ -350,6 +498,32 @@ Here is a complete list of the strings that @racket[image] will recognize as col
 @section{Phone}
 
 
+location.rkt
+    on-location-change: world-updater  -> handler
+    on-location-change!: world-updater effect-f -> handler 
+
+
+sms.rkt
+
+    on-sms-receive: world-updater -> handler
+    on-sms-receive!: world-updater effect-f -> handler
+
+
+tilt.rkt
+
+    on-acceleration: (world number number number -> world)
+    on-acceleration!: ...
+    on-shake
+    on-shake!
+    on-tilt
+    on-tilt!
+
+
+
+
+
+
+
 
 @section{Implementing Javascript Modules}
 Warning: the material in this section is unstable, 
@@ -386,3 +560,8 @@ will provide bindings that require a Javascript context.
 Any module implemented with 
 @schememodname/this-package[lang/js-conditional/js-conditional]
 can run either in a Racket or Javascript context.
+
+
+@section{Foreign Function Interface}
+@defmodule/this-package[ffi/ffi]
+The contents of this module need to run in a Javascript context.
