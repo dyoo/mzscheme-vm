@@ -254,15 +254,21 @@
 ;; subdirectory-of?: directory-path directory-path -> boolean
 ;; Returns true if a-file-path lives within base-dir somewhere.
 (define (subdirectory-of? a-dir parent-dir)
-  (let loop ([a-dir a-dir])
+  (let loop ([a-dir-chunks (explode-path (normalize-path a-dir))]
+             [parent-dir-chunks (explode-path (normalize-path parent-dir))])
     (cond
-      [(same-path? a-dir parent-dir)
+      [(empty? parent-dir-chunks)
        #t]
-      [(ormap (lambda (r) (same-path? r a-dir))
-              filesystem-roots)
+      [(empty? a-dir-chunks)
        #f]
+      [(same-path? (first a-dir-chunks)
+                   (first parent-dir-chunks))
+       (loop (rest a-dir-chunks) 
+             (rest parent-dir-chunks))]
       [else
-       (loop (normalize-path (build-path a-dir 'up)))])))
+       #f])))
+
+
 
 
 #|
