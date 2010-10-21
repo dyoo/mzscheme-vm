@@ -9,7 +9,7 @@
           (for-label (planet dyoo/js-vm/phone/sms)))
 
 
-@title{@bold{js-vm}: Javascript virtual machine for Racket}
+@title{@bold{js-vm}: Racket virtual machine in Javascript}
 @author[(author+email "Danny Yoo" "dyoo@racket-lang.org")]
 
 This package provides tools to develop Racket programs that run
