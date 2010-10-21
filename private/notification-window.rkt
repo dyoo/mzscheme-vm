@@ -10,7 +10,9 @@
 ;; make-notification-window: #:title string -> output-port
 (define (make-notification-window #:title title)
   (parameterize ([current-eventspace (make-eventspace)])
-    (define f (new frame% [label title]))
+    (define f (new frame% [label title]
+                   [width 500]
+                   [height 300]))
     (define t (new text%))
     (define c (new editor-canvas%
                    [parent f]
