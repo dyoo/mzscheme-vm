@@ -6,6 +6,7 @@
          "translate-bytecode-structs.rkt"
          "module-record.rkt"
          "collect-unimplemented-primvals.rkt"
+         "path-helpers.rkt"
          (prefix-in permissions: "../permissions/query.rkt")
          (prefix-in js-impl: "../lang/js-impl/query.rkt")
          (prefix-in js-conditional: "../lang/js-conditional/query.rkt")
@@ -253,35 +254,6 @@
 
 (define (replace-backslashes-with-forwards a-str)
   (regexp-replace* #px"[\\\\]" a-str "/"))
-
-
-;; subdirectory-of?: directory-path directory-path -> boolean
-;; Returns true if a-file-path lives within base-dir somewhere.
-(define (subdirectory-of? a-dir parent-dir)
-  (let loop ([a-dir-chunks (explode-path (normalize-path a-dir))]
-             [parent-dir-chunks (explode-path (normalize-path parent-dir))])
-    (cond
-      [(empty? parent-dir-chunks)
-       #t]
-      [(empty? a-dir-chunks)
-       #f]
-      [(same-path-component? (first a-dir-chunks)
-                             (first parent-dir-chunks))
-       (loop (rest a-dir-chunks) 
-             (rest parent-dir-chunks))]
-      [else
-       #f])))
-
-;; same-path-component: path path -> boolean
-;; Produces true if the path components look the same.
-(define (same-path-component? p1 p2)
-  (cond
-    [(eq? (system-path-convention-type) 'windows)
-     (string=? (string-downcase (path->string (normalize-path p1)))
-               (string-downcase (path->string (normalize-path p2))))]
-    [else
-     (string=? (path->string (normalize-path p1))
-               (path->string (normalize-path p2)))]))
 
 
 
