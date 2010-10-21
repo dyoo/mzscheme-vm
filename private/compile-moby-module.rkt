@@ -184,13 +184,11 @@
 ;; same-path?: path path -> boolean
 ;; Produces true if both paths are pointing to the same file.
 (define (same-path? p1 p2)
-  (cond
-    [(eq? (system-path-convention-type) 'windows)
-     (string=? (string-downcase (path->string (normalize-path p1)))
-               (string-downcase (path->string (normalize-path p2))))]
-    [else
-     (string=? (path->string (normalize-path p1))
-               (path->string (normalize-path p2)))]))
+  (= (file-or-directory-identity p1)
+     (file-or-directory-identity p2)))
+
+
+
 
 (define ns (make-base-empty-namespace))
 
@@ -257,8 +255,6 @@
   (regexp-replace* #px"[\\\\]" a-str "/"))
 
 
-(define filesystem-roots (filesystem-root-list))
-
 ;; subdirectory-of?: directory-path directory-path -> boolean
 ;; Returns true if a-file-path lives within base-dir somewhere.
 (define (subdirectory-of? a-dir parent-dir)
@@ -269,12 +265,23 @@
        #t]
       [(empty? a-dir-chunks)
        #f]
-      [(same-path? (first a-dir-chunks)
-                   (first parent-dir-chunks))
+      [(same-path-component? (first a-dir-chunks)
+                             (first parent-dir-chunks))
        (loop (rest a-dir-chunks) 
              (rest parent-dir-chunks))]
       [else
        #f])))
+
+;; same-path-component: path path -> boolean
+;; Produces true if the path components look the same.
+(define (same-path-component? p1 p2)
+  (cond
+    [(eq? (system-path-convention-type) 'windows)
+     (string=? (string-downcase (path->string (normalize-path p1)))
+               (string-downcase (path->string (normalize-path p2))))]
+    [else
+     (string=? (path->string (normalize-path p1))
+               (path->string (normalize-path p2)))]))
 
 
 
