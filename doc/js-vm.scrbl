@@ -14,6 +14,8 @@ environment.
 
 @section{Introduction}
 
+@racketmod[racket/base
+(printf "hello world\n")]
 
 
 
@@ -21,6 +23,16 @@ environment.
 
 @subsection{WeScheme}
 @defmodule/this-package[lang/wescheme]
+This provides the bindings from 
+@schememodname/this-package[lang/base],
+@schememodname/this-package[lang/posn],
+@schememodname/this-package[image/image],
+@schememodname/this-package[jsworld/jsworld], and
+@schememodname/this-package[check-expect/check-expect].
+
+It also adds open-image-url and js-big-bang as aliases for image-url
+and big-bang respectively.
+
 
 @subsection{Foreign Function Interface}
 @defmodule/this-package[ffi/ffi]

@@ -27,6 +27,9 @@
 (define open-image-url image-url)
 (provide open-image-url)
 
+;; Also re-export js-big-bang as big-bang.
+(define js-big-bang big-bang)
+(provide js-big-bang)
 
 ;; re-export jsworld
 (require "../jsworld/jsworld.rkt")
