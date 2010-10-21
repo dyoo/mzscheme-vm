@@ -1,10 +1,12 @@
 #lang scribble/manual
 
 @(require (for-label "../jsworld/jsworld.rkt")
-          (for-label "../phone/phone.rkt"))
+          (for-label "../phone/location.rkt")
+          (for-label "../phone/tilt.rkt")
+          (for-label "../phone/sms.rkt")
+          )
 
 
-@title{phone}
 
 
 location.rkt

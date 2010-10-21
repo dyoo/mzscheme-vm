@@ -2,9 +2,7 @@
 
 @(require (for-label "../image/image.rkt"))
 
-
-@title{image}
-
+@section{Images}
 @defmodule[image]
 This module provides functions for creating images.  The design of the library is meant to
 follow 2htdp/image.
