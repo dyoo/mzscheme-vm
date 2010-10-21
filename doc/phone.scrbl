@@ -5,3 +5,24 @@
 
 
 @title{phone}
+
+
+location.rkt
+    on-location-change: world-updater  -> handler
+    on-location-change!: world-updater effect-f -> handler 
+
+
+sms.rkt
+
+    on-sms-receive: world-updater -> handler
+    on-sms-receive!: world-updater effect-f -> handler
+
+
+tilt.rkt
+
+    on-acceleration: (world number number number -> world)
+    on-acceleration!: ...
+    on-shake
+    on-shake!
+    on-tilt
+    on-tilt!
