@@ -235,10 +235,11 @@
             (let ([relative (find-relative-path base
                                                 normalized-resolved-module-path)])
               (string->symbol (string-append "relative/"
-                                             (replace-dots
-                                              (replace-up-dirs 
-                                               (remove-extension 
-                                                (path->string relative)))))))]))]
+                                             (replace-other-forbidden-chars
+                                              (replace-dots
+                                               (replace-up-dirs 
+                                                (remove-extension 
+                                                 (path->string relative))))))))]))]
       [else
        (error 'munge-resolved-module-path-to-symbol a-resolved-module-path)])))
 
@@ -257,6 +258,43 @@
       [else
        (loop (normalize-path (build-path a-dir 'up)))])))
 
+
+#|
+According to the documentation, module paths must fit the following description:
+
+
+A path relative to the containing source (as determined by
+current-load-relative-directory or current-directory). Regardless
+of the current platform, rel-string is always parsed as a Unix-format
+relative path: / is the path delimiter (multiple adjacent /s are treated as a
+single delimiter), .. accesses the parent directory, and . accesses the current
+directory. The path cannot be empty or contain a leading or trailing slash, path
+elements before than the last one cannot include a file suffix (i.e., a . in an element
+other than . or ..), and the only allowed characters are ASCII letters, ASCII digits, -,
++, _, ., /, and %. Furthermore, a % is allowed only when followed by two lowercase
+hexadecimal digits, and the digits must form a number that is not the ASCII value of a
+letter, digit, -, +, or _.
+
+|#
+(define replace-other-forbidden-chars
+  (let ([n 0]
+        [ht (make-hash)]
+        [forbidden-regexp #px"[^a-zA-Z0-9\\-\\+\\_\\.\\/]"])
+    (lambda (a-str)
+      (hash-ref ht a-str
+                (lambda ()
+                  (cond
+                    [(regexp-match forbidden-regexp a-str)
+                     =>
+                     (lambda (a-match)
+                       (set! n (add1 n))
+                       (hash-set! ht a-str
+                                  (string-append 
+                                   (regexp-replace* forbidden-regexp a-str "")
+                                   (number->string n)))
+                       (hash-ref ht a-str))]
+                    [else
+                     a-str]))))))
 
 
 ;; replace-up-dirs: string -> string
