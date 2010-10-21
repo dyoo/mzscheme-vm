@@ -235,18 +235,26 @@
                                                 normalized-resolved-module-path)])
               (string->symbol 
                (string-append "mzscheme-vm/"
-                              (remove-extension (path->string relative)))))]
+                              (munge-path-string (path->string relative)))))]
            [else
             (let ([relative (find-relative-path base
                                                 normalized-resolved-module-path)])
               (string->symbol (string-append "relative/"
-                                             (replace-other-forbidden-chars
-                                              (replace-dots
-                                               (replace-up-dirs 
-                                                (remove-extension 
-                                                 (path->string relative))))))))]))]
+                                             (munge-path-string (path->string relative)))))]))]
       [else
        (error 'munge-resolved-module-path-to-symbol a-resolved-module-path)])))
+
+;; munge-path-string-to-symbol: string -> string
+(define (munge-path-string a-str)
+  (replace-other-forbidden-chars
+   (replace-dots
+    (replace-up-dirs 
+     (replace-backslashes-with-forwards
+      (remove-extension a-str))))))
+
+
+(define (replace-backslashes-with-forwards a-str)
+  (regexp-replace* #px"[\\\\]" a-str "/"))
 
 
 (define filesystem-roots (filesystem-root-list))
