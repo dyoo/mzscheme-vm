@@ -561,7 +561,7 @@ var jsworld = {};
     function isMatchingCssSelector(node, css) {
 	if (css.id.match(/^\./)) {
 	    // Check to see if we match the class
-	    return ('class' in node && member(node['class'].split(/\s+/),
+	    return ('className' in node && member(node['className'].split(/\s+/),
 					      css.id.substring(1)));
 	} else {
 	    return ('id' in node && node.id == css.id);
