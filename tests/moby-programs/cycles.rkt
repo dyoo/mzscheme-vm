@@ -10,3 +10,8 @@
 (shared ([a (cons 1 a)])
   (check-expect (format "~s\n"a)
 	        "(1 . ...)\n"))
+
+
+(shared ([a (vector 1 2 a)])
+  (check-expect (format "~s\n" a)
+                "#(1 2 ...)\n"))

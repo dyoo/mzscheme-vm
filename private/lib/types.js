@@ -784,7 +784,7 @@ Cons.prototype.toWrittenString = function(cache) {
     while ( p instanceof Cons ) {
 	texts.push(toWrittenString(p.first(), cache));
 	p = p.rest();
-	if (cache.containsKey(p)) {
+	if (typeof(p) === 'object' && cache.containsKey(p)) {
 	    break;
 	}
     }
@@ -815,7 +815,7 @@ Cons.prototype.toDisplayedString = function(cache) {
     while ( p instanceof Cons ) {
 	texts.push(toDisplayedString(p.first(), cache));
 	p = p.rest();
-	if (cache.containsKey(p)) {
+	if (typeof(p) === 'object' && cache.containsKey(p)) {
 	    break;
 	}
     }
@@ -850,7 +850,7 @@ Cons.prototype.toDomNode = function(cache) {
 	if ( p !== Empty.EMPTY ) {
 	    appendChild(node, document.createTextNode(" "));
 	}
-	if (cache.containsKey(p)) {
+	if (typeof(p) === 'object' && cache.containsKey(p)) {
 	    break;
 	}
     }
@@ -1415,7 +1415,7 @@ var toWrittenString = function(x, cache) {
      	cache = makeLowLevelEqHash();
     }
 
-    if (typeof(x) == 'object') {
+    if (typeof(x) === 'object') {
 	    if (cache.containsKey(x)) {
 		    return "...";
 	    }
@@ -1449,7 +1449,7 @@ var toDisplayedString = function(x, cache) {
     if (! cache) {
     	cache = makeLowLevelEqHash();
     }
-    if (typeof(x) == 'object') {
+    if (typeof(x) === 'object') {
 	    if (cache.containsKey(x)) {
 		    return "...";
 	    }
@@ -2149,7 +2149,9 @@ var ArityAtLeast = makeStructureType('arity-at-least', false, 1, 0, false,
 
 
 var readerGraph = function(x, objectHash, n) {
-    if (objectHash.containsKey(x)) {
+    
+
+    if (typeof(x) === 'object' && objectHash.containsKey(x)) {
 	return objectHash.get(x);
     }
 
@@ -2162,7 +2164,13 @@ var readerGraph = function(x, objectHash, n) {
     }
 
     if (types.isVector(x)) {
-	// fill me in
+	var len = x.length();
+	var aVector = types.vector(len, x.elts);
+	objectHash.put(x, aVector);	
+	for (var i = 0; i < len; i++) {
+	    aVector.elts[i] = readerGraph(aVector.elts[i], objectHash, n+1);
+	}
+	return aVector;
     }
 
     if (types.isBox(x)) {
