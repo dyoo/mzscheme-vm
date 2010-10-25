@@ -238,7 +238,7 @@ var Struct = Class.extend({
 	},
 
 	toWrittenString: function(cache) { 
-	    //    cache.put(this, true);
+	    cache.put(this, true);
 	    var buffer = [];
 	    buffer.push("(");
 	    buffer.push(this._constructorName);
@@ -253,7 +253,7 @@ var Struct = Class.extend({
         toDisplayedString: function(cache) { return toWrittenString(this, cache); },
 
 	toDomNode: function(cache) {
-	    //    cache.put(this, true);
+	    cache.put(this, true);
 	    var node = document.createElement("div");
 	    node.appendChild(document.createTextNode("("));
 	    node.appendChild(document.createTextNode(this._constructorName));
@@ -433,18 +433,22 @@ Box.prototype.set = function(newVal) {
 };
 
 Box.prototype.toString = function(cache) {
+    cache.put(this, true);
     return "#&" + toWrittenString(this.val, cache);
 };
 
 Box.prototype.toWrittenString = function(cache) {
+    cache.put(this, true);
     return "#&" + toWrittenString(this.val, cache);
 };
 
 Box.prototype.toDisplayedString = function(cache) {
+    cache.put(this, true);
     return "#&" + toDisplayedString(this.val, cache);
 };
 
 Box.prototype.toDomNode = function(cache) {
+    cache.put(this, true);
     var parent = document.createElement("span");
     parent.appendChild(document.createTextNode('#&'));
     parent.appendChild(toDomNode(this.val, cache));
@@ -774,12 +778,15 @@ Cons.prototype.append = function(b){
     
 
 Cons.prototype.toWrittenString = function(cache) {
-    //    cache.put(this, true);
+    cache.put(this, true);
     var texts = [];
     var p = this;
     while ( p instanceof Cons ) {
 	texts.push(toWrittenString(p.first(), cache));
 	p = p.rest();
+	if (cache.containsKey(p)) {
+	    break;
+	}
     }
     if ( p !== Empty.EMPTY ) {
 	texts.push('.');
@@ -802,12 +809,15 @@ Cons.prototype.toWrittenString = function(cache) {
 Cons.prototype.toString = Cons.prototype.toWrittenString;
 
 Cons.prototype.toDisplayedString = function(cache) {
-    //    cache.put(this, true);
+    cache.put(this, true);
     var texts = [];
     var p = this;
     while ( p instanceof Cons ) {
 	texts.push(toDisplayedString(p.first(), cache));
 	p = p.rest();
+	if (cache.containsKey(p)) {
+	    break;
+	}
     }
     if ( p !== Empty.EMPTY ) {
 	texts.push('.');
@@ -830,7 +840,7 @@ Cons.prototype.toDisplayedString = function(cache) {
 
 
 Cons.prototype.toDomNode = function(cache) {
-    //    cache.put(this, true);
+    cache.put(this, true);
     var node = document.createElement("span");
     node.appendChild(document.createTextNode("("));
     var p = this;
@@ -839,6 +849,9 @@ Cons.prototype.toDomNode = function(cache) {
 	p = p.rest();
 	if ( p !== Empty.EMPTY ) {
 	    appendChild(node, document.createTextNode(" "));
+	}
+	if (cache.containsKey(p)) {
+	    break;
 	}
     }
     if ( p !== Empty.EMPTY ) {
@@ -921,7 +934,7 @@ Vector.prototype.toList = function() {
 };
 
 Vector.prototype.toWrittenString = function(cache) {
-    //    cache.put(this, true);
+    cache.put(this, true);
     var texts = [];
     for (var i = 0; i < this.length(); i++) {
 	texts.push(toWrittenString(this.ref(i), cache));
@@ -930,7 +943,7 @@ Vector.prototype.toWrittenString = function(cache) {
 };
 
 Vector.prototype.toDisplayedString = function(cache) {
-    //    cache.put(this, true);
+    cache.put(this, true);
     var texts = [];
     for (var i = 0; i < this.length(); i++) {
 	texts.push(toDisplayedString(this.ref(i), cache));
@@ -939,7 +952,7 @@ Vector.prototype.toDisplayedString = function(cache) {
 };
 
 Vector.prototype.toDomNode = function(cache) {
-    //    cache.put(this, true);
+    cache.put(this, true);
     var node = document.createElement("span");
     node.appendChild(document.createTextNode("#("));
     for (var i = 0; i < this.length(); i++) {
@@ -1406,7 +1419,6 @@ var toWrittenString = function(x, cache) {
 	    if (cache.containsKey(x)) {
 		    return "...";
 	    }
-	    cache.put(x, true);
     }
 
     if (x == undefined || x == null) {
@@ -1441,7 +1453,6 @@ var toDisplayedString = function(x, cache) {
 	    if (cache.containsKey(x)) {
 		    return "...";
 	    }
-	    cache.put(x, true);
     }
 
     if (x == undefined || x == null) {
@@ -1480,7 +1491,6 @@ var toDomNode = function(x, cache) {
 		node.appendChild(document.createTextNode("..."));
 		return node;
 	    }
-	    cache.put(x, true);
     }
 
     if (x == undefined || x == null) {

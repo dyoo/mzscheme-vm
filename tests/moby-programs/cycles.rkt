@@ -9,4 +9,4 @@
 
 (shared ([a (cons 1 a)])
   (check-expect (format "~s\n"a)
-	        "(1 ...)\n"))
+	        "(1 . ...)\n"))
