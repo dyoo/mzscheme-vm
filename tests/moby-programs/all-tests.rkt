@@ -30,7 +30,7 @@
 	 "begin.rkt"
 	 "and-or.rkt"
 	 "42.rkt"	 
-)
+	 "cycles.rkt")
 
 
 (printf "all-tests completed\n")
