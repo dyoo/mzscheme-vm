@@ -15,3 +15,7 @@
 (shared ([a (vector 1 2 a)])
   (check-expect (format "~s\n" a)
                 "#(1 2 ...)\n"))
+
+(shared ([a (box a)])
+  (check-expect (format "~s\n" a)
+                "#&...\n"))

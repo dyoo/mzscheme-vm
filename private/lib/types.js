@@ -2174,16 +2174,22 @@ var readerGraph = function(x, objectHash, n) {
     }
 
     if (types.isBox(x)) {
-	// fill me in
+	var aBox = types.box(x.unbox());
+	objectHash.put(x, aBox);
+	aBox.val = readerGraph(x.unbox(), objectHash, n+1);
+	return aBox;
     }
 
     if (types.isHash(x)) {
-	// fill me in
+	throw new Error("make-reader-graph of hash not implemented yet");
     }
 
     if (types.isStruct(x)) {
-	// fill me in
+	throw new Error("make-reader-graph of struct not implemented yet");
+	var aStruct = x.type.constructor.apply(null, x._fields);
+	return aStruct;
     }
+
 
     if (types.isPlaceholder(x)) {
 	return readerGraph(x.ref(), objectHash, n+1);
