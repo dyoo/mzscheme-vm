@@ -6,7 +6,10 @@
 
 
 (provide/contract [query (module-path? . -> . string?)]
-                  [has-javascript-implementation? (module-path? . -> . boolean?)])
+                  [has-javascript-implementation? (module-path? . -> . boolean?)]
+                  
+                  [redirected? (path? . -> . boolean?)]
+                  [follow-redirection (path? . -> . path?)])
 
 (define-runtime-path record.rkt "record.rkt")
 (define ns (make-base-empty-namespace))
@@ -27,3 +30,22 @@
       (dynamic-require a-module-path (void)) ;; get the compile-time code running.
       ((dynamic-require-for-syntax record.rkt 'has-javascript-implementation?) resolved-path))))
   
+
+
+;; redirected? path -> boolean
+(define (redirected? a-module-path)
+  (let ([resolved-path (resolve-module-path a-module-path #f)])
+    (parameterize ([current-namespace ns])
+      (dynamic-require a-module-path (void)) ;; get the compile-time code running.
+      (path? ((dynamic-require-for-syntax record.rkt 'follow-redirection)
+              resolved-path)))))
+
+
+;; follow-redirection: module-path -> path
+(define (follow-redirection a-module-path)
+  (let ([resolved-path (resolve-module-path a-module-path #f)])
+    (parameterize ([current-namespace ns])
+      (dynamic-require a-module-path (void)) ;; get the compile-time code running.
+      ((dynamic-require-for-syntax record.rkt 'follow-redirection)
+       resolved-path))))
+

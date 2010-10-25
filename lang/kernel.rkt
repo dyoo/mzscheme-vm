@@ -43,7 +43,7 @@
   (syntax-case stx ()
     [(_ x ...)
      (syntax/loc stx
-       (define-struct x ...))]))
+       (define-struct x ... #:transparent))]))
 
 
 ;; constants
@@ -155,11 +155,7 @@
     (eq? x y)))
 
 
-(provide-stub-function #;print-values
-                       #;check-expect
-                       #;EXAMPLE
-                       #;check-within
-                       #;xml->s-exp
+(provide-stub-function #;xml->s-exp
                        #;js-object?
 
                        write

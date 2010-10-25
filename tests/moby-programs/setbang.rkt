@@ -1,4 +1,4 @@
-#lang s-exp "../../lang/base.ss"
+#lang s-exp "../../lang/wescheme.ss"
 
 
 (printf "setbang.rkt\n")

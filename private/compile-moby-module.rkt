@@ -6,6 +6,7 @@
          "translate-bytecode-structs.rkt"
          "module-record.rkt"
          "collect-unimplemented-primvals.rkt"
+         "path-helpers.rkt"
          (prefix-in permissions: "../permissions/query.rkt")
          (prefix-in js-impl: "../lang/js-impl/query.rkt")
          (prefix-in js-conditional: "../lang/js-conditional/query.rkt")
@@ -184,8 +185,11 @@
 ;; same-path?: path path -> boolean
 ;; Produces true if both paths are pointing to the same file.
 (define (same-path? p1 p2)
-  (string=? (path->string (normalize-path p1))
-            (path->string (normalize-path p2))))
+  (= (file-or-directory-identity p1)
+     (file-or-directory-identity p2)))
+
+
+
 
 (define ns (make-base-empty-namespace))
 
@@ -210,42 +214,86 @@
     (cond
       [(symbol? a-resolved-module-path)
        a-resolved-module-path]
+      
+      [(path? a-resolved-module-path)
+       (let ([normalized-resolved-module-path
+              (normalize-path a-resolved-module-path)])
+         (cond
+           [(js-conditional:redirected? normalized-resolved-module-path)
+            (munge-resolved-module-path-to-symbol 
+             (js-conditional:follow-redirection normalized-resolved-module-path)
+             main-module-path)]
+           
+           ;; If a subdirectory to the mzscheme-vm path, 
+           ;; rename relative to it.
+           [(subdirectory-of? (let-values ([(d name dir?)
+                                            (split-path normalized-resolved-module-path)])
+                                d)
+                              mzscheme-vm-src-directory)
+            (let ([relative (find-relative-path (normalize-path mzscheme-vm-src-directory)
+                                                normalized-resolved-module-path)])
+              (string->symbol 
+               (string-append "mzscheme-vm/"
+                              (munge-path-string (path->string relative)))))]
+           [else
+            (let ([relative (find-relative-path base
+                                                normalized-resolved-module-path)])
+              (string->symbol (string-append "relative/"
+                                             (munge-path-string (path->string relative)))))]))]
       [else
-       (cond 
-         ;; If a subdirectory to the mzscheme-vm path, 
-         ;; rename relative to it.
-         [(subdirectory-of? (let-values ([(d name dir?)
-                                          (split-path a-resolved-module-path)])
-                              d)
-                            mzscheme-vm-src-directory)
-          (let ([relative (find-relative-path (normalize-path mzscheme-vm-src-directory)
-                                              (normalize-path a-resolved-module-path))])
-            (string->symbol (string-append "mzscheme-vm/"
-                                           (remove-extension (path->string relative)))))]
-         [else
-          (let ([relative (find-relative-path base
-                                              (normalize-path a-resolved-module-path))])
-            (string->symbol (string-append "relative/"
-                                           (replace-dots
-                                            (replace-up-dirs 
-                                             (remove-extension 
-                                              (path->string relative)))))))])])))
+       (error 'munge-resolved-module-path-to-symbol a-resolved-module-path)])))
+
+;; munge-path-string-to-symbol: string -> string
+(define (munge-path-string a-str)
+  (replace-other-forbidden-chars
+   (replace-dots
+    (replace-up-dirs 
+     (replace-backslashes-with-forwards
+      (remove-extension a-str))))))
 
 
-(define filesystem-roots (filesystem-root-list))
+(define (replace-backslashes-with-forwards a-str)
+  (regexp-replace* #px"[\\\\]" a-str "/"))
 
-;; subdirectory-of?: directory-path directory-path -> boolean
-;; Returns true if a-file-path lives within base-dir somewhere.
-(define (subdirectory-of? a-dir parent-dir)
-  (let loop ([a-dir a-dir])
-    (cond
-      [(same-path? a-dir parent-dir)
-       #t]
-      [(member a-dir filesystem-roots)
-       #f]
-      [else
-       (loop (normalize-path (build-path a-dir 'up)))])))
 
+
+
+#|
+According to the documentation, module paths must fit the following description:
+
+
+A path relative to the containing source (as determined by
+current-load-relative-directory or current-directory). Regardless
+of the current platform, rel-string is always parsed as a Unix-format
+relative path: / is the path delimiter (multiple adjacent /s are treated as a
+single delimiter), .. accesses the parent directory, and . accesses the current
+directory. The path cannot be empty or contain a leading or trailing slash, path
+elements before than the last one cannot include a file suffix (i.e., a . in an element
+other than . or ..), and the only allowed characters are ASCII letters, ASCII digits, -,
++, _, ., /, and %. Furthermore, a % is allowed only when followed by two lowercase
+hexadecimal digits, and the digits must form a number that is not the ASCII value of a
+letter, digit, -, +, or _.
+
+|#
+(define replace-other-forbidden-chars
+  (let ([n 0]
+        [ht (make-hash)]
+        [forbidden-regexp #px"[^a-zA-Z0-9\\-\\+\\_\\.\\/]"])
+    (lambda (a-str)
+      (hash-ref ht a-str
+                (lambda ()
+                  (cond
+                    [(regexp-match forbidden-regexp a-str)
+                     =>
+                     (lambda (a-match)
+                       (set! n (add1 n))
+                       (hash-set! ht a-str
+                                  (string-append 
+                                   (regexp-replace* forbidden-regexp a-str "")
+                                   (number->string n)))
+                       (hash-ref ht a-str))]
+                    [else
+                     a-str]))))))
 
 
 ;; replace-up-dirs: string -> string

@@ -8,8 +8,9 @@
 
 @defmodule[jsworld]
 
-jsworld provides a world programming library that allows simple animation and games, as well
-as reactive HTML graphical user interfaces.
+jsworld provides a world programming library that allows simple
+animation and games, as well as reactive HTML graphical user
+interfaces.
 
 
 
@@ -122,9 +123,9 @@ the provided world function produces true.}
 
 @defproc[(on-key!) handler?]{Produces a handler that responds to key events.}
 
-@defproc[(on-click) handler?]{Produces a handler that responds to click events.}
+@defproc[(on-button-click) handler?]{Produces a handler that responds to button click events.}
 
-@defproc[(on-click!) handler?]{Produces a handler that response to click events.}
+@defproc[(on-button-click!) handler?]{Produces a handler that responds to button click events.}
 
 
 
@@ -140,8 +141,20 @@ the provided world function produces true.}
 @defproc[(js-select) ...]{}
 
 
+
+@section{Effects}
+
+
+
+
 @section{Miscellaneous functions}
-world-with-effects
+
+world-with-effects ...
+
+Wraps a world with a collection of effects.
+
+
+
 
 
 

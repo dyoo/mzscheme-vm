@@ -27,12 +27,20 @@
 (define open-image-url image-url)
 (provide open-image-url)
 
+;; Also re-export js-big-bang as big-bang.
+(define js-big-bang big-bang)
+(provide js-big-bang)
 
 ;; re-export jsworld
 (require "../jsworld/jsworld.rkt")
 (provide (all-from-out "../jsworld/jsworld.rkt"))
 
 
-
+;; re-export posn
 (require "posn.rkt")
 (provide (all-from-out "posn.rkt"))
+
+
+;; re-export check-expect
+(require "check-expect/check-expect.rkt")
+(provide (all-from-out "check-expect/check-expect.rkt"))

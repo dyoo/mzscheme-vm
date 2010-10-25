@@ -4,6 +4,9 @@
          racket/unit
          racket/class
          racket/port
+         racket/file
+         racket/tcp
+         net/sendurl
          framework
          drracket/tool
          
@@ -11,7 +14,9 @@
          "create-javascript-package.rkt"
          "zip-temp-dir.rkt"
          "notification-window.rkt"
-         "log-port.rkt")
+         "log-port.rkt"
+         "suck-directory.rkt"
+         web-server/web-server)
 
 ;; This tool adds a "Create Javascript Package" button to the Racket menu.
 
@@ -36,6 +41,29 @@
 
 
 
+;; find-open-port: -> number
+;; Tries to find an open port.
+(define (find-open-port)
+  (let* ([T 84]
+         [portno
+          (let loop (;; Numerology at work  (P = 80, L = 76, T=84).
+                     [portno 8076]
+                     [attempts 0]) 
+            (with-handlers ((exn:fail:network? (lambda (exn)
+                                                 (cond [(< attempts T)
+                                                        (loop (add1 portno)
+                                                              (add1 attempts))]
+                                                       [else
+                                                        (raise exn)]))))
+              ;; There's still a race condition here... Not sure how to do this right.
+              (let ([port (tcp-listen portno 4 #t #f)])
+                (tcp-close port)
+                portno)))])
+    portno))
+    
+    
+
+
 (define tool@
   (unit
     (import drracket:tool^)
@@ -56,23 +84,46 @@
     (drracket:get/extend:extend-unit-frame
      (mixin (unit-frame<%>) (unit-frame<%>)
        (inherit get-language-menu
-                get-definitions-text)
-    
+                get-definitions-text
+                get-interactions-text)       
+
        
-       ;; click!: menu-item% control-event% -> void
-       ;; On selection, prompts for a output zip file name, and then writes a zip
-       ;; with the contents.
-       (define (click! a-menu-item a-control-event)
+       ;; check-cleanliness: (-> X) (-> x) (-> X) -> void
+       ;; Does a check to see if the file being editing is unsaved
+       ;; or dirty.
+       (define (check-cleanliness #:on-unsaved on-unsaved 
+                                  #:on-dirty on-dirty 
+                                  #:on-ok on-ok)
          (let* ([a-text (get-definitions-text)]
                 [a-filename (send a-text get-filename)])
            (cond
              [(not (path-string? a-filename))
-              (message-box "Create Javascript Package"
-                           "Your program needs to be saved first before packaging.")]
+              (on-unsaved)]
              [(send a-text is-modified?)
-              (message-box "Create Javascript Package"
-                           "Your program has changed since your last save or load; please save before packaging.")]
+              (on-dirty)]
              [else
+              (on-ok)])))
+         
+       
+       ;; click!: menu-item% control-event% -> void
+       ;; On selection, prompts for a output zip file name,
+       ;; and then writes a zip with the contents.
+       (define (click! a-menu-item a-control-event)
+         (let* ([a-text (get-definitions-text)]
+                [a-filename (send a-text get-filename)])
+           (check-cleanliness 
+            #:on-unsaved
+            (lambda ()
+              (message-box "Create Javascript Package"
+                           "Your program needs to be saved first before packaging."))
+            
+            #:on-dirty
+            (lambda ()
+              (message-box "Create Javascript Package"
+                           "Your program has changed since your last save or load; please save before packaging."))
+            
+            #:on-ok
+            (lambda ()
               (let ([output-file
                      (finder:put-file (make-reasonable-package-name a-filename)
                                       #f
@@ -106,14 +157,78 @@
                                (fprintf notify-port "Writing package to file ~a...\n" output-file)
                                (copy-port ip op))
                              #:exists 'replace)
-                           (fprintf notify-port "Done!\n")))))]))])))
+                           (fprintf notify-port "Done!\n")))))]))))))
        
        
-       (super-new)
        
+       ;; make-web-serving-dispatcher: path -> dispatcher/c
+       (define (make-web-serving-dispatcher a-filename)
+         (let* ([tmpdir
+                 (make-temporary-file "mztmp~a"
+                                      'directory
+                                      #f)])
+           (dynamic-wind 
+            (lambda () (void))
+            (lambda ()
+              (create-javascript-package a-filename tmpdir)
+              (make-web-dispatcher tmpdir))
+            (lambda () (delete-directory/files tmpdir)))))
+       
+       
+       (define (run! a-menu-item a-click-event)
+         (check-cleanliness 
+            #:on-unsaved
+            (lambda ()
+              (message-box "Run Javascript in Browser"
+                           "Your program needs to be saved first before we can Javascript-compile and run it."))
+            
+            #:on-dirty
+            (lambda ()
+              (message-box "Run Javascript in Browser"
+                           "Your program has changed since your last save or load; please save first."))
+            
+            #:on-ok
+            (lambda ()
+              (let ([notify-port 
+                     (make-notification-window 
+                      #:title "Running Javascript")])
+                (parameterize ([current-log-port notify-port])
+                  (fprintf notify-port "Starting up web server.\n")
+                  (let* ([a-text (get-definitions-text)]
+                         [a-filename 
+                          (send a-text get-filename)]
+                         [dispatcher 
+                          (make-web-serving-dispatcher a-filename)]
+                         [a-rep (get-interactions-text)]
+                         [user-custodian (send a-rep get-user-custodian)])
+                    
+                    
+                    (parameterize ([current-custodian user-custodian])
+                      (let* ([port (find-open-port)]
+                             [url (format "http://localhost:~a/index.html" port)])
+                        ;; Runs the server under the user custodian
+                        ;; so it properly gets cleaned up.
+                        (serve #:dispatch dispatcher
+                               #:port port)
+                        (send-url url)
+                        (fprintf notify-port 
+                                 "Server should be running on ~a, and will stay up until the next Run.\n"
+                                 url)))))))))
+       
+              
+       
+       ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+       ;;; Initialization
+       (super-new)       
        (let ([racket-menu (get-language-menu)])
          (new separator-menu-item% [parent racket-menu])
          (new menu-item% 
               [parent racket-menu]
               [label "Create Javascript Package"]
-              [callback click!]))))))
+              [callback click!])
+         
+         (new menu-item%
+              [parent racket-menu]
+              [label "Run Javascript in Browser"]
+              [callback run!])
+         )))))

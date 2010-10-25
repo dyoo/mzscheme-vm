@@ -1,4 +1,4 @@
-#lang s-exp "../../lang/base.rkt"
+#lang s-exp "../../lang/wescheme.rkt"
 
 (require "double.rkt")
 
