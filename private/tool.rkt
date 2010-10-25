@@ -189,21 +189,19 @@
             
             #:on-ok
             (lambda ()
-              (let ([notify-port 
-                     (make-notification-window 
-                      #:title "Running Javascript")])
-                (parameterize ([current-log-port notify-port])
-                  (fprintf notify-port "Starting up web server.\n")
-                  (let* ([a-text (get-definitions-text)]
-                         [a-filename 
-                          (send a-text get-filename)]
-                         [dispatcher 
-                          (make-web-serving-dispatcher a-filename)]
-                         [a-rep (get-interactions-text)]
-                         [user-custodian (send a-rep get-user-custodian)])
-                    
-                    
-                    (parameterize ([current-custodian user-custodian])
+              (parameterize ([current-custodian (let* ([a-rep (get-interactions-text)])
+                                                  (send a-rep get-user-custodian))])
+                (let ([notify-port 
+                       (make-notification-window 
+                        #:title "Running Javascript")])
+                  (parameterize ([current-log-port notify-port])
+                    (fprintf notify-port "Starting up web server.\n")
+                    (let* ([a-text (get-definitions-text)]
+                           [a-filename 
+                            (send a-text get-filename)]
+                           [dispatcher 
+                            (make-web-serving-dispatcher a-filename)])
+                      
                       (let* ([port (find-open-port)]
                              [url (format "http://localhost:~a/index.html" port)])
                         ;; Runs the server under the user custodian
