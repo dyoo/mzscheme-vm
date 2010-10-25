@@ -160,7 +160,7 @@ StructType = function(name, type, numberOfArgs, numberOfFields, firstField,
 	this.mutator = mutator;
 };
 
-StructType.prototype.toString = function() {
+StructType.prototype.toString = function(cache) {
 	return '#<struct-type:' + this.name + '>';
 };
 
@@ -250,7 +250,7 @@ var Struct = Class.extend({
 	    return buffer.join("");
 	},
 
-	toDisplayedString: function(cache) { return this.toWrittenString(cache); },
+        toDisplayedString: function(cache) { return toWrittenString(this, cache); },
 
 	toDomNode: function(cache) {
 	    //    cache.put(this, true);
@@ -367,7 +367,7 @@ Bytes.prototype.isEqual = function(other) {
 };
 
 
-Bytes.prototype.toString = function() {
+Bytes.prototype.toString = function(cache) {
 	var ret = '';
 	for (var i = 0; i < this.bytes.length; i++) {
 		ret += String.fromCharCode(this.bytes[i]);
@@ -432,8 +432,8 @@ Box.prototype.set = function(newVal) {
     }
 };
 
-Box.prototype.toString = function() {
-    return "#&" + this.val.toString();
+Box.prototype.toString = function(cache) {
+    return "#&" + toWrittenString(this.val, cache);
 };
 
 Box.prototype.toWrittenString = function(cache) {
@@ -472,8 +472,8 @@ Placeholder.prototype.set = function(newVal) {
 	    this.val = newVal;
 };
 
-Placeholder.prototype.toString = function() {
-    return "#<placeholder>" + this.val.toString();
+Placeholder.prototype.toString = function(cache) {
+    return "#<placeholder>";
 };
 
 Placeholder.prototype.toWrittenString = function(cache) {
@@ -522,7 +522,7 @@ Boolean.prototype.toWrittenString = function(cache) {
 };
 Boolean.prototype.toDisplayedString = Boolean.prototype.toWrittenString;
 
-Boolean.prototype.toString = function() { return this.valueOf() ? "true" : "false"; };
+Boolean.prototype.toString = function(cache) { return this.valueOf() ? "true" : "false"; };
 
 Boolean.prototype.isEqual = function(other, aUnionFind){
     return this == other;
@@ -552,7 +552,7 @@ Char.makeInstance = function(val){
     return new Char(val);
 };
 
-Char.prototype.toString = function() {
+Char.prototype.toString = function(cache) {
 	var code = this.val.charCodeAt(0);
 	var returnVal;
 	switch (code) {
@@ -621,7 +621,7 @@ Symbol.prototype.isEqual = function(other, aUnionFind) {
 };
     
 
-Symbol.prototype.toString = function() {
+Symbol.prototype.toString = function(cache) {
     return this.val;
 };
 
@@ -659,7 +659,7 @@ Keyword.prototype.isEqual = function(other, aUnionFind) {
 };
     
 
-Keyword.prototype.toString = function() {
+Keyword.prototype.toString = function(cache) {
     return this.val;
 };
 
@@ -1135,8 +1135,8 @@ EqHashTable.prototype.toWrittenString = function(cache) {
     var keys = this.hash.keys();
     var ret = [];
     for (var i = 0; i < keys.length; i++) {
-	    var keyStr = types.toWrittenString(keys[i], cache);
-	    var valStr = types.toWrittenString(this.hash.get(keys[i]), cache);
+	    var keyStr = toWrittenString(keys[i], cache);
+	    var valStr = toWrittenString(this.hash.get(keys[i]), cache);
 	    ret.push('(' + keyStr + ' . ' + valStr + ')');
     }
     return ('#hasheq(' + ret.join(' ') + ')');
@@ -1192,8 +1192,8 @@ EqualHashTable.prototype.toWrittenString = function(cache) {
     var keys = this.hash.keys();
     var ret = [];
     for (var i = 0; i < keys.length; i++) {
-	    var keyStr = types.toWrittenString(keys[i], cache);
-	    var valStr = types.toWrittenString(this.hash.get(keys[i]), cache);
+	    var keyStr = toWrittenString(keys[i], cache);
+	    var valStr = toWrittenString(this.hash.get(keys[i]), cache);
 	    ret.push('(' + keyStr + ' . ' + valStr + ')');
     }
     return ('#hash(' + ret.join(' ') + ')');
@@ -2132,6 +2132,56 @@ var ArityAtLeast = makeStructureType('arity-at-least', false, 1, 0, false,
 		});
 
 
+
+
+//////////////////////////////////////////////////////////////////////
+
+
+
+var readerGraph = function(x, objectHash, n) {
+    alert(x);
+    if (n > 5) {
+	throw new Error("too deep");
+    }
+
+    if (objectHash.containsKey(x)) {
+	alert("getting hash");
+	return objectHash.get(x);
+    }
+
+    if (types.isPair(x)) {
+	var consPair = types.cons(x.first(), x.rest());
+	objectHash.put(x, consPair);
+	consPair.f = readerGraph(x.first(), objectHash, n+1);
+	consPair.r = readerGraph(x.rest(), objectHash, n+1);
+	return consPair;
+    }
+
+    if (types.isVector(x)) {
+    }
+
+    if (types.isBox(x)) {
+    }
+
+    if (types.isHash(x)) {
+    }
+
+    if (types.isStruct(x)) {
+    }
+
+    if (types.isPlaceholder(x)) {
+	return readerGraph(x.ref(), objectHash, n+1);
+    }
+
+    return x;
+};
+
+
+//////////////////////////////////////////////////////////////////////
+
+
+
+
 types.exceptionHandlerKey = new Symbol("exnh");
 
 types.symbol = Symbol.makeInstance;
@@ -2359,6 +2409,9 @@ types.isRenderEffectType = function(x) {
 
 types.isRenderEffect = RenderEffect.predicate;
 
+
+
+types.readerGraph = readerGraph;
 
 })();
 

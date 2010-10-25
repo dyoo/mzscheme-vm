@@ -3808,7 +3808,10 @@ PRIMITIVES['string-fill!'] =
 PRIMITIVES['make-reader-graph'] = 
 	new PrimProc('make-reader-graph', 1, false, false,
 		     function(x) {
-			 return readerGraph(x, types.makeLowLevelEqHash());
+			 var result = 
+			     types.readerGraph(x, types.makeLowLevelEqHash(), 0);
+			 alert("got result");
+			 return result;
 		     });
 
 
@@ -3816,10 +3819,12 @@ PRIMITIVES['make-placeholder'] =
 	new PrimProc('make-placeholder', 1, false, false,
 		     function(x) { return types.placeholder(x); });
 
+
 PRIMITIVES['placeholder-set!'] = 
 	new PrimProc('placeholder-set!', 2, false, false,
 		     function(pl, x) {
-			 check(pl, types.isPlaceholder, "placeholder-set!", "placeholder", 1);
+			 check(pl, types.isPlaceholder,
+			       "placeholder-set!", "placeholder", 1);
 			 pl.set(x);
 			 return types.VOID;
 		     });
@@ -3827,31 +3832,12 @@ PRIMITIVES['placeholder-set!'] =
 PRIMITIVES['placeholder-get'] =
 	new PrimProc('placeholder-get', 1, false, false,
 		     function(pl) {
-			 check(pl, types.isPlaceholder, "placeholder-set!", "placeholder", 1);
+			 check(pl, types.isPlaceholder, 
+			       "placeholder-get", "placeholder", 1);
 			 return pl.get();
 		     });
 
 
-
-var readerGraph = function(x, objectHash) {
-    if (objectHash.containsKey(x)) {
-	return objectHash.get(x);
-    }
-    if (types.isPair(x)) {
-    }
-    if (types.isVector(x)) {
-    }
-    if (types.isBox(x)) {
-    }
-    if (types.isHash(x)) {
-    }
-    if (types.isStruct(x)) {
-    }
-    if (types.isPlaceholder(x)) {
-	return readerGraph(x.ref(), objectHash);
-    }
-    return x;
-};
 
 
 //////////////////////////////////////////////////////////////////////
