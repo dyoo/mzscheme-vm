@@ -455,6 +455,49 @@ Box.prototype.isEqual = function(other, aUnionFind) {
     return ((other instanceof Box) &&
 	    isEqual(this.val, other.val, aUnionFind));
 };
+
+//////////////////////////////////////////////////////////////////////
+
+// Placeholders: same thing as boxes.  Distinct type just to support make-reader-graph.
+
+var Placeholder = function(x, mutable) {
+    this.val = x;
+};
+
+Placeholder.prototype.ref = function() {
+    return this.val;
+};
+
+Placeholder.prototype.set = function(newVal) {
+	    this.val = newVal;
+};
+
+Placeholder.prototype.toString = function() {
+    return "#<placeholder>" + this.val.toString();
+};
+
+Placeholder.prototype.toWrittenString = function(cache) {
+    return "#<placeholder>";
+};
+
+Placeholder.prototype.toDisplayedString = function(cache) {
+    return "#<placeholder>";
+};
+
+Placeholder.prototype.toDomNode = function(cache) {
+    var parent = document.createElement("span");
+    parent.appendChild(document.createTextNode('#<placeholder>'));
+    return parent;
+};
+
+Placeholder.prototype.isEqual = function(other, aUnionFind) {
+    return ((other instanceof Placeholder) &&
+	    isEqual(this.val, other.val, aUnionFind));
+};
+
+
+
+
 //////////////////////////////////////////////////////////////////////
 
 
@@ -2104,6 +2147,7 @@ types.byteRegexp = function(p) { return new ByteRegularExpression(p) ; }
 types['char'] = Char.makeInstance;
 types['string'] = makeString;
 types.box = function(x) { return new Box(x, true); };
+types.placeholder = function(x) { return new Placeholder(x); };
 types.boxImmutable = function(x) { return new Box(x, false); };
 types.path = function(x) { return new Path(x); };
 types.bytes = function(x, mutable) { return new Bytes(x, mutable); };
@@ -2141,6 +2185,7 @@ types.isString = isString;
 types.isPair = function(x) { return x instanceof Cons; };
 types.isVector = function(x) { return x instanceof Vector; };
 types.isBox = function(x) { return x instanceof Box; };
+types.isPlaceholder = function(x) { return x instanceof Placeholder; };
 types.isHash = function(x) { return (x instanceof EqHashTable ||
 				     x instanceof EqualHashTable); };
 types.isByteString = function(x) { return x instanceof Bytes; };
@@ -2193,6 +2238,7 @@ types.ModuleVariableRecord = ModuleVariableRecord;
 types.VariableReference = VariableReference;
 
 types.Box = Box;
+types.Placeholder = Placeholder;
 types.ThreadCell = ThreadCell;
 
 
