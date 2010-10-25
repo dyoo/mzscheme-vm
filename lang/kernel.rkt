@@ -22,7 +22,7 @@
        (#%datum . x))]))
 
 ;; application
-(define-syntax (-#%app stx)
+#;(define-syntax (-#%app stx)
   (syntax-case stx ()
     [(_ operator operands ...)
      (syntax/loc stx
@@ -97,7 +97,7 @@
 ;; Provides
 (provide (rename-out (-#%module-begin #%module-begin)
                      (-#%datum #%datum)
-                     (-#%app #%app)
+                     (#%app #%app)
                      (#%top-interaction #%top-interaction)
                      (#%top #%top)
                      (-define define)
@@ -114,6 +114,7 @@
                      (let let)
                      (let* let*)
                      (letrec letrec)
+                     (letrec-values letrec-values)
                      (local local)
                      (quasiquote quasiquote)
                      (begin begin)
@@ -127,7 +128,7 @@
                      (for-syntax for-syntax)
 		     (define-for-syntax define-for-syntax)
                      (begin-for-syntax begin-for-syntax)
-                     #;(prefix-in prefix-in)
+                     (prefix-in prefix-in)
 		     (only-in only-in)
                      (provide provide)
 		     (planet planet)
@@ -450,4 +451,9 @@
 		       call-with-continuation-prompt
 		       abort-current-continuation
 		       default-continuation-prompt-tag
-                       make-continuation-prompt-tag)
+                       make-continuation-prompt-tag
+
+
+		       make-reader-graph
+		       make-placeholder
+		       placeholder-set!)

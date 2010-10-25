@@ -3803,6 +3803,17 @@ PRIMITIVES['string-fill!'] =
 
 
 
+//////////////////////////////////////////////////////////////////////
+//  Immutable cyclic data
+PRIMITIVES['make-reader-graph'] = "fixme";
+PRIMITIVES['make-placeholder'] = "fixme";
+PRIMITIVES['placeholder-set!'] = "fixme";
+
+//////////////////////////////////////////////////////////////////////
+
+
+
+
 /******************************
  *** Byte String Primitives ***
  ******************************/
