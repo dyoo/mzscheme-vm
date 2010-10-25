@@ -2139,13 +2139,7 @@ var ArityAtLeast = makeStructureType('arity-at-least', false, 1, 0, false,
 
 
 var readerGraph = function(x, objectHash, n) {
-    alert(x);
-    if (n > 5) {
-	throw new Error("too deep");
-    }
-
     if (objectHash.containsKey(x)) {
-	alert("getting hash");
 	return objectHash.get(x);
     }
 
@@ -2158,15 +2152,19 @@ var readerGraph = function(x, objectHash, n) {
     }
 
     if (types.isVector(x)) {
+	// fill me in
     }
 
     if (types.isBox(x)) {
+	// fill me in
     }
 
     if (types.isHash(x)) {
+	// fill me in
     }
 
     if (types.isStruct(x)) {
+	// fill me in
     }
 
     if (types.isPlaceholder(x)) {

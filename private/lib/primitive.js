@@ -3808,10 +3808,7 @@ PRIMITIVES['string-fill!'] =
 PRIMITIVES['make-reader-graph'] = 
 	new PrimProc('make-reader-graph', 1, false, false,
 		     function(x) {
-			 var result = 
-			     types.readerGraph(x, types.makeLowLevelEqHash(), 0);
-			 alert("got result");
-			 return result;
+			 return types.readerGraph(x, types.makeLowLevelEqHash(), 0);
 		     });
 
 
