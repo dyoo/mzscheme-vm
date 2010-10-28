@@ -63,8 +63,9 @@ Once the program is saved, create a new file called @filepath{run.rkt} in the sa
 following contents:
 
 @racketmod[racket
-(require #,(this-package-version-symbol))
+(require #,(schememodname/this-package))
 (run-in-browser "test.rkt")
+(read-line)
 ]
 
 When this program is executed, run-in-browser will take @filepath{test.rkt} and
@@ -80,6 +81,68 @@ example, modify @filepath{run.rkt} to be:
 (create-zip-package "test.rkt" "test.zip")
 ]
 
+
+
+@section{Examples}
+
+
+@subsection{Falling ball}
+
+
+
+
+@subsection{Phone mood ring (based on tilt)}
+
+The following example requires that you use @racket[create-android-phone-package]
+to create the phone package.
+
+
+@racketmod[planet #,(this-package-version-symbol)
+(require #,(schememodname/this-package phone/tilt))
+
+@code:comment{The world is a color.}
+(define initial-world (make-color 0 0 0))
+
+@code:comment{tilt: world number number number -> world}
+@code:comment{Tilting the phone adjusts the color.}
+(define (tilt w azimuth pitch roll)
+  (make-color (scale azimuth 360)
+	      (scale (+ pitch 90) 180)
+	      (scale (+ roll 90) 180)))
+
+@code:comment{scale-azimuth: number -> number}
+@code:comment{Take a number going from 0-360 and scale it to a number between 0-255}
+(define (scale n domain-bound)
+  (inexact->exact (floor (* (/ n domain-bound) 255))))
+
+@code:comment{User interface.}
+(define view (list (js-div '((id "background")))))
+
+(define (draw-html w) view)
+
+(define (draw-css w)
+  (list (list "background" 
+	      (list "background-color" 
+		    (format "rgb(~a, ~a, ~a)"
+			    (color-red w)
+			    (color-green w)
+			    (color-blue w)))
+	      (list "width" "100%")
+	      (list "height" "100%"))))
+
+
+
+(big-bang initial-world
+	  (on-tilt tilt)
+	  (to-draw-page draw-html draw-css))
+
+]
+
+
+@racketmod[racket
+(require (planet dyoo/moby:3))
+(create-android-phone-package "mood-ring.rkt" "mood.apk")
+]
 
 
 
