@@ -88,6 +88,51 @@ example, modify @filepath{run.rkt} to be:
 
 @subsection{Falling ball}
 
+@racketmod[planet #,(this-package-version-symbol)
+(require #,(schememodname/this-package phone/tilt))
+@code:comment{Simple falling ball example.  A red ball falls down the screen}
+@code:comment{until hitting the bottom.}
+(define-struct world (radius y))
+
+@code:comment{The dimensions of the screen:}
+(define WIDTH 320)
+(define HEIGHT 480)
+
+@code:comment{The radius of the red circle.}
+(define RADIUS 15)
+
+@code:comment{The world is the distance from the top of the screen.}
+(define INITIAL-WORLD (make-world RADIUS 0))
+
+@code:comment{tick: world -> world}
+@code:comment{Moves the ball down.}
+(define (tick w)
+  (make-world RADIUS (+ (world-y w) 5)))
+
+
+@code:comment{hits-floor?: world -> boolean}
+@code:comment{Returns true when the distance reaches the screen height.}
+(define (hits-floor? w)
+  (>= (world-y w) HEIGHT))
+
+@code:comment{We have some simple test cases.}
+(check-expect (hits-floor? (make-world RADIUS 0)) false)
+(check-expect (hits-floor? (make-world RADIUS HEIGHT)) true)
+
+@code:comment{render: world -> scene}
+@code:comment{Produces a scene with the circle at a height described by the world.}
+(define (render w)
+  (place-image (circle RADIUS "solid" "red") (/ WIDTH 2) (world-y w)
+               (empty-scene WIDTH HEIGHT)))
+
+@code:comment{Start up a big bang, 15 frames a second.}
+(check-expect (big-bang INITIAL-WORLD
+			   (on-tick tick 1/15)
+			   (to-draw render)
+			   (stop-when hits-floor?))
+	      (make-world 15 480))
+
+]
 
 
 
