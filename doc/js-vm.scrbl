@@ -14,7 +14,7 @@
 
 This package provides tools to develop Racket programs that run
 in Javascript.  It provides a Javascript runtime that interprets
-Racket bytecode, a DrRacket tool for building and testing packages of
+Racket bytecode, functions for building and testing packages of
 translated code, and libraries to use features of a web-browser's
 environment.
 
@@ -26,17 +26,13 @@ further development on @bold{js-vm} will work toward supporting
 modules written in full Racket.
 
 To install @bold{js-vm}, evaluate the following the DrRacket REPL.
-@racketblock[(require #,(schememodname/this-package info))]
+@racketblock[(require #,(schememodname/this-package))]
 
-This  should install the library and its associated DrRacket tool;
-the tool adds two menu options:
-@itemize[@item{Create Javascript Package} 
-          @item{Run Javascript in Browser}]
-Restart DrRacket to make sure the tool is loaded.
+This should install the library.
 
 
-To make sure @bold{js-vm} is working, try to run the following program in
-DrRacket.
+To make sure @bold{js-vm} is working, save the following program 
+as test.rkt.
 @racketmod[planet #,(this-package-version-symbol)
 (printf "hello world\n")
 (check-expect (* 3 4 5) 60)
@@ -48,15 +44,36 @@ DrRacket.
               10)
 "last line"
 ]
-Evaluation should halt at the call to @racket[image-url], because
-@racket[image-url] constructs a image DOM element and
-needs to run in an Javascript context.
 
-Save the program, and then select @emph{Run Javascript in Browser} 
-under the @emph{Racket} submenu.
+This program uses a language that has been enriched with
+Javascript-specific functions.  It can be partially evaluated in plain
+Racket, but evaluation will halt at the call to @racket[image-url]
+because @racket[image-url] constructs a image DOM element and needs to
+run in an Javascript context.
 
-Finally, you can construct a .zip package of a program by
-selecting @emph{Create Javascript Package} under the @emph{Racket} submenu.
+
+Once the program is saved, create a new file called run.rkt with the
+following:
+
+@racketmod[racket
+(require #,(this-package-version-symbol))
+(run-in-browser "test.rkt")
+]
+
+When this program is executed, run-in-browser will take test.rkt and
+translate it to run on the browser; a temporary web-server will opened
+and your browser's window will open with the running program.
+
+
+Finally, you can create zip packages by using @racket[create-zip-package].  For
+example, modify run.rkt to be:
+
+@racketmod[racket
+(require #,(this-package-version-symbol))
+#;(run-in-browser "test.rkt")
+(create-zip-package "test.rkt" "test.zip")
+]
+
 
 
 

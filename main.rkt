@@ -5,6 +5,7 @@
          racket/port
          racket/file
          racket/tcp
+         racket/path
          net/sendurl
          web-server/web-server
          
@@ -22,41 +23,44 @@
 ;; run-in-browser: path-string -> void
 (define (run-in-browser a-filename)
   (log-info "Starting up web server.\n")
-  (let ([dispatcher (make-web-serving-dispatcher a-filename)])
-    (let* ([port (find-open-port)]
-           [url (format "http://localhost:~a/index.html" port)])
-      ;; Runs the server under the user custodian
-      ;; so it properly gets cleaned up.
-      (serve #:dispatch dispatcher
-             #:port port)
-      (send-url url)
-      (log-info (format 
-                 "Server should be running on ~a, and will stay up until the next Run.\n"
-                 url)))))
+  (let ([a-filename (normalize-path a-filename)])
+    (let ([dispatcher (make-web-serving-dispatcher a-filename)])
+      (let* ([port (find-open-port)]
+             [url (format "http://localhost:~a/index.html" port)])
+        ;; Runs the server under the user custodian
+        ;; so it properly gets cleaned up.
+        (serve #:dispatch dispatcher
+               #:port port)
+        (send-url url)
+        (log-info (format 
+                   "Server should be running on ~a, and will stay up until the next Run.\n"
+                   url))))))
 
-;; create-zip-package: path path -> void
+;; create-zip-package: path-string path-string -> void
 ;; Write out a package zip.
 (define (create-zip-package a-filename output-file)
-  (with-handlers
-      ([exn:fail? 
-        (lambda (exn)
-          (log-warning (format
-                        "An internal error occurred during compilation: ~a\n"
-                        (exn-message exn)))
-          (raise exn))])
-    (let-values ([(ip dont-care)
-                  (call-with-temporary-directory->zip
-                   (make-package-subdirectory-name output-file)
-                   (lambda (output-path)                                 
-                     (log-info "Compiling Javascript...\n")
-                     (create-javascript-package a-filename
-                                                output-path)))])
-      (call-with-output-file output-file
-        (lambda (op) 
-          (log-info (format "Writing package to file ~a...\n" output-file))
-          (copy-port ip op))
-        #:exists 'replace)
-      (log-info "Done!\n"))))
+  (let ([a-filename (normalize-path a-filename)]
+        [output-file (normalize-path output-file)])
+    (with-handlers
+        ([exn:fail? 
+          (lambda (exn)
+            (log-warning (format
+                          "An internal error occurred during compilation: ~a\n"
+                          (exn-message exn)))
+            (raise exn))])
+      (let-values ([(ip dont-care)
+                    (call-with-temporary-directory->zip
+                     (make-package-subdirectory-name output-file)
+                     (lambda (output-path)                                 
+                       (log-info "Compiling Javascript...\n")
+                       (create-javascript-package a-filename
+                                                  output-path)))])
+        (call-with-output-file output-file
+          (lambda (op) 
+            (log-info (format "Writing package to file ~a...\n" output-file))
+            (copy-port ip op))
+          #:exists 'replace)
+        (log-info "Done!\n")))))
 
 
 
