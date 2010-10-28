@@ -583,7 +583,7 @@ from ASL and some from regular Racket.  These include the following:
 @defmodule/this-package[lang/wescheme]
 The language here acts as a kind of ``Pretty Big'' language,
 and is the language used when @racket[planet #,(this-package-version-symbol)] is
-used as the module language.
+the module language.
 
 It provides the bindings from 
 @schememodname/this-package[lang/base],
