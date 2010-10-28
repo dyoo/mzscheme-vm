@@ -15,6 +15,8 @@
 @title{@js-vm[]: Javascript virtual machine for Racket}
 @author[(author+email "Danny Yoo" "dyoo@racket-lang.org")]
 
+
+
 This package provides tools to develop Racket programs that run
 in Javascript.  It provides a Javascript runtime that interprets
 Racket bytecode, functions for building and testing packages of
@@ -27,6 +29,8 @@ At the moment, @js-vm[] currently supports programs written in the
 @schememodname/this-package[lang/base] languages; 
 further development on @js-vm[] will work toward supporting
 modules written in full Racket.
+
+@section{Quick Start}
 
 To install @js-vm[], evaluate the following the DrRacket REPL.
 @racketblock[(require #,(schememodname/this-package))]
@@ -48,7 +52,7 @@ as @filepath{test.rkt} in some working directory.
 "last line"
 ]
 
-This program uses a language that has been enriched with
+This program is in a language that has been enriched with
 Javascript-specific functions.  It can be partially evaluated in plain
 Racket, but evaluation will halt at the call to @racket[image-url]
 because @racket[image-url] constructs a image DOM element and needs to
@@ -73,7 +77,6 @@ example, modify @filepath{run.rkt} to be:
 
 @racketmod[racket
 (require #,(this-package-version-symbol))
-#;(run-in-browser "test.rkt")
 (create-zip-package "test.rkt" "test.zip")
 ]
 
@@ -84,19 +87,382 @@ example, modify @filepath{run.rkt} to be:
 
 @section{Base language}
 @defmodule/this-package[lang/base]
-This provides the basic set of bindings, including the bindings
-from ASL.
+This provides the basic set of bindings for @js-vm[] programs, including the bindings
+from ASL and some from regular Racket.  These include the following:
+@(let ([names '(
+		;#%module-begin
+		;#%datum
+		;#%app
+		;#%top-interaction
+		;#%top
+		define
+		define-struct
+		if
+		cond
+		else
+		case
+		quote
+		unquote
+		unquote-splicing
+		lambda
+		case-lambda
+		let
+		let*
+		letrec
+		letrec-values
+		local
+		quasiquote
+		begin
+		begin0
+		set!
+		and
+		or
+		when
+		unless
+		require
+		for-syntax
+		define-for-syntax
+		begin-for-syntax
+		prefix-in
+		only-in
+		provide
+		planet
+		all-defined-out
+		all-from-out
+		except-out
+		rename-out    
+		define-syntax
+		let/cc
+		with-continuation-mark
+		
+		true
+		false
+		pi
+		e
+		empty
+		eof
+		null
+
+
+		shared 
+                with-handlers
+
+		write
+		display
+		newline
+		current-print
+		current-continuation-marks
+		continuation-mark-set->list
+		for-each
+		make-thread-cell
+		make-struct-type
+		make-struct-field-accessor
+		make-struct-field-mutator
+		struct-type?
+		struct-constructor-procedure?
+		struct-predicate-procedure?
+		struct-accessor-procedure?
+		struct-mutator-procedure?
+		procedure-arity
+		procedure-arity-includes?
+		make-arity-at-least
+		arity-at-least?
+		arity-at-least-value
+		apply
+		values
+		call-with-values
+		compose
+		current-inexact-milliseconds
+		current-seconds
+		not
+		void
+		random
+		sleep
+		identity
+		raise
+		error
+
+		make-exn
+		make-exn:fail
+		make-exn:fail:contract
+		make-exn:fail:contract:arity
+		make-exn:fail:contract:variable
+		make-exn:fail:contract:divide-by-zero
+
+		exn-message
+		exn-continuation-marks
+
+		exn?
+		exn:fail?
+		exn:fail:contract?
+		exn:fail:contract:arity?
+		exn:fail:contract:variable?
+		exn:fail:contract:divide-by-zero?
+
+
+		*
+		-
+		+
+		=
+		=~
+		/
+		sub1
+		add1
+		<
+		>
+		<=
+		>=
+		abs
+		quotient
+		remainder
+		modulo
+		max
+		min
+		gcd
+		lcm
+		floor
+		ceiling
+		round
+		numerator
+		denominator
+		expt
+		exp
+		log
+		sin
+		cos
+		tan
+		asin
+		acos
+		atan
+		sinh
+		cosh
+		sqr
+		sqrt
+		integer-sqrt
+		make-rectangular
+		make-polar
+		real-part
+		imag-part
+		angle
+		magnitude
+		conjugate
+		sgn
+		inexact->exact
+		exact->inexact
+		number->string
+		string->number
+		procedure?
+		pair?
+		cons?
+		empty?
+		null?
+		undefined?
+		immutable?
+		void?
+		symbol?
+		string?
+		char?
+		boolean?
+		vector?
+		struct?
+		eof-object?
+		bytes?
+		byte?
+		number?
+		complex?
+		real?
+		rational?
+		integer?
+		exact?
+		inexact?
+		odd?
+		even?
+		zero?
+		positive?
+		negative?
+		box?
+		hash?
+		eq?
+		eqv?
+		equal?
+		equal~?
+		false?
+		boolean=?
+		symbol=?
+		cons
+		car
+		cdr
+		caar
+		cadr
+		cdar
+		cddr
+		caaar
+		caadr
+		cadar
+		cdaar
+		cdadr
+		cddar
+		caddr
+		cdddr
+		cadddr
+		rest
+		first
+		second
+		third
+		fourth
+		fifth
+		sixth
+		seventh
+		eighth
+		length
+		list?
+		list
+		list*
+		list-ref
+		list-tail
+		append
+		reverse
+		map
+		andmap
+		ormap
+		memq
+		memv
+		member
+		memf
+		assq
+		assv
+		assoc
+		remove
+		filter
+		foldl
+		foldr
+		quicksort
+		sort
+		argmax
+		argmin
+		build-list
+		box
+		box-immutable
+		unbox
+		set-box!
+		make-hash
+		make-hasheq
+		hash-set!
+		hash-ref
+		hash-remove!
+		hash-map
+		hash-for-each
+		make-string
+		replicate
+		string
+		string-length
+		string-ref
+		string=?
+		string-ci=?
+		string<?
+		string>?
+		string<=?
+		string>=?
+		string-ci<?
+		string-ci>?
+		string-ci<=?
+		string-ci>=?
+		substring
+		string-append
+		string->list
+		list->string
+		string-copy
+		string->symbol
+		symbol->string
+		format
+		printf
+		string->int
+		int->string
+		explode
+		implode
+		string-alphabetic?
+		string-ith 
+		string-lower-case?
+		string-numeric?
+		string-upper-case?
+		string-whitespace?
+		build-string
+		string->immutable-string
+		string-set!
+		string-fill!
+		make-bytes
+		bytes
+		bytes->immutable-bytes
+		bytes-length
+		bytes-ref
+		bytes-set!
+		subbytes
+		bytes-copy
+		bytes-fill!
+		bytes-append
+		bytes->list
+		list->bytes
+		bytes=?
+		bytes<?
+		bytes>?
+		make-vector
+		vector
+		vector-length
+		vector-ref
+		vector-set!
+		vector->list
+		list->vector
+		build-vector
+		char=?
+		char<?
+		char>?
+		char<=?
+		char>=?
+		char-ci=?
+		char-ci<?
+		char-ci>?
+		char-ci<=?
+		char-ci>=?
+		char-alphabetic?
+		char-numeric?
+		char-whitespace?
+		char-upper-case?
+		char-lower-case?
+		char->integer
+		integer->char
+		char-upcase
+		char-downcase
+
+		
+		call-with-current-continuation
+		call/cc
+		call-with-continuation-prompt
+		abort-current-continuation
+		default-continuation-prompt-tag
+		make-continuation-prompt-tag
+
+
+		make-reader-graph
+		make-placeholder
+		placeholder-set!
+)])
+   (apply itemize (map (lambda (i) (item (racket #,i))) names)))
+
+
 
 
 @section{WeScheme}
 @defmodule/this-package[lang/wescheme]
-This provides the bindings from 
+The language here acts as a kind of ``Pretty Big'' language,
+and is the language used when @racket[planet #,(this-package-version-symbol)] is
+used as the module language.
+
+It provides the bindings from 
 @schememodname/this-package[lang/base],
 @schememodname/this-package[lang/posn],
 @schememodname/this-package[image/image],
 @schememodname/this-package[jsworld/jsworld], and
 @schememodname/this-package[check-expect/check-expect].
-
 It also adds @racket[open-image-url] and @racket[js-big-bang]
 as aliases for @racket[image-url]
 and @racket[big-bang] respectively.
