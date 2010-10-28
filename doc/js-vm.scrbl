@@ -537,10 +537,6 @@ The following program shows a ball falling down a scene.
 }
 
 
-@defproc[(initial-effect [an-effect effect?]) handler?]{
-Produces a handler that tells big-bang to apply an effect on
-initialization.
-}
 
 
 @defproc[(stop-when [stop? (world -> boolean)]) handler?]{
@@ -602,18 +598,6 @@ the provided world function produces true.}
 @defproc[(js-text) ...]{}
 @defproc[(js-select) ...]{}
 
-
-
-@subsection{Effects}
-
-
-
-
-@subsection{Miscellaneous functions}
-
-world-with-effects ...
-
-Wraps a world with a collection of effects.
 
 
 
@@ -890,9 +874,6 @@ Here is a complete list of the strings that @racket[image] will recognize as col
 @defproc[(on-location-change [world-updater (world [latitude number] [longitude number] -> world)]) handler]{
 }
 
-@defproc[(on-location-change! [world-updater (world [latitude number] [longitude number] -> world)] [effect-f (world [latitude number] [longitude number] -> effect)]) handler]{
-}
-
 
 
 @subsection{SMS Messaging}
@@ -900,9 +881,6 @@ Here is a complete list of the strings that @racket[image] will recognize as col
 
 
 @defproc[(on-sms-receive [world-updater (world [sender string] [message string] -> world)]) handler]{
-}
-@defproc[(on-sms-receive! [world-updater (world [sender string] [message string] -> world)]
-			  [effect-f (world [sender string] [message string] -> effect)]) handler]{
 }
 
 
@@ -912,18 +890,11 @@ Here is a complete list of the strings that @racket[image] will recognize as col
 @defmodule/this-package[phone/tilt]
 
 @defproc[(on-acceleration  [world-updater (world [x number] [y number] [z number] -> world)]) handler]{}
-@defproc[(on-acceleration! [world-updater (world [x number] [y number] [z number] -> world)] 
-			   [effect-f (world [x number] [y number] [z number] -> effect)])
-			   handler]{}
 
 @defproc[(on-shake [world-updater (world -> world)]) handler]{}
-@defproc[(on-shake! [world-updater (world -> world)] [effect-f (world -> effect)]) handler]{}
 
 
 @defproc[(on-tilt [world-updater (world [azimuth number] [pitch number] [roll number] -> world)]) handler]{}
-@defproc[(on-tilt! [world-updater (world [azimuth number] [pitch number] [roll number] -> world)] 
-		   [effect-f (world [azimuth number] [pitch number] [roll number] -> effect)])
-			   handler]{}
 
 
 
