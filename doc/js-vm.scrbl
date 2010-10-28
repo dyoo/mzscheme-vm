@@ -8,8 +8,11 @@
           (for-label (planet dyoo/js-vm/phone/tilt))
           (for-label (planet dyoo/js-vm/phone/sms)))
 
+@(define (js-vm)
+   (bold "js-vm"))
 
-@title{@bold{js-vm}: Javascript virtual machine for Racket}
+
+@title{@js-vm[]: Javascript virtual machine for Racket}
 @author[(author+email "Danny Yoo" "dyoo@racket-lang.org")]
 
 This package provides tools to develop Racket programs that run
@@ -19,20 +22,20 @@ translated code, and libraries to use features of a web-browser's
 environment.
 
 
-At the moment, js-vm currently supports programs written in the
+At the moment, @js-vm[] currently supports programs written in the
 @schememodname/this-package[lang/wescheme] and
 @schememodname/this-package[lang/base] languages; 
-further development on @bold{js-vm} will work toward supporting
+further development on @js-vm[] will work toward supporting
 modules written in full Racket.
 
-To install @bold{js-vm}, evaluate the following the DrRacket REPL.
+To install @js-vm[], evaluate the following the DrRacket REPL.
 @racketblock[(require #,(schememodname/this-package))]
 
 This should install the library.
 
 
-To make sure @bold{js-vm} is working, save the following program 
-as test.rkt.
+To make sure @js-vm[] is working, save the following program 
+as @filepath{test.rkt} in some working directory.
 @racketmod[planet #,(this-package-version-symbol)
 (printf "hello world\n")
 (check-expect (* 3 4 5) 60)
@@ -52,21 +55,21 @@ because @racket[image-url] constructs a image DOM element and needs to
 run in an Javascript context.
 
 
-Once the program is saved, create a new file called run.rkt with the
-following:
+Once the program is saved, create a new file called @filepath{run.rkt} in the same working directory with the
+following contents:
 
 @racketmod[racket
 (require #,(this-package-version-symbol))
 (run-in-browser "test.rkt")
 ]
 
-When this program is executed, run-in-browser will take test.rkt and
+When this program is executed, run-in-browser will take @filepath{test.rkt} and
 translate it to run on the browser; a temporary web-server will opened
 and your browser's window will open with the running program.
 
 
 Finally, you can create zip packages by using @racket[create-zip-package].  For
-example, modify run.rkt to be:
+example, modify @filepath{run.rkt} to be:
 
 @racketmod[racket
 (require #,(this-package-version-symbol))
@@ -140,7 +143,8 @@ second argument computes that tree's styling.  }
 For simple applications, @scheme[to-draw] is sufficient to draw a scene onto the display.
 The following program shows a ball falling down a scene.
 
-@(schemeblock
+
+@racketmod[planet #,(this-package-version-symbol)
 (define WIDTH 320)
 (define HEIGHT 480)
 (define RADIUS 15)
@@ -163,11 +167,11 @@ The following program shows a ball falling down a scene.
 (big-bang INITIAL-WORLD
              (on-tick tick 1/15)
              (to-draw render)
-             (stop-when hits-floor?)))
+             (stop-when hits-floor?))]
 }
 
 
-@defproc[(initial-effect [an-effect effect?]) handler?] {
+@defproc[(initial-effect [an-effect effect?]) handler?]{
 Produces a handler that tells big-bang to apply an effect on
 initialization.
 }
@@ -178,14 +182,14 @@ When the world should be stopped --- when @scheme[stop?] applied to the world
 produces @scheme[true] --- then the @scheme[big-bang] terminates.
 
 The program:
-@(schemeblock
+@racketmod[planet #,(this-package-version-symbol)
 (define (at-ten x)
   (>= x 10))
 
 (big-bang 0
              (on-tick add1 1)
              (stop-when at-ten))
-)
+]
 counts up to ten and then stops.
 }
 
@@ -514,26 +518,47 @@ Here is a complete list of the strings that @racket[image] will recognize as col
 
 @section{Phone}
 
+@subsection{Location (GPS)}
+@defmodule/this-package[phone/location]
 
-location.rkt
-    on-location-change: world-updater  -> handler
-    on-location-change!: world-updater effect-f -> handler 
+@defproc[(on-location-change [world-updater (world [latitude number] [longitude number] -> world)]) handler]{
+}
 
-
-sms.rkt
-
-    on-sms-receive: world-updater -> handler
-    on-sms-receive!: world-updater effect-f -> handler
+@defproc[(on-location-change! [world-updater (world [latitude number] [longitude number] -> world)] [effect-f (world [latitude number] [longitude number] -> effect)]) handler]{
+}
 
 
-tilt.rkt
 
-    on-acceleration: (world number number number -> world)
-    on-acceleration!: ...
-    on-shake
-    on-shake!
-    on-tilt
-    on-tilt!
+@subsection{SMS Messaging}
+@defmodule/this-package[phone/sms]
+
+
+@defproc[(on-sms-receive [world-updater (world [sender string] [message string] -> world)]) handler]{
+}
+@defproc[(on-sms-receive! [world-updater (world [sender string] [message string] -> world)]
+			  [effect-f (world [sender string] [message string] -> effect)]) handler]{
+}
+
+
+
+
+@subsection{Motion sensors and tilt}
+@defmodule/this-package[phone/tilt]
+
+@defproc[(on-acceleration  [world-updater (world [x number] [y number] [z number] -> world)]) handler]{}
+@defproc[(on-acceleration! [world-updater (world [x number] [y number] [z number] -> world)] 
+			   [effect-f (world [x number] [y number] [z number] -> effect)])
+			   handler]{}
+
+@defproc[(on-shake [world-updater (world -> world)]) handler]{}
+@defproc[(on-shake! [world-updater (world -> world)] [effect-f (world -> effect)]) handler]{}
+
+
+@defproc[(on-tilt [world-updater (world [azimuth number] [pitch number] [roll number] -> world)]) handler]{}
+@defproc[(on-tilt! [world-updater (world [azimuth number] [pitch number] [roll number] -> world)] 
+		   [effect-f (world [azimuth number] [pitch number] [roll number] -> effect)])
+			   handler]{}
+
 
 
 
@@ -543,8 +568,7 @@ tilt.rkt
 
 
 @section{Implementing Javascript Modules}
-Warning: the material in this section is unstable, 
-woefully underdocumented, and likely to change.
+Warning: the material in this section is unstable and likely to change.
 
 @subsection{Module Implementation in Javascript}
 @defmodule/this-package[lang/js-impl/js-impl]
