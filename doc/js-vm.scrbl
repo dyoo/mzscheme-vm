@@ -6,10 +6,11 @@
           (for-label (planet dyoo/js-vm/jsworld/jsworld))
           (for-label (planet dyoo/js-vm/phone/location))
           (for-label (planet dyoo/js-vm/phone/tilt))
-          (for-label (planet dyoo/js-vm/phone/sms)))
+          (for-label (planet dyoo/js-vm/phone/sms))
+	  (for-label (planet dyoo/js-vm/main)))
 
 @(define (js-vm)
-   (bold "js-vm"))
+   (emph "js-vm"))
 
 
 @title{@js-vm[]: Javascript virtual machine for Racket}
@@ -17,18 +18,13 @@
 
 
 
-This package provides tools to develop Racket programs that run
+@js-vm[] provides tools to develop Racket programs that run
 in Javascript.  It provides a Javascript runtime that interprets
 Racket bytecode, functions for building and testing packages of
 translated code, and libraries to use features of a web-browser's
 environment.
 
 
-At the moment, @js-vm[] currently supports programs written in the
-@schememodname/this-package[lang/wescheme] and
-@schememodname/this-package[lang/base] languages; 
-further development on @js-vm[] will work toward supporting
-modules written in full Racket.
 
 @section{Quick Start}
 
@@ -68,7 +64,7 @@ following contents:
 (read-line)
 ]
 
-When this program is executed, run-in-browser will take @filepath{test.rkt} and
+When this program is executed, @racket[run-in-browser] will take @filepath{test.rkt} and
 translate it to run on the browser; a temporary web-server will opened
 and your browser's window will open with the running program.
 
@@ -188,6 +184,30 @@ to create the phone package.
 (require (planet dyoo/moby:3))
 (create-android-phone-package "mood-ring.rkt" "mood.apk")
 ]
+
+
+
+
+@section{Running @js-vm[]}
+@defmodule/this-package[main]
+@defproc[(run-in-browser [input-file path-string?]) void]{
+Consumes the given program, translates it so it can run on the browser,
+and brings up the default browser.
+
+At the moment, @js-vm[] currently supports programs written in the
+@schememodname/this-package[lang/wescheme] and
+@schememodname/this-package[lang/base] languages; further development
+on @js-vm[] will work toward supporting modules written in full
+Racket.  @racket[require] should work as long as the required modules,
+too, are in the supported languages.
+
+}
+
+@defproc[(create-zip-package [input-file path-string?] [output-zip-file path-string?]) void]{
+Consumes the given program, translates it so it can run on the browser,
+and writes out a zip archive to the given path.  If the output file already exists, overwrites it.  This zip file can be unpacked and served on any standard
+web server.
+}
 
 
 
@@ -587,19 +607,21 @@ interfaces.
 @defmodule/this-package[jsworld/jsworld]
 
 
-@defproc[(big-bang (a-world world) (handlers handler) ...) void]{
+@defproc[(big-bang (a-world world) (handlers handler) ...) world]{
 Starts a reactive computation with @scheme[big-bang].
 The rest of the arguments hook into the reactive computation.
 
 By default, the page that's displayed contains a rendering of the
-world value.  In the presence of an @scheme[on-draw] or
-@scheme[to-draw] handler, @scheme[big-bang] will show a
+world value.  In the presence of an @scheme[to-draw] or
+@scheme[to-draw-page] handler, @scheme[big-bang] will show a
 customized view.
 
 The majority of the handlers register different stimuli that can
 trigger changes to the world.  One instance is @scheme[on-tick], which
 registers a function to update the world on a clock tick.  }
 
+When the @racket[big-bang] computation terminates through a
+@racket[stop-when], the final world is returned as its value.
 
 
 
@@ -665,15 +687,6 @@ counts up to ten and then stops.
 
 
 
-@defproc[(stop-when!) handler?]{Produces a handler that stops a @racket[big-bang] whenever
-the provided world function produces true.}                               
-
-
-
-
-
-
-
 
 
 @defproc[(key=? [key1 key?] [key2 key?]) boolean?]{Produces true if @racket[key1] is equal to @racket[key2].}
@@ -683,15 +696,13 @@ the provided world function produces true.}
 
 @defproc[(on-tick) handler?]{Produces a handler that responds to clock ticks.}
 
-@defproc[(on-tick!) handler?]{Produces a handler that responds to clock ticks.}
 
 @defproc[(on-key) handler?]{Produces a handler that responds to key events.}
 
-@defproc[(on-key!) handler?]{Produces a handler that responds to key events.}
 
 @defproc[(on-button-click) handler?]{Produces a handler that responds to button click events.}
 
-@defproc[(on-button-click!) handler?]{Produces a handler that responds to button click events.}
+
 
 
 
