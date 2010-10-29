@@ -5,7 +5,7 @@
 
 (define compile-omit-paths '("externals" "support" "lib" "tests" "sandbox"))
 
-(define scribblings '(("doc/js-vm.scrbl")))
+(define scribblings '(("js-vm.scrbl")))
 
 
 (define categories '(devtools))
