@@ -43,7 +43,7 @@ EXPORTS['scheme->prim-js'] =
 			      'scheme->prim-js', 'real number, string, symbol, char, boolean, or vector', 1);
 
 			var returnVal;
-		 	if ( isReal(x) ) {
+		 	if ( types.isReal(x) ) {
 				if ( !( jsnums.equals(x, jsnums.nan) ||
 					jsnums.equals(x, jsnums.inf) ||
 					jsnums.equals(x, jsnums.negative_inf) ) &&
