@@ -3,6 +3,12 @@
  ********************************/
 
 
+var arrayEach = function(arr, f) {
+	for (var i = 0; i < arr.length; i++) {
+		f.call(null, arr[i], i);
+	}
+}
+
 
 var isJsObject = function(x) {
 	return types.isJsValue(x) && typeof(x.val) == 'object';
@@ -238,14 +244,18 @@ EXPORTS['js-call'] =
 		 2,
 		 true, false,
 		 function(fun, parent, initArgs) {
-		     alert('in jscall');
 		 	var allArgs = [fun, parent].concat(initArgs);
+		     alert('checking function:' + isJsFunction(fun));
 		 	check(fun, isJsFunction, 'js-call', 'javascript function', 1, allArgs);
+		     alert('checking parent');
 			check(parent, function(x) { return (x === false || types.isJsObject(x)); },
 			      'js-call', 'javascript object or false', 2, allArgs);
 			
+		     alert('jscall: unwrapping args');
+
 			var args = helpers.map(function(x) { return (types.isJsValue(x) ? x.val : x); }, initArgs);
 			var thisArg = parent ? parent.val : null;
+		     alert('about to apply call');
 			var jsCallReturn = fun.val.apply(thisArg, args);
 			if ( jsCallReturn === undefined ) {
 				return types.VOID;
