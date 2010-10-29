@@ -16,4 +16,6 @@
 	 js-new
 	 js-make-hash
 	 js-undefined
-	 js-null)
+	 js-undefined?
+	 js-null
+	 js-null?)

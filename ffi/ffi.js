@@ -19,6 +19,8 @@ var isAssocList = function(x) {
 };
 
 
+var check = helpers.check;
+
 
 
 EXPORTS['scheme->prim-js'] =
@@ -293,3 +295,22 @@ EXPORTS['js-make-hash'] =
 
 EXPORTS['js-undefined'] = types.jsValue('undefined', undefined);
 EXPORTS['js-null'] = types.jsValue('null', null);
+
+
+EXPORTS['js-undefined?'] =
+    new types.PrimProc("js-undefined?", 
+		       1,
+		       false,
+		       false, 
+		       function(x) {
+			   return types.isJsValue(x) && x.val === undefined;
+		       });
+
+EXPORTS['js-null?'] =
+    new types.PrimProc("js-null?", 
+		       1,
+		       false,
+		       false, 
+		       function(x) {
+			   return types.isJsValue(x) && x.val === null;
+		       });

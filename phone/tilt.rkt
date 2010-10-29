@@ -15,6 +15,15 @@
 (require-permission "PERMISSION:TILT"
 		    "PERMISSION:SHAKE")
 
+
+;; running-in-phone-context?
+(define (running-in-phone-context?)
+  (not (js-undefined? (js-get-global-value "phonegap"))))
+
+
+(printf "Running on phone?~s\n" (running-in-phone-context?))
+
+
 (define (on-acceleration! world-updater effect-updater)
   (let ([accelerometer (js-new (js-get-field (js-get-global-value "phonegap") "Accelerometer"))])
     (make-world-config (lambda (success error)
