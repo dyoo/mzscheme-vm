@@ -28,12 +28,6 @@ environment.
 
 @section{Quick Start}
 
-To install @js-vm[], evaluate the following the DrRacket REPL.
-@racketblock[(require #,(schememodname/this-package))]
-
-This should install the library.
-
-
 To make sure @js-vm[] is working, save the following program 
 as @filepath{test.rkt} in some working directory.
 @racketmod[planet #,(this-package-version-symbol)
@@ -85,7 +79,6 @@ example, modify @filepath{run.rkt} to be:
 @subsection{Falling ball}
 
 @racketmod[planet #,(this-package-version-symbol)
-(require #,(schememodname/this-package phone/tilt))
 @code:comment{Simple falling ball example.  A red ball falls down the screen}
 @code:comment{until hitting the bottom.}
 (define-struct world (radius y))
