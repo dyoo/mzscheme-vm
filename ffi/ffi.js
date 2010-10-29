@@ -58,16 +58,16 @@ EXPORTS['scheme->prim-js'] =
 				}
 				returnVal = jsnums.toFixnum(x);
 			}
-			else if ( isString(x) ) {
+			else if ( types.isString(x) ) {
 				returnVal = x.toString();
 			}
-			else if ( isSymbol(x) || isChar(x) ) {
+			else if ( types.isSymbol(x) || types.isChar(x) ) {
 				returnVal = x.val;
 			}
-			else if ( isBoolean(x) ) {
+			else if ( types.isBoolean(x) ) {
 				returnVal = x;
 			}
-			else if ( isVector(x) ) {
+			else if ( types.isVector(x) ) {
 				returnVal = helpers.map(function(y) { return (types.isJsValue(y) ? y.val : y); },
 							x.elts);
 			}
@@ -168,7 +168,7 @@ EXPORTS['js-get-field'] =
 		 	selectors.unshift(firstSelector);
 			var allArgs = [root].concat(selectors);
 		 	check(root, types.isJsValue, 'js-get-field', 'js-value', 1, allArgs);
-			arrayEach(selectors, function(x, i) { check(x, isString, 'js-get-field', 'string', i+2, allArgs); });
+			arrayEach(selectors, function(x, i) { check(x, types.isString, 'js-get-field', 'string', i+2, allArgs); });
 
 			var name = [root.name];
 			var obj = root.val;
@@ -210,7 +210,7 @@ EXPORTS['js-set-field!'] =
 		 function(obj, field, v) {
 		 	check(obj, function(x) { return types.isJsValue(x) && (typeof(x) == 'object' || typeof(x) == 'function'); },
 			      'js-set-field!', 'javascript object or function', 1, arguments);
-			check(field, isString, 'js-set-field!', 'string', 2, arguments);
+			check(field, types.isString, 'js-set-field!', 'string', 2, arguments);
 
 			obj.val[field.toString()] = (types.isJsValue(v) ? v.val : types.wrappedSchemeValue(v));
 			return types.VOID;

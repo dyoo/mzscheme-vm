@@ -10,7 +10,8 @@
 ;; NOTE: continuation-prompts-3.rkt is not being tested here.  Must be handled interactively.
 
 
-(require "with-handlers-1.rkt"
+(require "ffi.rkt"
+	 "with-handlers-1.rkt"
 	 "with-handlers-2.rkt"
 	 "when-unless.rkt"
 	 "setbang.rkt"

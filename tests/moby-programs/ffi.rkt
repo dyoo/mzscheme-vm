@@ -10,5 +10,5 @@
 (define platform
   (js-get-field window "navigator" "platform"))
 
-(printf "Current browser platform is ~s\n" platform)
-
+(printf "Current browser platform is ~s\n" 
+	(prim-js->scheme platform))
