@@ -31,7 +31,7 @@
 ;; Write out the javascript support files
 (define (copy-support-js-files a-path)
   (for ([p (directory-list support-directory)])
-    (when (equal? (filename-extension a-path)
+    (when (equal? (filename-extension p)
                   #"js")
       (when (file-exists? (build-path a-path p))
         (delete-file (build-path a-path p)))
