@@ -1309,19 +1309,6 @@ WorldConfig.prototype.isEqual = function(other, aUnionFind) {
 		 isEqual(this.shutdownArg, other.shutdownArg, aUnionFind) &&
 		 isEqual(this.restartArg, other.restartArg, aUnionFind) );
 };
-//	if ( ! isEqual(this.startup, other.startup, aUnionFind) ||
-//	     ! isEqual(this.shutdown, other.shutdown, aUnionFind) ||
-//	     this.startupArgs.length != other.startupArgs.length || 
-//	     ! isEqual(this.shutdownArg, other.shutdownArg, aUnionFind) ) {
-//		return false;
-//	}
-//
-//	for (var i = 0; i < args.length; i++) {
-//		if ( !isEqual(this.startupArgs[i], other.startupArgs[i], aUnionFind) )
-//			return false;
-//	}
-//	return true;
-//};
 
 
 var Effect = makeStructureType('effect', false, 0, 0, false, false);
@@ -2408,6 +2395,8 @@ types.makeBigBangInfo = BigBangInfo.constructor;
 types.isBigBangInfo = BigBangInfo.predicate;
 types.bbInfoChangeWorld = function(info) { return BigBangInfo.accessor(info, 0); };
 types.bbInfoToplevelNode = function(info) { return BigBangInfo.accessor(info, 1); };
+
+
 
 // World config information for user-defined configurations
 types.worldConfig = function(startup, shutdown, pause, restart) { return new WorldConfig(startup, shutdown, pause, restart); };

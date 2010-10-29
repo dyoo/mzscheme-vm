@@ -398,8 +398,10 @@ EXPORTS['big-bang'] =
 					check(x, function(y) { return isWorldConfigOption(y) || isList(y) || types.isWorldConfig(y); },
 					      'js-big-bang', 'handler or attribute list', i+2);
 				});
+		     alert('unwrapping configs');
 		     var unwrappedConfigs = 
 			 helpers.map(function(x) {
+			     alert('configuring x');
 					if ( isWorldConfigOption(x) ) {
 						return function(config) { return x.configure(config); };
 					}
@@ -471,23 +473,24 @@ var emptyPage = function(attribList) {
 
 EXPORTS['make-world-config'] =
     new PrimProc('make-world-config',
-		 2,
-		 true, false,
-		 function(startup, shutdown, handlers) {
-		 	var allArgs = [startup, shutdown].concat(handlers);
+		 4,
+		 false, false,
+		 function(startup, shutdown, pause, restart) {
+		     var allArgs = [startup, shutdown, pause, restart];
 		 	check(startup, isFunction, 'make-world-config', 'procedure', 1, allArgs);
-			check(shutdown, procArityContains(1), 'make-world-config', 'procedure (arity 1)', 2, allArgs);
-			arrayEach(handlers, function(x, i) { check(x, isFunction, 'make-world-config', 'handler', i+3, allArgs); });
+		 	check(startup, isFunction, 'make-world-config', 'procedure', 2, shutdown);
+		 	check(startup, isFunction, 'make-world-config', 'procedure', 3, pause);
+		 	check(startup, isFunction, 'make-world-config', 'procedure', 4, restart);
 
-			if ( !procArityContains(handlers.length)(startup) ) {
-				raise( types.incompleteExn(
-					types.exnFailContract,
-					'make-world-config: 1st argument must have arity equal to '
-					+ 'the number of arguments after the second',
-					[]) );
-			}
+// 			if ( !procArityContains(handlers.length)(startup) ) {
+// 				raise( types.incompleteExn(
+// 					types.exnFailContract,
+// 					'make-world-config: 1st argument must have arity equal to '
+// 					+ 'the number of arguments after the second',
+// 					[]) );
+// 			}
 
-			return types.worldConfig(startup, shutdown, handlers);
+		     return types.worldConfig(startup, shutdown, pause, restart);
 		 });
 
 

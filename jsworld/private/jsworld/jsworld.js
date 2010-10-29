@@ -139,10 +139,10 @@ var jsworld = {};
     Jsworld.gensym = gensym;
 
 
-    function map(a, f) {
-	var b = new Array(a.length);
-	for (var i = 0; i < a.length; i++) {
-		b[i] = f(a[i]);
+    function map(a1, f) {
+	var b = new Array(a1.length);
+	for (var i = 0; i < a1.length; i++) {
+		b[i] = f(a1[i]);
 	}
 	return b;
     }
