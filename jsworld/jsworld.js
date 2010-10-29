@@ -473,13 +473,13 @@ EXPORTS['make-world-config'] =
     new PrimProc('make-world-config',
 		 2,
 		 true, false,
-		 function(startup, shutdown, handlers) {
-		 	var allArgs = [startup, shutdown].concat(handlers);
+		 function(startup, shutdown, startupArgs) {
+		 	var allArgs = [startup, shutdown].concat(startupArgs);
 		 	check(startup, isFunction, 'make-world-config', 'procedure', 1, allArgs);
 			check(shutdown, procArityContains(1), 'make-world-config', 'procedure (arity 1)', 2, allArgs);
-			arrayEach(handlers, function(x, i) { check(x, isFunction, 'make-world-config', 'handler', i+3, allArgs); });
+			arrayEach(startupArgs, function(x, i) { check(x, isFunction, 'make-world-config', 'handler', i+3, allArgs); });
 
-			if ( !procArityContains(handlers.length)(startup) ) {
+			if ( !procArityContains(startupArgs.length)(startup) ) {
 				raise( types.incompleteExn(
 					types.exnFailContract,
 					'make-world-config: 1st argument must have arity equal to '
@@ -487,7 +487,7 @@ EXPORTS['make-world-config'] =
 					[]) );
 			}
 
-			return types.worldConfig(startup, shutdown, handlers);
+			return types.worldConfig(startup, shutdown, startupArgs);
 		 });
 
 

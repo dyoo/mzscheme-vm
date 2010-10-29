@@ -44,3 +44,7 @@
 ;; re-export check-expect
 (require "check-expect/check-expect.rkt")
 (provide (all-from-out "check-expect/check-expect.rkt"))
+
+;; re-export shared
+(require "../shared.rkt")
+(provide (all-from-out "../shared.rkt"))

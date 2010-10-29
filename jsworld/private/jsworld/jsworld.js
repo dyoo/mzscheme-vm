@@ -139,10 +139,10 @@ var jsworld = {};
     Jsworld.gensym = gensym;
 
 
-    function map(a, f) {
-	var b = new Array(a.length);
-	for (var i = 0; i < a.length; i++) {
-		b[i] = f(a[i]);
+    function map(a1, f) {
+	var b = new Array(a1.length);
+	for (var i = 0; i < a1.length; i++) {
+		b[i] = f(a1[i]);
 	}
 	return b;
     }
@@ -561,7 +561,7 @@ var jsworld = {};
     function isMatchingCssSelector(node, css) {
 	if (css.id.match(/^\./)) {
 	    // Check to see if we match the class
-	    return ('class' in node && member(node['class'].split(/\s+/),
+	    return ('className' in node && member(node['className'].split(/\s+/),
 					      css.id.substring(1)));
 	} else {
 	    return ('id' in node && node.id == css.id);

@@ -160,7 +160,7 @@ StructType = function(name, type, numberOfArgs, numberOfFields, firstField,
 	this.mutator = mutator;
 };
 
-StructType.prototype.toString = function() {
+StructType.prototype.toString = function(cache) {
 	return '#<struct-type:' + this.name + '>';
 };
 
@@ -238,7 +238,7 @@ var Struct = Class.extend({
 	},
 
 	toWrittenString: function(cache) { 
-	    //    cache.put(this, true);
+	    cache.put(this, true);
 	    var buffer = [];
 	    buffer.push("(");
 	    buffer.push(this._constructorName);
@@ -250,10 +250,10 @@ var Struct = Class.extend({
 	    return buffer.join("");
 	},
 
-	toDisplayedString: function(cache) { return this.toWrittenString(cache); },
+        toDisplayedString: function(cache) { return toWrittenString(this, cache); },
 
 	toDomNode: function(cache) {
-	    //    cache.put(this, true);
+	    cache.put(this, true);
 	    var node = document.createElement("div");
 	    node.appendChild(document.createTextNode("("));
 	    node.appendChild(document.createTextNode(this._constructorName));
@@ -367,7 +367,7 @@ Bytes.prototype.isEqual = function(other) {
 };
 
 
-Bytes.prototype.toString = function() {
+Bytes.prototype.toString = function(cache) {
 	var ret = '';
 	for (var i = 0; i < this.bytes.length; i++) {
 		ret += String.fromCharCode(this.bytes[i]);
@@ -432,19 +432,23 @@ Box.prototype.set = function(newVal) {
     }
 };
 
-Box.prototype.toString = function() {
-    return "#&" + this.val.toString();
+Box.prototype.toString = function(cache) {
+    cache.put(this, true);
+    return "#&" + toWrittenString(this.val, cache);
 };
 
 Box.prototype.toWrittenString = function(cache) {
+    cache.put(this, true);
     return "#&" + toWrittenString(this.val, cache);
 };
 
 Box.prototype.toDisplayedString = function(cache) {
+    cache.put(this, true);
     return "#&" + toDisplayedString(this.val, cache);
 };
 
 Box.prototype.toDomNode = function(cache) {
+    cache.put(this, true);
     var parent = document.createElement("span");
     parent.appendChild(document.createTextNode('#&'));
     parent.appendChild(toDomNode(this.val, cache));
@@ -455,6 +459,49 @@ Box.prototype.isEqual = function(other, aUnionFind) {
     return ((other instanceof Box) &&
 	    isEqual(this.val, other.val, aUnionFind));
 };
+
+//////////////////////////////////////////////////////////////////////
+
+// Placeholders: same thing as boxes.  Distinct type just to support make-reader-graph.
+
+var Placeholder = function(x, mutable) {
+    this.val = x;
+};
+
+Placeholder.prototype.ref = function() {
+    return this.val;
+};
+
+Placeholder.prototype.set = function(newVal) {
+	    this.val = newVal;
+};
+
+Placeholder.prototype.toString = function(cache) {
+    return "#<placeholder>";
+};
+
+Placeholder.prototype.toWrittenString = function(cache) {
+    return "#<placeholder>";
+};
+
+Placeholder.prototype.toDisplayedString = function(cache) {
+    return "#<placeholder>";
+};
+
+Placeholder.prototype.toDomNode = function(cache) {
+    var parent = document.createElement("span");
+    parent.appendChild(document.createTextNode('#<placeholder>'));
+    return parent;
+};
+
+Placeholder.prototype.isEqual = function(other, aUnionFind) {
+    return ((other instanceof Placeholder) &&
+	    isEqual(this.val, other.val, aUnionFind));
+};
+
+
+
+
 //////////////////////////////////////////////////////////////////////
 
 
@@ -479,7 +526,7 @@ Boolean.prototype.toWrittenString = function(cache) {
 };
 Boolean.prototype.toDisplayedString = Boolean.prototype.toWrittenString;
 
-Boolean.prototype.toString = function() { return this.valueOf() ? "true" : "false"; };
+Boolean.prototype.toString = function(cache) { return this.valueOf() ? "true" : "false"; };
 
 Boolean.prototype.isEqual = function(other, aUnionFind){
     return this == other;
@@ -509,7 +556,7 @@ Char.makeInstance = function(val){
     return new Char(val);
 };
 
-Char.prototype.toString = function() {
+Char.prototype.toString = function(cache) {
 	var code = this.val.charCodeAt(0);
 	var returnVal;
 	switch (code) {
@@ -578,7 +625,7 @@ Symbol.prototype.isEqual = function(other, aUnionFind) {
 };
     
 
-Symbol.prototype.toString = function() {
+Symbol.prototype.toString = function(cache) {
     return this.val;
 };
 
@@ -616,7 +663,7 @@ Keyword.prototype.isEqual = function(other, aUnionFind) {
 };
     
 
-Keyword.prototype.toString = function() {
+Keyword.prototype.toString = function(cache) {
     return this.val;
 };
 
@@ -731,12 +778,15 @@ Cons.prototype.append = function(b){
     
 
 Cons.prototype.toWrittenString = function(cache) {
-    //    cache.put(this, true);
+    cache.put(this, true);
     var texts = [];
     var p = this;
     while ( p instanceof Cons ) {
 	texts.push(toWrittenString(p.first(), cache));
 	p = p.rest();
+	if (typeof(p) === 'object' && cache.containsKey(p)) {
+	    break;
+	}
     }
     if ( p !== Empty.EMPTY ) {
 	texts.push('.');
@@ -759,12 +809,15 @@ Cons.prototype.toWrittenString = function(cache) {
 Cons.prototype.toString = Cons.prototype.toWrittenString;
 
 Cons.prototype.toDisplayedString = function(cache) {
-    //    cache.put(this, true);
+    cache.put(this, true);
     var texts = [];
     var p = this;
     while ( p instanceof Cons ) {
 	texts.push(toDisplayedString(p.first(), cache));
 	p = p.rest();
+	if (typeof(p) === 'object' && cache.containsKey(p)) {
+	    break;
+	}
     }
     if ( p !== Empty.EMPTY ) {
 	texts.push('.');
@@ -787,7 +840,7 @@ Cons.prototype.toDisplayedString = function(cache) {
 
 
 Cons.prototype.toDomNode = function(cache) {
-    //    cache.put(this, true);
+    cache.put(this, true);
     var node = document.createElement("span");
     node.appendChild(document.createTextNode("("));
     var p = this;
@@ -796,6 +849,9 @@ Cons.prototype.toDomNode = function(cache) {
 	p = p.rest();
 	if ( p !== Empty.EMPTY ) {
 	    appendChild(node, document.createTextNode(" "));
+	}
+	if (typeof(p) === 'object' && cache.containsKey(p)) {
+	    break;
 	}
     }
     if ( p !== Empty.EMPTY ) {
@@ -878,7 +934,7 @@ Vector.prototype.toList = function() {
 };
 
 Vector.prototype.toWrittenString = function(cache) {
-    //    cache.put(this, true);
+    cache.put(this, true);
     var texts = [];
     for (var i = 0; i < this.length(); i++) {
 	texts.push(toWrittenString(this.ref(i), cache));
@@ -887,7 +943,7 @@ Vector.prototype.toWrittenString = function(cache) {
 };
 
 Vector.prototype.toDisplayedString = function(cache) {
-    //    cache.put(this, true);
+    cache.put(this, true);
     var texts = [];
     for (var i = 0; i < this.length(); i++) {
 	texts.push(toDisplayedString(this.ref(i), cache));
@@ -896,7 +952,7 @@ Vector.prototype.toDisplayedString = function(cache) {
 };
 
 Vector.prototype.toDomNode = function(cache) {
-    //    cache.put(this, true);
+    cache.put(this, true);
     var node = document.createElement("span");
     node.appendChild(document.createTextNode("#("));
     for (var i = 0; i < this.length(); i++) {
@@ -1092,8 +1148,8 @@ EqHashTable.prototype.toWrittenString = function(cache) {
     var keys = this.hash.keys();
     var ret = [];
     for (var i = 0; i < keys.length; i++) {
-	    var keyStr = types.toWrittenString(keys[i], cache);
-	    var valStr = types.toWrittenString(this.hash.get(keys[i]), cache);
+	    var keyStr = toWrittenString(keys[i], cache);
+	    var valStr = toWrittenString(this.hash.get(keys[i]), cache);
 	    ret.push('(' + keyStr + ' . ' + valStr + ')');
     }
     return ('#hasheq(' + ret.join(' ') + ')');
@@ -1149,8 +1205,8 @@ EqualHashTable.prototype.toWrittenString = function(cache) {
     var keys = this.hash.keys();
     var ret = [];
     for (var i = 0; i < keys.length; i++) {
-	    var keyStr = types.toWrittenString(keys[i], cache);
-	    var valStr = types.toWrittenString(this.hash.get(keys[i]), cache);
+	    var keyStr = toWrittenString(keys[i], cache);
+	    var valStr = toWrittenString(this.hash.get(keys[i]), cache);
 	    ret.push('(' + keyStr + ' . ' + valStr + ')');
     }
     return ('#hash(' + ret.join(' ') + ')');
@@ -1233,14 +1289,10 @@ WrappedSchemeValue.prototype.unbox = function() {
 
 //////////////////////////////////////////////////////////////////////
 
-var WorldConfig = function(startup, shutdown, pause, restart) {
+var WorldConfig = function(startup, shutdown, startupArgs) {
 	this.startup = startup;
 	this.shutdown = shutdown;
-	this.pause = pause;
-	this.restart = restart;
-
-	this.shutdownArg = undefined;
-	this.restartArg = undefined;
+        this.startupArgs = startupArgs;
 };
 
 WorldConfig.prototype.toString = function() {
@@ -1253,19 +1305,6 @@ WorldConfig.prototype.isEqual = function(other, aUnionFind) {
 		 isEqual(this.shutdownArg, other.shutdownArg, aUnionFind) &&
 		 isEqual(this.restartArg, other.restartArg, aUnionFind) );
 };
-//	if ( ! isEqual(this.startup, other.startup, aUnionFind) ||
-//	     ! isEqual(this.shutdown, other.shutdown, aUnionFind) ||
-//	     this.startupArgs.length != other.startupArgs.length || 
-//	     ! isEqual(this.shutdownArg, other.shutdownArg, aUnionFind) ) {
-//		return false;
-//	}
-//
-//	for (var i = 0; i < args.length; i++) {
-//		if ( !isEqual(this.startupArgs[i], other.startupArgs[i], aUnionFind) )
-//			return false;
-//	}
-//	return true;
-//};
 
 
 var Effect = makeStructureType('effect', false, 0, 0, false, false);
@@ -1359,11 +1398,10 @@ var toWrittenString = function(x, cache) {
      	cache = makeLowLevelEqHash();
     }
 
-    if (typeof(x) == 'object') {
+    if (typeof(x) === 'object') {
 	    if (cache.containsKey(x)) {
 		    return "...";
 	    }
-	    cache.put(x, true);
     }
 
     if (x == undefined || x == null) {
@@ -1394,11 +1432,10 @@ var toDisplayedString = function(x, cache) {
     if (! cache) {
     	cache = makeLowLevelEqHash();
     }
-    if (typeof(x) == 'object') {
+    if (typeof(x) === 'object') {
 	    if (cache.containsKey(x)) {
 		    return "...";
 	    }
-	    cache.put(x, true);
     }
 
     if (x == undefined || x == null) {
@@ -1437,7 +1474,6 @@ var toDomNode = function(x, cache) {
 		node.appendChild(document.createTextNode("..."));
 		return node;
 	    }
-	    cache.put(x, true);
     }
 
     if (x == undefined || x == null) {
@@ -2089,6 +2125,68 @@ var ArityAtLeast = makeStructureType('arity-at-least', false, 1, 0, false,
 		});
 
 
+
+
+//////////////////////////////////////////////////////////////////////
+
+
+
+var readerGraph = function(x, objectHash, n) {
+    
+
+    if (typeof(x) === 'object' && objectHash.containsKey(x)) {
+	return objectHash.get(x);
+    }
+
+    if (types.isPair(x)) {
+	var consPair = types.cons(x.first(), x.rest());
+	objectHash.put(x, consPair);
+	consPair.f = readerGraph(x.first(), objectHash, n+1);
+	consPair.r = readerGraph(x.rest(), objectHash, n+1);
+	return consPair;
+    }
+
+    if (types.isVector(x)) {
+	var len = x.length();
+	var aVector = types.vector(len, x.elts);
+	objectHash.put(x, aVector);	
+	for (var i = 0; i < len; i++) {
+	    aVector.elts[i] = readerGraph(aVector.elts[i], objectHash, n+1);
+	}
+	return aVector;
+    }
+
+    if (types.isBox(x)) {
+	var aBox = types.box(x.unbox());
+	objectHash.put(x, aBox);
+	aBox.val = readerGraph(x.unbox(), objectHash, n+1);
+	return aBox;
+    }
+
+    if (types.isHash(x)) {
+	throw new Error("make-reader-graph of hash not implemented yet");
+    }
+
+    if (types.isStruct(x)) {
+	throw new Error("make-reader-graph of struct not implemented yet");
+	var aStruct = x.type.constructor.apply(null, x._fields);
+	return aStruct;
+    }
+
+
+    if (types.isPlaceholder(x)) {
+	return readerGraph(x.ref(), objectHash, n+1);
+    }
+
+    return x;
+};
+
+
+//////////////////////////////////////////////////////////////////////
+
+
+
+
 types.exceptionHandlerKey = new Symbol("exnh");
 
 types.symbol = Symbol.makeInstance;
@@ -2104,6 +2202,7 @@ types.byteRegexp = function(p) { return new ByteRegularExpression(p) ; }
 types['char'] = Char.makeInstance;
 types['string'] = makeString;
 types.box = function(x) { return new Box(x, true); };
+types.placeholder = function(x) { return new Placeholder(x); };
 types.boxImmutable = function(x) { return new Box(x, false); };
 types.path = function(x) { return new Path(x); };
 types.bytes = function(x, mutable) { return new Bytes(x, mutable); };
@@ -2141,6 +2240,7 @@ types.isString = isString;
 types.isPair = function(x) { return x instanceof Cons; };
 types.isVector = function(x) { return x instanceof Vector; };
 types.isBox = function(x) { return x instanceof Box; };
+types.isPlaceholder = function(x) { return x instanceof Placeholder; };
 types.isHash = function(x) { return (x instanceof EqHashTable ||
 				     x instanceof EqualHashTable); };
 types.isByteString = function(x) { return x instanceof Bytes; };
@@ -2193,6 +2293,7 @@ types.ModuleVariableRecord = ModuleVariableRecord;
 types.VariableReference = VariableReference;
 
 types.Box = Box;
+types.Placeholder = Placeholder;
 types.ThreadCell = ThreadCell;
 
 
@@ -2291,6 +2392,8 @@ types.isBigBangInfo = BigBangInfo.predicate;
 types.bbInfoChangeWorld = function(info) { return BigBangInfo.accessor(info, 0); };
 types.bbInfoToplevelNode = function(info) { return BigBangInfo.accessor(info, 1); };
 
+
+
 // World config information for user-defined configurations
 types.worldConfig = function(startup, shutdown, pause, restart) { return new WorldConfig(startup, shutdown, pause, restart); };
 types.isWorldConfig = function(x) { return x instanceof WorldConfig; };
@@ -2313,6 +2416,9 @@ types.isRenderEffectType = function(x) {
 
 types.isRenderEffect = RenderEffect.predicate;
 
+
+
+types.readerGraph = readerGraph;
 
 })();
 
