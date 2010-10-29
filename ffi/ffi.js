@@ -2,16 +2,23 @@
  *** Scheme -> Javascript FFI ***
  ********************************/
 
-/**
 
-WARNING WARNING
 
-This code won't work yet and is in the middle of being modularized.
+var isJsObject = function(x) {
+	return types.isJsValue(x) && typeof(x.val) == 'object';
+};
 
-This code was just lifted out of primitives.js, and so there are
-unbound references everywhere.
 
-*/
+var isJsFunction = function(x) {
+	return types.isJsValue(x) && typeof(x.val) == 'function';
+};
+
+
+var isAssocList = function(x) {
+	return isPair(x) && isPair(x.rest()) && isEmpty(x.rest().rest());
+};
+
+
 
 
 EXPORTS['scheme->prim-js'] =
@@ -19,12 +26,12 @@ EXPORTS['scheme->prim-js'] =
 		 1,
 		 false, false,
 		 function(x) {
-		 	check(x, function(y) { return ( isReal(y) ||
-							isString(y) ||
-							isSymbol(y) ||
-							isChar(y) ||
-							isBoolean(y) ) ||
-							isVector(y); },
+		 	check(x, function(y) { return ( types.isReal(y) ||
+							types.isString(y) ||
+							types.isSymbol(y) ||
+							types.isChar(y) ||
+							types.isBoolean(y) ) ||
+							types.isVector(y); },
 			      'scheme->prim-js', 'real number, string, symbol, char, boolean, or vector', 1);
 
 			var returnVal;
@@ -53,7 +60,7 @@ EXPORTS['scheme->prim-js'] =
 				returnVal = x;
 			}
 			else if ( isVector(x) ) {
-				returnVal = helpers.map(function(y) { return (isJsValue(y) ? y.val : y); },
+				returnVal = helpers.map(function(y) { return (types.isJsValue(y) ? y.val : y); },
 							x.elts);
 			}
 			return helpers.wrapJsValue(returnVal);
@@ -65,7 +72,7 @@ EXPORTS['prim-js->scheme'] =
 		 1,
 		 false, false,
 		 function(x) {
-		 	check(x, function(y) { return isJsValue(y) &&
+		 	check(x, function(y) { return types.isJsValue(y) &&
 						      ( typeof(y.val) == 'number' ||
 							typeof(y.val) == 'string' ||
 							typeof(y.val) == 'boolean' ||
@@ -93,7 +100,7 @@ EXPORTS['procedure->cps-js-fun'] =
 		 1,
 		 false, true,
 		 function(aState, proc) {
-		 	check(proc, isFunction, 'procedure->cps-js-fun', 'procedure', 1);
+		 	check(proc, types.isFunction, 'procedure->cps-js-fun', 'procedure', 1);
 
 			var caller = makeCaller(aState);
 			aState.v = types.jsValue(proc.name + ' (cps)', function() {
@@ -109,7 +116,7 @@ EXPORTS['procedure->void-js-fun'] =
 		 1,
 		 false, true,
 		 function(aState, proc) {
-		 	check(proc, isFunction, 'procedure->void-js-fun', 'procedure', 1);
+		 	check(proc, types.isFunction, 'procedure->void-js-fun', 'procedure', 1);
 
 			var caller = makeCaller(aState);
 			aState.v = types.jsValue(proc.name + ' (void)', function() {
@@ -124,8 +131,8 @@ EXPORTS['js-==='] =
 		 2,
 		 false, false,
 		 function(v1, v2) {
-		 	check(v1, isJsValue, 'js-===', 'javascript value', 1);
-			check(v2, isJsValue, 'js-===', 'javascript value', 2);
+		 	check(v1, types.isJsValue, 'js-===', 'javascript value', 1);
+			check(v2, types.isJsValue, 'js-===', 'javascript value', 2);
 
 			return v1.val === v2.val;
 		 });
@@ -136,7 +143,7 @@ EXPORTS['js-get-global-value'] =
 		 1,
 		 false, false,
 		 function(name) {
-		 	check(name, isString, 'js-get-global-value', 'string', 1);
+		 	check(name, types.isString, 'js-get-global-value', 'string', 1);
 
 			var nameStr = name.toString();
 			var obj = (nameStr === 'window') ? window : window[nameStr];
@@ -152,7 +159,7 @@ EXPORTS['js-get-field'] =
 		 function(root, firstSelector, selectors) {
 		 	selectors.unshift(firstSelector);
 			var allArgs = [root].concat(selectors);
-		 	check(root, isJsValue, 'js-get-field', 'js-value', 1, allArgs);
+		 	check(root, types.isJsValue, 'js-get-field', 'js-value', 1, allArgs);
 			arrayEach(selectors, function(x, i) { check(x, isString, 'js-get-field', 'string', i+2, allArgs); });
 
 			var name = [root.name];
@@ -193,11 +200,11 @@ EXPORTS['js-set-field!'] =
 		 3,
 		 false, false,
 		 function(obj, field, v) {
-		 	check(obj, function(x) { return isJsValue(x) && (typeof(x) == 'object' || typeof(x) == 'function'); },
+		 	check(obj, function(x) { return types.isJsValue(x) && (typeof(x) == 'object' || typeof(x) == 'function'); },
 			      'js-set-field!', 'javascript object or function', 1, arguments);
 			check(field, isString, 'js-set-field!', 'string', 2, arguments);
 
-			obj.val[field.toString()] = (isJsValue(v) ? v.val : types.wrappedSchemeValue(v));
+			obj.val[field.toString()] = (types.isJsValue(v) ? v.val : types.wrappedSchemeValue(v));
 			return types.VOID;
 		 });
 
@@ -207,7 +214,7 @@ EXPORTS['js-typeof'] =
 		 1,
 		 false, false,
 		 function(v) {
-		 	check(v, isJsValue, 'js-typeof', 'js-value', 1);
+		 	check(v, types.isJsValue, 'js-typeof', 'js-value', 1);
 			return typeof(v.val);
 		 });
 
@@ -217,8 +224,8 @@ EXPORTS['js-instanceof'] =
 		 2,
 		 false, false,
 		 function(v, type) {
-		 	check(v, isJsValue, 'js-instanceof', 'js-value', 1, arguments);
-			check(type, isJsFunction, 'js-instanceof', 'javascript function', 2, arguments);
+		 	check(v, types.isJsValue, 'js-instanceof', 'js-value', 1, arguments);
+			check(type, types.isJsFunction, 'js-instanceof', 'javascript function', 2, arguments);
 
 			return (v.val instanceof type.val);
 		 });
@@ -230,11 +237,11 @@ EXPORTS['js-call'] =
 		 true, false,
 		 function(fun, parent, initArgs) {
 		 	var allArgs = [fun, parent].concat(initArgs);
-		 	check(fun, isJsFunction, 'js-call', 'javascript function', 1, allArgs);
-			check(parent, function(x) { return (x === false || isJsObject(x)); },
+		 	check(fun, types.isJsFunction, 'js-call', 'javascript function', 1, allArgs);
+			check(parent, function(x) { return (x === false || types.isJsObject(x)); },
 			      'js-call', 'javascript object or false', 2, allArgs);
 			
-			var args = helpers.map(function(x) { return (isJsValue(x) ? x.val : x); }, initArgs);
+			var args = helpers.map(function(x) { return (types.isJsValue(x) ? x.val : x); }, initArgs);
 			var thisArg = parent ? parent.val : null;
 			var jsCallReturn = fun.val.apply(thisArg, args);
 			if ( jsCallReturn === undefined ) {
@@ -253,7 +260,7 @@ EXPORTS['js-new'] =
 		 function(constructor, initArgs) {
 		 	check(constructor, isJsFunction, 'js-new', 'javascript function', 1);
 
-			var args = helpers.map(function(x) { return (isJsValue(x) ? x.val : x); }, initArgs);
+			var args = helpers.map(function(x) { return (types.isJsValue(x) ? x.val : x); }, initArgs);
 			var proxy = function() {
 				constructor.val.apply(this, args);
 			};
@@ -264,20 +271,20 @@ EXPORTS['js-new'] =
 
 
 EXPORTS['js-make-hash'] =
-    new CasePrimitive('js-make-hash',
+    new types.CasePrimitive('js-make-hash',
 	[new types.PrimProc('js-make-hash', 0, false, false, function() { return types.jsValue('hash', {}); }),
 	 new types.PrimProc('js-make-hash',
 		      1,
 		      false, false,
 		      function(bindings) {
-			  checkListOf(bindings, function(x) { return isAssocList(x) && isString(x.first()); },
+			  checkListOf(bindings, function(x) { return types.isAssocList(x) && types.isString(x.first()); },
 				      'js-make-hash', '(listof string X)', 1);
 
 			  var ret = {};
 			  while ( !bindings.isEmpty() ) {
 			  	var key = bindings.first().first().toString();
 				var val = bindings.first().rest().first();
-				ret[key] = (isJsValue(val) ? val.val : val);
+				ret[key] = (types.isJsValue(val) ? val.val : val);
 				bindings = bindings.rest();
 			  }
 			  return types.jsValue('hash', ret);

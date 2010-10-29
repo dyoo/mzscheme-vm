@@ -4,10 +4,7 @@
 
 @(require (for-label (planet dyoo/js-vm/image/image))
           (for-label (planet dyoo/js-vm/jsworld/jsworld))
-          (for-label (planet dyoo/js-vm/phone/location))
-          (for-label (planet dyoo/js-vm/phone/tilt))
-          (for-label (planet dyoo/js-vm/phone/sms))
-	  (for-label (planet dyoo/js-vm/main)))
+          (for-label (planet dyoo/js-vm/main)))
 
 @(define (js-vm)
    (emph "js-vm"))
@@ -124,59 +121,6 @@ example, modify @filepath{run.rkt} to be:
 ]
 
 
-
-@subsection{Phone mood ring (based on tilt)}
-
-The following example requires that you use @racket[create-android-phone-package]
-to create the phone package.
-
-
-@racketmod[planet #,(this-package-version-symbol)
-(require #,(schememodname/this-package phone/tilt))
-
-@code:comment{The world is a color.}
-(define initial-world (make-color 0 0 0))
-
-@code:comment{tilt: world number number number -> world}
-@code:comment{Tilting the phone adjusts the color.}
-(define (tilt w azimuth pitch roll)
-  (make-color (scale azimuth 360)
-	      (scale (+ pitch 90) 180)
-	      (scale (+ roll 90) 180)))
-
-@code:comment{scale-azimuth: number -> number}
-@code:comment{Take a number going from 0-360 and scale it to a number between 0-255}
-(define (scale n domain-bound)
-  (inexact->exact (floor (* (/ n domain-bound) 255))))
-
-@code:comment{User interface.}
-(define view (list (js-div '((id "background")))))
-
-(define (draw-html w) view)
-
-(define (draw-css w)
-  (list (list "background" 
-	      (list "background-color" 
-		    (format "rgb(~a, ~a, ~a)"
-			    (color-red w)
-			    (color-green w)
-			    (color-blue w)))
-	      (list "width" "100%")
-	      (list "height" "100%"))))
-
-
-
-(big-bang initial-world
-	  (on-tilt tilt)
-	  (to-draw-page draw-html draw-css))
-
-]
-
-
-@racketmod[racket
-(require (planet dyoo/moby:3))
-(create-android-phone-package "mood-ring.rkt" "mood.apk")
-]
 
 
 
@@ -974,42 +918,6 @@ Here is a complete list of the strings that @racket[image] will recognize as col
                "DIM GRAY"
                "DIMGRAY"
                "BLACK")))
-
-
-
-
-@section{Phone}
-
-@subsection{Location (GPS)}
-@defmodule/this-package[phone/location]
-
-@defproc[(on-location-change [world-updater (world [latitude number] [longitude number] -> world)]) handler]{
-}
-
-
-
-@subsection{SMS Messaging}
-@defmodule/this-package[phone/sms]
-
-
-@defproc[(on-sms-receive [world-updater (world [sender string] [message string] -> world)]) handler]{
-}
-
-
-
-
-@subsection{Motion sensors and tilt}
-@defmodule/this-package[phone/tilt]
-
-@defproc[(on-acceleration  [world-updater (world [x number] [y number] [z number] -> world)]) handler]{}
-
-@defproc[(on-shake [world-updater (world -> world)]) handler]{}
-
-
-@defproc[(on-tilt [world-updater (world [azimuth number] [pitch number] [roll number] -> world)]) handler]{}
-
-
-
 
 
 
