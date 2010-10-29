@@ -400,7 +400,6 @@
 		config = handlers[i](config);
 	    }
 	    else if ( types.isWorldConfig(handlers[i]) ) {
-		alert('accumulating userConfig');
 		    handlers[i].startupArgs = helpers.map(expandHandler, handlers[i].startupArgs);
 		    userConfigs.push(handlers[i]); 
 	    }

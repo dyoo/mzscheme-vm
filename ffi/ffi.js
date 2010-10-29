@@ -227,7 +227,7 @@ EXPORTS['js-instanceof'] =
 		 false, false,
 		 function(v, type) {
 		 	check(v, types.isJsValue, 'js-instanceof', 'js-value', 1, arguments);
-			check(type, types.isJsFunction, 'js-instanceof', 'javascript function', 2, arguments);
+			check(type, isJsFunction, 'js-instanceof', 'javascript function', 2, arguments);
 
 			return (v.val instanceof type.val);
 		 });
@@ -238,8 +238,9 @@ EXPORTS['js-call'] =
 		 2,
 		 true, false,
 		 function(fun, parent, initArgs) {
+		     alert('in jscall');
 		 	var allArgs = [fun, parent].concat(initArgs);
-		 	check(fun, types.isJsFunction, 'js-call', 'javascript function', 1, allArgs);
+		 	check(fun, isJsFunction, 'js-call', 'javascript function', 1, allArgs);
 			check(parent, function(x) { return (x === false || types.isJsObject(x)); },
 			      'js-call', 'javascript object or false', 2, allArgs);
 			
