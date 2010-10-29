@@ -1289,14 +1289,10 @@ WrappedSchemeValue.prototype.unbox = function() {
 
 //////////////////////////////////////////////////////////////////////
 
-var WorldConfig = function(startup, shutdown, pause, restart) {
+var WorldConfig = function(startup, shutdown, startupArgs) {
 	this.startup = startup;
 	this.shutdown = shutdown;
-	this.pause = pause;
-	this.restart = restart;
-
-	this.shutdownArg = undefined;
-	this.restartArg = undefined;
+        this.startupArgs = startupArgs;
 };
 
 WorldConfig.prototype.toString = function() {
