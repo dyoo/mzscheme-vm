@@ -49,3 +49,10 @@
 		   (vector->list (prim-js->scheme 
 				  (scheme->prim-js #(1 "testing" 3)))))
 	      '(1.0 "testing" 3.0))
+
+
+
+(check-expect (js-=== js-undefined js-undefined) true)
+(check-expect (js-=== js-null js-null) true)
+(check-expect (js-=== js-undefined js-null) false)
+(check-expect (js-=== js-null js-false) false)
