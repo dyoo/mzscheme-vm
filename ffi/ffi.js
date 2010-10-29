@@ -21,7 +21,7 @@ var isJsFunction = function(x) {
 
 
 var isAssocList = function(x) {
-	return isPair(x) && isPair(x.rest()) && isEmpty(x.rest().rest());
+	return types.isPair(x) && types.isPair(x.rest()) && types.isEmpty(x.rest().rest());
 };
 
 
@@ -245,17 +245,13 @@ EXPORTS['js-call'] =
 		 true, false,
 		 function(fun, parent, initArgs) {
 		 	var allArgs = [fun, parent].concat(initArgs);
-		     alert('checking function:' + isJsFunction(fun));
 		 	check(fun, isJsFunction, 'js-call', 'javascript function', 1, allArgs);
-		     alert('checking parent');
 			check(parent, function(x) { return (x === false || types.isJsObject(x)); },
 			      'js-call', 'javascript object or false', 2, allArgs);
 			
-		     alert('jscall: unwrapping args');
 
 			var args = helpers.map(function(x) { return (types.isJsValue(x) ? x.val : x); }, initArgs);
 			var thisArg = parent ? parent.val : null;
-		     alert('about to apply call');
 			var jsCallReturn = fun.val.apply(thisArg, args);
 			if ( jsCallReturn === undefined ) {
 				return types.VOID;
@@ -290,7 +286,7 @@ EXPORTS['js-make-hash'] =
 		      1,
 		      false, false,
 		      function(bindings) {
-			  checkListOf(bindings, function(x) { return types.isAssocList(x) && types.isString(x.first()); },
+			  helpers.checkListOf(bindings, function(x) { return isAssocList(x) && types.isString(x.first()); },
 				      'js-make-hash', '(listof string X)', 1);
 
 			  var ret = {};

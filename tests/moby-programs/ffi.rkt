@@ -52,7 +52,50 @@
 
 
 
+
+
+
 (check-expect (js-=== js-undefined js-undefined) true)
 (check-expect (js-=== js-null js-null) true)
 (check-expect (js-=== js-undefined js-null) false)
-(check-expect (js-=== js-null js-false) false)
+(check-expect (js-=== js-null js-undefined) false)
+
+
+(check-expect (js-typeof (scheme->prim-js 1)) "number")
+(check-expect (js-typeof (scheme->prim-js "hello")) "string")
+(check-expect (js-typeof (scheme->prim-js #t)) "boolean")
+(check-expect (js-typeof (scheme->prim-js #f)) "boolean")
+
+(check-expect (js-typeof (js-make-hash)) "object")
+(check-expect (js-typeof (js-make-hash '(("name" "danny")
+					 ("school" "wpi")))) "object")
+
+
+
+
+(define a-hash (js-make-hash '(("foo" "bar")
+			       ("baz" "blah"))))
+(check-expect (prim-js->scheme (js-get-field a-hash "foo")) "bar")
+(check-expect (prim-js->scheme (js-get-field a-hash "baz")) "blah")
+(js-set-field! a-hash "something else" (box 3))
+
+
+
+;; Uh oh.  There's something about this that I do not understand about
+;; the current design of the FFI.  What's going on here?
+(check-expect (js-get-field a-hash "something else") 
+	      (box 3))
+
+
+
+(define my-escape
+  (let ([prim-escape (js-get-global-value "escape")])
+    (lambda (s)
+      (prim-js->scheme (js-call prim-escape #f s)))))
+
+
+
+(check-expect (my-escape "hello world") "hello%20world")
+
+
+"end of ffi tests"
