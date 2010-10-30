@@ -47,6 +47,8 @@
     };
     unsetRestarter();
 
+
+
     var terminator;
     var setTerminator = function(t) {
 	    terminator = t;
@@ -342,8 +344,6 @@
 
     // bigBang: world dom (listof (list string string)) (arrayof handler) -> world
     Jsworld.bigBang = function(initWorld, toplevelNode, handlers, theCaller, theRestarter, onFail) {
-
-
 	// shutdownListeners: arrayof (-> void)
 	// We maintain a list of thunks that need to be called as soon as we come out of
 	// bigBang, to do cleanup.
@@ -368,9 +368,12 @@
 	setTerminator(function(w) {
 		detachEvent(toplevelNode, 'click', absorber);
 		shutdownUserConfigs(function() {
-			unsetCaller();
-			unsetTerminator();
-			restarter(w);
+		    if (onFail) {
+			onFail(w);
+		    }
+		    unsetCaller();
+		    unsetTerminator();
+		    restarter(w);
 		});
 	});
 

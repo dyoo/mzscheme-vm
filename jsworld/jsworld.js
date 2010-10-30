@@ -414,14 +414,16 @@ EXPORTS['big-bang'] =
 			     bigBangController.breaker();
 			 }
 			 state.addBreakRequestedListener(onBreak);
-			 bigBangController = jsworld.MobyJsworld.bigBang(initW, 
-						     state.getToplevelNodeHook()(),
-						     unwrappedConfigs,
-						     caller, 
-						     function(v) {
-							 state.removeBreakRequestedListener(onBreak);
-							 restarter(v);
-						     });
+			 bigBangController = jsworld.MobyJsworld.bigBang(
+			     initW, 
+			     state.getToplevelNodeHook()(),
+			     unwrappedConfigs,
+			     caller,
+			     function(v) {
+				 state.removeBreakRequestedListener(onBreak);
+				 restarter(v);
+			     },
+ 			     onFail);
 		     })
 		 });
 
