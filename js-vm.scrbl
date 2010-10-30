@@ -260,11 +260,6 @@ counts up to ten and then stops.
 }
 
 
-
-
-
-
-@subsection{Event handlers}
 @defproc[(on-tick [world-updater (world -> world)]
                   [delay number? 1/20]) handler?]{
   Produces a handler that responds to clock ticks.  By default,
