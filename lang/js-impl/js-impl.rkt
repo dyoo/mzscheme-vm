@@ -52,5 +52,6 @@
            
 (provide require-js
          require
+	 planet
 	 (rename-out (-provide provide)
                      (#%plain-module-begin #%module-begin)))
