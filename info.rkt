@@ -1,12 +1,12 @@
 #lang setup/infotab
 
-(define drracket-name "mzjs")
+(define drracket-name "js-vm")
 (define drracket-tools (list (list "private/tool.rkt")))
 
 (define compile-omit-paths '("externals" "support" "lib" "tests" "sandbox"))
 
 (define scribblings '(("js-vm.scrbl")))
-
+(define name "js-vm")
 (define primary-file "main.rkt")
 (define categories '(devtools))
 (define can-be-loaded-with 'all)
