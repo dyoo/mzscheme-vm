@@ -88,14 +88,22 @@
 
 
 
-(define my-escape
-  (let ([prim-escape (js-get-global-value "escape")])
-    (lambda (s)
-      (prim-js->scheme (js-call prim-escape #f s)))))
+(let ([my-escape
+       (let ([prim-escape (js-get-global-value "escape")])
+	 (lambda (s)
+	   (prim-js->scheme (js-call prim-escape #f s))))])
+  (check-expect (my-escape "hello world") "hello%20world")
+  (check-expect (my-escape "x.mv,") "x.mv%2C"))
 
 
 
-(check-expect (my-escape "hello world") "hello%20world")
+
+
+(let ([p (procedure->void-js-fun 
+	  (lambda () (printf "this is from scheme\n")))])
+  (printf "The following should repeat 'this is from scheme'\n")
+  (js-call p #f))
+
 
 
 "end of ffi tests"

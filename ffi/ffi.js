@@ -29,6 +29,14 @@ var check = helpers.check;
 
 
 
+var makeCaller = function(aState) {
+    return function(operator, operands, k, callSite) {
+	interpret.call(aState, operator, operands, k, aState.onFail, callSite);
+    };
+};
+
+
+
 EXPORTS['scheme->prim-js'] =
     new types.PrimProc('scheme->prim-js',
 		 1,
