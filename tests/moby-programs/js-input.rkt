@@ -31,5 +31,5 @@
   '())
 
 
-(js-big-bang '()
-             (on-draw draw draw-css))
+(big-bang '()
+             (to-draw-page draw draw-css))
