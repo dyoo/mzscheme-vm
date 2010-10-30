@@ -48,6 +48,11 @@
     unsetRestarter();
 
 
+    var errorReporter = function(e) {
+	// default: do nothing.
+    };
+
+
 
     var terminator;
     var setTerminator = function(t) {
@@ -363,14 +368,13 @@
 
 
 	//console.log('in high level big-bang');
+	errorReporter = onFail;
+
 	setCaller(theCaller);
 	setRestarter(theRestarter);
 	setTerminator(function(w) {
 		detachEvent(toplevelNode, 'click', absorber);
 		shutdownUserConfigs(function() {
-		    if (onFail) {
-			onFail(w);
-		    }
 		    unsetCaller();
 		    unsetTerminator();
 		    restarter(w);
@@ -604,6 +608,7 @@
 //	world.Kernel.stimuli.onShutdown(); 
 	world.Kernel.stimuli.massShutdown();
 	shutdownUserConfigs(function() {
+	    errorReporter(e);
 //		console.log('Got an error, the error was:');
 //		console.log(e);
 		if (typeof(console) !== 'undefined' && console.log) {
