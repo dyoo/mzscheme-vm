@@ -21,7 +21,9 @@ Racket bytecode, functions for building and testing packages of
 translated code, and libraries to use features of a web-browser's
 environment.
 
-
+This project is intimately related with @hyperlink["http://www.cs.brown.edu/~sk/Publications/Talks/Moby-Bootstrap/"]{Moby
+Scheme}, as Moby Scheme uses @js-vm[] as its underlying runtime.
+       
 
 @section{Quick Start}
 
@@ -126,7 +128,7 @@ example, modify @filepath{run.rkt} to be:
 
 
 @section{Running @js-vm[]}
-@defmodule/this-package[main]
+@defmodule/this-package[]
 @defproc[(run-in-browser [input-file path-string?]) void]{
 Consumes the given program, translates it so it can run on the browser,
 and brings up the default browser.
@@ -562,6 +564,13 @@ When the @racket[big-bang] computation terminates through a
 
 
 
+
+
+
+
+
+
+
 @defproc[(to-draw-page [to-dom (world -> (DOM-sexp))]
 		       [to-css (world -> (CSS-sexp))]) handler]{
 
@@ -571,6 +580,12 @@ argument computes a rendering of the world as a DOM tree, and the
 second argument computes that tree's styling.  }
 
 
+                                                               
+                                                               
+      
+
+
+                                                               
                                                                                                                  
 @defproc[(to-draw [hook (world -> scene)]) handler]{
 For simple applications, @scheme[to-draw] is sufficient to draw a scene onto the display.
@@ -637,25 +652,264 @@ counts up to ten and then stops.
 @defproc[(on-key) handler?]{Produces a handler that responds to key events.}
 
 
-@defproc[(on-button-click) handler?]{Produces a handler that responds to button click events.}
+@; As soon as we have this, we'll comment it.
+@;
+@;{@defproc[(on-button-click) handler?]{Produces a handler that responds to button click events.}}
 
 
 
 
+
+@subsection{Jsworld Types}
+
+A @scheme[dom-sexp] describes the structure of a web page:
+
+@schemegrammar[dom-sexp (list dom-element dom-sexp ...)]
+
+
+a @scheme[css-sexp] describes the structure of a page's styling:
+
+@schemegrammar[css-sexp (listof (cons (or dom-element string)
+                                      (listof attrib)))]
+
+An @scheme[attrib] is a:
+@schemegrammar[attrib (list string string)]
+
+Each of the @scheme[dom-element]s can take in an optional attribute list to
+assign to the new dom element; the common useful attribute is a key-value binding for an "id",
+which can be used to identify an element in the css-drawing function.
+
+
+Here are examples  of a dom-expr and a css-sexp.
+@schemeblock[
+(define a-dom-sexp (list (js-div '(("id" "main-div")))
+                         (list (js-text "Hello world"))))
+
+(define a-css-sexp (list (list "main-div"
+                               (list "background" "white")
+                               (list "font-size" "40px"))))
+             ]
+  
+  
+  
 
 @subsection{HTML user interface constructors}
 
 
-@defproc[(js-p) ...]{}
-@defproc[(js-div) ...]{}
-@defproc[(js-button) ...]{}
-@defproc[(js-input) ...]{}
-@defproc[(js-img) ...]{}
-@defproc[(js-text) ...]{}
-@defproc[(js-select) ...]{}
 
 
 
+
+
+
+
+
+
+Here are the dom-element constructors.
+
+@defproc[(js-div (attribs (listof attrib?) '())) dom-element?]{
+Constructs a div element.}
+
+
+@defproc[(js-p (attribs (listof attrib?) '())) dom-element?]{
+Constructs a paragraph element.}
+
+@defproc[(js-button (world-update-f (world -> world)) 
+                    (attribs (listof attrib) '()))
+         dom-element]{
+Constructs a button.  When the button is pressed, the world is updated through @scheme[world-update-f].
+
+The following example counts how many times a button has been clicked.
+@(racketmod planet @,(this-package-version-symbol)
+(define (press w)
+  (add1 w))
+
+(define (draw w)
+  (list (js-div)
+        (list (js-button press) (list (js-text "Press me")))
+        (list (js-text (format "Button presses: ~a" w)))))
+
+(define (draw-css w)
+  '())
+
+(big-bang 0
+             (to-draw-page draw draw-css)))
+}
+
+
+
+@; commenting out effectful button.
+@;{
+@defproc[(js-button! (world-update-f (world -> world))
+                     (effect-f (world -> effect))
+                     (attribs (listof attrib) '()))
+         dom-element]{
+Constructs a button.  When the button is pressed, the original world is updated,
+and the original world is used to construct an effect.
+}}
+
+
+                     
+                     
+                   
+        
+@defproc[(js-text (text string?)) dom-element]{Constructs regular text.}
+
+@defproc[(js-input (type string)
+                   (world-update-f (or/c (world string -> world)
+                                         (world boolean -> world)))
+                   (attribs (listof attrib) '()))
+         dom-element]{
+Creates an input form element.  The types that are currently supported are:
+@itemlist[@item{@scheme["text"]}
+          @item{@scheme["password"]}
+          @item{@scheme["checkbox"]}]
+When the user changes the content of the form element, the runtime
+uses @scheme[world-update-f] to update the world.  If the
+@scheme[type] is either @scheme["text"] or @scheme["password"], then
+the string value of the element will be passed as the second argument
+to it.  If @scheme[type] is @scheme["checkbox"], a boolean
+representing the checked status of the element will be passed to it.
+
+The example below has a single text input form element, which allows the user to enter
+some value.
+@(racketmod @,(this-package-version-symbol)
+(define (refresh w form-val)
+  form-val)
+
+(define input-node
+  (js-input "text" refresh '(("id" "myname"))))
+
+(define (draw w)
+  (list (js-div)
+        (list (js-div) (list (js-text (format "I see: ~s~n" w))))
+        (list (js-div) (list input-node))))
+
+
+(define (draw-css w)
+  '())
+
+(big-bang ""
+             (to-draw-page draw draw-css))
+)
+
+
+The example below uses a checkbox to select among three elements:
+@(racketmod @,(this-package-version-symbol)
+(define (make-ingredient-checkbox-sexp ingredient)
+  (local [(define (on-check w v)
+            (cond
+              [v
+               (cons ingredient w)]
+              [else
+               (remove ingredient w)]))]
+    (list (js-div)
+          (list (js-text ingredient))
+          (list (js-input "checkbox" 
+	                  on-check
+			  `(("value" ,ingredient)))))))
+
+(define c1 (make-ingredient-checkbox-sexp "mushrooms"))
+(define c2 (make-ingredient-checkbox-sexp "green peppers"))
+(define c3 (make-ingredient-checkbox-sexp "olives"))
+
+(define (draw w)
+  (list (js-div)
+        c1
+        c2
+        c3
+        (list (js-text (format "The world is: ~s" w)))))
+
+(define (draw-css w)
+  '())
+
+(big-bang '()
+             (to-draw-page draw draw-css)))
+}
+
+
+
+
+
+@defproc[(js-img (url string) (attribs (listof attrib) '())) dom-element]{Creates an image element.
+}
+
+@defproc[(js-select (options (listof string?)) (world-update-f (world string -> world)) (attribs (listof attrib) '())) dom-element]
+Constructs a select element with the given options.  Whenever a new
+option is selected, the @scheme[world-update-f] function is called to
+get the new world.
+
+The example below has a select with five elements.
+@(racketmod @,(this-package-version-symbol)
+(define (select-house w an-option)
+  an-option)
+
+(define a-select-element
+  (js-select (list ""
+                   "Gryffindor"
+                   "Hufflepuff" 
+                   "Ravenclaw"
+                   "Slytherin")
+             select-house))
+
+(define (draw w)
+  (list (js-div)
+        (list a-select-element)
+        (list (js-text (format "House: ~a" w)))))
+
+(define (draw-css w)
+  '())
+
+(big-bang ""
+             (to-draw-page draw draw-css))
+)
+  
+  
+  
+
+@;; Effects section is currently commented out: we did not 
+@;; yet port this over from the old Moby system.
+
+@;{   
+@subsection{Effects}
+
+Effects allow world programs to apply side effects to the outside
+world.  These are used in conjunction with the effect (@scheme[!]) version of the
+stimulus handlers described above.
+
+
+@defproc[(make-effect:none) effect]{No result when interpreted.}
+@defproc[(make-effect:beep) effect]{Audible beep when interpreted.  On an Android smartphone, uses the notification ringtone.}
+
+
+@defproc[(make-effect:play-sound (a-sound sound)) effect]{Plays a sound from the given @scheme[sound].  If the sound is already playing, then the sound continues to play.}
+@defproc[(make-effect:stop-sound (a-sound sound)) effect]{Stops playing a sound from the given url.}
+@defproc[(make-effect:pause-sound (a-sound sound)) effect]{Pauses a sound; if @scheme[make-effect:play-sound] for the same sound is given later, play restarts from the point where it was paused.}
+
+A @scheme[sound] is a:
+@schemegrammar[sound string
+                     playlist]
+
+
+@defproc[(make-effect:set-sound-volume (volume number)) effect]{Sets the sound volume; the number should be between 0 and 100.}
+@defproc[(make-effect:raise-sound-volume) effect]{Raises the sound volume.  If the volume's already at 100, has no effect.}
+@defproc[(make-effect:lower-sound-volume) effect]{Lowers the sound volume.  If the volume's set to 0, has no effect.}
+
+@defproc[(make-effect:set-beep-volume (volume number)) effect]{Sets the sound volume of the beep; the number should be between 0 and 100.  On an Android smartphone, uses the notification sound.}
+
+@defproc[(make-effect:play-dtmf-tone (tone number)) effect]{On a smartphone, plays a DTMF tone, where @scheme[tone] is between 0 and 15 inclusive.}
+
+@defproc[(make-effect:set-wake-lock (flag number)) effect]{On a smartphone, sets the wake-lock flag to prevent the phone from sleeping.  Low-level call.}
+@defproc[(make-effect:release-wake-lock) effect]{On a smartphone, releases a wake-lock to allow the phone to go to sleep again.}
+
+@defproc[(make-effect:send-sms (phone-number string) (message string)) effect]{Sends an SMS message.}
+
+@; Commenting out the generate-random documentation
+@;{@defproc[(make-effect:generate-random: (world-update-f (world number -> world))) effect]{When interpreted, generates a random number on the fly and uses @scheme[world-update-f] to update the world.}}
+
+@defproc[(make-effect:pick-playlist (world-update-f (world playlist -> world))) effect]{Brings up a playlist picker; when a playlist is selected, the world is updated using @scheme[world-update-f] with the selected @scheme[playlist] sound.}
+   }
+  
 
 
 
