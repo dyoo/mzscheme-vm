@@ -94,6 +94,7 @@
       (prim-js->scheme (js-call prim-escape #f s)))))
 
 
+(/ 1 0)
 
 (check-expect (my-escape "hello world") "hello%20world")
 
