@@ -207,22 +207,7 @@ When the @racket[big-bang] computation terminates through a
 
 
 
-
-@defproc[(to-draw-page [to-dom (world -> (DOM-sexp))]
-		       [to-css (world -> (CSS-sexp))]) handler]{
-
-One of the main handlers to @scheme[big-bang] is @scheme[to-draw-page],
-which controls how the world is rendered on screen.  The first
-argument computes a rendering of the world as a DOM tree, and the
-second argument computes that tree's styling.  }
-
-
-                                                               
-                                                               
-      
-
-
-                                                               
+                                                                                                                              
                                                                                                                  
 @defproc[(to-draw [hook (world -> scene)]) handler]{
 For simple applications, @scheme[to-draw] is sufficient to draw a scene onto the display.
@@ -278,15 +263,18 @@ counts up to ten and then stops.
 
 
 
-@defproc[(key=? [key1 key?] [key2 key?]) boolean?]{Produces true if @racket[key1] is equal to @racket[key2].}
-
 
 @subsection{Event handlers}
+@defproc[(on-tick [world-updater (world -> world)]
+                  [delay number? 1/20]) handler?]{
+  Produces a handler that responds to clock ticks.  By default,
+  every tick comes every @racket[1/20]'th of a second.}
 
-@defproc[(on-tick) handler?]{Produces a handler that responds to clock ticks.}
+@defproc[(on-key [world-updater (world key? -> world)]) handler?]{
+Produces a handler that responds to key events.}
 
+@defproc[(key=? [key1 key?] [key2 key?]) boolean?]{Produces true if @racket[key1] is equal to @racket[key2].}
 
-@defproc[(on-key) handler?]{Produces a handler that responds to key events.}
 
 
 @; As soon as we have this, we'll comment it.
@@ -295,6 +283,19 @@ counts up to ten and then stops.
 
 
 
+
+
+  
+  
+  
+
+@defproc[(to-draw-page [to-dom (world -> (DOM-sexp))]
+		       [to-css (world -> (CSS-sexp))]) handler]{
+
+One of the main handlers to @scheme[big-bang] is @scheme[to-draw-page],
+which controls how the world is rendered on screen.  The first
+argument computes a rendering of the world as a DOM tree, and the
+second argument computes that tree's styling.  }
 
 
 @subsection{Jsworld Types}
@@ -326,12 +327,11 @@ Here are examples  of a dom-expr and a css-sexp.
                                (list "background" "white")
                                (list "font-size" "40px"))))
              ]
-  
-  
-  
+                                                               
 
+  
+  
 @subsection{HTML user interface constructors}
-
 
 
 
@@ -357,7 +357,7 @@ Constructs a paragraph element.}
 Constructs a button.  When the button is pressed, the world is updated through @scheme[world-update-f].
 
 The following example counts how many times a button has been clicked.
-@(racketmod planet @,(this-package-version-symbol)
+@(racketmod planet #,(this-package-version-symbol)
 (define (press w)
   (add1 w))
 
@@ -410,7 +410,7 @@ representing the checked status of the element will be passed to it.
 
 The example below has a single text input form element, which allows the user to enter
 some value.
-@(racketmod @,(this-package-version-symbol)
+@(racketmod planet #,(this-package-version-symbol)
 (define (refresh w form-val)
   form-val)
 
@@ -432,7 +432,7 @@ some value.
 
 
 The example below uses a checkbox to select among three elements:
-@(racketmod @,(this-package-version-symbol)
+@(racketmod planet #,(this-package-version-symbol)
 (define (make-ingredient-checkbox-sexp ingredient)
   (local [(define (on-check w v)
             (cond
@@ -477,7 +477,7 @@ option is selected, the @scheme[world-update-f] function is called to
 get the new world.
 
 The example below has a select with five elements.
-@(racketmod @,(this-package-version-symbol)
+@(racketmod planet #,(this-package-version-symbol)
 (define (select-house w an-option)
   an-option)
 

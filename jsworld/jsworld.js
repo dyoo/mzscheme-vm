@@ -274,8 +274,7 @@ var jsdiv = function(attribList) {
 EXPORTS['js-div'] =
     new CasePrimitive('js-div',
 		      [new PrimProc('js-div', 0, false, false, function() {
-			  var result =  jsdiv(types.EMPTY); 
-			  return result;
+			  return jsdiv(types.EMPTY); 
 		      }),
 		       new PrimProc('js-div', 1, false, false, jsdiv)
 		      ]);
@@ -302,13 +301,20 @@ var jsButton = function(updateWorldF, attribList) {
 };
 EXPORTS['js-button'] =
     new CasePrimitive('js-button',
-	[new PrimProc('js-button', 1, false, false, jsButton),
+	[new PrimProc('js-button', 1, false, false,
+		      function(updateWorldF) {
+			  return jsButton(updateWorldF, types.EMPTY)}),
 	 new PrimProc('js-button', 2, false, false, jsButton)]);
+
 
 EXPORTS['js-button!'] =
     new CasePrimitive('js-button!',
-	[new PrimProc('js-button!', 2, false, false, jsButtonBang('js-button!')),
-	 new PrimProc('js-button!', 3, false, false, jsButtonBang('js-button!'))]);
+	[new PrimProc('js-button!', 2, false, false, 
+		      function(worldUpdateF, effectF) {
+			  return jsButtonBang('js-button!')(worldUpdateF, effectF, types.EMPTY);
+		      }),
+	 new PrimProc('js-button!', 3, false, false, 
+		      jsButtonBang('js-button!'))]);
 
 
 
@@ -327,7 +333,9 @@ var jsInput = function(type, updateF, attribList) {
 };
 EXPORTS['js-input'] =
 	new CasePrimitive('js-input', 
-	[new PrimProc('js-input', 2, false, false, jsInput),
+	[new PrimProc('js-input', 2, false, false, 
+		      function(type, updateF) {
+			  return jsInput(type, updateF, types.EMPTY)}),
 	 new PrimProc('js-input', 3, false, false, jsInput)]);
 
 
@@ -346,7 +354,8 @@ var jsImg = function(src, attribList) {
 };
 EXPORTS['js-img'] =
     new CasePrimitive('js-img',
-	[new PrimProc('js-img', 1, false, false, function(src) { return jsImg(src, types.EMPTY); }),
+	[new PrimProc('js-img', 1, false, false, 
+		      function(src) { return jsImg(src, types.EMPTY); }),
 	 new PrimProc('js-img', 2, false, false, jsImg)]);
 
 
@@ -381,9 +390,15 @@ var jsSelect = function(optionList, updateF, attribList) {
 	return helpers.wrapJsValue(node);
 };
 EXPORTS['js-select'] =
-    new CasePrimitive('js-select',
-	[new PrimProc('js-select', 2, false, false, jsSelect),
-	 new PrimProc('js-select', 3, false, false, jsSelect)]);
+    new CasePrimitive(
+	'js-select',
+	[new PrimProc('js-select', 2, false, false, 
+		      function(optionList, updateF) {
+			  return jsSelect(optionList, updateF,
+					  types.EMPTY)
+		      }),
+	 new PrimProc('js-select', 3, false, false,
+		      jsSelect)]);
 
 
 
