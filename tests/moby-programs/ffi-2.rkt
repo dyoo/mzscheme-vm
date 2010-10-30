@@ -29,10 +29,12 @@
 
 
 (check-expect (big-bang 1
+
 			(my-on-tick 
 			 (lambda (w)
 			   (printf "tick!\n")
 			   (add1 w)))
+
 			(stop-when 
 			 (lambda (n) (= n 10))))
 	      10)

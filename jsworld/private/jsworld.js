@@ -574,13 +574,13 @@
 // 	}
 	
 
-	startUserConfigs(function() {
-		_js.big_bang(toplevelNode,
-			     initWorld,
-			     wrappedHandlers,
-			     helpers.assocListToHash(attribs),
-			     terminator);
-	});
+	_js.big_bang(toplevelNode,
+		     initWorld,
+		     wrappedHandlers,
+		     helpers.assocListToHash(attribs),
+		     terminator);
+
+	startUserConfigs(function() {});
 
 	return {
 	    breaker: function() {
