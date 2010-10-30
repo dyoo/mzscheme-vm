@@ -300,11 +300,6 @@ var assocListToHash = helpers.assocListToHash;
 var raise = helpers.raise;
 
 
-var makeCaller = function(aState) {
-	return function(operator, operands, k, callSite) {
-		interpret.call(aState, operator, operands, k, aState.onFail, callSite);
-	};
-};
 
 var checkAndGetGuard = function(funName, guard, numberOfGuardArgs) {
 	if ( !guard ) {

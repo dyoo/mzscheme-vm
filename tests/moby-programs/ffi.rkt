@@ -105,5 +105,15 @@
   (js-call p #f))
 
 
+(let ([p (procedure->void-js-fun 
+	  (lambda (x y) 
+	    (printf "I see: ~s ~s\n" 
+		    (prim-js->scheme x)
+		    (prim-js->scheme y))))])
+  (printf "The following should repeat 'I see 3 \"four\"\n")
+  (js-call p #f 3 "four"))
+
+
+
 
 "end of ffi tests"
