@@ -168,7 +168,8 @@ EXPORTS['js-get-field'] =
 		 	selectors.unshift(firstSelector);
 			var allArgs = [root].concat(selectors);
 		 	check(root, types.isJsValue, 'js-get-field', 'js-value', 1, allArgs);
-			arrayEach(selectors, function(x, i) { check(x, types.isString, 'js-get-field', 'string', i+2, allArgs); });
+			arrayEach(selectors, function(x, i) { 
+			    check(x, types.isString, 'js-get-field', 'string', i+2, allArgs); });
 
 			var name = [root.name];
 			var obj = root.val;
@@ -246,10 +247,9 @@ EXPORTS['js-call'] =
 		 function(fun, parent, initArgs) {
 		 	var allArgs = [fun, parent].concat(initArgs);
 		 	check(fun, isJsFunction, 'js-call', 'javascript function', 1, allArgs);
-			check(parent, function(x) { return (x === false || types.isJsObject(x)); },
+			check(parent, function(x) { return (x === false || isJsObject(x)); },
 			      'js-call', 'javascript object or false', 2, allArgs);
-			
-
+		     
 			var args = helpers.map(function(x) { return (types.isJsValue(x) ? x.val : x); }, initArgs);
 			var thisArg = parent ? parent.val : null;
 			var jsCallReturn = fun.val.apply(thisArg, args);
