@@ -57,7 +57,7 @@ EXPORTS['scheme->prim-js'] =
 					jsnums.equals(x, jsnums.negative_inf) ) &&
 				     ( jsnums.greaterThan(x, 9e15) ||
 				       jsnums.lessThan(x, -9e15) ) ) {
-					raise(types.incompleteExn(
+					helpers.raise(types.incompleteExn(
 						types.exnFailContract,
 						helpers.format('scheme->primitive-js: only numbers in [-9e15, 9e15] '
 								+ 'are accurately representable in javascript; given: ~s',
@@ -184,7 +184,7 @@ EXPORTS['js-get-field'] =
 
 			var fail = function(reason) {
 				var joinedName = name.join('');
-				raise(types.incompleteExn(
+				helpers.raise(types.incompleteExn(
 					types.exnFailContract,
 					helpers.format('js-get-field: tried to access field ~a of ~a, but the latter was ~a',
 						       [selectors[i], joinedName, reason]),
