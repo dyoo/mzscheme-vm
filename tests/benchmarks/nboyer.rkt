@@ -59,6 +59,8 @@
 
 (require "run-benchmark.rkt")
 
+(provide nboyer-benchmark)
+
 (define (nboyer-benchmark . args)
   (let ((n (if (null? args) 0 (car args))))
     (setup-boyer)

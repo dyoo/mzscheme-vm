@@ -71,10 +71,10 @@
        (let* ([id init-expr] ...)
          (let loop ([id id] ...)
            (cond [stop?-expr
-                  body ...
-                  (loop step-expr-maybe ...)]
+                  finish-expr ...]
                  [else
-                  finish-expr ...]))))]
+                  body ...
+                  (loop step-expr-maybe ...)]))))]
     
     [(_ ([id init-expr step-expr-maybe] ...)
         (stop?-expr)
