@@ -5,7 +5,7 @@
          (for-syntax racket/base))
 
 (provide (except-out (all-from-out "kernel.rkt") #%app))
-(provide with-handlers)
+(provide with-handlers time do)
 
 
 
@@ -48,4 +48,39 @@
               ...
               [else
                (raise exn)])))))]))
+
+
+
+(define-syntax (time stx)
+  (syntax-case stx ()
+    [(_ expr)
+     (syntax/loc stx
+       (let* ([start-time (current-inexact-milliseconds)]
+              [val expr]
+              [end-time (current-inexact-milliseconds)])
+         (printf "time: ~s\n" (- end-time start-time))
+         val))]))
+
+
+(define-syntax (do stx)
+  (syntax-case stx ()
+    [(_ ([id init-expr step-expr-maybe] ...)
+        (stop?-expr finish-expr ...)
+        body ...)
+     (syntax/loc stx
+       (let* ([id init-expr] ...)
+         (let loop ([id id] ...)
+           (cond [stop?-expr
+                  body ...
+                  (loop step-expr-maybe ...)]
+                 [else
+                  finish-expr ...]))))]
+    
+    [(_ ([id init-expr step-expr-maybe] ...)
+        (stop?-expr)
+        body ...)
+     (syntax/loc stx
+       (do ([id init-expr step-expr-maybe] ...)
+         (stop?-expr (void))
+         body ...))]))
 
