@@ -95,6 +95,7 @@
 ; symbols and symbol-records, and stores the list of lemmas
 ; within the symbol-records.
 
+(void
 (let ()
   
   (define (setup)
@@ -773,4 +774,4 @@
             (newline)
             (if answer
                 rewrite-count
-                #f)))))
+                #f))))))
