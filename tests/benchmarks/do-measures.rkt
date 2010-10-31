@@ -1,7 +1,10 @@
 #lang s-exp "../../lang/base.rkt"
 
 (require "nboyer.rkt"
-	 "tak.rkt")
+	 "sboyer.rkt"
+	 "tak.rkt"
+	 "nfa.rkt"
+	 "graphs.rkt")
 
 "(tak-benchmark)"
 (tak-benchmark)
@@ -13,3 +16,7 @@
 
 "(nboyer-benchmark 4)"
 (nboyer-benchmark 4)
+
+
+"sboyer"
+
