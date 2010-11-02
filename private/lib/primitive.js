@@ -946,7 +946,7 @@ PRIMITIVES['make-struct-field-mutator'] =
 
 		return new StructMutatorProc(mutator.type, procName, 2, false, false,
 					     function(x, v) {
-						 check(x, accessor.type.predicate, procName, 'struct:'+mutator.type.name, 1, arguments);
+						 check(x, mutator.type.predicate, procName, 'struct:'+mutator.type.name, 1, arguments);
 						 return mutator.impl(x, fieldPos, v);
 					     });
 	    });
