@@ -1723,13 +1723,24 @@ PRIMITIVES['acos'] =
 
 
 PRIMITIVES['atan'] =
-    new PrimProc('atan',
-		 1,
-		 false, false,
-		 function(x) {
-		 	check(x, isNumber, 'atan', 'number', 1);
-			return jsnums.atan(x);
-		 });
+	new CasePrimitive('atan',
+			  [new PrimProc('atan',
+					1,
+					false, false,
+					function(x) {
+		 			    check(x, isNumber, 'atan', 'number', 1);
+					    return jsnums.atan(x);
+					}),
+			   new PrimProc('atan',
+					2,
+					false, false,
+					function(x, y) {
+					    check(x, isReal, 'atan', 'number', 1);
+					    check(y, isReal, 'atan', 'number', 1);
+					    return jsnums.makeFloat(
+						Math.atan2(jsnums.toFixnum(x),
+							   jsnums.toFixnum(y)));
+					})]);
 
 
 PRIMITIVES['sinh'] =
