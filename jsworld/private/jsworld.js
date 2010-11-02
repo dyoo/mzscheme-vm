@@ -74,6 +74,7 @@
 			     function(aConfig, k2) {
 				caller(aConfig.startup, aConfig.startupArgs,
 					function(res) {
+					    aConfig.isRunning = true;
 						aConfig.shutdownArg = res;
 						k2()
 					});
@@ -89,7 +90,12 @@
 	    helpers.forEachK(theConfigs,
 			     function(aConfig, k2) {
 //			     	console.log('    shutting down a config');
-			     	caller(aConfig.shutdown, [aConfig.shutdownArg], k2);
+				 if (aConfig.isRunning) {
+				     aConfig.isRunning = false;
+			     	     caller(aConfig.shutdown, [aConfig.shutdownArg], k2);
+				 } else {
+				     k2();
+				 }
 			     },
 			     handleError,
 			     k);
