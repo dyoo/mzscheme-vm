@@ -21,13 +21,6 @@
      (syntax/loc stx
        (#%datum . x))]))
 
-;; application
-#;(define-syntax (-#%app stx)
-  (syntax-case stx ()
-    [(_ operator operands ...)
-     (syntax/loc stx
-       (#%app operator operands ...))]))
-
 
 ;; definitions
 (define-syntax (-define stx)

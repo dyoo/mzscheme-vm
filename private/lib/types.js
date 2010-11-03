@@ -499,6 +499,12 @@ Logic = {
     FALSE : false
 };
 
+
+var isBoolean = function(x) {
+	return (x === true || x === false);
+}
+
+
 // WARNING
 // WARNING: we are extending the built-in Javascript boolean class here!
 // WARNING
@@ -1501,6 +1507,24 @@ var toDomNode = function(x, cache) {
 
 var isNumber = jsnums.isSchemeNumber;
 
+var isReal = jsnums.isReal;
+var isRational = jsnums.isRational;
+var isComplex = isNumber;
+var isInteger = jsnums.isInteger;
+
+var isNatural = function(x) {
+    return (jsnums.isExact(x) && isInteger(x) 
+	    && jsnums.greaterThanOrEqual(x, 0));
+};
+var isNonNegativeReal = function(x) {
+	return isReal(x) && jsnums.greaterThanOrEqual(x, 0);
+};
+
+
+
+
+
+
 var isString = function(s) {
 	return (typeof s === 'string' || s instanceof Str);
 }
@@ -2210,10 +2234,21 @@ types.EMPTY = Empty.EMPTY;
 
 types.isEqual = isEqual;
 types.isNumber = isNumber;
+
+types.isReal = jsnums.isReal;
+types.isBoolean = isBoolean;
+types.isRational = jsnums.isRational;
+types.isComplex = isNumber;
+types.isInteger = jsnums.isInteger;
+types.isNatural = isNatural;
+types.isNonNegativeReal = isNonNegativeReal;
+
+
 types.isSymbol = function(x) { return x instanceof Symbol; };
 types.isChar = function(x) { return x instanceof Char; };
 types.isString = isString;
 types.isPair = function(x) { return x instanceof Cons; };
+types.isEmpty = function(x) { return x === Empty.EMPTY; };
 types.isVector = function(x) { return x instanceof Vector; };
 types.isBox = function(x) { return x instanceof Box; };
 types.isPlaceholder = function(x) { return x instanceof Placeholder; };

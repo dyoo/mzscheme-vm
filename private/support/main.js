@@ -20,6 +20,7 @@ var writeToInteractions = function(thing) {
 
 var reportError = function(exn) {
 
+
     // Under google-chrome, this will produce a nice error stack
     // trace that we can deal with.
     if (typeof(console) !== 'undefined' && console.log &&

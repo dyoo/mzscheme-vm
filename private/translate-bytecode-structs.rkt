@@ -63,7 +63,22 @@
     [(? internal:phase-shift?)
      (translate-phase-shift a-wrap)]
     [(? internal:module-rename?)
-     (translate-module-rename a-wrap)]))
+     (translate-module-rename a-wrap)]
+    [(? internal:wrap-mark?)
+     (translate-wrap-mark a-wrap)]
+    [(? internal:prune?)
+     (translate-prune a-wrap)]))
+
+(define (translate-wrap-mark a-wrap-mark)
+  (match a-wrap-mark
+    [(struct internal:wrap-mark (val))
+     (make-wrap-mark val)]))
+
+(define (translate-prune a-prune)
+  (match a-prune
+    [(struct internal:prune (sym))
+     (make-prune sym)]))
+
 
 (define (translate-lexical-rename a-lexical-rename)
   (match a-lexical-rename

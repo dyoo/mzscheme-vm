@@ -347,6 +347,7 @@ var getStackTraceFromContinuationMarks = function(contMarkSet) {
     var results = [];
     var stackTrace = contMarkSet.ref(STACK_KEY);
     stackTrace.reverse();
+
     // KLUDGE: the first element in the stack trace
     // can be weird print-values may introduce a duplicate
     // location.

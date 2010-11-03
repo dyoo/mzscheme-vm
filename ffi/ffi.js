@@ -21,11 +21,19 @@ var isJsFunction = function(x) {
 
 
 var isAssocList = function(x) {
-	return isPair(x) && isPair(x.rest()) && isEmpty(x.rest().rest());
+	return types.isPair(x) && types.isPair(x.rest()) && types.isEmpty(x.rest().rest());
 };
 
 
 var check = helpers.check;
+
+
+
+var makeCaller = function(aState) {
+    return function(operator, operands, k, callSite) {
+	interpret.call(aState, operator, operands, k, aState.onFail, callSite);
+    };
+};
 
 
 
@@ -43,13 +51,13 @@ EXPORTS['scheme->prim-js'] =
 			      'scheme->prim-js', 'real number, string, symbol, char, boolean, or vector', 1);
 
 			var returnVal;
-		 	if ( isReal(x) ) {
+		 	if ( types.isReal(x) ) {
 				if ( !( jsnums.equals(x, jsnums.nan) ||
 					jsnums.equals(x, jsnums.inf) ||
 					jsnums.equals(x, jsnums.negative_inf) ) &&
 				     ( jsnums.greaterThan(x, 9e15) ||
 				       jsnums.lessThan(x, -9e15) ) ) {
-					raise(types.incompleteExn(
+					helpers.raise(types.incompleteExn(
 						types.exnFailContract,
 						helpers.format('scheme->primitive-js: only numbers in [-9e15, 9e15] '
 								+ 'are accurately representable in javascript; given: ~s',
@@ -58,16 +66,16 @@ EXPORTS['scheme->prim-js'] =
 				}
 				returnVal = jsnums.toFixnum(x);
 			}
-			else if ( isString(x) ) {
+			else if ( types.isString(x) ) {
 				returnVal = x.toString();
 			}
-			else if ( isSymbol(x) || isChar(x) ) {
+			else if ( types.isSymbol(x) || types.isChar(x) ) {
 				returnVal = x.val;
 			}
-			else if ( isBoolean(x) ) {
+			else if ( types.isBoolean(x) ) {
 				returnVal = x;
 			}
-			else if ( isVector(x) ) {
+			else if ( types.isVector(x) ) {
 				returnVal = helpers.map(function(y) { return (types.isJsValue(y) ? y.val : y); },
 							x.elts);
 			}
@@ -168,14 +176,15 @@ EXPORTS['js-get-field'] =
 		 	selectors.unshift(firstSelector);
 			var allArgs = [root].concat(selectors);
 		 	check(root, types.isJsValue, 'js-get-field', 'js-value', 1, allArgs);
-			arrayEach(selectors, function(x, i) { check(x, isString, 'js-get-field', 'string', i+2, allArgs); });
+			arrayEach(selectors, function(x, i) { 
+			    check(x, types.isString, 'js-get-field', 'string', i+2, allArgs); });
 
 			var name = [root.name];
 			var obj = root.val;
 
 			var fail = function(reason) {
 				var joinedName = name.join('');
-				raise(types.incompleteExn(
+				helpers.raise(types.incompleteExn(
 					types.exnFailContract,
 					helpers.format('js-get-field: tried to access field ~a of ~a, but the latter was ~a',
 						       [selectors[i], joinedName, reason]),
@@ -210,7 +219,7 @@ EXPORTS['js-set-field!'] =
 		 function(obj, field, v) {
 		 	check(obj, function(x) { return types.isJsValue(x) && (typeof(x) == 'object' || typeof(x) == 'function'); },
 			      'js-set-field!', 'javascript object or function', 1, arguments);
-			check(field, isString, 'js-set-field!', 'string', 2, arguments);
+			check(field, types.isString, 'js-set-field!', 'string', 2, arguments);
 
 			obj.val[field.toString()] = (types.isJsValue(v) ? v.val : types.wrappedSchemeValue(v));
 			return types.VOID;
@@ -245,17 +254,12 @@ EXPORTS['js-call'] =
 		 true, false,
 		 function(fun, parent, initArgs) {
 		 	var allArgs = [fun, parent].concat(initArgs);
-		     alert('checking function:' + isJsFunction(fun));
 		 	check(fun, isJsFunction, 'js-call', 'javascript function', 1, allArgs);
-		     alert('checking parent');
-			check(parent, function(x) { return (x === false || types.isJsObject(x)); },
+			check(parent, function(x) { return (x === false || isJsObject(x)); },
 			      'js-call', 'javascript object or false', 2, allArgs);
-			
-		     alert('jscall: unwrapping args');
-
+		     
 			var args = helpers.map(function(x) { return (types.isJsValue(x) ? x.val : x); }, initArgs);
 			var thisArg = parent ? parent.val : null;
-		     alert('about to apply call');
 			var jsCallReturn = fun.val.apply(thisArg, args);
 			if ( jsCallReturn === undefined ) {
 				return types.VOID;
@@ -290,7 +294,7 @@ EXPORTS['js-make-hash'] =
 		      1,
 		      false, false,
 		      function(bindings) {
-			  checkListOf(bindings, function(x) { return types.isAssocList(x) && types.isString(x.first()); },
+			  helpers.checkListOf(bindings, function(x) { return isAssocList(x) && types.isString(x.first()); },
 				      'js-make-hash', '(listof string X)', 1);
 
 			  var ret = {};

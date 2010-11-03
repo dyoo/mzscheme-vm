@@ -300,11 +300,6 @@ var assocListToHash = helpers.assocListToHash;
 var raise = helpers.raise;
 
 
-var makeCaller = function(aState) {
-	return function(operator, operands, k, callSite) {
-		interpret.call(aState, operator, operands, k, aState.onFail, callSite);
-	};
-};
 
 var checkAndGetGuard = function(funName, guard, numberOfGuardArgs) {
 	if ( !guard ) {
@@ -951,7 +946,7 @@ PRIMITIVES['make-struct-field-mutator'] =
 
 		return new StructMutatorProc(mutator.type, procName, 2, false, false,
 					     function(x, v) {
-						 check(x, accessor.type.predicate, procName, 'struct:'+mutator.type.name, 1, arguments);
+						 check(x, mutator.type.predicate, procName, 'struct:'+mutator.type.name, 1, arguments);
 						 return mutator.impl(x, fieldPos, v);
 					     });
 	    });
@@ -1728,13 +1723,24 @@ PRIMITIVES['acos'] =
 
 
 PRIMITIVES['atan'] =
-    new PrimProc('atan',
-		 1,
-		 false, false,
-		 function(x) {
-		 	check(x, isNumber, 'atan', 'number', 1);
-			return jsnums.atan(x);
-		 });
+	new CasePrimitive('atan',
+			  [new PrimProc('atan',
+					1,
+					false, false,
+					function(x) {
+		 			    check(x, isNumber, 'atan', 'number', 1);
+					    return jsnums.atan(x);
+					}),
+			   new PrimProc('atan',
+					2,
+					false, false,
+					function(x, y) {
+					    check(x, isReal, 'atan', 'number', 1);
+					    check(y, isReal, 'atan', 'number', 1);
+					    return jsnums.makeFloat(
+						Math.atan2(jsnums.toFixnum(x),
+							   jsnums.toFixnum(y)));
+					})]);
 
 
 PRIMITIVES['sinh'] =

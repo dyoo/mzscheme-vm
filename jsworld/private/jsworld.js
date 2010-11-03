@@ -47,6 +47,13 @@
     };
     unsetRestarter();
 
+
+    var errorReporter = function(e) {
+	// default: do nothing.
+    };
+
+
+
     var terminator;
     var setTerminator = function(t) {
 	    terminator = t;
@@ -67,6 +74,7 @@
 			     function(aConfig, k2) {
 				caller(aConfig.startup, aConfig.startupArgs,
 					function(res) {
+					    aConfig.isRunning = true;
 						aConfig.shutdownArg = res;
 						k2()
 					});
@@ -82,7 +90,12 @@
 	    helpers.forEachK(theConfigs,
 			     function(aConfig, k2) {
 //			     	console.log('    shutting down a config');
-			     	caller(aConfig.shutdown, [aConfig.shutdownArg], k2);
+				 if (aConfig.isRunning) {
+				     aConfig.isRunning = false;
+			     	     caller(aConfig.shutdown, [aConfig.shutdownArg], k2);
+				 } else {
+				     k2();
+				 }
 			     },
 			     handleError,
 			     k);
@@ -342,8 +355,6 @@
 
     // bigBang: world dom (listof (list string string)) (arrayof handler) -> world
     Jsworld.bigBang = function(initWorld, toplevelNode, handlers, theCaller, theRestarter, onFail) {
-
-
 	// shutdownListeners: arrayof (-> void)
 	// We maintain a list of thunks that need to be called as soon as we come out of
 	// bigBang, to do cleanup.
@@ -363,14 +374,16 @@
 
 
 	//console.log('in high level big-bang');
+	errorReporter = onFail;
+
 	setCaller(theCaller);
 	setRestarter(theRestarter);
 	setTerminator(function(w) {
 		detachEvent(toplevelNode, 'click', absorber);
 		shutdownUserConfigs(function() {
-			unsetCaller();
-			unsetTerminator();
-			restarter(w);
+		    unsetCaller();
+		    unsetTerminator();
+		    restarter(w);
 		});
 	});
 
@@ -574,13 +587,13 @@
 // 	}
 	
 
-	startUserConfigs(function() {
-		_js.big_bang(toplevelNode,
-			     initWorld,
-			     wrappedHandlers,
-			     helpers.assocListToHash(attribs),
-			     terminator);
-	});
+	_js.big_bang(toplevelNode,
+		     initWorld,
+		     wrappedHandlers,
+		     helpers.assocListToHash(attribs),
+		     terminator);
+
+	startUserConfigs(function() {});
 
 	return {
 	    breaker: function() {
@@ -601,6 +614,7 @@
 //	world.Kernel.stimuli.onShutdown(); 
 	world.Kernel.stimuli.massShutdown();
 	shutdownUserConfigs(function() {
+	    errorReporter(e);
 //		console.log('Got an error, the error was:');
 //		console.log(e);
 		if (typeof(console) !== 'undefined' && console.log) {
