@@ -114,7 +114,11 @@
   (check-expect (car result) result))
 
 
-
+;; (stest (x "#11=(#11# 1)") '(shared ([x `(,x 1)]) x))
+(let ([result (shared ([x `(,x 1)]) x)])
+  (check-expect (length result) 2)
+  (check-expect (car result) result)
+  (check-expect (cdr result) '(1)))
 
 
 

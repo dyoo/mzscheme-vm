@@ -1,5 +1,6 @@
 #lang s-exp "lang/base.rkt"
 (require (for-syntax "lang/base.rkt"
+                     (prefix-in kernel: '#%kernel)
                      (only-in scheme/base syntax-case ... syntax->list syntax identifier? raise-syntax-error check-duplicate-identifier local-expand syntax-e free-identifier=? syntax/loc generate-temporaries regexp-match-positions datum->syntax syntax-local-value with-syntax syntax-case* quote-syntax quasisyntax unsyntax unsyntax-splicing)
                      syntax/kerncase
                      syntax/struct))
@@ -104,9 +105,13 @@
 					 (syntax-e b))))
                                    
                                    ;; dyoo: there's a hack here!
+                                   ;; The identifiers introduced by quasiquote
+                                   ;; are list and list*, but I can't seem
+                                   ;; to reliably free-identifier=? against them...
                                    (and (eq? (syntax-e a) 'list)
                                         (eq? (syntax-e b) 'list))
-                                   )])
+                                   (and (eq? (syntax-e a) 'list*)
+                                        (eq? (syntax-e b) 'list*)))])
                                  #;(printf "result: ~s\n" result)
                                  result))])
        (with-syntax ([(graph-expr ...)
@@ -128,7 +133,7 @@
                                      (loop expr)))
                                
                                (define list-syntaxes
-                                 (syntax->list #'(list list*)))
+                                 (syntax->list #'(list list* kernel:list kernel:list*)))
                                
                                (syntax-case* expr (the-cons mcons append box box-immutable vector vector-immutable) same-special-id?
                                  [(the-cons a d)
