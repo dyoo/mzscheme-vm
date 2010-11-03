@@ -7,7 +7,7 @@
 
 (define-runtime-path library-path "lib")
 (define-runtime-path support-directory "support")
-
+(define-runtime-path js-compatibility-libs "js-compatibility-libs")
 
 ;; cat-to-port: path output-port -> void
 ;; Write out contents of path to output port.
@@ -40,6 +40,28 @@
                  (build-path a-path p)))))
 
 
+;; copy the compatibility libraries
+(define (copy-js-compatibility-libraries a-path)
+  (unless (directory-exists? a-path)
+    (make-directory a-path))
+  (let loop ([from-dir js-compatibility-libs]
+             [to-dir a-path])
+    (for ([p (directory-list from-dir)])
+      (cond
+        [(directory-exists? (build-path from-dir p))
+         (unless (directory-exists? (build-path to-dir p))
+           (make-directory (build-path to-dir p)))
+         (loop (build-path from-dir p)
+               (build-path to-dir p))]
+        [(file-exists? (build-path from-dir p))
+         (when (file-exists? (build-path to-dir p))
+           (delete-file (build-path to-dir p)))
+         (copy-file (build-path from-dir p)
+                    (build-path to-dir p))]))))
+
+
+
+
 ;; write-platform-libraries: string output-port -> void
 ;; Writes out the platform-specific libraries out to the given output port.
 (define (write-runtime a-platform out-port)
@@ -63,4 +85,5 @@
 
 (provide/contract [write-runtime (string? output-port? . -> . any)]
                   [copy-support-files (path? . -> . any)]
-                  [copy-support-js-files (path? . -> . any)])
+                  [copy-support-js-files (path? . -> . any)]
+                  [copy-js-compatibility-libraries (path? . -> . any)])
