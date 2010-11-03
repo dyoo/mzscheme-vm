@@ -3,6 +3,18 @@
 
 "cycle tests"
 
+
+
+
+(define-struct thingy (x y) #:mutable)
+(let ([result (shared ([y (make-thingy y y)])
+		      y)])
+  (check-expect (thingy-x result) result)
+  (check-expect (thingy-y result) result))
+
+
+
+
 (define mylst (cons 1 (cons (box #f) empty)))
 (set-box! (cadr mylst) mylst)
 
@@ -119,6 +131,8 @@
   (check-expect (length result) 2)
   (check-expect (car result) result)
   (check-expect (cdr result) '(1)))
+
+
 
 
 
