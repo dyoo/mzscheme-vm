@@ -13,7 +13,7 @@
    (lambda (success)
      (js-call (js-get-global-value "setInterval")
 	      #f
-	      success
+	      (procedure->void-js-fun (lambda args (js-call success #f)))
 	      1000))
 
    (lambda (id)
