@@ -2116,7 +2116,6 @@ var readerGraph = function(x, objectHash, n) {
     }
 
     if (types.isPair(x)) {
-	console.log("pair " + x.first());
 	var consPair = types.cons(x.first(), x.rest());
 	objectHash.put(x, consPair);
 	consPair.f = readerGraph(x.first(), objectHash, n+1);
