@@ -2169,8 +2169,11 @@ var readerGraph = function(x, objectHash, n) {
     }
 
     if (types.isStruct(x)) {
-	throw new Error("make-reader-graph of struct not implemented yet");
-	var aStruct = x.type.constructor.apply(null, x._fields);
+	var aStruct = clone(x);
+	objectHash.put(x, aStruct);
+	for(var i = 0 ;i < x._fields.length; i++) {
+	    x._fields[i] = readerGraph(x._fields[i], objectHash, n+1);
+	}
 	return aStruct;
     }
 
@@ -2182,7 +2185,28 @@ var readerGraph = function(x, objectHash, n) {
 };
 
 
+
+// clone: object -> object
+// Copies an object.  The new object should respond like the old
+// object, including to things like instanceof
+var clone = function(obj) {
+    var C = function() {}
+    C.prototype = obj;
+    var c = new C();
+    for (property in obj) {
+	if (obj.hasOwnProperty(property)) {
+	    c[property] = obj[property];
+	}
+    }
+    return c;
+};
+
+
+
+
 //////////////////////////////////////////////////////////////////////
+
+
 
 
 
