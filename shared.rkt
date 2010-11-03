@@ -9,6 +9,8 @@
 (define undefined (letrec ([x x]) x))
 (require (only-in "lang/base.rkt" [cons the-cons]))
 
+
+
 (define-syntax shared
   (lambda (stx)
     (define make-check-cdr #f)
@@ -88,7 +90,9 @@
 	   [same-special-id? (lambda (a b)
 			       ;; Almost module-or-top-identifier=?,
 			       ;; but handle the-cons specially
-                               #;(printf "Comparing ~s and ~s\n" (syntax-e a) (syntax-e b))
+                               #;(printf "Comparing ~s and ~s: ~s at phase ~s\n" a b
+                                       (free-identifier=? a b)
+                                       (syntax-local-phase-level))
                                (let ([result
                                (or (free-identifier=? a b)
 				   (free-identifier=? 
@@ -97,7 +101,12 @@
 				     #f
 				     (if (eq? 'the-cons (syntax-e b))
 					 'cons
-					 (syntax-e b)))))])
+					 (syntax-e b))))
+                                   
+                                   ;; dyoo: there's a hack here!
+                                   (and (eq? (syntax-e a) 'list)
+                                        (eq? (syntax-e b) 'list))
+                                   )])
                                  #;(printf "result: ~s\n" result)
                                  result))])
        (with-syntax ([(graph-expr ...)
@@ -117,6 +126,10 @@
                                                         ph))
                                                  names placeholder-ids ph-used?s))
                                      (loop expr)))
+                               
+                               (define list-syntaxes
+                                 (syntax->list #'(list list*)))
+                               
                                (syntax-case* expr (the-cons mcons append box box-immutable vector vector-immutable) same-special-id?
                                  [(the-cons a d)
                                   (with-syntax ([a (cons-elem #'a)]
@@ -130,14 +143,14 @@
                                   (bad "mcons")]
                                  [(lst e ...)
                                   (ormap (lambda (x) (same-special-id? #'lst x))
-                                         (syntax->list #'(list list*)))
+                                         list-syntaxes #;(syntax->list #'(list list*)))
                                   (with-syntax ([(e ...)
                                                  (map (lambda (x) (cons-elem x))
                                                       (syntax->list (syntax (e ...))))])
                                     (syntax/loc expr (lst e ...)))]
                                  [(lst . _)
                                   (ormap (lambda (x) (same-special-id? #'lst x))
-                                         (syntax->list #'(list list*)))
+                                         list-syntaxes #;(syntax->list #'(list list*)))
                                   (bad (syntax-e #'lst))]
                                  [(append e0 ... e)
                                   (let ([len-id (car (generate-temporaries '(len)))])
