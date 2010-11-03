@@ -21,27 +21,9 @@ var appendChild = function(parent, child) {
 
 
 
-var _eqHashCodeCounter = 0;
-makeEqHashCode = function() {
-    _eqHashCodeCounter++;
-    return _eqHashCodeCounter;
-};
+getEqHashCode = helpers.getEqHashCode;
 
-    
-// getHashCode: any -> (or fixnum string)
-// Produces a hashcode appropriate for eq.
-getEqHashCode = function(x) {
-    if (x && !x._eqHashCode) {
-	x._eqHashCode = makeEqHashCode();
-    }
-    if (x && x._eqHashCode) {
-	return x._eqHashCode;
-    }
-    if (typeof(x) == 'string') {
-	return x;
-    }
-    return 0;
-};
+
 
 
 // Union/find for circular equality testing.
@@ -1123,10 +1105,7 @@ String.prototype.toDisplayedString = function(cache) {
 
 // makeLowLevelEqHash: -> hashtable
 // Constructs an eq hashtable that uses Moby's getEqHashCode function.
-var makeLowLevelEqHash = function() {
-    return new _Hashtable(function(x) { return getEqHashCode(x); },
-			  function(x, y) { return x === y; });
-};
+var makeLowLevelEqHash = helpers.makeLowLevelEqHash;
 
 
 
@@ -2132,13 +2111,12 @@ var ArityAtLeast = makeStructureType('arity-at-least', false, 1, 0, false,
 
 
 var readerGraph = function(x, objectHash, n) {
-    
-
     if (typeof(x) === 'object' && objectHash.containsKey(x)) {
 	return objectHash.get(x);
     }
 
     if (types.isPair(x)) {
+	console.log("pair " + x.first());
 	var consPair = types.cons(x.first(), x.rest());
 	objectHash.put(x, consPair);
 	consPair.f = readerGraph(x.first(), objectHash, n+1);
@@ -2172,7 +2150,6 @@ var readerGraph = function(x, objectHash, n) {
 	var aStruct = x.type.constructor.apply(null, x._fields);
 	return aStruct;
     }
-
 
     if (types.isPlaceholder(x)) {
 	return readerGraph(x.ref(), objectHash, n+1);
