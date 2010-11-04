@@ -72,12 +72,13 @@ example, modify @filepath{run.rkt} to be:
 
 
 
-@section{Examples}
 
+A slightly more substantial example is an animation using a built-in
+functional event-driven programming library.
 
-@subsection{Falling ball}
 
 @racketmod[planet #,(this-package-version-symbol)
+@code:comment{falling.ball.rkt}
 @code:comment{Simple falling ball example.  A red ball falls down the screen}
 @code:comment{until hitting the bottom.}
 (define-struct world (radius y))
@@ -122,7 +123,12 @@ example, modify @filepath{run.rkt} to be:
 
 ]
 
-
+Again, to run this in the browser, we use @racket[run-in-browser]:
+@racketmod[racket
+(require #,(schememodname/this-package))
+(run-in-browser "falling-ball.rkt")
+(read-line)
+]
 
 
 
