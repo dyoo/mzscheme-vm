@@ -5,7 +5,7 @@
 
 (define compile-omit-paths '("externals" "support" "lib" "tests" "sandbox"))
 
-(define scribblings '(("js-vm.scrbl")))
+(define scribblings '(("js-vm.scrbl" (multi-page))))
 (define name "js-vm")
 (define primary-file "main.rkt")
 (define categories '(devtools))

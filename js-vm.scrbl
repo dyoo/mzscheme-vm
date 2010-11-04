@@ -846,9 +846,7 @@ Any module implemented with
 can run either in a Racket or Javascript context.
 
 
-@section{Foreign Function Interface}
-@defmodule/this-package[ffi/ffi]
-The contents of this module need to run in a Javascript context.
+@include-section["ffi/ffi.scrbl"]
 
 
 

@@ -15,6 +15,9 @@ access to native javascript functionality and allows external javascript APIs
 to be used in @racketmodname[racket] code without modifying the source code of
 the runtime infrastructure that evaluates the code.
 
+
+The contents of this module need to run in a Javascript context.
+
 @;-----------------------------------------------------------------------------
 
 @section{Type Conversions}
