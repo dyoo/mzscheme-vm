@@ -666,17 +666,17 @@ RotateImage.prototype.isEqual = function(other, aUnionFind) {
 // ScaleImage: factor factor image -> image
 // Scale an image
 var ScaleImage = function(xFactor, yFactor, img) {
-	
-	// resize the image
+    
+    // resize the image
     BaseImage.call(this, 
-				   Math.floor((img.getWidth() * xFactor) / 2),
-				   Math.floor((img.getHeight() * yFactor) / 2));
-	
-	this.img	= img;
-	this.width	= img.getWidth() * xFactor;
-	this.height = img.getHeight() * yFactor;
-	this.xFactor = xFactor;
-	this.yFactor = yFactor;
+		   Math.floor((img.getWidth() * xFactor) / 2),
+		   Math.floor((img.getHeight() * yFactor) / 2));
+    
+    this.img	= img;
+    this.width	= img.getWidth() * xFactor;
+    this.height = img.getHeight() * yFactor;
+    this.xFactor = xFactor;
+    this.yFactor = yFactor;
 };
 
 ScaleImage.prototype = heir(BaseImage.prototype);
@@ -684,8 +684,10 @@ ScaleImage.prototype = heir(BaseImage.prototype);
 
 // scale the context, and pass it to the image's render function
 ScaleImage.prototype.render = function(ctx, x, y) {
-    this.img.render(ctx.scale(this.xFactor, this.yFactor), x, y);
-	ctx.restore();
+    ctx.save();
+    ctx.scale(this.xFactor, this.yFactor);
+    this.img.render(ctx, x, y);
+    ctx.restore();
 };
 
 
@@ -698,14 +700,14 @@ ScaleImage.prototype.getHeight = function() {
 };
 
 ScaleImage.prototype.isEqual = function(other, aUnionFind) {
-    return ( other instanceof RotateImage &&
-			this.pinholeX == other.pinholeX &&
-			this.pinholeY == other.pinholeY &&
-			this.width == other.width &&
-			this.height == other.height &&
-			this.xFactor == other.xFactor &&
-			this.yFactor == other.yFactor &&
-			types.isEqual(this.img, other.img, aUnionFind) );
+    return ( other instanceof ScaleImage &&
+	     this.pinholeX == other.pinholeX &&
+	     this.pinholeY == other.pinholeY &&
+	     this.width == other.width &&
+	     this.height == other.height &&
+	     this.xFactor == other.xFactor &&
+	     this.yFactor == other.yFactor &&
+	     types.isEqual(this.img, other.img, aUnionFind) );
 };
 
 //////////////////////////////////////////////////////////////////////
@@ -1440,7 +1442,7 @@ world.Kernel.overlayImage = function(img1, img2, shiftX, shiftY) {
 world.Kernel.rotateImage = function(angle, img) {
     return new RotateImage(angle, img);
 };
-world.Kernel.ScaleImage = function(xFactor, yFactor, img) {
+world.Kernel.scaleImage = function(xFactor, yFactor, img) {
 	return new ScaleImage(xFactor, yFactor, img);
 };
 world.Kernel.textImage = function(msg, size, color) {

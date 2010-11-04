@@ -35,7 +35,8 @@
 	 "42.rkt"	 
 	 "cycles.rkt"
 	 "list.rkt"
-	 "vararity.rkt")
+	 "vararity.rkt"
+	 "rotate.rkt")
 
 
 (printf "all-tests completed\n")
