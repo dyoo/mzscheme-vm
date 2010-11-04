@@ -21,27 +21,9 @@ var appendChild = function(parent, child) {
 
 
 
-var _eqHashCodeCounter = 0;
-makeEqHashCode = function() {
-    _eqHashCodeCounter++;
-    return _eqHashCodeCounter;
-};
+getEqHashCode = helpers.getEqHashCode;
 
-    
-// getHashCode: any -> (or fixnum string)
-// Produces a hashcode appropriate for eq.
-getEqHashCode = function(x) {
-    if (x && !x._eqHashCode) {
-	x._eqHashCode = makeEqHashCode();
-    }
-    if (x && x._eqHashCode) {
-	return x._eqHashCode;
-    }
-    if (typeof(x) == 'string') {
-	return x;
-    }
-    return 0;
-};
+
 
 
 // Union/find for circular equality testing.
@@ -1129,10 +1111,7 @@ String.prototype.toDisplayedString = function(cache) {
 
 // makeLowLevelEqHash: -> hashtable
 // Constructs an eq hashtable that uses Moby's getEqHashCode function.
-var makeLowLevelEqHash = function() {
-    return new _Hashtable(function(x) { return getEqHashCode(x); },
-			  function(x, y) { return x === y; });
-};
+var makeLowLevelEqHash = helpers.makeLowLevelEqHash;
 
 
 
@@ -2156,8 +2135,6 @@ var ArityAtLeast = makeStructureType('arity-at-least', false, 1, 0, false,
 
 
 var readerGraph = function(x, objectHash, n) {
-    
-
     if (typeof(x) === 'object' && objectHash.containsKey(x)) {
 	return objectHash.get(x);
     }
@@ -2192,11 +2169,13 @@ var readerGraph = function(x, objectHash, n) {
     }
 
     if (types.isStruct(x)) {
-	throw new Error("make-reader-graph of struct not implemented yet");
-	var aStruct = x.type.constructor.apply(null, x._fields);
+	var aStruct = clone(x);
+	objectHash.put(x, aStruct);
+	for(var i = 0 ;i < x._fields.length; i++) {
+	    x._fields[i] = readerGraph(x._fields[i], objectHash, n+1);
+	}
 	return aStruct;
     }
-
 
     if (types.isPlaceholder(x)) {
 	return readerGraph(x.ref(), objectHash, n+1);
@@ -2206,7 +2185,28 @@ var readerGraph = function(x, objectHash, n) {
 };
 
 
+
+// clone: object -> object
+// Copies an object.  The new object should respond like the old
+// object, including to things like instanceof
+var clone = function(obj) {
+    var C = function() {}
+    C.prototype = obj;
+    var c = new C();
+    for (property in obj) {
+	if (obj.hasOwnProperty(property)) {
+	    c[property] = obj[property];
+	}
+    }
+    return c;
+};
+
+
+
+
 //////////////////////////////////////////////////////////////////////
+
+
 
 
 

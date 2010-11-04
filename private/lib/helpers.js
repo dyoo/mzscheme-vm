@@ -182,11 +182,40 @@ var helpers = {};
 		}
 	};
 
-	var isList = function(x) { return (( types.isPair(x) && isList(x.rest()) ) || x === types.EMPTY); };
+	var isList = function(x) {
+	    var seenPairs = makeLowLevelEqHash();
+	    while (true) {
+		if (seenPairs.containsKey(x)) {
+		    return true;
+		} else if (x === types.EMPTY) {
+		    return true;
+		} else if (types.isPair(x)) {
+		    seenPairs.put(x, true);
+		    x = x.rest();
+		} else {
+		    return false;
+		}
+	    }
+	};
 
 	var isListOf = function(x, f) {
-		return ( ( types.isPair(x) && f(x.first()) && isListOf(x.rest(), f) ) ||
-			 x === types.EMPTY );
+	    var seenPairs = makeLowLevelEqHash();
+	    while (true) {
+		if (seenPairs.containsKey(x)) {
+		    return true;
+		} else if (x === types.EMPTY) {
+		    return true;
+		} else if (types.isPair(x)) {
+		    seenPairs.put(x, true);
+		    if (f(x.first())) {
+			x = x.rest();
+		    } else {
+			return false;
+		    }
+		} else {
+		    return false;
+		}
+	    }
 	};
 
 	var checkListOf = function(lst, f, functionName, typeName, position, args) {
@@ -457,6 +486,48 @@ var helpers = {};
 
 
 
+
+
+
+
+
+
+    var _eqHashCodeCounter = 0;
+    makeEqHashCode = function() {
+	_eqHashCodeCounter++;
+	return _eqHashCodeCounter;
+    };
+
+    
+    // getHashCode: any -> (or fixnum string)
+    // Produces a hashcode appropriate for eq.
+    getEqHashCode = function(x) {
+	if (typeof(x) === 'string') {
+	    return x;
+	}
+	if (typeof(x) === 'number') {
+	    return String(x);
+	}
+	if (x && !x._eqHashCode) {
+	    x._eqHashCode = makeEqHashCode();
+	}
+	if (x && x._eqHashCode) {
+	    return x._eqHashCode;
+	}
+	return 0;
+    };
+
+
+
+
+    var makeLowLevelEqHash = function() {
+	return new _Hashtable(function(x) { return getEqHashCode(x); },
+			      function(x, y) { return x === y; });
+    };
+
+
+
+
 	////////////////////////////////////////////////
 
 	helpers.format = format;
@@ -488,6 +559,10 @@ var helpers = {};
 
         helpers.makeLocationDom = makeLocationDom;
         helpers.isLocationDom = isLocationDom;
+
+
+        helpers.getEqHashCode = getEqHashCode;
+        helpers.makeLowLevelEqHash = makeLowLevelEqHash;
 
 })();
 

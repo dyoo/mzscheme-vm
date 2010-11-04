@@ -2429,17 +2429,23 @@ PRIMITIVES['list*'] =
     new PrimProc('list*',
 		 1,
 		 true, false,
-		 function(items, otherItems) {
-		 	var allArgs = [items].concat(otherItems);
-		 	if (otherItems.length == 0) {
-				return items;
-			}
-		 
-		 	var lastListItem = otherItems.pop();
-		 	checkList(lastListItem, 'list*', otherItems.length+2, allArgs);
+		 function(anItem, otherItems) {
+		     if (otherItems.length == 0) {
+			 return anItem;
+		     }
+		     var allArgs = [anItem].concat(otherItems);
+		     
+		     var result = allArgs[allArgs.length - 1];
+		     for (var i = allArgs.length - 2 ; i >= 0; i--) {
+			 result = types.cons(allArgs[i], result);
+		     }
+		     return result;
+		     
+// 		     var lastListItem = otherItems.pop();
+// 		     checkList(lastListItem, 'list*', otherItems.length+2, allArgs);
 
-		 	otherItems.unshift(items);
-		 	return append([types.list(otherItems), lastListItem]);
+// 		     otherItems.unshift(anItem);
+// 		     return append([types.list(otherItems), lastListItem]);
 		 });
 
 
@@ -3814,7 +3820,8 @@ PRIMITIVES['string-fill!'] =
 PRIMITIVES['make-reader-graph'] = 
 	new PrimProc('make-reader-graph', 1, false, false,
 		     function(x) {
-			 return types.readerGraph(x, types.makeLowLevelEqHash(), 0);
+			 var result = types.readerGraph(x, types.makeLowLevelEqHash(), 0);
+			 return result;
 		     });
 
 

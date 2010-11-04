@@ -33,7 +33,9 @@
 	 "begin.rkt"
 	 "and-or.rkt"
 	 "42.rkt"	 
-	 "cycles.rkt")
+	 "cycles.rkt"
+	 "list.rkt"
+	 "vararity.rkt")
 
 
 (printf "all-tests completed\n")

@@ -25,6 +25,8 @@
 
     (copy-support-files output-directory)
     
+    (copy-js-compatibility-libraries output-directory)
+    
     ;; Write out the translated program.
     ;; FIXME: write out all the other used modules too.
     (call-with-output-file (build-path output-directory "program.js")
