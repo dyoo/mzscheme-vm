@@ -1,11 +1,13 @@
-#lang scribble/base
+#lang scribble/manual
 
-@(require (for-label racket)
-          scribble/manual
-          (for-label "ffi.rkt"))
+@(require (for-label (planet dyoo/js-vm/ffi/ffi))
+          unstable/scribble)
+
 
 
 @title[#:tag "ffi"]{Racket to Javascript FFI}
+
+@defmodule/this-package[ffi/ffi]
 
 This API provides a foriegn function interface that allows javascript to be
 accessed directly and explicitly through @racketmodname[racket]. This allows
@@ -16,6 +18,7 @@ the runtime infrastructure that evaluates the code.
 @;-----------------------------------------------------------------------------
 
 @section{Type Conversions}
+
 
 These procedures are designed to convert between @racketmodname[racket] and
 javascript types.
@@ -103,6 +106,7 @@ If @racket[v] is not an array, boolean, function, number, or string,
 
 @section{Checking Javascript Types and Values}
 
+
 The following procedures are useful for checking the values and types of
 javascript values.
 
@@ -134,6 +138,7 @@ Returns @racket[#t] if @racket[v] is an instance of the javascript type
 @;-----------------------------------------------------------------------------
 
 @section{Accessing Javascript Values}
+
 
 The following procedures are useful for accessing javascript values from
 external APIs as well as constructing new values to pass to other javascript
