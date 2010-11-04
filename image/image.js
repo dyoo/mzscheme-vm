@@ -463,6 +463,42 @@ EXPORTS['underlay/xy'] =
 		 });
 
 
+EXPORTS['rotate'] =
+new PrimProc('rotate',
+			 2,
+			 false, false,
+			 function(angle, img) {
+			 check(factor, isReal, "rotate", "finite real number", 1, arguments);
+			 check(img, isImage, "rotate", "image", 2, arguments);
+			 
+			 var img = world.Kernel.RotateImage(angle, img);
+			 return img;
+			 });
+
+EXPORTS['scale/xy'] =
+new PrimProc('scale/xy',
+			 3,
+			 false, false,
+			 function(xFactor, yFactor, img) {
+			 check(xFactor, isReal, "scale/xy", "finite real number", 1, arguments);
+			 check(yFactor, isReal, "scale/xy", "finite real number", 2, arguments);
+			 check(img, isImage, "scale/xy", "image", 3, arguments);
+			 
+			 var img = world.Kernel.ScaleImage(xFactor, yFactor, img);
+			 return img;
+			 });
+
+EXPORTS['scale'] =
+new PrimProc('scale',
+			 2,
+			 false, false,
+			 function(factor, img) {
+			 check(factor, isReal, "scale", "finite real number", 1, arguments);
+			 check(img, isImage, "scale", "image", 2, arguments);
+			 
+			 var img = world.Kernel.ScaleImage(factor, factor, img);
+			 return img;
+			 });
 
 
 EXPORTS['text'] =
