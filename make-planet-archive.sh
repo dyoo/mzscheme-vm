@@ -1,6 +1,6 @@
 #!/bin/bash
 MAJOR=1
-MINOR=5
+MINOR=6
 PROJNAME=js-vm
 
 
