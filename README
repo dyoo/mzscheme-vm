@@ -34,45 +34,14 @@ Running core opcode tests:
 Running mz-tests basic test suite
 
     $ cd tests/mz-tests
-    $ racket ../../src/moby.rkt basic.rktl
+    $ racket ../../mzjs.rkt basic.rktl
     $ google-chrome basic/index.html
 
+Another set of tests:
 
-##################################################
-
-Running examples:
-
-    $ cd tests
-    
-    There should be several subdirectories.  For example, let's
-    go into 42:
-
-    $ cd 42
-    $ cat 42.ss
-    #lang scheme/base
-    42
-
-    It's a simple program that should display 42.  Let's compile it.
-
-    $ racket ../../src/moby.ss 42.ss
-
-    This should produce a file, 42.js, which we can now run.
-
-    $ node 42.js
-    42
-
-
-##################################################
-TODO
-
-* Add support for topsyntax opcode.  Currently missing.
-
-* Fix the support of the primitives in the runtime.  Start pulling
-  content from Moby-scheme's kernel.
-
-* Make the tests/mzscheme-basic tests run under mzscheme-vm.
-
-* Structured error values
+   $ cd tests/moby-programs
+   $ racket ../../mzjs.rkt all-tests.rkt
+   $ google-chrome all-tests/index.html
 
 
 
@@ -85,3 +54,9 @@ mzscheme-vm:
    * Ethan Cecchetti
 
    * Scott Newman
+
+   * Zhe Zhang
+
+   * Shriram Krishnamurthi
+
+   * Emmanuel Schanzer
