@@ -24,6 +24,9 @@
 	 overlay/xy
 	 underlay
 	 underlay/xy
+	 rotate
+	 scale
+	 scale/xy
 	 text
 	 image-url
 	 image-width

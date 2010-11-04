@@ -588,6 +588,129 @@ OverlayImage.prototype.isEqual = function(other, aUnionFind) {
 //////////////////////////////////////////////////////////////////////
 
 
+// rotate: angle image -> image
+// Rotates image by angle degrees in a counter-clockwise direction.
+// based on http://stackoverflow.com/questions/3276467/adjusting-div-width-and-height-after-rotated
+var RotateImage = function(angle, img) {
+    var sin   = Math.sin(angle * Math.PI / 180),
+		cos   = Math.cos(angle * Math.PI / 180);
+	
+	// (w,0) rotation
+	var x1 = Math.floor(cos * img.getWidth()),
+		y1 = Math.floor(sin * img.getWidth());
+	
+	// (0,h) rotation
+	var x2 = Math.floor(-sin * img.getHeight()),
+		y2 = Math.floor( cos * img.getHeight());
+	
+	// (w,h) rotation
+	var x3 = Math.floor(cos * img.getWidth() - sin * img.getHeight()),
+		y3 = Math.floor(sin * img.getWidth() + cos * img.getHeight());
+	
+	var minX = Math.min(0, x1, x2, x3),
+		maxX = Math.max(0, x1, x2, x3),
+		minY = Math.min(0, y1, y2, y3),
+		maxY = Math.max(0, y1, y2, y3);
+	
+	var rotatedWidth  = maxX - minX,
+		rotatedHeight = maxY - minY;
+	
+	// resize the image
+    BaseImage.call(this, 
+				   Math.floor(rotatedWidth / 2),
+				   Math.floor(rotatedHeight / 2));
+		
+	this.img	= img;
+	this.width	= rotatedWidth;
+	this.height = rotatedHeight;
+    this.angle	= angle;
+	this.translateX = -minX;
+	this.translateY = -minY;
+};
+
+RotateImage.prototype = heir(BaseImage.prototype);
+
+
+// translate drawing point, so that this.img appears in the UL corner. Then rotate and render this.img.
+RotateImage.prototype.render = function(ctx, x, y) {
+	ctx.translate(this.translateX, this.translateY);
+	ctx.rotate(this.angle * Math.PI / 180);
+    this.img.render(ctx, x, y);
+	ctx.restore();
+};
+
+
+RotateImage.prototype.getWidth = function() {
+    return this.width;
+};
+
+RotateImage.prototype.getHeight = function() {
+    return this.height;
+};
+
+RotateImage.prototype.isEqual = function(other, aUnionFind) {
+    return ( other instanceof RotateImage &&
+			this.pinholeX == other.pinholeX &&
+			this.pinholeY == other.pinholeY &&
+			this.width == other.width &&
+			this.height == other.height &&
+			this.angle == other.angle &&
+			this.translateX == other.translateX &&
+			this.translateY == other.translateY &&
+			types.isEqual(this.img, other.img, aUnionFind) );
+};
+
+//////////////////////////////////////////////////////////////////////
+
+
+// ScaleImage: factor factor image -> image
+// Scale an image
+var ScaleImage = function(xFactor, yFactor, img) {
+	
+	// resize the image
+    BaseImage.call(this, 
+				   Math.floor((img.getWidth() * xFactor) / 2),
+				   Math.floor((img.getHeight() * yFactor) / 2));
+	
+	this.img	= img;
+	this.width	= img.getWidth() * xFactor;
+	this.height = img.getHeight() * yFactor;
+	this.xFactor = xFactor;
+	this.yFactor = yFactor;
+};
+
+ScaleImage.prototype = heir(BaseImage.prototype);
+
+
+// scale the context, and pass it to the image's render function
+ScaleImage.prototype.render = function(ctx, x, y) {
+    this.img.render(ctx.scale(this.xFactor, this.yFactor), x, y);
+	ctx.restore();
+};
+
+
+ScaleImage.prototype.getWidth = function() {
+    return this.width;
+};
+
+ScaleImage.prototype.getHeight = function() {
+    return this.height;
+};
+
+ScaleImage.prototype.isEqual = function(other, aUnionFind) {
+    return ( other instanceof RotateImage &&
+			this.pinholeX == other.pinholeX &&
+			this.pinholeY == other.pinholeY &&
+			this.width == other.width &&
+			this.height == other.height &&
+			this.xFactor == other.xFactor &&
+			this.yFactor == other.yFactor &&
+			types.isEqual(this.img, other.img, aUnionFind) );
+};
+
+//////////////////////////////////////////////////////////////////////
+
+
 
 var colorString = function(aColor) {
     return ("rgb(" + 
@@ -1314,6 +1437,12 @@ world.Kernel.lineImage = function(x, y, color) {
 world.Kernel.overlayImage = function(img1, img2, shiftX, shiftY) {
     return new OverlayImage(img1, img2, shiftX, shiftY);
 };
+world.Kernel.rotateImage = function(angle, img) {
+    return new RotateImage(angle, img);
+};
+world.Kernel.ScaleImage = function(xFactor, yFactor, img) {
+	return new ScaleImage(xFactor, yFactor, img);
+};
 world.Kernel.textImage = function(msg, size, color) {
     return new TextImage(msg, size, color);
 };
@@ -1330,6 +1459,7 @@ world.Kernel.isTriangleImage = function(x) { return x instanceof TriangleImage; 
 world.Kernel.isEllipseImage = function(x) { return x instanceof EllipseImage; };
 world.Kernel.isLineImage = function(x) { return x instanceof LineImage; };
 world.Kernel.isOverlayImage = function(x) { return x instanceof OverlayImage; };
+world.Kernel.isRotateImage = function(x) { return x instanceof RotateImage; };
 world.Kernel.isTextImage = function(x) { return x instanceof TextImage; };
 world.Kernel.isFileImage = function(x) { return x instanceof FileImage; };
 
