@@ -22,14 +22,6 @@
        (#%datum . x))]))
 
 
-;; definitions
-(define-syntax (-define stx)
-  ;; FIXME: restrict define since we don't yet support keywords
-  (syntax-case stx ()
-    [(_ x ...)
-     (syntax/loc stx
-       (define x ...))]))
-
 ;; define-struct
 (define-syntax (-define-struct stx)
   ;; FIXME: restrict define-struct since we don't yet support keywords
@@ -93,7 +85,8 @@
                      (#%app #%app)
                      (#%top-interaction #%top-interaction)
                      (#%top #%top)
-                     (-define define)
+                     (define define)
+		     (define-values define-values)
                      (-define-struct define-struct)
                      (if if)
                      (cond cond)
