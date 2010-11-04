@@ -3,7 +3,7 @@
 #;(define drracket-name "js-vm")
 #;(define drracket-tools (list (list "private/tool.rkt")))
 
-(define compile-omit-paths '("externals" "support" "lib" "tests" "sandbox"))
+(define compile-omit-paths '("externals" "support" "lib" "tests" "sandbox" "tmp"))
 
 (define scribblings '(("js-vm.scrbl" (multi-page))))
 (define name "js-vm")

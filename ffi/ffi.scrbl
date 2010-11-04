@@ -138,6 +138,18 @@ obtained by calling javascript's @racketidfont{typeof} on @racket[v].}
 Returns @racket[#t] if @racket[v] is an instance of the javascript type
 @racket[type] and @racket[#f] otherwise.}
 
+
+@defproc[(js-null? [v js-value?]) boolean?]{
+Produces true if v is null.
+}
+
+@defproc[(js-undefined? [v js-value?]) boolean?]{
+Produces true if v is undefined.
+}
+
+
+
+
 @;-----------------------------------------------------------------------------
 
 @section{Accessing Javascript Values}
@@ -192,6 +204,14 @@ the element is put into the hash table with the @racket[first] as the key and
 the @racket[second] as the value. If multiple elements in @racket[bindings]
 have @racket[first]s that are @racket[equal?], then only the last binding will
 exist (the others will be overwritten).}
+
+
+
+@defthing[js-null js-value?]{The null value.}
+@defthing[js-undefined js-value?]{The undefined value.}
+
+
+
 
 @;-----------------------------------------------------------------------------
 
