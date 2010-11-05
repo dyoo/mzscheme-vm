@@ -54,7 +54,6 @@ following contents:
 @racketmod[racket
 (require #,(schememodname/this-package))
 (run-in-browser "test.rkt")
-(read-line)
 ]
 
 When this program is executed, @racket[run-in-browser] will take @filepath{test.rkt} and
@@ -127,7 +126,6 @@ Again, to run this in the browser, we use @racket[run-in-browser]:
 @racketmod[racket
 (require #,(schememodname/this-package))
 (run-in-browser "falling-ball.rkt")
-(read-line)
 ]
 
 
