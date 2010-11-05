@@ -9,7 +9,7 @@ branch expressions are not test for booleans at test position.
 
 +, *, / don't take at least two arguments.
 
-and, or, nand, nor don't require at least two arguments
+and, or don't require at least two arguments
 
 set! allowed on function arguments
 
@@ -44,3 +44,6 @@ missing primitives:
     hash-ref!
     hash-update!
     make-hasheqv
+
+displayed output not exactly the same with regards to shared values
+and constructor output
