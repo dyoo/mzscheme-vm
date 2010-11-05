@@ -34,6 +34,19 @@
        (lambda args ...))]))
 (provide λ)
 
+
+(define-syntax (recur stx)
+  (syntax-case stx ()
+    [(_ fun-id ([arg-id arg-expr] ...)
+        body-expr)
+     (syntax/loc stx
+       (let fun-id ([arg-id arg-expr] ...)
+         body-expr))]))
+(provide recur)
+
+
+
+
 (define-syntax (with-handlers stx)
   (syntax-case stx ()
     [(_ ([test? exn-handler] ...) body ...)

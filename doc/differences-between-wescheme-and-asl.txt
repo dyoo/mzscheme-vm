@@ -5,7 +5,7 @@ unmatched cond falls through
 
 unmatched case falls through
 
-branch expressions are not test for booleans at test position
+branch expressions are not test for booleans at test position.
 
 +, *, / don't take at least two arguments.
 
@@ -15,3 +15,4 @@ set! allowed on function arguments
 
 syntactic keywords can be used as variable names
 
+delay, 
