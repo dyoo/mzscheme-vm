@@ -27,6 +27,12 @@
 (provide (rename-out [-#%app #%app]))
 
 
+(define-syntax (λ stx)
+  (syntax-case stx ()
+    [(_ args ...)
+     (syntax/loc stx
+       (lambda args ...))]))
+(provide λ)
 
 (define-syntax (with-handlers stx)
   (syntax-case stx ()
