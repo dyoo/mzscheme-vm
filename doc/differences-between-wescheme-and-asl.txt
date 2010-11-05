@@ -3,9 +3,17 @@ Here are deviations from ASL:
 
 unmatched cond falls through
 
+   - should be fixed
+
+
 unmatched case falls through
 
+   - should be fixed
+
 branch expressions are not test for booleans at test position.
+
+   - should be fixed for if, cond, case
+
 
 +, *, / don't take at least two arguments.
 

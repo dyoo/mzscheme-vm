@@ -18,9 +18,13 @@
                      for-syntax
 		     define-struct
 
+                     ;; The following have been redefined to have the
+                     ;; definitions in ASL.
                      cond
                      if
                      case
+                     when
+                     unless
                      ))
 
 (require (for-syntax racket/base
@@ -375,8 +379,36 @@
 
 
 
-
-
+(define-syntaxes (-when -unless)
+  (let ([mk
+         (lambda (who target-stx)
+           (lambda (stx)
+             (syntax-case stx ()
+               [(_ q expr ...)
+                (let ([exprs (syntax->list (syntax (expr ...)))])
+                  (check-single-expression who
+                                           (format "for the answer in `~a'"
+                                                   who)
+                                           stx
+                                           exprs
+                                           null)
+                  (with-syntax ([who who]
+                                [target target-stx])
+                    (syntax/loc stx 
+                      (target (verify-boolean q 'who) expr ...))))]
+               [(_)
+                (teach-syntax-error
+                 who
+                 stx
+                 #f
+                 "expected a question expression after `~a', but nothing's there"
+                 who)]
+               [_else
+                (bad-use-error who stx)])))])
+    (values (mk 'when #'when)
+            (mk 'unless #'unless))))
+(provide (rename-out [-when when]
+                     [-unless unless]))
 
 
 
