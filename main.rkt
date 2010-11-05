@@ -22,8 +22,9 @@
 
 ;; run-in-browser: path-string -> void
 (define (run-in-browser a-filename)
-  (log-info "Starting up web server.\n")
-  (let ([a-filename (normalize-path a-filename)])
+  (log-info "Starting web server.\n")
+  (let ([a-filename (normalize-path a-filename)]
+        [sema (make-semaphore 0)])
     (let ([dispatcher (make-web-serving-dispatcher a-filename)])
       (let* ([port (find-open-port)]
              [url (format "http://localhost:~a/index.html" port)])
@@ -33,8 +34,10 @@
                #:port port)
         (send-url url)
         (log-info (format 
-                   "Server should be running on ~a, and will stay up until the next Run.\n"
-                   url))))))
+                   "Your web application is running at ~a.  Click 'Stop' at any time to terminate the Web Server.\n"
+                   url))
+        
+        (semaphore-wait/enable-break sema)))))
 
 ;; create-zip-package: path-string path-string -> void
 ;; Write out a package zip.
