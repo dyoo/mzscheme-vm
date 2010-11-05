@@ -17,7 +17,8 @@
                      begin-for-syntax
                      for-syntax
 		     define-struct
-		     cond))
+		     cond
+                     if))
 
 (require (for-syntax racket/base))
 
@@ -201,8 +202,26 @@
 
 
 
+(define-syntax (-if stx)
+  (syntax-case stx ()
+    [(_ test then else)
+     (with-syntax ([new-test (syntax (verify-boolean test 'if))])
+       (syntax/loc stx
+         (if new-test
+             then
+             else)))]
+    [(_ . rest)
+     (let ([n (length (syntax->list (syntax rest)))])
+       (teach-syntax-error
+        'if
+        stx
+        #f
+        "expected one question expression and two answer expressions, but found ~a expression~a"
+        (if (zero? n) "no" n)
+        (if (= n 1) "" "s")))]
+    [_else (bad-use-error 'if stx)]))
 
-
+(provide (rename-out [-if if]))
 
 
 

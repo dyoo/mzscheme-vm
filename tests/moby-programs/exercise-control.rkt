@@ -58,6 +58,15 @@
 
 
 
+;; Runtime error: we should see if the test isn't boolean
+(with-handlers ([exn:fail? 
+                 (lambda (exn)
+                   (unless (string=? "if: question result is not true or false: \"not a boolean\""
+                                     (exn-message exn))
+                     (error 'cond-test)))])
+  (if "not a boolean" 
+      (error 'uh-oh)
+      (error 'uh-oh)))
 
 
 
