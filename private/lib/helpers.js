@@ -22,7 +22,7 @@ var helpers = {};
 			raise( types.incompleteExn(types.exnFailContract, errorStrBuffer.join(' '), []) );
 		}
 
-		var pattern = new RegExp("~[sSaAn%~]", "g");
+		var pattern = new RegExp("~[sSaAneE%~]", "g");
 		var buffer = args.slice(0);;
 		function f(s) {
 			if (s == "~~") {
@@ -33,14 +33,21 @@ var helpers = {};
 				if (buffer.length == 0) {
 					throwFormatError();
 				}
-				return types.toWrittenString(buffer.shift());
+			    return types.toWrittenString(buffer.shift());
+			} else if (s == '~e' || s == "~E") {
+			    // FIXME: we don't yet have support for the error-print
+			    // handler, and currently treat ~e just like ~s.
+			    if (buffer.length == 0) {
+				throwFormatError();
+			    }
+			    return types.toWrittenString(buffer.shift());
 			} else if (s == '~a' || s == "~A") {
-				if (buffer.length == 0) {
-					throwFormatError();
-				}
-				return types.toDisplayedString(buffer.shift());
+			    if (buffer.length == 0) {
+				throwFormatError();
+			    }
+			    return types.toDisplayedString(buffer.shift());
 			} else {
-				throw types.internalError('format: string.replace matched invalid regexp', false);
+			    throw types.internalError('format: string.replace matched invalid regexp', false);
 			}
 		}
 		var result = formatStr.replace(pattern, f);

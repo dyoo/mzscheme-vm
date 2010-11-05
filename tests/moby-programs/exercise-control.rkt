@@ -31,3 +31,34 @@
 		[(2) 'not-ok]
 		[(42) 'ok])
 	      'ok)
+
+
+;; Runtime error: we should see if the test isn't boolean
+(with-handlers ([exn:fail? 
+                 (lambda (exn)
+                   (unless (string=? "cond: question result is not true or false: 42"
+                                     (exn-message exn))
+                     (error 'cond-test)))])
+  (cond
+    [42 
+     (error 'uh-oh)]
+    [else 
+     (error 'cond-test)]))
+
+
+
+;; Test fall-through
+(with-handlers ([exn:fail? 
+                 (lambda (exn)
+                   (unless (string=? "cond: all question results were false"
+                                     (exn-message exn))
+                     (error 'cond-test)))])
+  (cond
+    [false (error 'uh-oh)]))
+
+
+
+
+
+
+(printf "exercise-control.rkt end\n")
