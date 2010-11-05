@@ -69,5 +69,18 @@
       (error 'uh-oh)))
 
 
+;; Check fall-though with case being an error
+(with-handlers ([exn:fail?
+                 (lambda (exn)
+                   (unless (string=? "case: the expression matched none of the choices"
+                                     (exn-message exn))
+                     (error 'case-test)))])
+  (case 42
+    [(1) (error 'case)]
+    [(2) (error 'case)]
+    [(3) (error 'case)])
+  (error 'case))
+
+
 
 (printf "exercise-control.rkt end\n")
