@@ -15,4 +15,32 @@ set! allowed on function arguments
 
 syntactic keywords can be used as variable names
 
-delay, 
+
+
+missing primitives: 
+
+    delay,
+    check-member-of,
+    check-range,
+    check-error,
+    exit,
+    force,
+    gensym,
+    promise,
+    pretty-print
+    print
+    read
+    with-input-from-file
+    with-input-from-string
+    with-output-to-file
+    with-output-to-string
+
+    hash-copy
+    hash-count
+    hash-eq?
+    hash-equal?
+    hash-eqv?
+    hash-has-key?
+    hash-ref!
+    hash-update!
+    make-hasheqv
