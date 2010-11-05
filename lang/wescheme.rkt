@@ -15,7 +15,19 @@
                      define-syntax
                      define-for-syntax
                      begin-for-syntax
-                     for-syntax))
+                     for-syntax
+		     define-struct))
+
+(require (for-syntax racket/base))
+
+
+(provide (rename-out [-define-struct define-struct]))
+(define-syntax (-define-struct stx)
+  (syntax-case stx ()
+    [(_ struct-id (field-id ...))
+     (syntax/loc stx
+       (define-struct struct-id (field-id ...) #:mutable))]))
+
 
 
 

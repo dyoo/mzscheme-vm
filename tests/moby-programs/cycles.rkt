@@ -6,7 +6,7 @@
 
 
 
-(define-struct thingy (x y) #:mutable)
+(define-struct thingy (x y))
 (let ([result (shared ([y (make-thingy y y)])
 		      y)])
   (check-expect (thingy-x result) result)
