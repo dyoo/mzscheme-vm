@@ -894,6 +894,7 @@ from ASL and some from regular Racket.  These include the following:
 		or
 		when
 		unless
+		recur
 		require
 		for-syntax
 		define-for-syntax

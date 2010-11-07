@@ -1207,31 +1207,61 @@ var jsworld = {};
     Jsworld.input = input;
 
 
+
+
     var text_input = function(type, updateF, attribs) {
 	var n = document.createElement('input');
 	n.type = type;
-	function onKey(w, e, k) {
-	    updateF(w, n.value, k);
+
+	var lastVal = n.value;
+	var onEvent = function() {
+	    if (! n.parentNode) { return; }
+	    setTimeout(
+		function() {
+		    if (lastVal != n.value) {
+			lastVal = n.value;
+			change_world(function (w, k) {
+			    updateF(w, n.value, k);
+			}, doNothing);
+		    }
+		},
+		0);
 	}
-	// This established the widget->world direction
-	add_ev_after(n, 'keypress', onKey);
+
+
+// 	attachEvent(n, "keypress", onEvent);
+// 	eventDetachers.push(function() {
+// 	    detachEvent(n, "keypress", onEvent); });
+
+	attachEvent(n, "keydown", onEvent);
+	eventDetachers.push(function() {
+	    detachEvent(n, "keydown", onEvent); });
+
+	attachEvent(n, "change", onEvent);
+	eventDetachers.push(function() {
+	    detachEvent(n, "change", onEvent); });
+
+// 	function onKey(w, e, k) {
+// 	    updateF(w, n.value, k);
+// 	}
+// 	// This established the widget->world direction
+// 	add_ev_after(n, 'keypress', onKey);
 
 	// Every second, do a manual polling of the object, just in case.
-	var delay = 1000;
-	var lastVal = n.value;
-	var intervalId = setInterval(function() {
-	    if (! n.parentNode) {
-		clearInterval(intervalId);
-		return;
-	    }
-	    if (lastVal != n.value) {
-		lastVal = n.value;
-		change_world(function (w, k) {
-		    updateF(w, n.value, k);
-		}, doNothing);
-	    }
-	},
-		    delay);
+// 	var delay = 1000;
+// 	var intervalId = setInterval(function() {
+// 	    if (! n.parentNode) {
+// 		clearInterval(intervalId);
+// 		return;
+// 	    }
+// 	    if (lastVal != n.value) {
+// 		lastVal = n.value;
+// 		change_world(function (w, k) {
+// 		    updateF(w, n.value, k);
+// 		}, doNothing);
+// 	    }
+// 	},
+// 		    delay);
 	return stopClickPropagation(
 	    addFocusTracking(copy_attribs(n, attribs)));
     };
