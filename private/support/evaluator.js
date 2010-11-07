@@ -335,12 +335,12 @@ var Evaluator = (function() {
 	} else if (types.isSchemeError(exn)) {
 	    var errorValue = exn.val;
 	    if (types.isExn(errorValue)) {
-		return types.exnMessage(errorValue);
+		return String(types.exnMessage(errorValue));
 	    } else {
-		return errorValue + '';
+		return String(errorValue);
 	    }
 	} else if (types.isInternalError(exn)) {
-	    return exn.val + '';
+	    return String(exn.val);
 	} else if (exn.nodeType) {
 	    return exn;
 	} else {
