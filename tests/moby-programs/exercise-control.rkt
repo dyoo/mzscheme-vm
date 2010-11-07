@@ -2,6 +2,7 @@
 
 (printf "exercise-control.rkt\n")
 
+
 (check-expect (if true
 		  'ok
 		  'not-ok)
@@ -80,6 +81,36 @@
     [(2) (error 'case)]
     [(3) (error 'case)])
   (error 'case))
+
+
+
+(with-handlers ([exn:fail? 
+                 (lambda (exn)
+                   (unless (string=? "when: question result is not true or false: \"not a boolean\""
+                                     (exn-message exn))
+                     (error 'when-boolean-test)))])
+  (when "not a boolean" 
+    (error 'uh-oh)))
+
+
+
+(with-handlers ([exn:fail? 
+                 (lambda (exn)
+                   (unless (string=? "unless: question result is not true or false: \"not a boolean\""
+                                     (exn-message exn))
+                     (error 'unless-boolean-test)))])
+  (unless "not a boolean" 
+    (error 'uh-oh)))
+
+
+
+
+(unless (= 0 0)
+  (error 'huh?))
+
+(when (= 0 1)
+  (error 'huh?))
+
 
 
 

@@ -377,38 +377,86 @@
 
 
 
+#;(define-for-syntax (make-when-unless who target-stx)
+  (lambda (stx)
+    (syntax-case stx ()
+      [(_ q expr ...)
+       (let ([exprs (syntax->list (syntax (expr ...)))])
+         (check-single-expression who
+                                  (format "for the answer in `~a'"
+                                          who)
+                                  stx
+                                  exprs
+                                  null)
+         )]
+      [(_)
+       (teach-syntax-error
+        who
+        stx
+        #f
+        "expected a question expression after `~a', but nothing's there"
+        who)]
+      [_else
+       (bad-use-error who stx)])))
 
 
-(define-syntaxes (-when -unless)
-  (let ([mk
-         (lambda (who target-stx)
-           (lambda (stx)
-             (syntax-case stx ()
-               [(_ q expr ...)
-                (let ([exprs (syntax->list (syntax (expr ...)))])
-                  (check-single-expression who
-                                           (format "for the answer in `~a'"
-                                                   who)
-                                           stx
-                                           exprs
-                                           null)
-                  (with-syntax ([who who]
-                                [target target-stx])
-                    (syntax/loc stx 
-                      (target (verify-boolean q 'who) expr ...))))]
-               [(_)
-                (teach-syntax-error
-                 who
-                 stx
-                 #f
-                 "expected a question expression after `~a', but nothing's there"
-                 who)]
-               [_else
-                (bad-use-error who stx)])))])
-    (values (mk 'when #'when)
-            (mk 'unless #'unless))))
+;; FIXME: I'm seeing a bad error message when trying to use the functional
+;; abstraction in teach.rkt to define the -when and -unless macros.
+;;
+;; The error message is: module-path-index-resolve: "self" index has
+;; no resolution: #<module-path-index>
+;; As soon as the bug's resolved, refactor this back.
+(define-syntax (-when stx)
+  (syntax-case stx ()
+    [(_ q expr ...)
+     (let ([exprs (syntax->list (syntax (expr ...)))])
+       (check-single-expression #'when
+                                (format "for the answer in `~a'"
+                                        #'when)
+                                stx
+                                exprs
+                                null)
+       (let ([result
+              (syntax/loc stx 
+                (when (verify-boolean q 'when) expr ...))])
+         result))]
+    [(_)
+     (teach-syntax-error
+      #'when
+      stx
+      #f
+      "expected a question expression after `~a', but nothing's there"
+      #'when)]
+    [_else
+     (bad-use-error #'when stx)]))
+(define-syntax (-unless stx)
+  (syntax-case stx ()
+    [(_ q expr ...)
+     (let ([exprs (syntax->list (syntax (expr ...)))])
+       (check-single-expression #'unless
+                                (format "for the answer in `~a'"
+                                        #'unless)
+                                stx
+                                exprs
+                                null)
+       (let ([result
+              (syntax/loc stx 
+                (unless (verify-boolean q 'unless) expr ...))])
+         result))]
+    [(_)
+     (teach-syntax-error
+      #'unless
+      stx
+      #f
+      "expected a question expression after `~a', but nothing's there"
+      #'unless)]
+    [_else
+     (bad-use-error #'unless stx)]))
+
 (provide (rename-out [-when when]
                      [-unless unless]))
+
+
 
 
 
