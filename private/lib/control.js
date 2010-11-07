@@ -954,6 +954,19 @@ var callContinuationProcedure = function(state, procValue, n, operandValues) {
 
 
 
+var acceptableParameterArityToString = function(acceptableParameterArity) {
+    if (acceptableParameterArity.length === 1 &&
+	acceptableParameterArity[0] === "0") {
+	return "no arguments";
+    }
+
+    if (acceptableParameterArity.length === 1 &&
+	acceptableParameterArity[0] === "1") {
+	return "1 argument";
+    }
+    return "[" + acceptableParameterArity.join(', ') + "] arguments";
+}
+
 
 // selectProcedureByArity: (CaseLambdaValue | CasePrimitive | Continuation | Closure | Primitive) -> (Continuation | Closure | Primitive)
 var selectProcedureByArity = function(n, procValue, operands) {
@@ -993,9 +1006,9 @@ var selectProcedureByArity = function(n, procValue, operands) {
 	}
 	helpers.raise(types.incompleteExn(
 		types.exnFailContractArity,
-		helpers.format("~a: expects [~a] arguments, given ~s~a",
+		helpers.format("~a: expects ~a, given ~s~a",
 			       [(procValue.name ? procValue.name : "#<case-lambda-procedure>"),
-			        acceptableParameterArity.join(', '),
+			        acceptableParameterArityToString(acceptableParameterArity),
 				n,
 				getArgStr()]),
 		[]));
@@ -1013,8 +1026,9 @@ var selectProcedureByArity = function(n, procValue, operands) {
 	}
 	helpers.raise(types.incompleteExn(
 		types.exnFailContractArity,
-		helpers.format("~a: expects [~a] arguments, given ~s~a",
-			       [procValue.name, acceptableParameterArity.join(', '), n, getArgStr()]),
+		helpers.format("~a: expects ~a, given ~s~a",
+			       [procValue.name, 
+				acceptableParameterArityToString(acceptableParameterArity), n, getArgStr()]),
 		[]));
     }
 
@@ -1033,15 +1047,28 @@ var selectProcedureByArity = function(n, procValue, operands) {
 	} else {
 	    helpers.raise(types.incompleteExn(
 		types.exnFailContractArity,
-		helpers.format("~a: expects ~a ~a argument~a, given ~s~a",
+		helpers.format("~a: expects ~a ~a, given ~s~a",
 			       [(procValue.name !== types.EMPTY ? procValue.name : "#<procedure>"),
 			        (procValue.isRest ? 'at least' : ''),
-				procValue.numParams,
-				(procValue.numParams == 1) ? '' : 's',
+				numParamsToString(procValue.numParams),
 				n,
 				getArgStr()]),
 		[]));
 	}
+    }
+};
+
+
+// numParamsToString: number -> string
+var numParamsToString = function(numParams) {
+    if (numParams === 0) {
+	return "no arguments";
+    }
+    if (numParams === 1) {
+	return "1 argument";
+    }
+    else {
+	return numParams + " arguments";
     }
 };
 

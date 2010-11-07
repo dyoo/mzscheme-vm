@@ -16,8 +16,5 @@
                 "Expected ~s (+- ~s), but got ~s" expected delta test)]))
 
 
-;;(define (check-error* error-thunk expected-message)
-;;  'fill-me-in)
 
-
-(provide check-expect check-within #;check-error*)
+(provide check-expect check-within)

@@ -1,19 +1,5 @@
-Here are deviations from ASL:
-
-
-unmatched cond falls through
-
-   - should be fixed
-
-
-unmatched case falls through
-
-   - should be fixed
-
-branch expressions are not test for booleans at test position.
-
-   - should be fixed for if, cond, case
-
+Here are deviations from the wescheme language to ASL:
+----------------------------------------------------------------------
 
 +, *, / don't take at least two arguments.
 
@@ -22,7 +8,6 @@ and, or don't require at least two arguments
 set! allowed on function arguments
 
 syntactic keywords can be used as variable names
-
 
 
 missing primitives: 
