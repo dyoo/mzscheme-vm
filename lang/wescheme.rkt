@@ -34,9 +34,22 @@
 (provide (rename-out [-define-struct define-struct]))
 (define-syntax (-define-struct stx)
   (syntax-case stx ()
-    [(_ struct-id (field-id ...))
-     (syntax/loc stx
-       (define-struct struct-id (field-id ...) #:mutable))]))
+    [(_ struct-id (field-id ...) keywords ...)
+     (begin
+       (for-each (lambda (a-keyword-stx)
+                   (cond
+                     [(and (keyword? (syntax-e a-keyword-stx))
+                           (member (syntax-e a-keyword-stx)
+                                   (list '#:transparent '#:mutable)))
+                      (void)]
+                     [else
+                      (raise-syntax-error #f 
+                                          "currently unsupported"
+                                          a-keyword-stx)]))
+
+                 (syntax->list #'(keywords ...)))
+       (syntax/loc stx
+         (define-struct struct-id (field-id ...) #:mutable)))]))
 
 
 #;(define-syntax (-cond stx)
