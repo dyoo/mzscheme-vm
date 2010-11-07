@@ -45,5 +45,6 @@
 
 (provide/contract
  [write-module-records
-  (((listof module-record?) output-port?) (#:assign-into string?) . ->* . any)])
-                  
+  (((listof module-record?) output-port?) (#:assign-into string?) . ->* . any)]
+ [encode-module-record
+  (module-record? . -> . string?)])
