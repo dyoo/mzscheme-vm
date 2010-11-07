@@ -21,8 +21,7 @@ Racket bytecode, functions for building and testing packages of
 translated code, and libraries to use features of a web-browser's
 environment.
 
-This project is intimately related with @hyperlink["http://www.cs.brown.edu/~sk/Publications/Talks/Moby-Bootstrap/"]{Moby
-Scheme}, as Moby Scheme uses @js-vm[] as its underlying runtime.
+This project is intimately related with @hyperlink["http://www.cs.brown.edu/~sk/Publications/Talks/Moby-Bootstrap/"]{Moby}, as Moby uses @js-vm[] as its underlying runtime.
        
 
 @section{Quick Start}
@@ -138,7 +137,7 @@ Consumes the given program, translates it so it can run on the browser,
 and brings up the default browser.
 
 At the moment, @js-vm[] currently supports programs written in the
-@schememodname/this-package[lang/wescheme] and
+@schememodname/this-package[lang/weracket] and
 @schememodname/this-package[lang/base] languages; further development
 on @js-vm[] will work toward supporting modules written in full
 Racket.  @racket[require] should work as long as the required modules,
@@ -159,8 +158,8 @@ web server.
 
 
 
-@section{WeScheme}
-@defmodule/this-package[lang/wescheme]
+@section{WeRacket}
+@defmodule/this-package[lang/weracket]
 The language here acts as a kind of ``Pretty Big'' language,
 and is the language used when @racket[planet #,(this-package-version-symbol)] is
 the module language.
@@ -188,16 +187,16 @@ interfaces.
 
 
 @defproc[(big-bang (a-world world) (handlers handler) ...) world]{
-Starts a reactive computation with @scheme[big-bang].
+Starts a reactive computation with @racket[big-bang].
 The rest of the arguments hook into the reactive computation.
 
 By default, the page that's displayed contains a rendering of the
-world value.  In the presence of an @scheme[to-draw] or
-@scheme[to-draw-page] handler, @scheme[big-bang] will show a
+world value.  In the presence of an @racket[to-draw] or
+@racket[to-draw-page] handler, @racket[big-bang] will show a
 customized view.
 
 The majority of the handlers register different stimuli that can
-trigger changes to the world.  One instance is @scheme[on-tick], which
+trigger changes to the world.  One instance is @racket[on-tick], which
 registers a function to update the world on a clock tick.  }
 
 When the @racket[big-bang] computation terminates through a
@@ -214,7 +213,7 @@ When the @racket[big-bang] computation terminates through a
                                                                                                                               
                                                                                                                  
 @defproc[(to-draw [hook (world -> scene)]) handler]{
-For simple applications, @scheme[to-draw] is sufficient to draw a scene onto the display.
+For simple applications, @racket[to-draw] is sufficient to draw a scene onto the display.
 The following program shows a ball falling down a scene.
 
 
@@ -248,8 +247,8 @@ The following program shows a ball falling down a scene.
 
 
 @defproc[(stop-when [stop? (world -> boolean)]) handler?]{
-When the world should be stopped --- when @scheme[stop?] applied to the world
-produces @scheme[true] --- then the @scheme[big-bang] terminates.
+When the world should be stopped --- when @racket[stop?] applied to the world
+produces @racket[true] --- then the @racket[big-bang] terminates.
 
 The program:
 @racketmod[planet #,(this-package-version-symbol)
@@ -291,7 +290,7 @@ Produces a handler that responds to key events.}
 @defproc[(to-draw-page [to-dom (world -> (DOM-sexp))]
 		       [to-css (world -> (CSS-sexp))]) handler]{
 
-One of the main handlers to @scheme[big-bang] is @scheme[to-draw-page],
+One of the main handlers to @racket[big-bang] is @racket[to-draw-page],
 which controls how the world is rendered on screen.  The first
 argument computes a rendering of the world as a DOM tree, and the
 second argument computes that tree's styling.  }
@@ -299,26 +298,26 @@ second argument computes that tree's styling.  }
 
 @subsection{Jsworld Types}
 
-A @scheme[dom-sexp] describes the structure of a web page:
+A @racket[dom-sexp] describes the structure of a web page:
 
-@schemegrammar[dom-sexp (list dom-element dom-sexp ...)]
+@racketgrammar[dom-sexp (list dom-element dom-sexp ...)]
 
 
-a @scheme[css-sexp] describes the structure of a page's styling:
+a @racket[css-sexp] describes the structure of a page's styling:
 
-@schemegrammar[css-sexp (listof (cons (or dom-element string)
+@racketgrammar[css-sexp (listof (cons (or dom-element string)
                                       (listof attrib)))]
 
-An @scheme[attrib] is a:
-@schemegrammar[attrib (list string string)]
+An @racket[attrib] is a:
+@racketgrammar[attrib (list string string)]
 
-Each of the @scheme[dom-element]s can take in an optional attribute list to
+Each of the @racket[dom-element]s can take in an optional attribute list to
 assign to the new dom element; the common useful attribute is a key-value binding for an "id",
 which can be used to identify an element in the css-drawing function.
 
 
 Here are examples  of a dom-expr and a css-sexp.
-@schemeblock[
+@racketblock[
 (define a-dom-sexp (list (js-div '(("id" "main-div")))
                          (list (js-text "Hello world"))))
 
@@ -353,7 +352,7 @@ Constructs a paragraph element.}
 @defproc[(js-button (world-update-f (world -> world)) 
                     (attribs (listof attrib) '()))
          dom-element]{
-Constructs a button.  When the button is pressed, the world is updated through @scheme[world-update-f].
+Constructs a button.  When the button is pressed, the world is updated through @racket[world-update-f].
 
 The following example counts how many times a button has been clicked.
 @(racketmod planet #,(this-package-version-symbol)
@@ -397,14 +396,14 @@ and the original world is used to construct an effect.
                    (attribs (listof attrib) '()))
          dom-element]{
 Creates an input form element.  The types that are currently supported are:
-@itemlist[@item{@scheme["text"]}
-          @item{@scheme["password"]}
-          @item{@scheme["checkbox"]}]
+@itemlist[@item{@racket["text"]}
+          @item{@racket["password"]}
+          @item{@racket["checkbox"]}]
 When the user changes the content of the form element, the runtime
-uses @scheme[world-update-f] to update the world.  If the
-@scheme[type] is either @scheme["text"] or @scheme["password"], then
+uses @racket[world-update-f] to update the world.  If the
+@racket[type] is either @racket["text"] or @racket["password"], then
 the string value of the element will be passed as the second argument
-to it.  If @scheme[type] is @scheme["checkbox"], a boolean
+to it.  If @racket[type] is @racket["checkbox"], a boolean
 representing the checked status of the element will be passed to it.
 
 The example below has a single text input form element, which allows the user to enter
@@ -472,7 +471,7 @@ The example below uses a checkbox to select among three elements:
 
 @defproc[(js-select (options (listof string?)) (world-update-f (world string -> world)) (attribs (listof attrib) '())) dom-element]
 Constructs a select element with the given options.  Whenever a new
-option is selected, the @scheme[world-update-f] function is called to
+option is selected, the @racket[world-update-f] function is called to
 get the new world.
 
 The example below has a select with five elements.
@@ -510,7 +509,7 @@ The example below has a select with five elements.
 @subsection{Effects}
 
 Effects allow world programs to apply side effects to the outside
-world.  These are used in conjunction with the effect (@scheme[!]) version of the
+world.  These are used in conjunction with the effect (@racket[!]) version of the
 stimulus handlers described above.
 
 
@@ -518,12 +517,12 @@ stimulus handlers described above.
 @defproc[(make-effect:beep) effect]{Audible beep when interpreted.  On an Android smartphone, uses the notification ringtone.}
 
 
-@defproc[(make-effect:play-sound (a-sound sound)) effect]{Plays a sound from the given @scheme[sound].  If the sound is already playing, then the sound continues to play.}
+@defproc[(make-effect:play-sound (a-sound sound)) effect]{Plays a sound from the given @racket[sound].  If the sound is already playing, then the sound continues to play.}
 @defproc[(make-effect:stop-sound (a-sound sound)) effect]{Stops playing a sound from the given url.}
-@defproc[(make-effect:pause-sound (a-sound sound)) effect]{Pauses a sound; if @scheme[make-effect:play-sound] for the same sound is given later, play restarts from the point where it was paused.}
+@defproc[(make-effect:pause-sound (a-sound sound)) effect]{Pauses a sound; if @racket[make-effect:play-sound] for the same sound is given later, play restarts from the point where it was paused.}
 
-A @scheme[sound] is a:
-@schemegrammar[sound string
+A @racket[sound] is a:
+@racketgrammar[sound string
                      playlist]
 
 
@@ -533,7 +532,7 @@ A @scheme[sound] is a:
 
 @defproc[(make-effect:set-beep-volume (volume number)) effect]{Sets the sound volume of the beep; the number should be between 0 and 100.  On an Android smartphone, uses the notification sound.}
 
-@defproc[(make-effect:play-dtmf-tone (tone number)) effect]{On a smartphone, plays a DTMF tone, where @scheme[tone] is between 0 and 15 inclusive.}
+@defproc[(make-effect:play-dtmf-tone (tone number)) effect]{On a smartphone, plays a DTMF tone, where @racket[tone] is between 0 and 15 inclusive.}
 
 @defproc[(make-effect:set-wake-lock (flag number)) effect]{On a smartphone, sets the wake-lock flag to prevent the phone from sleeping.  Low-level call.}
 @defproc[(make-effect:release-wake-lock) effect]{On a smartphone, releases a wake-lock to allow the phone to go to sleep again.}
@@ -541,9 +540,9 @@ A @scheme[sound] is a:
 @defproc[(make-effect:send-sms (phone-number string) (message string)) effect]{Sends an SMS message.}
 
 @; Commenting out the generate-random documentation
-@;{@defproc[(make-effect:generate-random: (world-update-f (world number -> world))) effect]{When interpreted, generates a random number on the fly and uses @scheme[world-update-f] to update the world.}}
+@;{@defproc[(make-effect:generate-random: (world-update-f (world number -> world))) effect]{When interpreted, generates a random number on the fly and uses @racket[world-update-f] to update the world.}}
 
-@defproc[(make-effect:pick-playlist (world-update-f (world playlist -> world))) effect]{Brings up a playlist picker; when a playlist is selected, the world is updated using @scheme[world-update-f] with the selected @scheme[playlist] sound.}
+@defproc[(make-effect:pick-playlist (world-update-f (world playlist -> world))) effect]{Brings up a playlist picker; when a playlist is selected, the world is updated using @racket[world-update-f] with the selected @racket[playlist] sound.}
    }
   
 
