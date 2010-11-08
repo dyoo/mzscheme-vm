@@ -1,4 +1,6 @@
 Here are deviations from the wescheme language to ASL:
+    (described in http://docs.racket-lang.org/htdp-langs/advanced.html?q=advanced)
+
 ----------------------------------------------------------------------
 
 +, *, / don't take at least two arguments.
@@ -12,6 +14,9 @@ syntactic keywords can be used as variable names
 
 missing primitives: 
 
+    :
+    define-datatype,
+    match,
     delay,
     check-member-of,
     check-range,
@@ -37,6 +42,9 @@ missing primitives:
     hash-ref!
     hash-update!
     make-hasheqv
+    make-immutable-hash
+    make-immutable-hasheq
+    make-immutable-hasheqv
 
 displayed output not exactly the same with regards to shared values
 and constructor output
