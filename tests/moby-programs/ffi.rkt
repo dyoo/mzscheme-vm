@@ -23,6 +23,12 @@
 	      #f)
 
 
+(printf "minimum and maximum js fixnums are ~a and ~a\n"
+	minimum-js-fixnum
+	maximum-js-fixnum)
+
+
+
 ;; (prim-js->scheme (scheme->prim-js ...)) is not the identity, unfortunately.
 ;; Here are tests that show that we need to do something:
 

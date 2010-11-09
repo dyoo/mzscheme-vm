@@ -35,6 +35,15 @@ var makeCaller = function(aState) {
     };
 };
 
+var MIN_FIXNUM = jsnums.fromFixnum(-9e15);
+var MAX_FIXNUM = jsnums.fromFixnum(9e15);
+
+
+
+
+EXPORTS['minimum-js-fixnum'] = MIN_FIXNUM;
+EXPORTS['maximum-js-fixnum'] = MAX_FIXNUM;
+
 
 
 EXPORTS['scheme->prim-js'] =
@@ -55,13 +64,15 @@ EXPORTS['scheme->prim-js'] =
 				if ( !( jsnums.equals(x, jsnums.nan) ||
 					jsnums.equals(x, jsnums.inf) ||
 					jsnums.equals(x, jsnums.negative_inf) ) &&
-				     ( jsnums.greaterThan(x, 9e15) ||
-				       jsnums.lessThan(x, -9e15) ) ) {
+				     ( jsnums.greaterThan(x, MAX_FIXNUM) ||
+				       jsnums.lessThan(x, MIN_FIXNUM) ) ) {
 					helpers.raise(types.incompleteExn(
 						types.exnFailContract,
-						helpers.format('scheme->primitive-js: only numbers in [-9e15, 9e15] '
+						helpers.format('scheme->primitive-js: only numbers in [~a, ~a] '
 								+ 'are accurately representable in javascript; given: ~s',
-							       [x]),
+							       [MIN_FIXNUM, 
+								MAX_FIXNUM, 
+								x]),
 						[]));
 				}
 				returnVal = jsnums.toFixnum(x);

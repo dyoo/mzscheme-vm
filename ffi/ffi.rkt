@@ -18,4 +18,7 @@
 	 js-undefined
 	 js-undefined?
 	 js-null
-	 js-null?)
+	 js-null?
+
+	 maximum-js-fixnum
+	 minimum-js-fixnum)
