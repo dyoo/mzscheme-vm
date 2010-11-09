@@ -137,7 +137,7 @@ Consumes the given program, translates it so it can run on the browser,
 and brings up the default browser.
 
 At the moment, @js-vm[] currently supports programs written in the
-@schememodname/this-package[lang/weracket] and
+@schememodname/this-package[lang/wescheme] and
 @schememodname/this-package[lang/base] languages; further development
 on @js-vm[] will work toward supporting modules written in full
 Racket.  @racket[require] should work as long as the required modules,
@@ -158,8 +158,8 @@ web server.
 
 
 
-@section{WeRacket}
-@defmodule/this-package[lang/weracket]
+@section{WeScheme}
+@defmodule/this-package[lang/wescheme]
 The language here acts as a kind of ``Pretty Big'' language,
 and is the language used when @racket[planet #,(this-package-version-symbol)] is
 the module language.

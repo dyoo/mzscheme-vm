@@ -41,7 +41,7 @@ following rules:
   
  @item{When @racket[v] is an exact number, @racket[scheme->prim-js] returns a
   floating point number equivalent to @racket[(scheme->prim-js (exact->inexact
-  v))] if @racket[v] is in [-9e15, 9e15]. Otherwise it will raise an
+  v))] if @racket[v] is in [@racket[minimum-js-fixnum], @racket[maximum-js-fixnum]]. Otherwise it will raise an
   @racket[exn:fail:contract] exception.}
    
  @item{When @racket[v] is a char, @racket[scheme->prim-js] returns a
@@ -211,6 +211,9 @@ exist (the others will be overwritten).}
 @defthing[js-undefined js-value?]{The undefined value.}
 
 
+
+@defthing[minimum-js-fixnum]{The minimum number that can  be exactly representable.}
+@defthing[maximum-js-fixnum]{The maximum number that can be exactly representable.}
 
 
 @;-----------------------------------------------------------------------------
