@@ -1452,7 +1452,10 @@ var toDomNode = function(x, cache) {
     if (! cache) {
     	cache = makeLowLevelEqHash();
     }
-    
+    if (isNumber(x)) {
+	return numberToDomNode(x);
+    }
+
     if (typeof(x) == 'object') {
 	    if (cache.containsKey(x)) {
 		var node = document.createElement("span");
@@ -1501,6 +1504,48 @@ var toDomNode = function(x, cache) {
     cache.remove(x);
     return returnVal;
 };
+
+
+// numberToDomNode: jsnum -> dom
+// Given a jsnum, produces a dom-node representation.
+var numberToDomNode = function(n) {
+    var node;
+    if (jsnums.isExact(n)) {
+	if (jsnums.isInteger(n)) {
+	    node = document.createElement("span");
+	    node.appendChild(document.createTextNode(n.toString()));
+	    return node;
+	} else if (jsnums.isRational(n)) {
+	    return rationalToDomNode(n);
+	} else if (jsnums.isComplex(n)) {
+	    node = document.createElement("span");
+	    node.appendChild(document.createTextNode(n.toString()));
+	    return node;
+	} else {
+	    node = document.createElement("span");
+	    node.appendChild(document.createTextNode(n.toString()));
+	    return node;
+	}
+    } else {
+	node = document.createElement("span");
+	node.appendChild(document.createTextNode(n.toString()));
+	return node;
+    }
+};
+
+// rationalToDomNode: rational -> dom-node
+var rationalToDomNode = function(n) {
+    var node = document.createElement("span");
+    var chunks = jsnums.toRepeatingDecimal(jsnums.numerator(n),
+					   jsnums.denominator(n));
+    node.appendChild(document.createTextNode(chunks[0] + '.'))
+    node.appendChild(document.createTextNode(chunks[1]));
+    var overlineSpan = document.createElement("span");
+    overlineSpan.style.textDecoration = 'overline';
+    overlineSpan.appendChild(document.createTextNode(chunks[2]));
+    node.appendChild(overlineSpan);
+    return node;
+}
 
 
 

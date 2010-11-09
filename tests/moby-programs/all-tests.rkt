@@ -10,7 +10,8 @@
 ;; NOTE: continuation-prompts-3.rkt is not being tested here.  Must be handled interactively.
 
 
-(require "ffi.rkt"
+(require "repeating-decimals.rkt"
+	 "ffi.rkt"
 	 "ffi-2.rkt"
 	 "atan.rkt"
 	 "with-handlers-1.rkt"
