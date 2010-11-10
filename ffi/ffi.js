@@ -1,5 +1,5 @@
 /********************************
- *** Scheme -> Javascript FFI ***
+ *** Racket -> Javascript FFI ***
  ********************************/
 
 
@@ -46,8 +46,8 @@ EXPORTS['maximum-js-fixnum'] = MAX_FIXNUM;
 
 
 
-EXPORTS['scheme->prim-js'] =
-    new types.PrimProc('scheme->prim-js',
+EXPORTS['racket->prim-js'] =
+    new types.PrimProc('racket->prim-js',
 		 1,
 		 false, false,
 		 function(x) {
@@ -57,7 +57,7 @@ EXPORTS['scheme->prim-js'] =
 							types.isChar(y) ||
 							types.isBoolean(y) ) ||
 							types.isVector(y); },
-			      'scheme->prim-js', 'real number, string, symbol, char, boolean, or vector', 1);
+			      'racket->prim-js', 'real number, string, symbol, char, boolean, or vector', 1);
 
 			var returnVal;
 		 	if ( types.isReal(x) ) {
@@ -68,7 +68,7 @@ EXPORTS['scheme->prim-js'] =
 				       jsnums.lessThan(x, MIN_FIXNUM) ) ) {
 					helpers.raise(types.incompleteExn(
 						types.exnFailContract,
-						helpers.format('scheme->primitive-js: only numbers in [~a, ~a] '
+						helpers.format('racket->primitive-js: only numbers in [~a, ~a] '
 								+ 'are accurately representable in javascript; given: ~s',
 							       [MIN_FIXNUM, 
 								MAX_FIXNUM, 
@@ -93,9 +93,11 @@ EXPORTS['scheme->prim-js'] =
 			return helpers.wrapJsValue(returnVal);
 		 });
 
+EXPORTS['scheme->prim-js'] = EXPORTS['racket->prim-js'];
 
-EXPORTS['prim-js->scheme'] =
-    new types.PrimProc('prim-js->scheme',
+
+EXPORTS['prim-js->racket'] =
+    new types.PrimProc('prim-js->racket',
 		 1,
 		 false, false,
 		 function(x) {
@@ -105,7 +107,7 @@ EXPORTS['prim-js->scheme'] =
 							typeof(y.val) == 'boolean' ||
 							typeof(y.val) == 'function' ||
 							y.val instanceof Array ); },
-			      'prim-js->scheme', 'javascript number, string, boolean, function, or array', 1);
+			      'prim-js->racket', 'javascript number, string, boolean, function, or array', 1);
 
 		 	if ( typeof(x.val) === 'number' ) {
 				return types.float(x.val);
@@ -120,6 +122,9 @@ EXPORTS['prim-js->scheme'] =
 				return types.vector( helpers.map(helpers.wrapJsValue, x.val) );
 			}
 		 });
+
+EXPORTS['prim-js->scheme'] = EXPORTS['prim-js->racket'];
+
 
 
 EXPORTS['procedure->cps-js-fun'] =
@@ -207,7 +212,7 @@ EXPORTS['js-get-field'] =
 					fail('undefined');
 				}
 				else if ( types.isWrappedSchemeValue(obj) ) {
-					fail( helpers.format('the scheme value ~s', [obj.val]) );
+					fail( helpers.format('the racket value ~s', [obj.val]) );
 				}
 
 				name.push( '["' + selectors[i].toString() + '"]' );

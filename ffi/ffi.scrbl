@@ -26,7 +26,7 @@ The contents of this module need to run in a Javascript context.
 These procedures are designed to convert between @racketmodname[racket] and
 javascript types.
 
-@defproc[(scheme->prim-js
+@defproc[(racket->prim-js
           [v (or/c boolean? char? real? string? symbol? vector?)])
          js-value?]{
 
@@ -36,30 +36,30 @@ following rules:
 @itemize[
 
  @item{When @racket[v] is a boolean, string, or inexact number,
-  @racket[scheme->prim-js] converts directly to the javascript boolean, string,
+  @racket[racket->prim-js] converts directly to the javascript boolean, string,
   or number with the same value.}
   
- @item{When @racket[v] is an exact number, @racket[scheme->prim-js] returns a
-  floating point number equivalent to @racket[(scheme->prim-js (exact->inexact
+ @item{When @racket[v] is an exact number, @racket[racket->prim-js] returns a
+  floating point number equivalent to @racket[(racket->prim-js (exact->inexact
   v))] if @racket[v] is in [@racket[minimum-js-fixnum], @racket[maximum-js-fixnum]]. Otherwise it will raise an
   @racket[exn:fail:contract] exception.}
    
- @item{When @racket[v] is a char, @racket[scheme->prim-js] returns a
+ @item{When @racket[v] is a char, @racket[racket->prim-js] returns a
   on-character javascript string corresponding to
-  @racket[(scheme->prim-js (string v))].}
+  @racket[(racket->prim-js (string v))].}
  
- @item{When @racket[v] is a symbol, @racket[scheme->prim-js] returns a
-  javascript string corresponding to @racket[(scheme->prim-js (symbol->string
+ @item{When @racket[v] is a symbol, @racket[racket->prim-js] returns a
+  javascript string corresponding to @racket[(racket->prim-js (symbol->string
   v))].}
   
- @item{When @racket[v] is a vector, @racket[scheme->prim-js] returns a
+ @item{When @racket[v] is a vector, @racket[racket->prim-js] returns a
   javascript array whose elements are @racket[eq?] to the elements of the
   vector.}
 
 ]}
 
 
-The @racket[scheme->prim-js] procedure cannot convert a procedure because
+The @racket[racket->prim-js] procedure cannot convert a procedure because
 @racketmodname[racket] procedures cannot be converted to javascript in a
 straightforward manner. When @racketmodname[racket] procedures are evaluated,
 they are evaluated in continuation passing style, and hence any javascript
@@ -83,7 +83,7 @@ javascript function will apply @racket[proc] to its arguments, and then ignore
 returning void).}
 
 
-@defproc[(prim-js->scheme [v js-value?])
+@defproc[(prim-js->racket [v js-value?])
          (or/c boolean? inexact-real? string? vector?)]{
 
 Converts a javascript value to its corresponding @racketmodname[racket] value.
@@ -91,19 +91,19 @@ Converts a javascript value to its corresponding @racketmodname[racket] value.
 @itemize[
 
  @item{When @racket[v] is a javascript boolean or string,
-  @racket[prim-js->scheme] returns the @racketmodname[racket] equivalent of
+  @racket[prim-js->racket] returns the @racketmodname[racket] equivalent of
   that value.}
    
- @item{When @racket[v] is a number, @racket[prim-js->scheme] returns an inexact
+ @item{When @racket[v] is a number, @racket[prim-js->racket] returns an inexact
   number with the same value as the javascript number.}
   
- @item{When @racket[v] is an array, @racket[prim-js->scheme] returns a vector
+ @item{When @racket[v] is an array, @racket[prim-js->racket] returns a vector
   whose elements are @racket[eq?] to the elements of @racket[v].}
 
 ]
 
 If @racket[v] is not an array, boolean, function, number, or string,
-@racket[prim-js->scheme] will raise an @racket[exn:fail:contract] exception.}
+@racket[prim-js->racket] will raise an @racket[exn:fail:contract] exception.}
 
 @;-----------------------------------------------------------------------------
 
@@ -242,7 +242,7 @@ javascript's @racketidfont{null} is used. This is equivalent to javascript's
 @;         #f
 @;         (procedure->void-js-fun
 @;          (lambda () (printf "tick!")))
-@;         (scheme->prim-js 1000))
+@;         (racket->prim-js 1000))
 @;]
 @;This code will return @|void-const|, and after one second it will print
 @;@racketoutput{tick!}. Note that this is non-blocking because javascript's

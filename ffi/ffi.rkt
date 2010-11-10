@@ -2,8 +2,13 @@
 
 (require-js "ffi.js")
 
-(provide scheme->prim-js
-	 prim-js->scheme
+(provide racket->prim-js
+	 prim-js->racket
+
+	 scheme->prim-js  ;; legacy name
+	 prim-js->scheme  ;; legacy
+	 
+
 	 procedure->cps-js-fun
 	 procedure->void-js-fun
 	 js-===
