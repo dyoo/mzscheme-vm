@@ -1,4 +1,4 @@
-#lang s-exp "lang/base.rkt"
+#lang s-exp "base.rkt"
 
 ;; Red black trees.
 ;; Most of this comes from the code in:
@@ -168,7 +168,7 @@
 ;; rbtree-keys: rbtreeof(X, Y) -> (listof X)
 ;; Produces the keys in the tree.
 (define (rbtree-keys a-rbtree)
-  (rbnode-fold (rbtree-root t)
+  (rbnode-fold (rbtree-root a-rbtree)
                (lambda (key value keys) 
                  (cond [(eq? value DELETED-SENTINEL)
                         keys]
@@ -180,13 +180,20 @@
 ;; rbtree-fold: rbtreeof(X, Y) (X Y Z -> Z) Z -> Z
 ;; Folds a function across the key/value pairs of the rbtree.
 (define (rbtree-fold a-rbtree f acc)
-  (rbnode-fold (rbtree-root t)
+  (rbnode-fold (rbtree-root a-rbtree)
                (lambda (key value acc) 
                  (cond [(eq? value DELETED-SENTINEL)
                         acc]
                        [else
                         (f key value acc)]))
                acc))
+
+
+
+
+
+
+
 
 (provide rbtree?
 	 empty-rbtree
