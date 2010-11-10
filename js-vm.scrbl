@@ -581,6 +581,16 @@ Places @racket[an-image] on top of @racket[background] at the given
 @defproc[(underlay [img1 image?] [img2 image?] ...) image?]{}
 @defproc[(underlay/xy [img1 image?] [x real?] [y real?] [img2 image?]) image?]{}
 
+
+@defproc[(rotate [degree real?] [img image?]) image?]{Rotates the given by the degree.}
+
+
+@defproc[(scale [factor real?] [img image?]) image?]{Scales the image.}
+
+
+@defproc[(scale/xy [x-factor real?] [y-factor real?] [img image?]) image?]{Scales the image by the given @racket[x-factor], @racket[y-factor].}
+
+
 @defproc[(put-pinhole [img image?] [x real?] [y real?]) image?]{}
 
 @defproc[(image-width [an-image image?]) number?]{Produces the width of an image.}
