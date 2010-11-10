@@ -29,15 +29,15 @@ This project is intimately related with @hyperlink["http://www.cs.brown.edu/~sk/
 To make sure @js-vm[] is working, save the following program 
 as @filepath{test.rkt} in some working directory.
 @racketmod[planet #,(this-package-version-symbol)
-(printf "hello world\n")
-(check-expect (* 3 4 5) 60)
-(current-seconds)
-(image-url "http://racket-lang.org/logo.png")
-(check-expect (big-bang 0
-                        (on-tick add1 1)
-                        (stop-when (lambda (x) (= x 10))))
-              10)
-"last line"
+           (printf "hello world\n")
+	   (check-expect (* 3 4 5) 60)
+	   (current-seconds)
+	   (image-url "http://racket-lang.org/logo.png")
+	   (check-expect (big-bang 0
+				   (on-tick add1 1)
+				   (stop-when (lambda (x) (= x 10))))
+			 10)
+	   "last line"
 ]
 
 This program is in a language that has been enriched with
@@ -51,8 +51,8 @@ Once the program is saved, create a new file called @filepath{run.rkt} in the sa
 following contents:
 
 @racketmod[racket
-(require #,(schememodname/this-package))
-(run-in-browser "test.rkt")
+           (require #,(schememodname/this-package))
+           (run-in-browser "test.rkt")
 ]
 
 When this program is executed, @racket[run-in-browser] will take @filepath{test.rkt} and
@@ -64,8 +64,8 @@ Finally, you can create zip packages by using @racket[create-zip-package].  For
 example, modify @filepath{run.rkt} to be:
 
 @racketmod[racket
-(require #,(this-package-version-symbol))
-(create-zip-package "test.rkt" "test.zip")
+           (require #,(this-package-version-symbol))
+           (create-zip-package "test.rkt" "test.zip")
 ]
 
 
@@ -76,55 +76,55 @@ functional event-driven programming library.
 
 
 @racketmod[planet #,(this-package-version-symbol)
-@code:comment{falling.ball.rkt}
-@code:comment{Simple falling ball example.  A red ball falls down the screen}
-@code:comment{until hitting the bottom.}
-(define-struct world (radius y))
-
-@code:comment{The dimensions of the screen:}
-(define WIDTH 320)
-(define HEIGHT 480)
-
-@code:comment{The radius of the red circle.}
-(define RADIUS 15)
-
-@code:comment{The world is the distance from the top of the screen.}
-(define INITIAL-WORLD (make-world RADIUS 0))
-
-@code:comment{tick: world -> world}
-@code:comment{Moves the ball down.}
-(define (tick w)
-  (make-world RADIUS (+ (world-y w) 5)))
-
-
-@code:comment{hits-floor?: world -> boolean}
-@code:comment{Returns true when the distance reaches the screen height.}
-(define (hits-floor? w)
-  (>= (world-y w) HEIGHT))
-
-@code:comment{We have some simple test cases.}
-(check-expect (hits-floor? (make-world RADIUS 0)) false)
-(check-expect (hits-floor? (make-world RADIUS HEIGHT)) true)
-
-@code:comment{render: world -> scene}
-@code:comment{Produces a scene with the circle at a height described by the world.}
-(define (render w)
-  (place-image (circle RADIUS "solid" "red") (/ WIDTH 2) (world-y w)
-               (empty-scene WIDTH HEIGHT)))
-
-@code:comment{Start up a big bang, 15 frames a second.}
-(check-expect (big-bang INITIAL-WORLD
-			   (on-tick tick 1/15)
-			   (to-draw render)
-			   (stop-when hits-floor?))
-	      (make-world 15 480))
-
+           @code:comment{falling.ball.rkt}
+           @code:comment{Simple falling ball example.  A red ball falls down the screen}
+           @code:comment{until hitting the bottom.}
+           (define-struct world (radius y))
+           
+           @code:comment{The dimensions of the screen:}
+           (define WIDTH 320)
+           (define HEIGHT 480)
+           
+           @code:comment{The radius of the red circle.}
+           (define RADIUS 15)
+           
+           @code:comment{The world is the distance from the top of the screen.}
+           (define INITIAL-WORLD (make-world RADIUS 0))
+           
+           @code:comment{tick: world -> world}
+           @code:comment{Moves the ball down.}
+           (define (tick w)
+             (make-world RADIUS (+ (world-y w) 5)))
+           
+           
+           @code:comment{hits-floor?: world -> boolean}
+           @code:comment{Returns true when the distance reaches the screen height.}
+           (define (hits-floor? w)
+             (>= (world-y w) HEIGHT))
+           
+           @code:comment{We have some simple test cases.}
+           (check-expect (hits-floor? (make-world RADIUS 0)) false)
+           (check-expect (hits-floor? (make-world RADIUS HEIGHT)) true)
+           
+           @code:comment{render: world -> scene}
+           @code:comment{Produces a scene with the circle at a height described by the world.}
+           (define (render w)
+             (place-image (circle RADIUS "solid" "red") (/ WIDTH 2) (world-y w)
+                          (empty-scene WIDTH HEIGHT)))
+           
+           @code:comment{Start up a big bang, 15 frames a second.}
+           (check-expect (big-bang INITIAL-WORLD
+                                   (on-tick tick 1/15)
+                                   (to-draw render)
+                                   (stop-when hits-floor?))
+                         (make-world 15 480))
+                                             
 ]
 
 Again, to run this in the browser, we use @racket[run-in-browser]:
 @racketmod[racket
-(require #,(schememodname/this-package))
-(run-in-browser "falling-ball.rkt")
+           (require #,(schememodname/this-package))
+           (run-in-browser "falling-ball.rkt")
 ]
 
 
@@ -213,37 +213,9 @@ When the @racket[big-bang] computation terminates through a
                                                                                                                               
                                                                                                                  
 @defproc[(to-draw [hook (world -> scene)]) handler]{
-For simple applications, @racket[to-draw] is sufficient to draw a scene onto the display.
-The following program shows a ball falling down a scene.
 
-
-@racketmod[planet #,(this-package-version-symbol)
-(define WIDTH 320)
-(define HEIGHT 480)
-(define RADIUS 15)
-
-(define INITIAL-WORLD 0)
-
-(define (tick w)
-  (+ w 5))
-
-(define (hits-floor? w)
-  (>= w HEIGHT))
-
-(check-expect (hits-floor? 0) false)
-(check-expect (hits-floor? HEIGHT) true)
-
-(define (render w)
-  (place-image (circle RADIUS "solid" "red") (/ WIDTH 2) w
-               (empty-scene WIDTH HEIGHT)))
-
-(big-bang INITIAL-WORLD
-             (on-tick tick 1/15)
-             (to-draw render)
-             (stop-when hits-floor?))]
-}
-
-
+Draws a scene onto the display.  For simple applications,
+@racket[to-draw] is sufficient to draw a scene onto the display.}
 
 
 @defproc[(stop-when [stop? (world -> boolean)]) handler?]{
@@ -252,13 +224,13 @@ produces @racket[true] --- then the @racket[big-bang] terminates.
 
 The program:
 @racketmod[planet #,(this-package-version-symbol)
-(define (at-ten x)
-  (>= x 10))
-
-(big-bang 0
-             (on-tick add1 1)
-             (stop-when at-ten))
-]
+           (define (at-ten x)
+             (>= x 10))
+           
+           (big-bang 0
+                     (on-tick add1 1)
+                     (stop-when at-ten))
+                                        ]
 counts up to ten and then stops.
 }
 
@@ -318,13 +290,13 @@ which can be used to identify an element in the css-drawing function.
 
 Here are examples  of a dom-expr and a css-sexp.
 @racketblock[
-(define a-dom-sexp (list (js-div '(("id" "main-div")))
-                         (list (js-text "Hello world"))))
-
-(define a-css-sexp (list (list "main-div"
-                               (list "background" "white")
-                               (list "font-size" "40px"))))
-             ]
+             (define a-dom-sexp (list (js-div '(("id" "main-div")))
+                                      (list (js-text "Hello world"))))
+             
+             (define a-css-sexp (list (list "main-div"
+                                            (list "background" "white")
+                                            (list "font-size" "40px"))))
+                                                                        ]
                                                                
 
   
@@ -356,19 +328,19 @@ Constructs a button.  When the button is pressed, the world is updated through @
 
 The following example counts how many times a button has been clicked.
 @(racketmod planet #,(this-package-version-symbol)
-(define (press w)
-  (add1 w))
+            (define (press w)
+              (add1 w))
 
-(define (draw w)
-  (list (js-div)
-        (list (js-button press) (list (js-text "Press me")))
-        (list (js-text (format "Button presses: ~a" w)))))
-
-(define (draw-css w)
-  '())
-
-(big-bang 0
-             (to-draw-page draw draw-css)))
+            (define (draw w)
+              (list (js-div)
+                    (list (js-button press) (list (js-text "Press me")))
+                    (list (js-text (format "Button presses: ~a" w)))))
+            
+            (define (draw-css w)
+              '())
+            
+            (big-bang 0
+                      (to-draw-page draw draw-css)))
 }
 
 
@@ -409,57 +381,57 @@ representing the checked status of the element will be passed to it.
 The example below has a single text input form element, which allows the user to enter
 some value.
 @(racketmod planet #,(this-package-version-symbol)
-(define (refresh w form-val)
-  form-val)
-
-(define input-node
-  (js-input "text" refresh '(("id" "myname"))))
-
-(define (draw w)
-  (list (js-div)
-        (list (js-div) (list (js-text (format "I see: ~s~n" w))))
-        (list (js-div) (list input-node))))
-
-
-(define (draw-css w)
-  '())
-
-(big-bang ""
-             (to-draw-page draw draw-css))
-)
+            (define (refresh w form-val)
+              form-val)
+            
+            (define input-node
+              (js-input "text" refresh '(("id" "myname"))))
+            
+            (define (draw w)
+              (list (js-div)
+                    (list (js-div) (list (js-text (format "I see: ~s~n" w))))
+                    (list (js-div) (list input-node))))
+            
+            
+            (define (draw-css w)
+              '())
+            
+            (big-bang ""
+                      (to-draw-page draw draw-css))
+            )
 
 
 The example below uses a checkbox to select among three elements:
 @(racketmod planet #,(this-package-version-symbol)
-(define (make-ingredient-checkbox-sexp ingredient)
-  (local [(define (on-check w v)
-            (cond
-              [v
-               (cons ingredient w)]
-              [else
-               (remove ingredient w)]))]
-    (list (js-div)
-          (list (js-text ingredient))
-          (list (js-input "checkbox" 
-	                  on-check
-			  `(("value" ,ingredient)))))))
-
-(define c1 (make-ingredient-checkbox-sexp "mushrooms"))
-(define c2 (make-ingredient-checkbox-sexp "green peppers"))
-(define c3 (make-ingredient-checkbox-sexp "olives"))
-
-(define (draw w)
-  (list (js-div)
-        c1
-        c2
-        c3
-        (list (js-text (format "The world is: ~s" w)))))
-
-(define (draw-css w)
-  '())
-
-(big-bang '()
-             (to-draw-page draw draw-css)))
+            (define (make-ingredient-checkbox-sexp ingredient)
+              (local [(define (on-check w v)
+                        (cond
+                          [v
+                           (cons ingredient w)]
+                          [else
+                           (remove ingredient w)]))]
+                (list (js-div)
+                      (list (js-text ingredient))
+                      (list (js-input "checkbox" 
+                                      on-check
+                                      `(("value" ,ingredient)))))))
+            
+            (define c1 (make-ingredient-checkbox-sexp "mushrooms"))
+            (define c2 (make-ingredient-checkbox-sexp "green peppers"))
+            (define c3 (make-ingredient-checkbox-sexp "olives"))
+            
+            (define (draw w)
+              (list (js-div)
+                    c1
+                    c2
+                    c3
+                    (list (js-text (format "The world is: ~s" w)))))
+            
+            (define (draw-css w)
+              '())
+            
+            (big-bang '()
+                      (to-draw-page draw draw-css)))
 }
 
 
@@ -476,29 +448,29 @@ get the new world.
 
 The example below has a select with five elements.
 @(racketmod planet #,(this-package-version-symbol)
-(define (select-house w an-option)
-  an-option)
+            (define (select-house w an-option)
+              an-option)
+            
+            (define a-select-element
+              (js-select (list ""
+                               "Gryffindor"
+                               "Hufflepuff" 
+                               "Ravenclaw"
+                               "Slytherin")
+                         select-house))
+            
+            (define (draw w)
+              (list (js-div)
+                    (list a-select-element)
+                    (list (js-text (format "House: ~a" w)))))
+            
+            (define (draw-css w)
+              '())
+            
+            (big-bang ""
+                      (to-draw-page draw draw-css))
+            )
 
-(define a-select-element
-  (js-select (list ""
-                   "Gryffindor"
-                   "Hufflepuff" 
-                   "Ravenclaw"
-                   "Slytherin")
-             select-house))
-
-(define (draw w)
-  (list (js-div)
-        (list a-select-element)
-        (list (js-text (format "House: ~a" w)))))
-
-(define (draw-css w)
-  '())
-
-(big-bang ""
-             (to-draw-page draw draw-css))
-)
-  
   
   
 
@@ -824,8 +796,8 @@ are written in Javascript.
 As an example, the following two files provide an implementation
 of @racket[double] in Javascript:
 @racketmod[planet #,(this-package-version-symbol js-impl)
-(require-js "double.js")
-(provide double)]
+           (require-js "double.js")
+           (provide double)]
 
 @verbatim{
 // double.js
