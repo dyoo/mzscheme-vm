@@ -861,8 +861,10 @@ can run either in a Racket or Javascript context.
 
 @section{Base language}
 @defmodule/this-package[lang/base]
-This provides the basic set of bindings for @js-vm[] programs, including the bindings
-from ASL and some from regular Racket.  These include the following:
+This provides the basic set of bindings for @js-vm[] programs.
+These include most of the bindings
+from @hyperlink["http://docs.racket-lang.org/htdp-langs/advanced.html"]{ASL}
+and some from regular Racket, including following:
 @(let ([names '(
 		;#%module-begin
 		;#%datum
@@ -1223,3 +1225,55 @@ from ASL and some from regular Racket.  These include the following:
 )])
    (apply itemize (map (lambda (i) (item (racket #,i))) names)))
 
+
+@subsection{Deviations from ASL}
+
+@itemize[
+@item{@racket[+], @racket[*], @racket[/] don't take at least two arguments.}
+
+@item{@racket[and], @racket[or] don't require at least two arguments.}
+
+@item{@racket[set!] allowed on function arguments.}
+
+@item{syntactic keywords can be used as variable names.}
+
+@item{displayed output is not identical with regards to shared values
+and constructor output.}
+
+
+@item{The following primitives have not been implemented:
+@itemize[
+    @item{: (signatures)}
+    @item{define-datatype}
+    @item{match}
+    @item{delay}
+    @item{check-member-of}
+    @item{check-range}
+    @item{check-error}
+    @item{exit}
+    @item{force}
+    @item{gensym}
+    @item{promise}
+    @item{pretty-print}
+    @item{print}
+    @item{read}
+    @item{with-input-from-file}
+    @item{with-input-from-string}
+    @item{with-output-to-file}
+    @item{with-output-to-string}
+    @item{hash-copy}
+    @item{hash-count}
+    @item{hash-eq?}
+    @item{hash-equal?}
+    @item{hash-eqv?}
+    @item{hash-has-key?}
+    @item{hash-ref!}
+    @item{hash-update!}
+    @item{make-hasheqv}
+    @item{make-immutable-hash}
+    @item{make-immutable-hasheq}
+    @item{make-immutable-hasheqv}
+]
+}
+
+]
