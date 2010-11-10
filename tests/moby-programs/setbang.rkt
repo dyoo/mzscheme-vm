@@ -3,6 +3,11 @@
 
 (printf "setbang.rkt\n")
 
+(define some-value 16)
+(check-expect (set! some-value 42)
+              (void))
+
+
 (define song '())
 
 (define (bottles-of-beer)

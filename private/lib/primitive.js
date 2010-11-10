@@ -301,6 +301,18 @@ var raise = helpers.raise;
 
 
 
+
+    // On any numeric error, throw a contract error.
+    jsnums.onThrowRuntimeError = function(msg, x, y) {
+	raise(types.incompleteExn(
+	    types.exnFailContract,
+	    helpers.format("~a: ~s ~s", [msg, x, y]),
+	    []));
+    };
+
+
+
+
 var checkAndGetGuard = function(funName, guard, numberOfGuardArgs) {
 	if ( !guard ) {
 		return false;
@@ -314,7 +326,7 @@ var checkAndGetGuard = function(funName, guard, numberOfGuardArgs) {
 				'~a: guard procedure does not accept ~a arguments '
 				+ '(one more than the number constructor arguments): ~s',
 				[funName, numberOfGuardArgs, guard]),
-			[]));
+		    []));
 	}
 	
 	// if the guard has the right number of arguments,
@@ -742,7 +754,7 @@ PRIMITIVES['make-continuation-prompt-tag'] =
 	new PrimProc("make-continuation-prompt-tag",
 		     0, false, false,
 		     function() {
-			  return new types.ContinuationPromptTag();
+			 return new types.ContinuationPromptTag();
 		     }
 		    ),
 	new PrimProc("make-continuation-prompt-tag",

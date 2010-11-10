@@ -198,23 +198,25 @@ var makeLetrec = function(procs, body) {
 
 
 var testPrim = function(funName, f, baseArgs, expectedValue) {
-	var state = new StateModule.State();
-	var args = [];
-	for (var i = 0; i < baseArgs.length; i++) {
-		args.push(makeConstant(f(baseArgs[i])));
-	}
-	state.pushControl(makeApplication(makePrimval(funName), args));
-	assert.deepEqual(run(state), expectedValue);
+    var state = new StateModule.State();
+    var args = [];
+    for (var i = 0; i < baseArgs.length; i++) {
+	args.push(makeConstant(f(baseArgs[i])));
+    }
+    state.pushControl(makeApplication(makePrimval(funName), args));
+    assert.ok(types.isEqual(run(state), 
+			    expectedValue));
 };
 
 var testPrimF = function(funName, f, baseArgs, expectedValue, transform) {
-	var state = new StateModule.State();
-	var args = [];
-	for (var i = 0; i < baseArgs.length; i++) {
-		args.push(makeConstant(f(baseArgs[i])));
-	}
-	state.pushControl(makeApplication(makePrimval(funName), args));
-	assert.deepEqual(transform(run(state)), expectedValue);
+    var state = new StateModule.State();
+    var args = [];
+    for (var i = 0; i < baseArgs.length; i++) {
+	args.push(makeConstant(f(baseArgs[i])));
+    }
+    state.pushControl(makeApplication(makePrimval(funName), args));
+    assert.deepEqual(transform(run(state)),
+		     expectedValue);
 }
 
 var listToStringArray = function(lst) {
@@ -2297,28 +2299,28 @@ runTest('memv',
 runTest('member',
 	function() {
 		testPrim('member', id, [0, types.list([1, 2, 3])], false);
-		testPrim('member', id, [2, types.list([1, 2, 3])], types.list([2, 3]));
-		testPrim('member', id, [types.complex(2, 2),
-				        types.list([types.complex(1, 1),
-						      types.complex(2, 2),
-						      types.complex(3, 3)])],
-			 types.list([types.complex(2, 2), types.complex(3, 3)]));
-		testPrimF('member', id, [types.char('b'),
-					 types.list([types.char('c'),
-						       types.char('b'),
-						       types.char('a')])],
-			  ['#\\b', '#\\a'], listToStringArray);
-		testPrimF('member', id, [types.string('a'),
-					 types.list([types.string('c'),
-						       types.string('b'),
-						       types.string('a')])],
-			  ['a'], listToStringArray);
+ 		testPrim('member', id, [2, types.list([1, 2, 3])], types.list([2, 3]));
+ 		testPrim('member', id, [types.complex(2, 2),
+ 				        types.list([types.complex(1, 1),
+ 						      types.complex(2, 2),
+ 						      types.complex(3, 3)])],
+ 			 types.list([types.complex(2, 2), types.complex(3, 3)]));
+ 		testPrimF('member', id, [types.char('b'),
+ 					 types.list([types.char('c'),
+ 						       types.char('b'),
+ 						       types.char('a')])],
+ 			  ['#\\b', '#\\a'], listToStringArray);
+ 		testPrimF('member', id, [types.string('a'),
+ 					 types.list([types.string('c'),
+ 						       types.string('b'),
+ 						       types.string('a')])],
+ 			  ['a'], listToStringArray);
 
-		var str = types.string('hi');
-		testPrim('member', id, [str, types.list([types.string('Yo'),
-							   types.string(', '),
-							   str])],
-			 types.list([str]));
+ 		var str = types.string('hi');
+ 		testPrim('member', id, [str, types.list([types.string('Yo'),
+ 							   types.string(', '),
+ 							   str])],
+ 			 types.list([str]));
 	});
 
 
@@ -2467,23 +2469,23 @@ runTest('argmin',
 
 runTest('quicksort',
 	function() {
-		var state = new StateModule.State();
-		state.pushControl(makeApplication(makePrimval('quicksort'),
-						  [makeConstant(types.list([4, 3, 6, 8, 2, 9])),
-						   makePrimval('<')]));
-		var result = run(state);
-		assert.deepEqual(result, types.list([2, 3, 4, 6, 8, 9]));
+	    var state = new StateModule.State();
+	    state.pushControl(makeApplication(makePrimval('quicksort'),
+					      [makeConstant(types.list([4, 3, 6, 8, 2, 9])),
+					       makePrimval('<')]));
+	    var result = run(state);
+	    assert.ok(types.isEqual(result, types.list([2, 3, 4, 6, 8, 9])));
 
-		state.pushControl(makeApplication(makePrimval('quicksort'),
-						  [makeConstant(types.list([types.char('k'),
-									      types.char('o'),
-									      types.char('c'),
-									      types.char('g')])),
-						   makePrimval('char>?')]));
-		assert.deepEqual(run(state), types.list([types.char('o'),
-							   types.char('k'),
-							   types.char('g'),
-							   types.char('c')]));
+	    state.pushControl(makeApplication(makePrimval('quicksort'),
+					      [makeConstant(types.list([types.char('k'),
+									types.char('o'),
+									types.char('c'),
+									types.char('g')])),
+					       makePrimval('char>?')]));
+	    assert.ok(types.isEqual(run(state), types.list([types.char('o'),
+							    types.char('k'),
+							    types.char('g'),
+							    types.char('c')])));
 	});
 
 

@@ -1412,6 +1412,7 @@ SetToplevelControl.prototype.invoke = function(aState) {
 				  state.captureCurrentContinuationMarks(aState));
     }
     aState.setPrefix(this.depth, this.pos, aState.v)
+    aState.v = types.VOID;
 };
 
 

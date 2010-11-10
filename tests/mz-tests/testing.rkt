@@ -181,8 +181,8 @@
   (set! number-of-error-tests (add1 number-of-tests))
   (with-handlers ([exn? (lambda (exn) (void))])
     (thunk)
-    (printf "BUT EXPECTED ERROR: ~s\n" datum)
-    (record-error (list 'Error datum))))
+    (record-error (list 'Error datum)))
+  #;(printf "took ~s milliseconds\n" (- (current-inexact-milliseconds) start-time)))
 
 
 

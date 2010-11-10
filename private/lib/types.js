@@ -1671,6 +1671,22 @@ ValuesWrapper.prototype.toDomNode = function(cache) {
     return parent;
 };
 
+ValuesWrapper.prototype.isEqual = function(other, aUnionFind)  {
+    if (! other instanceof ValuesWrapper) {
+	return false;
+    }
+    if (this.elts.length !== other.elts.length) {
+	return false;
+    }
+    for (var i = 0; i < this.elts.length; i++) {
+	if (! isEqual(this.elts[i], other.elts[i], aUnionFind)) {
+	    return false;
+	}
+    }
+    return true;
+};
+
+
 
 var UndefinedValue = function() {
 };
