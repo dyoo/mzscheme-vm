@@ -109,7 +109,9 @@ functional event-driven programming library.
            @code:comment{render: world -> scene}
            @code:comment{Produces a scene with the circle at a height described by the world.}
            (define (render w)
-             (place-image (circle RADIUS "solid" "red") (/ WIDTH 2) (world-y w)
+             (place-image (circle RADIUS "solid" "red")
+                          (/ WIDTH 2) 
+                          (world-y w)
                           (empty-scene WIDTH HEIGHT)))
            
            @code:comment{Start up a big bang, 15 frames a second.}
@@ -836,7 +838,7 @@ can run either in a Racket or Javascript context.
 This provides the basic set of bindings for @js-vm[] programs.
 These include most of the bindings
 from @hyperlink["http://docs.racket-lang.org/htdp-langs/advanced.html"]{ASL}
-and some from regular Racket, including following:
+and some from regular Racket, including:
 @(let ([names '(
 		;#%module-begin
 		;#%datum
