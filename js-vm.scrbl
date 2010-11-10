@@ -1217,36 +1217,36 @@ and constructor output.}
 
 @item{The following primitives have not been implemented:
 @itemize[
-    @item{: (signatures)}
-    @item{define-datatype}
-    @item{match}
-    @item{delay}
-    @item{check-member-of}
-    @item{check-range}
-    @item{check-error}
-    @item{exit}
-    @item{force}
-    @item{gensym}
-    @item{promise}
-    @item{pretty-print}
-    @item{print}
-    @item{read}
-    @item{with-input-from-file}
-    @item{with-input-from-string}
-    @item{with-output-to-file}
-    @item{with-output-to-string}
-    @item{hash-copy}
-    @item{hash-count}
-    @item{hash-eq?}
-    @item{hash-equal?}
-    @item{hash-eqv?}
-    @item{hash-has-key?}
-    @item{hash-ref!}
-    @item{hash-update!}
-    @item{make-hasheqv}
-    @item{make-immutable-hash}
-    @item{make-immutable-hasheq}
-    @item{make-immutable-hasheqv}
+    @item{@racket[:] (signature definition)}
+    @item{@racket[define-datatype]}
+    @item{@racket[match]}
+    @item{@racket[delay]}
+    @item{@racket[check-member-of]}
+    @item{@racket[check-range]}
+    @item{@racket[check-error]}
+    @item{@racket[exit]}
+    @item{@racket[force]}
+    @item{@racket[gensym]}
+    @item{@racket[promise]}
+    @item{@racket[pretty-print]}
+    @item{@racket[print]}
+    @item{@racket[read]}
+    @item{@racket[with-input-from-file]}
+    @item{@racket[with-input-from-string]}
+    @item{@racket[with-output-to-file]}
+    @item{@racket[with-output-to-string]}
+    @item{@racket[hash-copy]}
+    @item{@racket[hash-count]}
+    @item{@racket[hash-eq?]}
+    @item{@racket[hash-equal?]}
+    @item{@racket[hash-eqv?]}
+    @item{@racket[hash-has-key?]}
+    @item{@racket[hash-ref!]}
+    @item{@racket[hash-update!]}
+    @item{@racket[make-hasheqv]}
+    @item{@racket[make-immutable-hash]}
+    @item{@racket[make-immutable-hasheq]}
+    @item{@racket[make-immutable-hasheqv]}
 ]
 }
 

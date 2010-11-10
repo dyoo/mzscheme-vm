@@ -471,7 +471,7 @@ new PrimProc('rotate',
 			 check(angle, isReal, "rotate", "finite real number", 1, arguments);
 			 check(img, isImage, "rotate", "image", 2, arguments);
 			 
-			 return world.Kernel.rotateImage(angle, img);
+			     return world.Kernel.rotateImage(jsnums.toFixnum(angle), img);
 			 });
 
 EXPORTS['scale/xy'] =
@@ -483,8 +483,8 @@ new PrimProc('scale/xy',
 			 check(yFactor, isReal, "scale/xy", "finite real number", 2, arguments);
 			 check(img, isImage, "scale/xy", "image", 3, arguments);
 			 
-			 return world.Kernel.scaleImage(xFactor, 
-							yFactor, 
+			 return world.Kernel.scaleImage(jsnums.toFixnum(xFactor), 
+							jsnums.toFixnum(yFactor),
 							img);
 
 			 });
@@ -497,7 +497,9 @@ new PrimProc('scale',
 			 check(factor, isReal, "scale", "finite real number", 1, arguments);
 			 check(img, isImage, "scale", "image", 2, arguments);
 			 
-			 return world.Kernel.scaleImage(factor, factor, img);
+			 return world.Kernel.scaleImage(jsnums.toFixnum(factor),
+							jsnums.toFixnum(factor),
+							img);
 			 });
 
 
