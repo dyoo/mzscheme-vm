@@ -1620,6 +1620,20 @@ PRIMITIVES['round'] =
 			return jsnums.round(x);
 		 });
 
+PRIMITIVES['truncate'] =
+    new PrimProc('truncate',
+		 1,
+		 false, false,
+		 function(x) {
+		 	check(x, isReal, 'truncate', 'real', 1);
+		     if (jsnums.lessThan(x, 0)) {
+			 return jsnums.ceiling(x);
+		     } else {
+			 return jsnums.floor(x);
+		     }
+		 });
+
+
 
 PRIMITIVES['numerator'] =
     new PrimProc('numerator',

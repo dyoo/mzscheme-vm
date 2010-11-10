@@ -95,6 +95,8 @@
                      (#%top #%top)
                      (-define define)
                      (define-values define-values)
+                     (let-values let-values)
+                     (let*-values let*-values)
                      (-define-struct define-struct)
                      (if if)
                      (cond cond)
@@ -230,6 +232,7 @@
                        floor
                        ceiling
                        round
+		       truncate
                        numerator
                        denominator
                        expt
