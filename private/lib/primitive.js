@@ -1409,7 +1409,7 @@ PRIMITIVES['/'] =
 		 	arrayEach(args, function(y, i) {check(y, isNumber, '/', 'number', i+2, allArgs);});
 			
 			if (args.length == 0) {
-				if ( jsnums.equals(x, 0) ) {
+				if ( jsnums.eqv(x, 0) ) {
 					raise( types.incompleteExn(types.exnFailContractDivisionByZero, '/: division by zero', []) );
 				}	
 				return jsnums.divide(1, x);
@@ -1417,7 +1417,7 @@ PRIMITIVES['/'] =
 
 		 	var res = x;
 		 	for (var i = 0; i < args.length; i++) {
-				if ( jsnums.equals(args[i], 0) ) {
+				if ( jsnums.eqv(args[i], 0) ) {
 					raise( types.incompleteExn(types.exnFailContractDivisionByZero, '/: division by zero', []) );
 				}	
 				res = jsnums.divide(res, args[i]);
