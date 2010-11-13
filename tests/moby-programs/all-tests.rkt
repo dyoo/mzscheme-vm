@@ -51,6 +51,7 @@
 	 "apply.rkt"
 	 "values.rkt"
 	 "compose.rkt"
+	 "seconds.rkt"
          "rotate.rkt")
 
 
