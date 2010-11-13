@@ -49,6 +49,8 @@
 	 "struct.rkt"
 	 "arity.rkt"
 	 "apply.rkt"
+	 "values.rkt"
+	 "compose.rkt"
          "rotate.rkt")
 
 
