@@ -10,7 +10,8 @@
 ;; NOTE: continuation-prompts-3.rkt is not being tested here.  Must be handled interactively.
 
 
-(require "display-and-write.rkt"
+(require "sleep.rkt"
+	 "display-and-write.rkt"
 	 "repeating-decimals.rkt"
 	 "ffi.rkt"
 	 "ffi-2.rkt"
@@ -52,6 +53,8 @@
 	 "values.rkt"
 	 "compose.rkt"
 	 "seconds.rkt"
+	 "random.rkt"
+	 "identity.rkt"
          "rotate.rkt")
 
 
