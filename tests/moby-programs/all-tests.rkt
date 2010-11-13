@@ -26,6 +26,7 @@
 	 "local.rkt"
 	 "for-each.rkt"
 	 "letrec.rkt"
+	 "recur.rkt"
 	 "js-big-bang-timer.rkt"
 	 "images.rkt"
 	 "image-equality.rkt"
