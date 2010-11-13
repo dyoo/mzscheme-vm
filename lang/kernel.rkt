@@ -164,7 +164,7 @@
                        current-continuation-marks
                        continuation-mark-set->list
                        for-each
-                       make-thread-cell
+                       ;; make-thread-cell
                        make-struct-type
                        make-struct-field-accessor
                        make-struct-field-mutator
