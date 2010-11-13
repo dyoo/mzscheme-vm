@@ -27,6 +27,8 @@
 	 "for-each.rkt"
 	 "letrec.rkt"
 	 "recur.rkt"
+	 "math.rkt"
+	 "eof.rkt"
 	 "js-big-bang-timer.rkt"
 	 "images.rkt"
 	 "image-equality.rkt"

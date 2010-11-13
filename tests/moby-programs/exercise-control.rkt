@@ -113,5 +113,21 @@
 
 
 
+(check-expect (let/cc return
+	      	(begin
+		  (return 42)
+		  (error)))
+	      42)
+
+
+(check-expect (let/cc return
+	      	(begin
+		  'fall-through))
+	      'fall-through)
+
+
+
 
 (printf "exercise-control.rkt end\n")
+
+
