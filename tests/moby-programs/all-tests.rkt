@@ -48,6 +48,7 @@
 	 "vector.rkt"
 	 "struct.rkt"
 	 "arity.rkt"
+	 "apply.rkt"
          "rotate.rkt")
 
 
