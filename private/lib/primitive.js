@@ -345,32 +345,40 @@ var checkAndGetGuard = function(funName, guard, numberOfGuardArgs) {
 	};
 };
 
+
+var heir = function(p) {
+    var f = function() {}
+    f.prototype = p;
+    return new f();
+};
+
+
 // Struct Procedure types
 var StructProc = function(type, name, numParams, isRest, usesState, impl) {
-	PrimProc.call(this, name, numParams, isRest, usesState, impl);
-	this.type = type;
+    PrimProc.call(this, name, numParams, isRest, usesState, impl);
+    this.type = type;
 };
-StructProc.prototype = PrimProc.prototype;
+StructProc.prototype = heir(PrimProc.prototype);
 
 var StructConstructorProc = function() {
-	StructProc.apply(this, arguments);
+    StructProc.apply(this, arguments);
 };
-StructConstructorProc.prototype = StructProc.prototype;
+StructConstructorProc.prototype = heir(StructProc.prototype);
 
 var StructPredicateProc = function() {
-	StructProc.apply(this, arguments);
+    StructProc.apply(this, arguments);
 };
-StructPredicateProc.prototype = StructProc.prototype;
+StructPredicateProc.prototype = heir(StructProc.prototype);
 
 var StructAccessorProc = function() {
-	StructProc.apply(this, arguments);
+    StructProc.apply(this, arguments);
 };
-StructAccessorProc.prototype = StructProc.prototype;
+StructAccessorProc.prototype = heir(StructProc.prototype);
 
 var StructMutatorProc = function() {
-	StructProc.apply(this, arguments);
+    StructProc.apply(this, arguments);
 };
-StructMutatorProc.prototype = StructProc.prototype;
+StructMutatorProc.prototype = heir(StructProc.prototype);
 
 var getMakeStructTypeReturns = function(aStructType) {
 	var name = aStructType.name;
@@ -964,23 +972,28 @@ PRIMITIVES['make-struct-field-mutator'] =
 	    });
 
 
-PRIMITIVES['struct-type?'] = new PrimProc('struct-type?', 1, false, false, types.isStructType);
+PRIMITIVES['struct-type?'] = 
+	new PrimProc('struct-type?', 1, false, false, types.isStructType);
 
 PRIMITIVES['struct-constructor-procedure?'] =
     new PrimProc('struct-constructor-procedure?', 1, false, false,
-		 function(x) { return x instanceof StructConstructorProc; });
+		 function(x) {
+		     return x instanceof StructConstructorProc; });
 
 PRIMITIVES['struct-predicate-procedure?'] =
     new PrimProc('struct-predicate-procedure?', 1, false, false,
-		 function(x) { return x instanceof StructPredicateProc; });
+		 function(x) { 
+		     return x instanceof StructPredicateProc; });
 
 PRIMITIVES['struct-accessor-procedure?'] =
     new PrimProc('struct-accessor-procedure?', 1, false, false,
-		 function(x) { return x instanceof StructAccessorProc; });
+		 function(x) { 
+		     return x instanceof StructAccessorProc; });
 
 PRIMITIVES['struct-mutator-procedure?'] =
     new PrimProc('struct-mutator-procedure?', 1, false, false,
-		 function(x) { return x instanceof StructMutatorProc; });
+		 function(x) {
+		     return (x instanceof StructMutatorProc); });
 
 
 
