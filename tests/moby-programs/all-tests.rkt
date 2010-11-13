@@ -38,6 +38,7 @@
 	 "list.rkt"
 	 "vararity.rkt"
          "check-error.rkt"
+	 "vector.rkt"
          "rotate.rkt")
 
 
