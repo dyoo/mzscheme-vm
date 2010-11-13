@@ -24,6 +24,7 @@
 	 "quasiquote.rkt"
 	 "permissions.rkt"
 	 "local.rkt"
+	 "for-each.rkt"
 	 "js-big-bang-timer.rkt"
 	 "images.rkt"
 	 "image-equality.rkt"
