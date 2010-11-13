@@ -47,6 +47,7 @@
          "check-error.rkt"
 	 "vector.rkt"
 	 "struct.rkt"
+	 "arity.rkt"
          "rotate.rkt")
 
 
