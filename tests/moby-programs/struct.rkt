@@ -15,6 +15,26 @@
   (check-expect (predicate (constructor 3 4)) true)
   (check-expect (predicate (cons 3 4)) false)
 
+  (check-expect (struct-constructor-procedure? constructor) true)
+  (check-expect (struct-constructor-procedure? (lambda (x y)
+                                                 (constructor x y)))
+                false)
+  
+  (check-expect (struct-predicate-procedure? predicate) true)
+  (check-expect (struct-predicate-procedure? 24) false)
+  (check-expect (struct-predicate-procedure? (lambda (x) true))
+                                             false)
+
+  (check-expect (struct-accessor-procedure? accessor) true)
+  (check-expect (struct-accessor-procedure? 24) false)
+  (check-expect (struct-accessor-procedure? (lambda (x) true))
+                                             false)
+
+  (check-expect (struct-mutator-procedure? accessor) false)
+  (check-expect (struct-mutator-procedure? 24) false)
+  (check-expect (struct-mutator-procedure? (lambda (x) true))
+                                             false)
+
   (let ([f (make-struct-field-accessor accessor 0)]
         [r (make-struct-field-accessor accessor 1)]
         [set-f! (make-struct-field-mutator mutator 0)]
