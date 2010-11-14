@@ -55,6 +55,9 @@
 (check-expect (floor 3) 3)
 (check-expect (ceiling 3) 3)
 
+(check-expect (round 3) 3)
+(check-expect (round 3) 3)
+
 (check-expect (floor 3.5) 3.0)
 (check-expect (ceiling 3.5) 4.0)
 
