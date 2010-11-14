@@ -56,6 +56,7 @@
 	 "random.rkt"
 	 "identity.rkt"
          "raise.rkt"
+	 "exn.rkt"
          "rotate.rkt")
 
 

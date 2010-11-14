@@ -685,6 +685,13 @@ PRIMITIVES['current-continuation-marks'] =
 		     aState.v = state.captureCurrentContinuationMarks(aState);
 		 });
 
+PRIMITIVES['continuation-mark-set?'] =
+	new PrimProc('continuation-mark-set?',
+		     1,
+		     false,
+		     false,
+		     types.isContinuationMarkSet);
+
 PRIMITIVES['continuation-mark-set->list'] = 
     new PrimProc('continuation-mark-set->list',
 		 2,

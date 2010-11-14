@@ -913,6 +913,7 @@ and some from regular Racket, including:
 		newline
 		current-print
 		current-continuation-marks
+		continuation-mark-set?
 		continuation-mark-set->list
 		for-each
 		;; make-thread-cell
