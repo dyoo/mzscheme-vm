@@ -617,6 +617,7 @@ var jsnums = {};
 
     // cos: scheme-number -> scheme-number
     var cos = function(n) {
+	if (eqv(n, 0)) { return 1; }
 	if (typeof(n) === 'number') {
 	    return FloatPoint.makeInstance(Math.cos(n));
 	}

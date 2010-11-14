@@ -267,6 +267,15 @@
  42)
 
 
+(check-expect 
+ (call/cc
+  (lambda (return)
+    (return 42)
+    (error 'should-not-be-here)))
+ 42)
+
+
+
 
 (check-expect (ormap even? '(1 3 5 7 9)) #f)
 (check-expect (ormap even? '(1 3 5 8 9)) true)
@@ -376,8 +385,14 @@
 (check-expect (log 1) 0)
 (check-within (log 6) 1.791759469228055 0.0001)
 (check-within (tan 1) 1.5574077246549023 0.0001)
+(check-expect (cos 0) 1)
+(check-within (cos 1) 0.5403023058681398 0.0001)
 (check-expect (acos 1) 0)
 (check-within (acos 0) 1.5707963267948966 0.0001)
+
+(check-expect (magnitude 5) 5)
+(check-expect (magnitude 0+5i) 5)
+(check-within (magnitude 5+5i) 7.0710678118654755 0.0001)
 
 (check-expect (string->int "3") 51)
 
@@ -385,6 +400,15 @@
 (check-expect (string-upper-case? "hello") false)
 (check-expect (string-upper-case? "Hello") false)
 (check-expect (string-upper-case? "HELLO") true)
+
+(check-expect (string-lower-case? "hello") true)
+(check-expect (string-lower-case? "Hello") false)
+(check-expect (string-lower-case? "HELLO") false)
+
+
+(check-expect (string-length "") 0)
+(check-expect (string-length "abcdefghijklmnopqrstuvwxyz") 26)
+
 
 (check-expect (string-ith "wpi" 0) "w")
 (check-expect (string-ith "wpi" 1) "p")
@@ -399,7 +423,9 @@
 	      true)
 
 (let ([p (make-posn 3 4)])
+  (check-expect (posn-x p) 3)
   (set-posn-x! p 17)
+  (check-expect (posn-x p) 17)
   (check-expect p (make-posn 17 4)))
 
 
@@ -414,6 +440,74 @@
 (check-expect (number->string 3/4) "3/4")
 
 
+(check-expect (implode '("a" "b" "c")) "abc")
+
+
+(check-expect (string->number "42") 42)
+(check-expect (string->number "-42") -42) 
+(check-expect (string->number "-0.0") -0.0) 
+(check-expect (string->number "+inf.0") +inf.0) 
+(check-expect (string->number "-inf.0") -inf.0) 
+(check-expect (string->number "3/4") 3/4) 
+
+(check-expect (symbol->string 'hello-again) "hello-again")
+
+
+(check-expect (list-tail '(a b c d e) 3)
+	      '(d e))
+(check-expect (list-tail (list 1 2 3 4) 2)
+	      '(3 4))
+
+
+(check-expect (exn:fail:contract? 
+	       (with-handlers ([void identity])
+		  (list-tail (list 1 2 3 4) 20)))
+	      true)
+
+
+(check-expect (member 2 (list 1 2 3 4))
+	      '(2 3 4))
+(check-expect (member 9 (list 1 2 3 4))
+	      #f)
+
+
+(let ([b (box-immutable 42)])
+  (check-expect (unbox b) 42)
+  (check-expect (exn:fail:contract?
+		 (with-handlers ([void identity])
+		   (set-box! b 16)))
+		true))
+
+
+
+(let ([ht (make-hasheq)])
+  (hash-set! ht 'name "danny")
+  (check-expect (hash-ref ht 'name)
+		"danny")
+  (check-expect (hash-map ht (lambda (k v) (list k v)))
+		'((name "danny")))
+  (hash-remove! ht 'name)
+  (check-expect (hash-map ht (lambda (k v) (list k v)))
+		'()))
+
+
+
+(check-expect (inexact? 42) false)
+(check-expect (inexact? 22/7) false)
+(check-expect (inexact? pi) true)
+(check-expect (inexact? e) true)
+
+
+(check-expect (numerator 22/7) 22)
+(check-expect (denominator 22/7) 7)
+
+(check-expect (numerator 234) 234)
+
+(check-expect (integer-sqrt 4) 2)
+
+
+(check-expect (make-rectangular 3 4)
+	      3+4i)
 
 
 "misc.rkt end"
