@@ -1977,14 +1977,14 @@ runTest('gcd and lcm',
 
 runTest('floor, ceiling, and round',
 	function() {
-		testPrim('floor', id, [14], 14);
-		testPrim('floor', types.float, [12.56], 12);
-		testPrim('ceiling', id, [13], 13);
-		testPrim('ceiling', types.float, [12.23], 13);
-		testPrim('ceiling', types.float, [12.00], 12);
-		testPrim('round', id, [124], 124);
-		testPrim('round', types.float, [12.432], 12);
-		testPrim('round', types.float, [12.543], 13);
+	    testPrim('floor', id, [14], 14);
+	    testPrim('floor', types.float, [12.56], types.float(12));
+	    testPrim('ceiling', id, [13], 13);
+	    testPrim('ceiling', types.float, [12.23], types.float(13));
+	    testPrim('ceiling', types.float, [12.00], types.float(12));
+	    testPrim('round', id, [124], 124);
+	    testPrim('round', types.float, [12.432], types.float(12));
+	    testPrim('round', types.float, [12.543], types.float(13));
 	});
 
 
