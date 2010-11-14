@@ -592,4 +592,14 @@
 	      #t)
 
 
+(check-expect (string->list "Apple")
+	      '(#\A #\p #\p #\l #\e))
+(check-expect (list->string (list #\A #\p #\p #\l #\e))
+	      "Apple")
+
+
+(check-expect (build-string 5 (lambda (i) (integer->char (+ i 97))))
+	      "abcde")
+
+
 "misc.rkt end"

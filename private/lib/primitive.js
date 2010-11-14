@@ -3816,7 +3816,8 @@ PRIMITIVES['build-string'] =
 					function(res) {
 						check(res, isChar, 'build-string',
 						      'procedure that returns a char', 2);
-						return buildStringHelp(n+1, acc.push(res.val));
+					        acc.push(res.val)
+						return buildStringHelp(n+1, acc);
 					});
 			}
 			return buildStringHelp(0, []);
