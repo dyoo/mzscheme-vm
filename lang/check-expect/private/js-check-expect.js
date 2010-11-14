@@ -20,7 +20,7 @@ EXPORTS['check-expect'] =
 		 function(aState, actual, expected) {
 		 	if ( types.isFunction(actual) || types.isFunction(expected) ) {
 				var msg = 'check-expect cannot compare functions';
-				raise( types.incompleteExn(types.exnFailContract, msg, []) );
+				helpers.raise( types.incompleteExn(types.exnFailContract, msg, []) );
 			}
 		 	if ( !isEqual(actual, expected) ) {
 				var msg = helpers.format('check-expect: actual value ~s differs from ~s, the expected value.\n',
@@ -46,11 +46,11 @@ EXPORTS['check-within'] =
 		 	if ( !isNonNegativeReal(range) ) {
 				var msg = helpers.format('check-within requires a non-negative real number for range, given ~s.',
 							 [range]);
-				raise( types.incompleteExn(types.exnFailContract, msg, []) );
+				helpers.raise( types.incompleteExn(types.exnFailContract, msg, []) );
 			}
 		 	if ( types.isFunction(actual) || types.isFunction(expected) ) {
 				var msg = 'check-within cannot compare functions';
-				raise( types.incompleteExn(types.exnFailContract, msg, []) );
+				helpers.raise( types.incompleteExn(types.exnFailContract, msg, []) );
 			}
 			
 		 	if ( !( isEqual(actual, expected) ||

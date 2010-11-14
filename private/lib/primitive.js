@@ -1193,7 +1193,12 @@ PRIMITIVES['sleep'] =
 PRIMITIVES['identity'] = new PrimProc('identity', 1, false, false, id);
 
 
-PRIMITIVES['raise'] = new PrimProc('raise', 1, false, false, raise);
+PRIMITIVES['raise'] = 
+	new PrimProc('raise', 
+		     1, 
+		     false, 
+		     false,
+		     raise);
 
 PRIMITIVES['error'] =
     new PrimProc('error',
