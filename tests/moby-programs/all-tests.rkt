@@ -57,6 +57,7 @@
 	 "identity.rkt"
          "raise.rkt"
 	 "exn.rkt"
+	 "misc.rkt"
          "rotate.rkt")
 
 
