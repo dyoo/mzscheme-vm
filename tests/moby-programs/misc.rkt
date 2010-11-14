@@ -426,7 +426,9 @@
   (check-expect (posn-x p) 3)
   (set-posn-x! p 17)
   (check-expect (posn-x p) 17)
-  (check-expect p (make-posn 17 4)))
+  (check-expect p (make-posn 17 4))
+  (set-posn-y! p -23)
+  (check-expect p (make-posn 17 -23)))
 
 
 (check-expect (replicate 3 "hi") "hihihi")
@@ -508,6 +510,86 @@
 
 (check-expect (make-rectangular 3 4)
 	      3+4i)
+
+
+
+(check-within (exp 3)
+	      #i20.08553692318767
+	      0.0001)
+
+
+(check-expect (angle 2984) 0)
+(check-expect (angle #i0.0) 0)
+(check-expect (angle #i0.234) 0)
+(check-within (angle 1+5i) 1.373400766945016 0.00001)
+
+
+
+
+(let ([ht (make-hasheq)]
+      [l '()])
+  (hash-set! ht 'name "danny")
+  (check-expect (hash-ref ht 'name)
+		"danny")
+  (hash-for-each ht (lambda (k v) (set! l (cons (list k v) l))))
+  (check-expect l '((name "danny"))))
+
+(check-expect (string-numeric? "928173419") true)
+(check-expect (string-numeric? "") true)
+(check-expect (string-numeric? "x") false)
+
+
+
+(check-expect (string>? "Apple" "apple")
+	      #f)
+(check-expect (string>? "apple" "Apple")
+	      #t)
+(check-expect (string>? "c" "b" "a")
+	      #t)
+
+(check-expect (string>=? "Apple" "apple")
+	      #f)
+(check-expect (string>=? "apple" "Apple")
+	      #t)
+(check-expect (string>=? "c" "b" "b")
+	      #t)
+
+(check-expect (string-ci=? "Apple" "apple")
+	      #t)
+(check-expect (string-ci=? "a" "a" "a")
+	      #t)
+
+
+(check-expect (string-ci<? "Apple" "apple")
+	      #f)
+(check-expect (string-ci<? "apple" "banana")
+	      #t)
+(check-expect (string-ci<? "a" "b" "c")
+	      #t)
+
+
+(check-expect (string-ci<=? "Apple" "apple")
+	      #t)
+(check-expect (string-ci<=? "apple" "Apple")
+	      #t)
+(check-expect (string-ci<=? "a" "b" "b")
+	      #t)
+
+
+(check-expect (string-ci>? "Apple" "apple")
+	      #f)
+(check-expect (string-ci>? "banana" "Apple")
+	      #t)
+(check-expect (string-ci>? "c" "b" "a")
+	      #t)
+
+
+(check-expect (string-ci>=? "Apple" "apple")
+	      #t)
+(check-expect (string-ci>=? "apple" "Apple")
+	      #t)
+(check-expect (string-ci>=? "c" "b" "b")
+	      #t)
 
 
 "misc.rkt end"
