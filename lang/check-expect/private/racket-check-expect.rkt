@@ -1,6 +1,8 @@
 #lang racket/base
 
 (define (check-expect test expected)
+  (when (procedure? expected)
+    (error 'check-expect "cannot compare functions"))
   (cond [(equal? test expected)
          (void)]
         [else 
@@ -9,7 +11,13 @@
 
 
 (define (check-within test expected delta)
-  (cond [(<= (- expected delta) test (+ expected delta))
+  (when (not (real? delta))
+    (error 'check-within 
+	   "requires an inexact number for the range.  ~s is not inexact."
+	   delta))
+  (cond [(and (real? test)
+	      (real? expected)
+	      (<= (- expected delta) test (+ expected delta)))
          (void)]
         [else
          (error 'check-within 
