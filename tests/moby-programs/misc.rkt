@@ -111,6 +111,65 @@
       (loop (add1 i)))))
 
 
+(check-expect (number? 'hello) false)
+(check-expect (number? 3) true)
+(check-expect (number? "a string") false)
+(check-expect (number? #\x) false)
+(check-expect (number? true) false)
+(check-expect (number? (vector 3 4)) false)
+(check-expect (number? (make-my-struct)) false)
+(check-expect (number? (bytes 1 2 3 4)) false)
+
+
+(check-expect (complex? 'hello) false)
+(check-expect (complex? 3) true)
+(check-expect (complex? "a string") false)
+(check-expect (complex? #\x) false)
+(check-expect (complex? true) false)
+(check-expect (complex? (vector 3 4)) false)
+(check-expect (complex? (make-my-struct)) false)
+(check-expect (complex? (bytes 1 2 3 4)) false)
+
+
+(check-expect (real? 'hello) false)
+(check-expect (real? 3) true)
+(check-expect (real? 3+0.0i) false)
+(check-expect (real? "a string") false)
+(check-expect (real? #\x) false)
+(check-expect (real? true) false)
+(check-expect (real? (vector 3 4)) false)
+(check-expect (real? (make-my-struct)) false)
+(check-expect (real? (bytes 1 2 3 4)) false)
+
+
+(check-expect (rational? 'hello) false)
+(check-expect (rational? 3) true)
+(check-expect (rational? 3/4) true)
+(check-expect (rational? 3.2) true)
+(check-expect (rational? 3+0.0i) false)
+(check-expect (rational? "a string") false)
+(check-expect (rational? #\x) false)
+(check-expect (rational? true) false)
+(check-expect (rational? (vector 3 4)) false)
+(check-expect (rational? (make-my-struct)) false)
+(check-expect (rational? (bytes 1 2 3 4)) false)
+
+
+(check-expect (integer? 'hello) false)
+(check-expect (integer? 3) true)
+(check-expect (integer? 3/4) false)
+(check-expect (integer? 3.2) false)
+(check-expect (integer? 3+0.0i) false)
+(check-expect (integer? "a string") false)
+(check-expect (integer? #\x) false)
+(check-expect (integer? true) false)
+(check-expect (integer? (vector 3 4)) false)
+(check-expect (integer? (make-my-struct)) false)
+(check-expect (integer? (bytes 1 2 3 4)) false)
+
+
+
+
 
 
 "misc.rkt end"

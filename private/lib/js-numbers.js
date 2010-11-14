@@ -2020,12 +2020,12 @@ var jsnums = {};
 
 
     Complex.prototype.isRational = function() {
-	return isRational(this.r) && equals(this.i, 0);
+	return isRational(this.r) && eqv(this.i, 0);
     };
 
     Complex.prototype.isInteger = function() {
 	return (isInteger(this.r) &&
-		equals(this.i, 0));
+		eqv(this.i, 0));
     };
 
     Complex.prototype.toExact = function() {
@@ -2190,7 +2190,7 @@ var jsnums = {};
     };
 
     Complex.prototype.isReal = function(){
-	return equals(this.i, 0);
+	return eqv(this.i, 0);
     };
 
     Complex.prototype.integerSqrt = function() {
