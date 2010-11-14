@@ -168,6 +168,96 @@
 (check-expect (integer? (bytes 1 2 3 4)) false)
 
 
+(check-expect (exn:fail:contract? (with-handlers ([void identity]) (odd? 'hello)))
+	      true)
+(check-expect (odd? 3) true)
+(check-expect (odd? 2) false)
+(check-expect (exn:fail:contract? (with-handlers ([void identity]) (odd? 3/2)))
+	      true)
+
+
+(check-expect (exn:fail:contract? (with-handlers ([void identity]) (even? 'hello)))
+	      true)
+(check-expect (even? 3) false)
+(check-expect (even? 2) true)
+(check-expect (exn:fail:contract? (with-handlers ([void identity]) (even? 3/2)))
+	      true)
+
+
+
+(check-expect (exn:fail:contract? (with-handlers ([void identity]) (zero? 'hello)))
+	      true)
+(check-expect (zero? 3) false)
+(check-expect (zero? 2) false)
+(check-expect (zero? 0) true)
+(check-expect (zero? 0.0) true)
+(check-expect (zero? 0.0+0.0i) true)
+(check-expect (zero? 3/2) false)
+
+
+(check-expect (positive? 3) true)
+(check-expect (positive? 0) false)
+(check-expect (positive? -3) false)
+
+
+(check-expect (negative? 3) false)
+(check-expect (negative? 0) false)
+(check-expect (negative? -3) true)
+
+
+(check-expect (box? 3) false)
+(check-expect (box? (box 3)) true)
+
+
+(check-expect (hash? 3) false)
+(check-expect (hash? (make-hash)) true)
+
+(check-expect (eq? 'hello 'world) false)
+(check-expect (eq? 'hello 'hello) true)
+(check-expect (eq? (expt 2 500) (expt 2 500)) false)
+
+
+(check-expect (eqv? 'hello 'world) false)
+(check-expect (eqv? 'hello 'hello) true)
+(check-expect (eqv? (expt 2 500) (expt 2 500)) true)
+(check-expect (eqv? (expt 2 500) (add1 (expt 2 500))) false)
+
+
+(check-expect (equal? "hello" "hello") true)
+(check-expect (equal? "hello" 17) false)
+
+
+(check-expect (equal~? "hello" "hello" 0.1) true)
+(check-expect (equal~? 16 17 1) true)
+(check-expect (equal~? 16 17 .1) false)
+(check-expect (exn:fail:contract? 
+	       (with-handlers ([void identity]) (equal~? 16 17 'foo)))
+	      true)
+
+
+(check-expect (false? false) true)
+(check-expect (false? true) false)
+(check-expect (false? 3) false)
+
+
+(check-expect (boolean=? false true) false)
+(check-expect (boolean=? false false) true)
+(check-expect (boolean=? true true) true)
+(check-expect (boolean=? true false) false)
+(check-expect (exn:fail:contract?
+	       (with-handlers ([void identity])
+		  (boolean=? 3 false)))
+	      true)
+
+
+
+(check-expect (exn:fail:contract?
+	       (with-handlers ([void identity])
+                 (symbol=? false 'false)))
+	      true)
+(check-expect (symbol=? 'hello 'world) false)
+(check-expect (symbol=? 'hello 'hello) true)
+
 
 
 
