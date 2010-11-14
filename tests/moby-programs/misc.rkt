@@ -259,6 +259,12 @@
 (check-expect (symbol=? 'hello 'hello) true)
 
 
+(check-expect 
+ (call-with-current-continuation
+  (lambda (return)
+    (return 42)
+    (error 'should-not-be-here)))
+ 42)
 
 
 

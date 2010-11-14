@@ -4,3 +4,7 @@
 
 (provide hypo
 	 h)
+
+
+(define-struct a-struct (x y z))
+(provide (struct-out a-struct))
