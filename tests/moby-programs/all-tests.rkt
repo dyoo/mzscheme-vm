@@ -55,6 +55,7 @@
 	 "seconds.rkt"
 	 "random.rkt"
 	 "identity.rkt"
+         "raise.rkt"
          "rotate.rkt")
 
 
