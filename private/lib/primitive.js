@@ -1969,8 +1969,8 @@ PRIMITIVES['number->string'] =
 		 1,
 		 false, false,
 		 function(x) {
-		 	check(x, isNumber, 'number->string', 'number', 1);
-			return types.string(x+'');
+		     check(x, isNumber, 'number->string', 'number', 1);
+		     return types.string(x.toString());
 		 });
 
 

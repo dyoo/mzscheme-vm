@@ -377,9 +377,43 @@
 (check-within (log 6) 1.791759469228055 0.0001)
 (check-within (tan 1) 1.5574077246549023 0.0001)
 (check-expect (acos 1) 0)
-
+(check-within (acos 0) 1.5707963267948966 0.0001)
 
 (check-expect (string->int "3") 51)
+
+
+(check-expect (string-upper-case? "hello") false)
+(check-expect (string-upper-case? "Hello") false)
+(check-expect (string-upper-case? "HELLO") true)
+
+(check-expect (string-ith "wpi" 0) "w")
+(check-expect (string-ith "wpi" 1) "p")
+(check-expect (string-ith "wpi" 2) "i")
+(check-expect (exn:fail:contract?
+	       (with-handlers ([void identity])
+		 (string-ith "wpi" 3)))
+	      true)
+(check-expect (exn:fail:contract?
+	       (with-handlers ([void identity])
+		 (string-ith "wpi" -1)))
+	      true)
+
+(let ([p (make-posn 3 4)])
+  (set-posn-x! p 17)
+  (check-expect p (make-posn 17 4)))
+
+
+(check-expect (replicate 3 "hi") "hihihi")
+(check-expect (replicate 0 "hi") "")
+
+(check-expect (number->string 42) "42")
+(check-expect (number->string -42) "-42")
+(check-expect (number->string -0.0) "-0.0")
+(check-expect (number->string +inf.0) "+inf.0")
+(check-expect (number->string -inf.0) "-inf.0")
+(check-expect (number->string 3/4) "3/4")
+
+
 
 
 "misc.rkt end"

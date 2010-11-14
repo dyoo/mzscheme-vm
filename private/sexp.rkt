@@ -14,7 +14,13 @@
 (define VECTOR-CONSTRUCTOR "types.vectorImmutable")
 (define SYMBOL-CONSTRUCTOR "types.symbol")
 (define KEYWORD-CONSTRUCTOR "types.keyword")
+
 (define FLOAT-CONSTRUCTOR "types.float")
+(define NEGATIVE-ZERO "jsnums.negative_zero")
+(define POSITIVE-INFINITY "jsnums.inf")
+(define NEGATIVE-INFINITY "jsnums.negative_inf")
+(define NOT-A-NUMBER "jsnums.nan")
+
 (define RATIONAL-CONSTRUCTOR "types.rational")
 (define BIGNUM-CONSTRUCTOR "types.bignum")
 (define COMPLEX-CONSTRUCTOR "types.complex")
@@ -190,17 +196,19 @@
 
 ;; floating-number->js: number -> string
 (define (floating-number->js a-num)
-  (string-append FLOAT-CONSTRUCTOR"("
-                 (cond
-                   [(eqv? a-num +inf.0)
-                    "Number.POSITIVE_INFINITY"]
-                   [(eqv? a-num -inf.0)
-                    "Number.NEGATIVE_INFINITY"]
-                   [(eqv? a-num +nan.0)
-                    "Number.NaN"]
-                   [else
-                    (number->string a-num)])
-                 ")"))
+  (cond
+   [(eqv? a-num -0.0)
+    NEGATIVE-ZERO]
+   [(eqv? a-num +inf.0)
+    POSITIVE-INFINITY]
+   [(eqv? a-num -inf.0)
+    NEGATIVE-INFINITY]
+   [(eqv? a-num +nan.0)
+    NOT-A-NUMBER]
+   [else
+    (string-append FLOAT-CONSTRUCTOR"("
+		   (number->string a-num)
+		   ")")]))
 
 ;; rational-number->js: number -> string
 (define (rational-number->js a-num)
