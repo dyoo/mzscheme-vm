@@ -314,6 +314,18 @@
 (check-expect (memq 9 (list 1 2 3 4)) #f)
 
 
+(check-expect (memv 2 (list 1 2 3 4))
+	      '(2 3 4))
+(check-expect (memv 9 (list 1 2 3 4))
+	      #f)
+
+
+(check-expect (assoc 3 (list (list 1 2) (list 3 4) (list 5 6)))
+	      '(3 4))
+(check-expect (assoc 9 (list (list 1 2) (list 3 4) (list 5 6)))
+	      #f)
+
+
 (check-expect (assv 3 (list (list 1 2) (list 3 4) (list 5 6)))
 	      '(3 4))
 
@@ -601,5 +613,83 @@
 (check-expect (build-string 5 (lambda (i) (integer->char (+ i 97))))
 	      "abcde")
 
+(check-expect (string-append "Apple" "Banana")
+	      "AppleBanana")
+
+(let ([s (string #\A #\p #\p #\l #\e)])
+  (string-fill! s #\q)
+  (check-expect s "qqqqq"))
+
+(check-expect (substring "Apple" 1 3)
+	      "pp")
+(check-expect (substring "Apple" 1)
+	      "pple")
+
+
+
+(check-expect (bytes=? #"Apple" #"apple")
+	      #f)
+
+(check-expect (bytes=? #"Apple" #"Apple")
+	      #t)
+(check-expect (bytes=? #"a" #"as" #"a")
+	      #f)
+
+(check-expect (bytes->list #"Apple")
+	      '(65 112 112 108 101))
+
+
+
+(check-expect (truncate 17/4)
+	      4)
+(check-expect (truncate -17/4)
+	      -4)
+(check-expect (truncate #i2.5)
+	      #i2.0)
+(check-expect (truncate #i-2.5)
+	      #i-2.0)
+
+
+(check-expect (eq? js-big-bang big-bang) #t)
+
+(check-expect (bytes-append #"Apple" #"Banana")
+	      #"AppleBanana")
+
+(check-expect (bytes=? #"Apple" #"apple")
+	      #f)
+(check-expect (bytes=? #"a" #"as" #"a")
+	      #f)
+
+(check-expect (bytes<? #"Apple" #"apple")
+	      #t)
+(check-expect (bytes<? #"apple" #"Apple")
+	      #f)
+(check-expect (bytes<? #"a" #"b" #"c")
+	      #t)
+
+
+(check-expect (bytes>? #"Apple" #"apple")
+	      #f)
+(check-expect (bytes>? #"apple" #"Apple")
+	      #t)
+(check-expect (bytes>? #"c" #"b" #"a")
+	      #t)
+
+(check-expect (bytes-length #"Apple")
+	      5)
+
+(check-expect (make-bytes 5 65)
+	      #"AAAAA")
+
+(check-expect (bytes 65 112 112 108 101)
+	      #"Apple")
+
+(printf "ignore the time output: ")
+(time (void))
+
+
+;; example and EXAMPLES are aliases to check-expect.
+(example 3 3)
+(EXAMPLE 3 3)
 
 "misc.rkt end"

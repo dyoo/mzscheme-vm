@@ -14,6 +14,7 @@
                      ;; to do arbitrary server-side compilation.
                      define-syntax
                      define-for-syntax
+		     define-syntaxes
                      begin-for-syntax
                      for-syntax
 		     define-struct
