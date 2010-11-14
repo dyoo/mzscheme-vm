@@ -118,7 +118,6 @@ var makeStructureType = function(theName, parentType, initFieldCnt, autoFieldCnt
 
 
 
-	});
 	// Set type, necessary for equality checking
         aStruct.prototype.type = aStruct;
 
@@ -2398,12 +2397,12 @@ types.exnFailContract = ExnFailContract.constructor;
 types.isExnFailContract = ExnFailContract.predicate;
 
 var ExnFailContractArity = makeStructureType('exn:fail:contract:arity', ExnFailContract, 0, 0, false, false);
-types.exnFailContractArity = ExnFailContract.constructor;
-types.isExnFailContractArity = ExnFailContract.predicate;
+types.exnFailContractArity = ExnFailContractArity.constructor;
+types.isExnFailContractArity = ExnFailContractArity.predicate;
 
 var ExnFailContractVariable = makeStructureType('exn:fail:contract:variable', ExnFailContract, 1, 0, false, false);
-types.exnFailContractVariable = ExnFailContract.constructor;
-types.isExnFailContractVariable = ExnFailContract.predicate;
+types.exnFailContractVariable = ExnFailContractVariable.constructor;
+types.isExnFailContractVariable = ExnFailContractVariable.predicate;
 types.exnFailContractVariableId = function(exn) { return ExnFailContractVariable.accessor(exn, 0); };
 
 var ExnFailContractDivisionByZero = makeStructureType('exn:fail:contract:divide-by-zero', ExnFailContract, 0, 0, false, false);
