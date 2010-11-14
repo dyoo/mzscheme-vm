@@ -16,29 +16,28 @@ var assocListToHash = helpers.assocListToHash;
 
 // Every world configuration function (on-tick, stop-when, ...)
 // produces a WorldConfigOption instance.
-var WorldConfigOption = types.Class.extend({
-	init: function(name) {
-	    this.name = name;	    
-	},
+var WorldConfigOption = function(name) {
+    this.name = name;	    
+};
 
-	configure: function(config) {
-	    throw types.internalError("unimplemented", false);
-	},
+WorldConfigOption.prototype.configure = function(config) {
+    throw types.internalError("unimplemented", false);
+};
 
-	toDomNode: function(cache) {
-	    var div = document.createElement('div');
-	    div.appendChild(document.createTextNode("(" + this.name + " ...)"));
-	    return div;
-	},
+WorldConfigOption.prototype.toDomNode = function(cache) {  
+    var div = document.createElement('div');
+    div.appendChild(document.createTextNode("(" + this.name + " ...)"));
+    return div;
+};
 
-	toWrittenString: function(cache) {
-	    return "(" + this.name + " ...)";
-	},
+WorldConfigOption.prototype.toWrittenString = function(cache) {
+    return "(" + this.name + " ...)";
+};
 
-	toDisplayedString: function(cache) {
-	    return "(" + this.name + " ...)";
-	}
-});
+WorldConfigOption.prototype.toDisplayedString = function(cache) {
+    return "(" + this.name + " ...)";
+};
+
 
 
 var isWorldConfigOption = function(x) { return x instanceof WorldConfigOption; };
@@ -62,22 +61,23 @@ EXPORTS['key=?'] =
 
 
 
-var OnTickBang = WorldConfigOption.extend({
-	init: function(handler, effectHandler, aDelay) {
-	    this._super('on-tick');
-	    this.handler = handler;
-	    this.effectHandler = effectHandler;
-	    this.aDelay = aDelay;
-	},
+var OnTickBang = function(handler, effectHandler, aDelay) {
+    WorldConfigOption.call(this, 'on-tick');
+    this.handler = handler;
+    this.effectHandler = effectHandler;
+    this.aDelay = aDelay;
+};
 
-	configure: function(config) {
-	    var newVals = { 
-		onTick: this.handler,
-		onTickEffect: this.effectHandler,
-		tickDelay: jsnums.toFixnum(jsnums.multiply(1000, this.aDelay))
-	    };
-	    return config.updateAll(newVals);
-	}});
+OnTickBang.prototype = helpers.heir(WorldConfigOption.prototype);
+
+OnTickBang.prototype.configure = function(config) {
+    var newVals = { 
+	onTick: this.handler,
+	onTickEffect: this.effectHandler,
+	tickDelay: jsnums.toFixnum(jsnums.multiply(1000, this.aDelay))
+    };
+    return config.updateAll(newVals);
+};
 
 
 
@@ -141,20 +141,27 @@ var onEvent = function(funName, inConfigName, numArgs) {
     };
 };
 
+
 var onEventBang = function(funName, inConfigName) {
+
+    var CustomConfigOption = function(handler, effectHandler) {
+	WorldConfigOption.call(this, funName);
+	this.handler = handler;
+	this.effectHandler = effectHandler;
+    };
+    CustomConfigOption.prototype = helpers.heir(WorldConfigOption.prototype);
+
+    CustomConfigOption.prototype.configure =function(config) {
+	var newHash = {};
+	newHash[inConfigName] = this.handler;
+	newHash[inConfigName+'Effect'] = this.effectHandler;
+	return config.updateAll(newHash);
+    }
+
     return function(handler, effectHandler) {
 	check(handler, isFunction, funName, 'procedure', 1, arguments);
 	check(effectHandler, isFunction, funName, 'procedure', 2, arguments);
-	return new (WorldConfigOption.extend({
-		    init: function() {
-			this._super(funName);
-		    },
-		    configure: function(config) {
-			var newHash = {};
-			newHash[inConfigName] = handler;
-			newHash[inConfigName+'Effect'] = effectHandler;
-			return config.updateAll(newHash);
-		    }}))();
+	return new CustomConfigOption(handler, effectHandler);
     };
 };
 
@@ -169,22 +176,53 @@ EXPORTS['stop-when!'] = new PrimProc('stop-when!', 2, false, false,
 					onEventBang('stop-when!', 'stopWhen'));
 
 
+
+
+
+var DrawConfigOption = function(f) {
+    WorldConfigOption.call(this, 'to-draw');
+    this.f = f;
+};
+
+DrawConfigOption.prototype = helpers.heir(WorldConfigOption.prototype);
+
+DrawConfigOption.prototype.configure = function(config) {
+    return config.updateAll({'onRedraw': this.f});
+};
+
+
 EXPORTS['to-draw'] =
     new PrimProc('to-draw',
 		 1,
 		 false, false,
 		 function(f) {
 		     check(f, isFunction, 'to-draw', 'procedure', 1);
-		     return new (WorldConfigOption.extend({
-				 init: function() {
-				     this._super('to-draw');
-				 },
-
-				 configure: function(config) {
-				     return config.updateAll({'onRedraw': f});
-				 }}))();
-
+		     return new DrawConfigOption(f);
 		 });
+
+
+var DrawPageOption = function(domHandler) {
+    WorldConfigOption.call(this, 'to-draw-page');
+    this.domHandler = domHandler;
+};
+DrawPageOption.prototype = helpers.heir(WorldConfigOption.prototype);
+DrawPageOption.prototype.configure = function(config) {
+    return config.updateAll({'onDraw': this.domHandler});
+};
+
+
+var DrawPageAndCssOption = function(domHandler, styleHandler) {
+    WorldConfigOption.call(this, 'to-draw-page');
+    this.domHandler = domHandler;
+    this.styleHandler = styleHandler;
+};
+DrawPageAndCssOption.prototype = helpers.heir(WorldConfigOption.prototype);
+DrawPageAndCssOption.prototype.configure = function(config) {
+    return config.updateAll({'onDraw': this.domHandler,
+			     'onDrawCss' : this.styleHandler});
+};
+
+
 
 
 EXPORTS['to-draw-page'] =
@@ -194,14 +232,7 @@ EXPORTS['to-draw-page'] =
 		      false, false,
 		      function(domHandler) {
 			  check(domHandler, isFunction, 'to-draw-page', 'procedure', 1);
-			  return new (WorldConfigOption.extend({
-				    init: function() {
-					this._super('to-draw-page');
-				    },
-				    configure: function(config) {
-					return config.updateAll({'onDraw': domHandler});
-				    }
-				}))();
+			  return new DrawPageOption(domHandler);
 		      }),
 	 new PrimProc('to-draw-page',
 		      2,
@@ -209,16 +240,17 @@ EXPORTS['to-draw-page'] =
 		      function(domHandler, styleHandler) {
 		 	  check(domHandler, isFunction, 'to-draw-page', 'procedure', 1, arguments);
 			  check(styleHandler, isFunction, 'to-draw-page', 'procedure', 2, arguments);
-			  return new (WorldConfigOption.extend({
-				    init: function() {
-					this._super('to-draw-page');
-				    },
-				    configure: function(config) {
-					return config.updateAll({'onDraw': domHandler,
-								 'onDrawCss': styleHandler});
-				    }
-				}))();
-		      }) ]);
+			  return new (DrawPageAndCssOption(domHandler, styleHandler));		      }) ]);
+
+
+var InitialEffectOption = function(effect) {
+    WorldConfigOption.call(this, 'initial-effect');
+    this.effect = effect;
+};
+InitialEffectOption.prototype = helpers.heir(WorldConfigOption.prototype);
+InitialEffectOption.prototype.configure = function(config) {
+    return config.updateAll({'initialEffect': this.effect});
+};
 
 
 EXPORTS['initial-effect'] =
@@ -226,14 +258,7 @@ EXPORTS['initial-effect'] =
 		 1,
 		 false, false,
 		 function(effect) {
-		     return new (WorldConfigOption.extend({
-				 init: function() {
-				     this._super("initial-effect");
-				 },
-				 configure: function(config) {
-					return config.updateAll({'initialEffect': effect});
-				 }
-			     }))();
+		     return new InitialEffectOption(effect);
 		 });
 
 
@@ -1297,21 +1322,6 @@ PRIMITIVES['to-draw-page'] =
 			  return jsworld.Jsworld.onDrawPageConfig(domHandler, styleHandler);
 		      }) ]);
 
-
-//PRIMITIVES['initial-effect'] =
-//    new PrimProc('initial-effect',
-//		 1,
-//		 false, false,
-//		 function(effect) {
-//		     return new (WorldConfigOption.extend({
-//				 init: function() {
-//				     this._super("initial-effect");
-//				 },
-//				 configure: function(config) {
-//					return config.updateAll({'initialEffect': effect});
-//				 }
-//			     }))();
-//		 });
 
 
 */

@@ -534,6 +534,14 @@ var helpers = {};
 
 
 
+    // Inheritance.
+    var heir = function(p) {
+	var f = function() {}
+	f.prototype = p;
+	return new f();
+    };
+
+
 
 	////////////////////////////////////////////////
 
@@ -570,6 +578,8 @@ var helpers = {};
 
         helpers.getEqHashCode = getEqHashCode;
         helpers.makeLowLevelEqHash = makeLowLevelEqHash;
+
+        helpers.heir = heir;
 
 })();
 

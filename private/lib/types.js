@@ -57,71 +57,6 @@ UnionFind.prototype.merge = function(ptr1, ptr2) {
 
 
 
-//////////////////////////////////////////////////////////////////////
-
-// Class inheritance infrastructure
-
-// This code copied directly from http://ejohn.org/blog/simple-javascript-inheritance/
-var Class = (function(){
-	var initializing = false, fnTest = /xyz/.test(function(){xyz;}) ? /\b_super\b/ : /.*/;
-	// The base Class implementation (does nothing)
-	var innerClass = function(){};
-	
-	// Create a new Class that inherits from this class
-	innerClass.extend = function(prop) {
-		var _super = this.prototype;
-		
-		// Instantiate a base class (but only create the instance,
-		// don't run the init constructor)
-		initializing = true;
-		var prototype = new this();
-		initializing = false;
-		
-		// Copy the properties over onto the new prototype
-		for (var name in prop) {
-			// Check if we're overwriting an existing function
-			prototype[name] = typeof prop[name] == "function" && 
-				typeof _super[name] == "function" && fnTest.test(prop[name]) ?
-				(function(name, fn){
-					return function() {
-						var tmp = this._super;
-						
-						// Add a new ._super() method that is the same method
-						// but on the super-class
-						this._super = _super[name];
-						
-						// The method only need to be bound temporarily, so we
-						// remove it when we're done executing
-						var ret = fn.apply(this, arguments);				
-						this._super = tmp;
-						
-						return ret;
-					};
-				})(name, prop[name]) :
-				prop[name];
-		}
-		
-		// The dummy class constructor
-		var Dummy = function() {
-			// All construction is actually done in the init method
-			if ( !initializing && this.init )
-				this.init.apply(this, arguments);
-		}
-		
-		// Populate our constructed prototype object
-		Dummy.prototype = prototype;
-		
-		// Enforce the constructor to be what we expect
-		Dummy.constructor = Dummy;
-
-		// And make this class extendable
-		Dummy.extend = arguments.callee;
-		
-		return Dummy;
-	};
-	return innerClass;
-})();
- 
 
 
 //////////////////////////////////////////////////////////////////////
@@ -170,20 +105,22 @@ var makeStructureType = function(theName, parentType, initFieldCnt, autoFieldCnt
 	var numParentArgs = parentType.numberOfArgs;
 
 	// Create a new struct type inheriting from the parent
-	var aStruct = parentType.type.extend({
-	    init: function(name, args) {
-	    	this._super(name, args);
+    var aStruct = function(name, args) {
+	parentType.type.call(this, name, args);
+	for (var i = 0; i < initFieldCnt; i++) {
+	    this._fields.push(args[i+numParentArgs]);
+	}
+	for (var i = 0; i < autoFieldCnt; i++) {
+	    this._fields.push(autoV);
+	}
+    };
+    aStruct.prototype = helpers.heir(parentType.type.prototype);
 
-		for (var i = 0; i < initFieldCnt; i++) {
-			this._fields.push(args[i+numParentArgs]);
-		}
-		for (var i = 0; i < autoFieldCnt; i++) {
-			this._fields.push(autoV);
-		}
-	    }
+
+
 	});
 	// Set type, necessary for equality checking
-	aStruct.prototype.type = aStruct;
+        aStruct.prototype.type = aStruct;
 
 	// construct and return the new type
 	var newType = new StructType(theName,
@@ -206,66 +143,70 @@ var makeStructureType = function(theName, parentType, initFieldCnt, autoFieldCnt
 								  Symbol.makeInstance(theName),
 								  function(res) { return new aStruct(theName, res); });
 				     },
-				     function(x) { return x instanceof aStruct; },
+				     function(x) { 
+					 return x instanceof aStruct; 
+				     },
 				     function(x, i) { return x._fields[i + this.firstField]; },
 				     function(x, i, v) { x._fields[i + this.firstField] = v; });
 	return newType;
 };
 
-// Structures.
-var Struct = Class.extend({
-	init: function (constructorName, fields) {
-	    this._constructorName = constructorName; 
-	    this._fields = [];
-	},
-
-	toWrittenString: function(cache) { 
-	    cache.put(this, true);
-	    var buffer = [];
-	    buffer.push("(");
-	    buffer.push(this._constructorName);
-	    for(var i = 0; i < this._fields.length; i++) {
-		buffer.push(" ");
-		buffer.push(toWrittenString(this._fields[i], cache));
-	    }
-	    buffer.push(")");
-	    return buffer.join("");
-	},
-
-        toDisplayedString: function(cache) { return toWrittenString(this, cache); },
-
-	toDomNode: function(cache) {
-	    cache.put(this, true);
-	    var node = document.createElement("div");
-	    node.appendChild(document.createTextNode("("));
-	    node.appendChild(document.createTextNode(this._constructorName));
-	    for(var i = 0; i < this._fields.length; i++) {
-		node.appendChild(document.createTextNode(" "));
-		appendChild(node, toDomNode(this._fields[i], cache));
-	    }
-	    node.appendChild(document.createTextNode(")"));
-	    return node;
-	},
 
 
-	isEqual: function(other, aUnionFind) {
-	    if ( other.type == undefined ||
-		 this.type !== other.type ||
-		 !(other instanceof this.type) ) {
-		    return false;
-	    }
+    var Struct = function(constructorName, fields) {
+	this._constructorName = constructorName; 
+	this._fields = [];
+    };
 
-	    for (var i = 0; i < this._fields.length; i++) {
-		if (! isEqual(this._fields[i],
-			      other._fields[i],
-			      aUnionFind)) {
-			return false;
-		}
-	    }
-	    return true;
+    Struct.prototype.toWrittenString = function(cache) { 
+	cache.put(this, true);
+	var buffer = [];
+	buffer.push("(");
+	buffer.push(this._constructorName);
+	for(var i = 0; i < this._fields.length; i++) {
+	    buffer.push(" ");
+	    buffer.push(toWrittenString(this._fields[i], cache));
 	}
-});
-Struct.prototype.type = Struct;
+	buffer.push(")");
+	return buffer.join("");
+    };
+
+    Struct.prototype.toDisplayedString = function(cache) {
+	return toWrittenString(this, cache); 
+    };
+
+    Struct.prototype.toDomNode = function(cache) {
+	cache.put(this, true);
+	var node = document.createElement("div");
+	node.appendChild(document.createTextNode("("));
+	node.appendChild(document.createTextNode(this._constructorName));
+	for(var i = 0; i < this._fields.length; i++) {
+	    node.appendChild(document.createTextNode(" "));
+	    appendChild(node, toDomNode(this._fields[i], cache));
+	}
+	node.appendChild(document.createTextNode(")"));
+	return node;
+    };
+
+
+    Struct.prototype.isEqual = function(other, aUnionFind) {
+	if ( other.type == undefined ||
+	     this.type !== other.type ||
+	     !(other instanceof this.type) ) {
+	    return false;
+	}
+
+	for (var i = 0; i < this._fields.length; i++) {
+	    if (! isEqual(this._fields[i],
+			  other._fields[i],
+			  aUnionFind)) {
+		return false;
+	    }
+	}
+	return true;
+    }
+
+    Struct.prototype.type = Struct;
 
 
 
@@ -2393,8 +2334,6 @@ types.Placeholder = Placeholder;
 types.ThreadCell = ThreadCell;
 
 
-
-types.Class = Class;
 
 
 types.makeStructureType = makeStructureType;

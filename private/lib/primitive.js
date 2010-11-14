@@ -346,11 +346,6 @@ var checkAndGetGuard = function(funName, guard, numberOfGuardArgs) {
 };
 
 
-var heir = function(p) {
-    var f = function() {}
-    f.prototype = p;
-    return new f();
-};
 
 
 // Struct Procedure types
@@ -358,27 +353,27 @@ var StructProc = function(type, name, numParams, isRest, usesState, impl) {
     PrimProc.call(this, name, numParams, isRest, usesState, impl);
     this.type = type;
 };
-StructProc.prototype = heir(PrimProc.prototype);
+StructProc.prototype = helpers.heir(PrimProc.prototype);
 
 var StructConstructorProc = function() {
     StructProc.apply(this, arguments);
 };
-StructConstructorProc.prototype = heir(StructProc.prototype);
+StructConstructorProc.prototype = helpers.heir(StructProc.prototype);
 
 var StructPredicateProc = function() {
     StructProc.apply(this, arguments);
 };
-StructPredicateProc.prototype = heir(StructProc.prototype);
+StructPredicateProc.prototype = helpers.heir(StructProc.prototype);
 
 var StructAccessorProc = function() {
     StructProc.apply(this, arguments);
 };
-StructAccessorProc.prototype = heir(StructProc.prototype);
+StructAccessorProc.prototype = helpers.heir(StructProc.prototype);
 
 var StructMutatorProc = function() {
     StructProc.apply(this, arguments);
 };
-StructMutatorProc.prototype = heir(StructProc.prototype);
+StructMutatorProc.prototype = helpers.heir(StructProc.prototype);
 
 var getMakeStructTypeReturns = function(aStructType) {
 	var name = aStructType.name;
