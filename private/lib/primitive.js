@@ -834,6 +834,16 @@ PRIMITIVES['default-continuation-prompt-tag'] =
 		     });
 
 
+PRIMITIVES['continuation-prompt-tag?'] =
+	new PrimProc('continuation-prompt-tag?',
+		     1,
+		     false, false,
+		     types.isContinuationPromptTag);
+
+
+
+
+
 // Implements the default handler for a continuation prompt, if one isn't provided
 // by call-with-continuation-prompt.
 var defaultCallWithContinuationPromptHandler =

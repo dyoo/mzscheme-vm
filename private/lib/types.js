@@ -2320,6 +2320,7 @@ types.contMarkRecordControl = function(dict) { return new ContMarkRecordControl(
 types.isContMarkRecordControl = function(x) { return x instanceof ContMarkRecordControl; };
 types.continuationMarkSet = function(dict) { return new ContinuationMarkSet(dict); };
 types.isContinuationMarkSet = function(x) { return x instanceof ContinuationMarkSet; };
+types.isContinuationPromptTag = function(x) { return x instanceof ContinuationPromptTag; };
 
 
 types.PrefixValue = PrefixValue;

@@ -268,4 +268,118 @@
 
 
 
+(check-expect (ormap even? '(1 3 5 7 9)) #f)
+(check-expect (ormap even? '(1 3 5 8 9)) true)
+
+
+(check-expect (continuation-prompt-tag?
+	        (make-continuation-prompt-tag)) #t)
+
+
+(check-expect (string->symbol "a-symbol") 'a-symbol)
+
+
+(check-expect (append '(1 2 3) 4)
+	      (cons 1 (cons 2 (cons 3 4))))
+
+(check-expect (append '(1 2 3) '(4))
+	      (list 1 2 3 4))
+
+
+(check-expect (list-ref '(a e i o u) 0) 'a)
+(check-expect (list-ref '(a e i o u) 1) 'e)
+(check-expect (list-ref '(a e i o u) 2) 'i)
+(check-expect (list-ref '(a e i o u) 3) 'o)
+(check-expect (list-ref '(a e i o u) 4) 'u)
+(check-expect (exn:fail:contract? 
+	       (with-handlers ([void identity])
+		 (list-ref '(a e i o u) 5)))
+	      true)
+(check-expect (exn:fail:contract? 
+	       (with-handlers ([void identity])
+		 (list-ref '(a e i o u) -1)))
+	      true)
+
+
+(check-expect (memq 2 (list 1 2 3 4)) '(2 3 4))
+(check-expect (memq 9 (list 1 2 3 4)) #f)
+
+
+(check-expect (assv 3 (list (list 1 2) (list 3 4) (list 5 6)))
+	      '(3 4))
+
+(check-expect (cdar '((7 6 5 4 3 2 1) 8 9))
+	      '(6 5 4 3 2 1))
+(check-expect (cadr '((1 2) 3 4))
+	      3)
+(check-expect (caar '((1 2) 3 4))
+	       1)
+
+(check-expect (cddr '(2 1))
+	      '())
+
+(check-expect (caaar '(((6 5 4 3 2 1) 7) 8 9))
+	      6)
+
+(check-expect (caadr '(9 (7 6 5 4 3 2 1) 8))
+	      7)
+
+(check-expect (cadar '((7 6 5 4 3 2 1) 8 9))
+	      6)
+(check-expect (caddr '(3 2 1))
+	      1)
+
+(check-expect (cdaar '(((6 5 4 3 2 1) 7) 8 9))
+	      '(5 4 3 2 1))
+
+(check-expect (cdadr '(9 (7 6 5 4 3 2 1) 8))
+	      '(6 5 4 3 2 1))
+
+(check-expect (cddar '((7 6 5 4 3 2 1) 8 9))
+	      '(5 4 3 2 1))
+
+(check-expect (cdddr '(3 2 1))
+	      '())
+(check-expect (cadddr '(4 3 2 1))
+	      1)
+
+
+(check-expect (list? empty) true)
+(check-expect (list? '(1 2)) true)
+(check-expect (list? '(1 . 2)) false)
+
+
+(let ([ht (make-hash)])
+  (hash-set! ht 'name "danny")
+  (check-expect (hash-ref ht 'name)
+		"danny")
+  (check-expect (hash-map ht (lambda (k v) (list k v)))
+		'((name "danny"))))
+
+
+
+(let* ([holder (make-placeholder #f)]
+       [template `(hello world ,holder)])
+  (check-expect (make-reader-graph template)
+		'(hello world #f))
+  (placeholder-set! holder "test")
+  (check-expect (make-reader-graph template)
+		'(hello world "test")))
+
+
+(check-expect (exact? #i3.42) #f)
+(check-expect (exact? 3) #t)
+(check-expect (exn:fail:contract? (with-handlers ([void identity]) (exact? "not a number"))) true)
+
+
+
+(check-expect (log 1) 0)
+(check-within (log 6) 1.791759469228055 0.0001)
+(check-within (tan 1) 1.5574077246549023 0.0001)
+(check-expect (acos 1) 0)
+
+
+(check-expect (string->int "3") 51)
+
+
 "misc.rkt end"

@@ -452,7 +452,7 @@
 		       abort-current-continuation
 		       default-continuation-prompt-tag
                        make-continuation-prompt-tag
-
+		       continuation-prompt-tag?
 
 		       make-reader-graph
 		       make-placeholder
