@@ -23,3 +23,6 @@
 
 (check-expect (a-struct-x (make-a-struct 3 4 5)) 3)
 (check-expect (a-struct? (make-a-struct 3 4 5)) true)
+
+
+(check-expect game-name "Evolution chamber")

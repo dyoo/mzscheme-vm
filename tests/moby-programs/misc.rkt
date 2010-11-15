@@ -2,6 +2,12 @@
 
 "misc.rkt"
 
+;; The tests here make sure that all of the functions
+;; that we provide are at least exercised once.
+;; They are not meant to be systematic.
+
+
+
 (check-expect (procedure? +) true)
 (check-expect (procedure? 1432) false)
 
@@ -816,6 +822,58 @@
 	      #\a)
 (check-expect (char-downcase #\space)
 	      #\space)
+
+(check-expect (char->integer #\A)
+	      65)
+
+(check-expect (char-ci<=? #\A #\a)
+	      #t)
+(check-expect (char-ci<=? #\a #\A)
+	      #t)
+(check-expect (char-ci<=? #\a #\b #\b)
+	      #t)
+
+
+(check-expect (char>=? #\A #\a)
+	      #f)
+(check-expect (char>=? #\a #\A)
+	      #t)
+(check-expect (char>=? #\c #\b #\b)
+	      #t)
+
+(check-expect (bytes->immutable-bytes (bytes 65 65 65))
+	      #"AAA")
+(let ([b (bytes->immutable-bytes (make-bytes 5 65))])
+  (check-expect (bytes->immutable-bytes b)
+		#"AAAAA")
+  (check-expect (eq? (bytes->immutable-bytes b) b)
+		#t))
+
+(check-expect (subbytes #"Apple" 1 3)
+	      #"pp")
+(check-expect (subbytes #"Apple" 1)
+	      #"pple")
+
+
+(check-expect (bytes-copy  #"Apple")
+  #"Apple")
+
+
+(check-expect (bytes-ref #"Apple" 0)
+	      65)
+
+
+(let ([s (bytes 65 112 112 108 101)])
+  (bytes-set! s 4 121)
+  (check-expect s
+		#"Apply"))
+
+
+(let ([s (bytes 65 112 112 108 101)])
+  (bytes-fill! s 113)
+  (check-expect s
+		#"qqqqq"))
+
 
 
 
