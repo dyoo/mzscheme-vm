@@ -876,6 +876,94 @@
 
 
 
+(check-expect (argmax car '((3 pears) (1 banana) (2 apples)))
+	      '(3 pears))
+(check-expect (argmax car '((3 pears) (3 oranges)))
+	      '(3 pears))
+
+(check-expect (argmin car '((3 pears) (1 banana) (2 apples)))
+	      '(1 banana))
+(check-expect (argmin car '((1 banana) (1 orange)))
+	      '(1 banana))
+
+
+(check-within (asin 0.25) 0.25268025514207865 0.000001)
+(check-within (real-part (asin 1.0+5.0i))
+	      0.1937931365549321
+	      0.000001)
+(check-within (imag-part (asin 1.0+5.0i))
+	      2.3309746530493123
+	      0.000001)
+
+
+(check-expect (cosh 0) 1.0)
+(check-within (cosh 1) 1.5430806348152437 0.000001)
+
+
+
+
+(check-expect (assq 3 (list (list 1 2) (list 3 4) (list 5 6)))
+	      '(3 4))
+
+
+(check-expect (conjugate 1)
+	      1)
+(check-expect (conjugate 3+4i)
+	      3-4i)
+
+
+
+(let ([make-nums (lambda (n)
+		   (do [(x n (- x 1)) (lst (list) (cons x lst))]
+		       ((= x 0)
+			lst)))])
+  (check-expect (make-nums 3)
+		'(1 2 3)))
+
+
+(check-expect (first '(1 2 3 4 5 6 7 8 9 10))
+	      1)
+(check-expect (rest '(1 2 3 4 5 6 7 8 9 10))
+	      '(2 3 4 5 6 7 8 9 10))
+(check-expect (second '(1 2 3 4 5 6 7 8 9 10))
+	      2)
+(check-expect (third '(1 2 3 4 5 6 7 8 9 10))
+	      3)
+
+(check-expect (fourth '(1 2 3 4 5 6 7 8 9 10))
+	      4)
+
+(check-expect (fifth '(1 2 3 4 5 6 7 8 9 10))
+	      5)
+
+(check-expect (sixth '(1 2 3 4 5 6 7 8 9 10))
+	      6)
+(check-expect (seventh '(1 2 3 4 5 6 7 8 9 10))
+	      7)
+(check-expect (eighth '(1 2 3 4 5 6 7 8 9 10))
+	      8)
+
+
+
+(check-expect (sgn 10)
+	      1)
+(check-expect (sgn #i-10.0)
+	      #i-1.0)
+(check-expect (sgn 0)
+	      0)
+
+
+		 
+
+(let ()
+  (define-values (x y z) (values 3 4 5))
+  (check-expect x 3)
+  (check-expect y 4)
+  (check-expect z 5))
+
+
+
+
 
 (printf "Please ignore the time output (just exercising the function): ")
 (time (void))

@@ -1920,22 +1920,30 @@ PRIMITIVES['conjugate'] =
 		 });
 
 
-PRIMITIVES['sgn'] =
-    new PrimProc('sgn',
-		 1,
-		 false, false,
-		 function(x) {
-		 	check(x, isReal, 'sgn', 'real number', 1);
-			if ( jsnums.greaterThan(x, 0) ) {
-				return 1;
-			}
-			else if ( jsnums.lessThan(x, 0) ) {
-				return -1;
-			}
-			else {
-				return 0;
-			}
-		 });
+    PRIMITIVES['sgn'] =
+	new PrimProc('sgn',
+		     1,
+		     false, false,
+		     function(x) {
+			 check(x, isReal, 'sgn', 'real number', 1);
+			 if (jsnums.isInexact(x)) {
+			     if ( jsnums.greaterThan(x, 0) ) {
+				 return jsnums.makeFloat(1);
+			     } else if ( jsnums.lessThan(x, 0) ) {
+				 return jsnums.makeFloat(-1);
+			     } else {
+				 return jsnums.makeFloat(0);
+			     }
+			 } else {
+			     if ( jsnums.greaterThan(x, 0) ) {
+				 return 1;
+			     } else if ( jsnums.lessThan(x, 0) ) {
+				 return -1;
+			     } else {
+				 return 0;
+			     }
+			 }
+		     });
 
 
 PRIMITIVES['inexact->exact'] =
