@@ -25,7 +25,7 @@
 		(stop-when (lambda (x) true))))
 
 
-"at this point, something should be moving on the screen"
+"at this point, something should be moving on the screen."
 (void (big-bang 1
 		(on-tick (lambda (x) (+ x 5)))
 		;; check single-arity to-draw-page
@@ -38,8 +38,12 @@
 				 (modulo x 300)
 				 (modulo x 300)
 				 (empty-page))))
-		(stop-when (lambda (x) (>= x 500)))))
+		(stop-when (lambda (x) (>= x 500)))
+		(on-key (lambda (w k)
+			  1))))
 
+
+(void (initial-effect '()))
       
 
 (check-expect (image-height (circle 20 'solid 'green))
@@ -71,7 +75,63 @@
 				 (list (js-text "another button")))))
 		(stop-when (lambda (x) true))))
 
+"a js-img"
+(void (big-bang 1
+		(to-draw-page 
+		 (lambda (x) 
+		   (list
+		    (js-img "http://racket-lang.org/logo.png"))))
+		(stop-when (lambda (x) true))))
 
+
+"a js-p"
+(void (big-bang 1
+		(to-draw-page 
+		 (lambda (x) 
+		   (list
+		    (js-p)
+		    (list (js-text "hello world")))))
+		(stop-when (lambda (x) true))))
+
+
+(check-expect (key=? "a" "a") true)
+(check-expect (key=? "a" "b") false)
+
+
+
+
+"js-select"
+(let ()
+   (define (select-house w an-option)
+    an-option)
+  
+  (define a-select-element
+    (js-select (list ""
+                     "Gryffindor"
+                     "Hufflepuff"
+                     "Ravenclaw"
+                     "Slytherin")
+               select-house))
+  
+  (define (draw w)
+    (list (js-div)
+          (list a-select-element)
+          (list (js-text (format "House: ~a" w)))))
+  
+  (define (draw-css w)
+    '())
+  
+  (big-bang ""
+            (to-draw-page draw draw-css)
+	    (stop-when (lambda (x) true))))
+
+
+(void (on-key! (lambda (w a-key) w)
+	       (lambda (w a-key) '())))
+
+
+(void (on-tick! (lambda (w) w)
+		(lambda (w) '())))
 
 
 

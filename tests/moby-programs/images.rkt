@@ -41,3 +41,30 @@
 
 
 "should be a blue ellipse" (ellipse 100 200 "solid" "blue")
+
+"should be an image from a url:" (image-url "http://racket-lang.org/logo.png")
+"should be an image from a url:" (open-image-url "http://racket-lang.org/logo.png")
+
+
+
+(check-expect (image?
+	       (put-pinhole (rectangle 20 20 'solid 'green) 0 0))
+	      true)
+
+"should be an overlay"
+(overlay (circle 20 'solid 'green)
+	 (rectangle 10 20 'solid 'blue))
+
+"should be an overlay/xy"
+(overlay/xy (circle 20 'solid 'green)
+	    0 0
+	    (rectangle 10 20 'solid 'blue))
+
+"should be an underlay"
+(underlay (circle 20 'solid 'green)
+	  (rectangle 10 20 'solid 'blue))
+
+"should be an underlay/xy"
+(underlay/xy (circle 20 'solid 'green)
+	     0 0
+	     (rectangle 10 20 'solid 'blue))
