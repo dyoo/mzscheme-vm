@@ -26,3 +26,9 @@
 
 
 (check-expect game-name "Evolution chamber")
+
+;; Hopefully, all-except-out will prevent a collision
+;; between this binding and the one in required-5.rkt
+(define clashing-value "value with a binding in required-5.rkt")
+(check-expect clashing-value
+	      "value with a binding in required-5.rkt")

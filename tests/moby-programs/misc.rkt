@@ -441,7 +441,10 @@
 	      true)
 
 (let ([p (make-posn 3 4)])
+  (check-expect (posn? p) true)
+  (check-expect (posn? 42) false)
   (check-expect (posn-x p) 3)
+  (check-expect (posn-y p) 4)
   (set-posn-x! p 17)
   (check-expect (posn-x p) 17)
   (check-expect p (make-posn 17 4))
@@ -953,6 +956,17 @@
 	      0)
 
 
+
+(check-within (sin 3.14159)
+	      2.65358979335273e-06
+	      0.000001)
+(check-within (real-part (sin 1.0+5.0i))
+	      62.44551846769653
+	      0.0000001)
+(check-within (imag-part (sin 1.0+5.0i))
+	      40.0921657779984
+	      0.0000001)
+
 		 
 
 (let ()
@@ -961,6 +975,120 @@
   (check-expect y 4)
   (check-expect z 5))
 
+
+
+(check-expect (exact->inexact 1)
+	      #i1.0)
+(check-expect (exact->inexact #i1.0)
+	      #i1.0)
+
+
+(check-expect (explode "hello")
+	      '("h" "e" "l" "l" "o"))
+(check-expect (explode "")
+	      '())
+
+
+(check-expect (filter positive? '(1 -2 3 4 -5))
+	      '(1 3 4))
+
+
+(check-expect (int->string 50)
+	      "2")
+
+(check-expect (let*-values ([(x y) (values
+				    (quotient 10 3)
+				    (remainder 10 3))]
+			    [(z) (list y x)])
+			   z)
+	      '(1 3))
+
+(check-expect (list->bytes (list 65 112 112 108 101))
+	      #"Apple")
+(check-expect (list->bytes (list))
+	      #"")
+
+
+(check-within (real-part (make-polar 10 (* pi 1/2)))
+	      #i6.123233995736766e-16
+	      #i0.00001)
+(check-within (imag-part (make-polar 10 (* pi 1/2)))
+	      #i10.0
+	      #i0.00001)
+
+
+(check-expect (sinh 0)
+	      0)
+(check-within (sinh 1)
+	      #i1.1752011936438014
+	      0.000001)
+
+
+(check-expect (sort '(1 3 4 2) <)
+	      '(1 2 3 4))
+
+(check-expect (quicksort '("aardvark" "dingo" "cow" "bear") string<?)
+	      '("aardvark" "bear" "cow" "dingo"))
+
+
+(check-expect (string->immutable-string "hello")
+	      "hello")
+(check-expect (exn:fail:contract?
+	       (with-handlers ([void identity])
+			      (string-set! (string->immutable-string "x")
+					   0
+					   #\y)))
+	      true)
+(check-expect (exn:fail:contract?
+	       (with-handlers ([void identity])
+			      (string-set! "x"
+					   0
+					   #\y)))
+	      true)
+(let ([x (string-copy "x")])
+  (string-set! x 0 #\X)
+  (check-expect x "X"))
+
+
+
+(check-expect (make-string 5 #\z)
+	      "zzzzz")
+(check-expect (make-string 0 #\z)
+	      "")
+
+(check-expect (make-vector 5 #\x)
+	      #(#\x #\x #\x #\x #\x))
+
+
+(check-expect (string-alphabetic? "hello")
+	      true)
+(check-expect (string-alphabetic? "")
+	      true)
+(check-expect (string-alphabetic? "hello world")
+	      false)
+
+
+(check-expect (string-whitespace? "hello")
+	      false)
+(check-expect (string-whitespace? "")
+	      true)
+(check-expect (string-whitespace? "      ")
+	      true)
+(check-expect (string-whitespace? "  \t  \n  ")
+	      true)
+(check-expect (string-whitespace? "hello world")
+	      false)
+
+
+(check-expect (string-ref "Apple" 0)
+	      #\A)
+
+(check-expect (string<=? "Apple" "apple")
+	      #t)
+(check-expect (string<=? "apple" "Apple")
+	      #f)
+(check-expect (string<=? "a" "b" "b")
+	      #t)
 
 
 

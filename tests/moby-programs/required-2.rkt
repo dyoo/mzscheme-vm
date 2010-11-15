@@ -11,4 +11,5 @@
 (provide (struct-out a-struct))
 
 
-(provide (all-from-out "required-5.rkt"))
+(provide (except-out (all-from-out "required-5.rkt")
+		     clashing-value))
