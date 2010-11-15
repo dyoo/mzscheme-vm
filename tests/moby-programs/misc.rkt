@@ -684,12 +684,145 @@
 (check-expect (bytes 65 112 112 108 101)
 	      #"Apple")
 
-(printf "ignore the time output: ")
-(time (void))
 
 
 ;; example and EXAMPLES are aliases to check-expect.
 (example 3 3)
 (EXAMPLE 3 3)
+
+
+(check-expect (foldr cons '() '(1 2 3 4))
+	      '(1 2 3 4))
+(check-expect (foldr (lambda (v l) (cons (add1 v) l)) '() '(1 2 3 4))
+	      '(2 3 4 5))
+
+
+(check-expect (foldl cons '() '(1 2 3 4))
+	      '(4 3 2 1))
+(check-expect (foldl + 0 '(1 2 3 4))
+	      10)
+(check-expect (foldl (lambda (a b result)
+		       (* result (- a b)))
+		     1
+		     '(1 2 3)
+		     '(4 5 6))
+	      -27)
+
+
+
+(check-expect (memf (lambda (arg)
+		      (> arg 9))
+		    '(7 8 9 10 11))
+	      '(10 11))
+
+
+(check-expect (build-list 10 values)
+	      '(0 1 2 3 4 5 6 7 8 9))
+(check-expect  (build-list 5 (lambda (x) (* x x)))
+	       '(0 1 4 9 16))
+
+
+
+
+
+(check-expect (char<? #\A #\a)
+	      #t)
+(check-expect (char<? #\a #\A)
+	      #f)
+(check-expect (char<? #\a #\b #\c)
+	      #t)
+
+(check-expect (char-ci=? #\A #\a)
+	      #t)
+(check-expect (char-ci=? #\a #\a #\a)
+	      #t)
+
+(check-expect (char-ci>=? #\A #\a)
+	      #t)
+(check-expect (char-ci>=? #\a #\A)
+	      #t)
+(check-expect (char-ci>=? #\c #\b #\b)
+	      #t)
+
+(check-expect (char=? #\a #\a)
+	      #t)
+(check-expect (char=? #\a #\A #\a)
+	      #f)
+
+(check-expect (char<=? #\A #\a)
+	      #t)
+(check-expect (char<=? #\a #\A)
+	      #f)
+(check-expect (char<=? #\a #\b #\b)
+	      #t)
+
+
+(check-expect (char>? #\A #\a)
+	      #f)
+(check-expect (char>? #\a #\A)
+	      #t)
+(check-expect (char>? #\c #\b #\a)
+	      #t)
+
+
+(check-expect (char-alphabetic? #\a) true)
+(check-expect (char-alphabetic? #\0) false)
+
+(check-expect (char-upper-case? #\a) false)
+(check-expect (char-upper-case? #\A) true)
+(check-expect (char-upper-case? #\0) false)
+
+(check-expect (char-lower-case? #\a) true)
+(check-expect (char-lower-case? #\A) false)
+(check-expect (char-lower-case? #\0) false)
+
+
+(check-expect (char-ci<? #\A #\a)
+	      #f)
+(check-expect (char-ci<? #\a #\b)
+	      #t)
+(check-expect (char-ci<? #\a #\b #\c)
+	      #t)
+
+(check-expect (char-ci>? #\A #\a)
+	      #f)
+(check-expect (char-ci>? #\b #\A)
+	      #t)
+(check-expect (char-ci>? #\c #\b #\a)
+	      #t)
+
+(check-expect (char-whitespace? #\newline) 
+	      true)
+(check-expect (char-whitespace? #\a)
+	      false)
+
+
+(check-expect (char-numeric? #\a)
+	      false)
+(check-expect (char-numeric? #\0)
+	      true)
+(check-expect (andmap char-numeric?
+		      '(#\0 #\1 #\2 #\3 #\4 #\5 #\6 #\7 #\8 #\9))
+	      true)
+
+
+
+(check-expect (char-upcase #\a)
+	      #\A)
+(check-expect (char-upcase #\space)
+	      #\space)
+
+(check-expect (char-downcase #\A)
+	      #\a)
+(check-expect (char-downcase #\space)
+	      #\space)
+
+
+
+(printf "Please ignore the time output (just exercising the function): ")
+(time (void))
+
+
+
 
 "misc.rkt end"

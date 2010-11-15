@@ -9,4 +9,8 @@
 (define f (lambda args args))
 (check-expect (apply f 'hello 'world '()) '(hello world))
 
+(let ([g (λ (x) (* x x))])
+  (check-expect (apply g 3 '()) 9))
+
+
 "apply.rkt end"
