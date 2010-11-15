@@ -35,16 +35,16 @@
 	 place-on-page
 
 	 make-world-config
-	 make-effect-type
+	 #;make-effect-type
 	 effect-type?
 	 effect?
 
-	 make-render-effect-type
-	 render-effect-type?
+	 #;make-render-effect-type
+	 #;render-effect-type?
 
 	 world-with-effects
 
-	 make-render-effect
-	 render-effect?
-	 render-effect-dom-node
-	 render-effect-effects)
+	 #;make-render-effect
+	 #;render-effect?
+	 #;render-effect-dom-node
+	 #;render-effect-effects)

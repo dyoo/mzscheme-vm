@@ -2015,16 +2015,16 @@ runTest('exp and log',
 
 runTest('sin, cos, tan, asin, acos, atan',
 	function() {
-		testPrim('sin', id, [20], types.float(Math.sin(20)));
-		testPrim('sin', id, [0], types.float(0));
-		testPrim('cos', id, [0], types.float(1));
-		testPrim('cos', types.float, [43], types.float(Math.cos(43)));
-		testPrim('tan', types.float, [0], types.float(0));
-		testPrim('tan', id, [-30], types.float(Math.tan(-30)));
-
-		testPrim('asin', types.float, [-0.5], types.float(Math.asin(-0.5)));
-		testPrim('acos', types.float, [0.53], types.float(Math.acos(0.53)));
-		testPrim('atan', types.float, [-543], types.float(Math.atan(-543)));
+	    testPrim('sin', id, [20], types.float(Math.sin(20)));
+ 	    testPrim('sin', id, [0], 0);
+ 	    testPrim('cos', id, [0], 1);
+ 	    testPrim('cos', types.float, [43], types.float(Math.cos(43)));
+ 	    testPrim('tan', types.float, [0], types.float(0));
+ 	    testPrim('tan', id, [-30], types.float(Math.tan(-30)));
+	    
+ 	    testPrim('asin', types.float, [-0.5], types.float(Math.asin(-0.5)));
+ 	    testPrim('acos', types.float, [0.53], types.float(Math.acos(0.53)));
+ 	    testPrim('atan', types.float, [-543], types.float(Math.atan(-543)));
 	});
 
 

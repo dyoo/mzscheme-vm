@@ -133,6 +133,13 @@
 (void (on-tick! (lambda (w) w)
 		(lambda (w) '())))
 
+(void (stop-when! (lambda (w) true)
+		  (lambda (w) '())))
+
+
+
+;; we need more effects
+(void (world-with-effects '() 3))
 
 
 "jsworld.rkt end"
