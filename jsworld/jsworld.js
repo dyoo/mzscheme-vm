@@ -240,7 +240,7 @@ EXPORTS['to-draw-page'] =
 		      function(domHandler, styleHandler) {
 		 	  check(domHandler, isFunction, 'to-draw-page', 'procedure', 1, arguments);
 			  check(styleHandler, isFunction, 'to-draw-page', 'procedure', 2, arguments);
-			  return new (DrawPageAndCssOption(domHandler, styleHandler));		      }) ]);
+			  return new DrawPageAndCssOption(domHandler, styleHandler);		      }) ]);
 
 
 var InitialEffectOption = function(effect) {
@@ -497,6 +497,8 @@ var emptyPage = function(attribList) {
 		     false, false,
 		     function(elt, left, top, page) {
 			 // FIXME: add type checking
+			 check(left, isReal, 'place-on-page', 'real', 2);
+			 check(top, isReal, 'place-on-page', 'real', 3);
 			 return jsworld.MobyJsworld.placeOnPage(
 			     elt, left, top, page);
 		     });

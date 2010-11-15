@@ -58,6 +58,7 @@
          "raise.rkt"
 	 "exn.rkt"
 	 "misc.rkt"
+	 "jsworld.rkt"
          "rotate.rkt")
 
 

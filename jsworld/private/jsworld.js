@@ -759,7 +759,8 @@
     Jsworld.emptyPage = _js.emptyPage;
 
     Jsworld.placeOnPage = function(elt, left, top, page) { 
-	elt = types.toDomNode(deepUnwrapJsValues(elt));
+	deepUnwrapJsValues(elt, function(newElt) {
+	    elt = types.toDomNode(newElt);});
  	return _js.placeOnPage(elt, left, top, page);
     };
 

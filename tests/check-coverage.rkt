@@ -69,6 +69,10 @@
   (let ([los (untouched-wescheme-primitives)])
     (unless (empty? los)
       (printf "~a PRIMITIVES UNTOUCHED BY TESTS!!!\nList below:\n" (length los))
-      (for ([sym los])
+      (for ([sym (sort los (lambda (x y) (string<? (symbol->string x)
+                                                   (symbol->string y))))])
         (printf "~a\n" sym))
       (printf "\n"))))
+
+
+(print-coverage-report)
