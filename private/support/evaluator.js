@@ -126,7 +126,11 @@ var Evaluator = (function() {
 	    locationStructType = (
 		this.aState.invokedModules[
 		    'mzscheme-vm/lang/location'].lookup("struct:location"));
-	    return locationStructType.predicate(x);
+	    if (locationStructType) {
+		return locationStructType.predicate(x);
+	    } else {
+		return false;
+	    }
 	} else {
 	    return false;
 	}
