@@ -1,20 +1,9 @@
-;#lang scheme/gui
+#lang s-exp "../lang/wescheme.rkt"
 
-#;(require (only-in htdp/draw
-                  draw-circle draw-solid-disk
-                  draw-solid-rect draw-solid-line)
-         htdp/world
-         (for-syntax scheme/base)
-         (except-in htdp/testing test)
-         lang/prim)
+
 (provide random-direction
-         random-color
-         #;TEST
-         #;(rename-out (on-key-event/new on-key-event))
-         #;(rename-out (on-mouse-event/new on-mouse-event))
-         #;(except-out (all-from-out htdp/world) 
-                     on-key-event 
-                     on-mouse-event))
+         random-color)
+
 
 ;(define-higher-order-primitive on-key-event/new on-key-event/proc (key-handler))
 ;(define-higher-order-primitive on-mouse-event/new on-mouse-event/proc (mouse-handler))
@@ -91,6 +80,7 @@
       [(3) (ensure-different-color "blue" c)]
       [(4) (ensure-different-color "turquoise" c)]
       [(5) (ensure-different-color "purple" c)]
+      [(6) (ensure-different-color "light blue" c)]
       [(7) (ensure-different-color "magenta" c)])))
 
 ;; ensure-different-color : String String -> String

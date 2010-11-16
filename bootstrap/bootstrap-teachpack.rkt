@@ -1,10 +1,5 @@
-;#lang s-exp "../../moby-lang.ss"
+#lang s-exp "../lang/wescheme.rkt"
 
-#;(require 2htdp/universe
-           lang/prim
-           lang/posn
-           (except-in htdp/testing test)
-           (for-syntax scheme/base))
 
 (provide START 
          #;EXAMPLE 
@@ -203,10 +198,10 @@
                                     (make-world objects targets player projectiles bg (+ score 20) title 100))]
                                  [else (make-world objects targets player projectiles bg score title timer)]))
                              ))))
-      (js-big-bang world
-                   (on-tick update-world .1)
-                   (on-redraw draw-world)
-                   (on-key keypress*)))))
+      (big-bang world
+                (on-tick update-world .1)
+                (to-draw draw-world)
+                (on-key keypress*)))))
 
 ; test-frame : String Image Image Image Image -> Image
 ; draws a test frame of the game, using a stock world

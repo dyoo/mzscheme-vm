@@ -1,4 +1,4 @@
-#lang s-exp "../../moby-lang.ss"
+#lang s-exp "../lang/wescheme.rkt"
 
 #;(require (lib "world.ss" "htdp")
          (lib "prim.ss" "lang")
@@ -55,9 +55,9 @@
 
 
 (define (start rocket-height)
-  (js-big-bang (make-world 0 rocket-height)
-               (on-key tock)
-               (on-redraw draw-world)))
+  (big-bang (make-world 0 rocket-height)
+            (on-key tock)
+            (to-draw draw-world)))
 
 
 ;; a `test' macro that is a synonym for `check-expect', catches expansion

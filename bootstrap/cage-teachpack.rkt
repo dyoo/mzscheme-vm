@@ -1,11 +1,5 @@
-;;#lang s-exp "../../moby-lang.ss"
+#lang s-exp "../lang/wescheme.rkt"
 
-#;(require (lib "world.ss" "htdp")
-         (lib "prim.ss" "lang")
-         lang/prim
-         htdp/world
-         (except-in htdp/testing test)
-         (for-syntax scheme/base))
 
 #;(provide-higher-order-primitive start (offscreen?))
 (provide start)
@@ -60,7 +54,7 @@
                      [else (move w k)]))))
     (js-big-bang (make-world 200 100)
                  (on-key update)
-                 (on-redraw draw-world))))
+                 (to-draw draw-world))))
 
 ;; a `test' macro that is a synonym for `check-expect', catches expansion
 ;; errors and pretends that they come from `test'.

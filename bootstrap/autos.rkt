@@ -1,3 +1,4 @@
+#lang s-exp "../lang/wescheme.rkt"
 (provide make-auto
 	 auto?
 	 auto-model
