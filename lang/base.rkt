@@ -2,6 +2,7 @@
 
 (require "kernel.rkt"
          "paramz.rkt"
+	 "location.rkt"
          (for-syntax racket/base))
 
 (provide (except-out (all-from-out "kernel.rkt") #%app))

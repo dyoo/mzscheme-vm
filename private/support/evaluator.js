@@ -116,16 +116,15 @@ var Evaluator = (function() {
 	});
 
 
-
-	if (afterInit) { afterInit(); }
+	if (afterInit) { afterInit(this); }
     };
 
 
-    Evaluator.prototype.isLocationStructure(x) {
+    Evaluator.prototype.isLocationStructure = function(x) {
 	return false;
     };
 
-    Evaluator.prototype.locationStructureToDom(x) {
+    Evaluator.prototype.locationStructureToDom = function(x) {
 	// return helpers.makeLocationDom(...);
 	// do something here.
     };
@@ -134,8 +133,8 @@ var Evaluator = (function() {
 
     // isLocationDom: any -> boolean
     // Produces true if x looks like a location dom.
-    Evaluator.prototype.isLocationDom(x) {
-	return  helpers.isLocationDom(dom);
+    Evaluator.prototype.isLocationDom = function(x) {
+	return helpers.isLocationDom(x);
     };
 
 
