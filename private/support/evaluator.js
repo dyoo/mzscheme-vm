@@ -121,12 +121,32 @@ var Evaluator = (function() {
 
 
     Evaluator.prototype.isLocationStructure = function(x) {
-	return false;
+	var locationStructType;
+	if (this.aState.invokedModules['mzscheme-vm/lang/location']) {
+	    locationStructType = (
+		this.aState.invokedModules[
+		    'mzscheme-vm/lang/location'].lookup("struct:location"));
+	    return locationStructType.predicate(x);
+	} else {
+	    return false;
+	}
     };
 
     Evaluator.prototype.locationStructureToDom = function(x) {
-	// return helpers.makeLocationDom(...);
-	// do something here.
+	if (this.aState.invokedModules['mzscheme-vm/lang/location']) {
+	    locationStructType = (
+		this.aState.invokedModules[
+		    'mzscheme-vm/lang/location'].lookup("struct:location"));
+	    var aLoc = {'id': locationStructType.accessor(x, 0),
+			'offset' : locationStructType.accessor(x, 0),
+			'line' : locationStructType.accessor(x, 2),
+			'column' : locationStructType.accessor(x, 3),			
+			'span' : locationStructType.accessor(x, 4)};
+	    return helpers.makeLocationDom(aLoc);
+	} else {
+	    // We should never get in here, but let's be defensive.
+	    throw new Error();
+	}
     };
 
 
