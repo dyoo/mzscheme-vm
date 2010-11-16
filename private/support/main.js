@@ -1,7 +1,4 @@
-var evaluator = new Evaluator(
-    { write: function(x) { writeToInteractions(x) },
-      writeError: function(err) { reportError(err) }
-    });
+var evaluator;
 
 
 
@@ -59,19 +56,31 @@ var reportError = function(exn) {
 
 
 
+var mainPageLoad = function(attrs) {
+    evaluator = new Evaluator({ write: function(x) { writeToInteractions(x) },
+				writeError: function(err) { reportError(err) }
+			      },
 
+			      // After evaluator initialization, 
+			      // start the program.
+			      function() {
+				  var onSuccess = function() {
+				  };
+				  var onFail = function(exn) {
+				      reportError(exn);
+				  };
 
-var mainPageLoad = function() {
-    var onSuccess = function() {
-    };
-    var onFail = function(exn) {
-	reportError(exn);
-    };
-    if (MODULES[programModuleName].bytecode) {
-	evaluator.executeCompiledProgram(MODULES[programModuleName].bytecode,
-					 onSuccess,
-					 onFail);
-    } else {
-	alert("Can not find module " + programModuleName);
-    }
+				  if (attrs.gasLimit !== undefined) {
+				      evaluator.setGasLimit(attrs.gasLimit);
+				  }
+
+				  if (MODULES[programModuleName].bytecode) {
+				      evaluator.executeCompiledProgram(
+					  MODULES[programModuleName].bytecode,
+					  onSuccess,
+					  onFail);
+				  } else {
+				      alert("Can not find module " + programModuleName);
+				  }
+			      });
 };

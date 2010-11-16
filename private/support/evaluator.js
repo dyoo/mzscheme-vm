@@ -51,7 +51,7 @@ var Evaluator = (function() {
     var DEFAULT_COMPILATION_SERVLET_URL = "/servlets/standalone.ss";
 
 
-    var Evaluator = function(options) {
+    var Evaluator = function(options, afterInit) {
 	var that = this;
 
 	if (options.write) {
@@ -77,8 +77,8 @@ var Evaluator = (function() {
 	    this.transformDom = options.transformDom;
 	} else {
 	    this.transformDom = function(dom) {
-		if (helpers.isLocationDom(dom)) {
-		    dom = rewriteLocationDom(dom);
+		if (that.isLocationDom(dom)) {
+		    dom = that.rewriteLocationDom(dom);
 		}
 		return dom;
 	    }
@@ -89,7 +89,12 @@ var Evaluator = (function() {
 	this.aState = new state.State();
 
 	this.aState.setPrintHook(function(thing) {
-	    var dom = types.toDomNode(thing);
+	    var dom;
+	    if (that.isLocationStructure(thing)) {
+		dom = that.locationStructureToDom(thing);
+	    } else {
+		dom = types.toDomNode(thing);
+	    }
 	    dom = that.transformDom(dom);
 	    that.write(dom);
 	    helpers.maybeCallAfterAttach(dom);
@@ -98,7 +103,7 @@ var Evaluator = (function() {
 	this.aState.setDisplayHook(function(aStr) {
 	    var dom = document.createElement("span");
             dom.style["white-space"] = "pre";	
-	    var node = document.createTextNode(aStr);
+	    var node = document.createTextNode(String(aStr));
 	    dom.appendChild(node);
 	    dom = that.transformDom(dom);
 	    that.write(dom);	
@@ -109,6 +114,28 @@ var Evaluator = (function() {
 	    // KLUDGE: special hook to support jsworld.
 	    return that.makeToplevelNode();
 	});
+
+
+
+	if (afterInit) { afterInit(); }
+    };
+
+
+    Evaluator.prototype.isLocationStructure(x) {
+	return false;
+    };
+
+    Evaluator.prototype.locationStructureToDom(x) {
+	// return helpers.makeLocationDom(...);
+	// do something here.
+    };
+
+
+
+    // isLocationDom: any -> boolean
+    // Produces true if x looks like a location dom.
+    Evaluator.prototype.isLocationDom(x) {
+	return  helpers.isLocationDom(dom);
     };
 
 
@@ -140,7 +167,7 @@ var Evaluator = (function() {
 
 
 
-    var rewriteLocationDom = function(dom) {
+    Evaluator.prototype.rewriteLocationDom = function(dom) {
 	var newDom = document.createElement("span");
 	var children = dom.children;
 	var line, column, id;

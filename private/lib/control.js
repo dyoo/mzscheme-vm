@@ -1609,6 +1609,8 @@ control.setupAbortToPrompt = setupAbortToPrompt;
 control.PauseException = PauseException;
 
 
+control.invokeModule = invokeModuleAndRestart;
+
 
 })();
 

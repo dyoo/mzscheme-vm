@@ -464,11 +464,11 @@ var helpers = {};
 	columnSpan['className'] = 'location-column';
 	spanSpan['className'] = 'location-span';
 
-	idSpan.appendChild(document.createTextNode(aLocation.id + ''));
-	offsetSpan.appendChild(document.createTextNode(aLocation.offset + ''));
-	lineSpan.appendChild(document.createTextNode(aLocation.line + ''));
-	columnSpan.appendChild(document.createTextNode(aLocation.column + ''));
-	spanSpan.appendChild(document.createTextNode(aLocation.span + ''));
+	idSpan.appendChild(document.createTextNode(String(aLocation.id)));
+	offsetSpan.appendChild(document.createTextNode(String(aLocation.offset)));
+	lineSpan.appendChild(document.createTextNode(String(aLocation.line)));
+	columnSpan.appendChild(document.createTextNode(String(aLocation.column)));
+	spanSpan.appendChild(document.createTextNode(String(aLocation.span)));
 
 	locationSpan.appendChild(idSpan);
 	locationSpan.appendChild(offsetSpan);
