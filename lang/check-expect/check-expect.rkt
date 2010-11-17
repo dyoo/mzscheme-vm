@@ -20,47 +20,63 @@
         (syntax-span stx)))
 
 
+(define-for-syntax (check-at-toplevel! who stx)
+  (unless (eq? (syntax-local-context) 'module)
+    (raise-syntax-error #f 
+                        (format "~a: found a test that is not at the top level."
+                                who)
+                        stx)))
+
+
 (define-syntax (check-expect stx)
   (syntax-case stx ()
     [(_ test expected)
-     (with-syntax ([stx stx]
-                   [(id offset line column span)
-                    (syntax-location-values stx)])
-       #'(accumulate-test!
-          (lambda ()
-            (check-expect* 'stx
-                           (make-location id offset line column span)
-                           (lambda () test)
-                           (lambda () expected)))))]))
+     (begin
+       (check-at-toplevel! 'check-expect stx)
+       (with-syntax ([stx stx]
+                     [(id offset line column span)
+                      (syntax-location-values stx)])
+         #'(accumulate-test!
+            (lambda ()
+              (check-expect* 'stx
+                             (make-location id offset line column span)
+                             (lambda () test)
+                             (lambda () expected))))))]))
     
 (define-syntax (check-within stx)
   (syntax-case stx ()
     [(_ test expected delta)
-     (with-syntax ([stx stx]
-                   [(id offset line column span)
-                    (syntax-location-values stx)])
-       #'(accumulate-test!
-          (lambda ()
-            (check-within* 'stx
-                           (make-location id offset line column span)
-                           (lambda () test)
-                           (lambda () expected)
-                           (lambda () delta)))))]))
+     (begin
+       (check-at-toplevel! 'check-within stx)
+       (with-syntax ([stx stx]
+                     [(id offset line column span)
+                      (syntax-location-values stx)])
+         #'(accumulate-test!
+            (lambda ()
+              (check-within* 'stx
+                             (make-location id offset line column span)
+                             (lambda () test)
+                             (lambda () expected)
+                             (lambda () delta))))))]))
 
 (define-syntax (check-error stx)
   (syntax-case stx ()
     [(_ test expected-msg)
-     (with-syntax ([stx stx]
-                   [(id offset line column span)
-                    (syntax-location-values stx)])
-       #'(accumulate-test!
-          (lambda ()
-            (check-error* 'stx
-                          (make-location id offset line column span)
-                          (lambda () test)
-                          (lambda () expected-msg)))))]))
+     (begin
+       (check-at-toplevel! 'check-error stx)
+       (with-syntax ([stx stx]
+                     [(id offset line column span)
+                      (syntax-location-values stx)])
+         #'(accumulate-test!
+            (lambda ()
+              (check-error* 'stx
+                            (make-location id offset line column span)
+                            (lambda () test)
+                            (lambda () expected-msg))))))]))
 
 
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (define (check-expect* test-datum a-loc test-thunk expected-thunk)
   (with-handlers ([void
@@ -126,7 +142,7 @@
       (with-handlers 
           ([unexpected-no-error?
             (lambda (une)
-              (printf "check-error expected the error ~s, but got ~s instead."
+              (printf "check-error expected the error ~s, but got ~s instead.\n"
                       expected-message
                       (unexpected-no-error-result une))
               (display-location test-datum a-loc)
@@ -136,9 +152,10 @@
               (cond [(string=? (exn-message exn) expected-message)
                      #t]
                     [else
-                     (printf "check-error: expected the error ~s, but got ~s instead."
+                     (printf "check-error: expected the error ~s, but got ~s instead.\n"
                              expected-message
                              (exn-message exn))
+                     (display-location test-datum a-loc)
                      #f]))])
         (let ([result (test-thunk)])
           (raise (make-unexpected-no-error result)))))))
