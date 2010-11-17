@@ -233,6 +233,11 @@ var Path = function(p) {
     this.path = p;
 };
 
+Path.prototype.toString = function() {
+    return this.path;
+};
+
+
 
 //////////////////////////////////////////////////////////////////////
 

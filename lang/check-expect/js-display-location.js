@@ -8,13 +8,14 @@ EXPORTS['display-location'] =
 	'display-location',
 	2,
 	false, true,
-	function(aState, thing, location) {
-            var aLoc = {'id': locationStructType.accessor(x, 0),
-                        'offset' : locationStructType.accessor(x, 0),
-                        'line' : locationStructType.accessor(x, 2),
-                        'column' : locationStructType.accessor(x, 3),           
-        
-                        'span' : locationStructType.accessor(x, 4)};
-            var aDom = helpers.makeLocationDom(aLoc);
+	function(aState, thing, aLoc) {
+	    console.log(locationStructType.accessor(aLoc, 0));
+            var aHash = {'id': String(locationStructType.accessor(aLoc, 0)),
+                         'offset' : locationStructType.accessor(aLoc, 0),
+                         'line' : locationStructType.accessor(aLoc, 2),
+                         'column' : locationStructType.accessor(aLoc, 3),
+                         'span' : locationStructType.accessor(aLoc, 4)};
+            var aDom = helpers.makeLocationDom(aHash);
 	    aState.getPrintHook()(aDom);
+	    aState.getDisplayHook()("\n");
 	});
