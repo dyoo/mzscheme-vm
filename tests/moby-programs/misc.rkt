@@ -243,8 +243,13 @@
 
 
 (check-expect (false? false) true)
+(check-expect (false? #f) true)
 (check-expect (false? true) false)
 (check-expect (false? 3) false)
+(check-expect (false? "") false)
+(check-expect (false? 0) false)
+(check-expect (false? "false") false)
+
 
 
 (check-expect (boolean=? false true) false)
@@ -490,7 +495,7 @@
 
 
 (check-expect (member 2 (list 1 2 3 4))
-	      '(2 3 4))
+	      #t)
 (check-expect (member 9 (list 1 2 3 4))
 	      #f)
 

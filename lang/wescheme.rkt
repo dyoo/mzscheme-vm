@@ -26,6 +26,7 @@
                      case
                      when
                      unless
+		     member
                      #%module-begin
                      ))
 
@@ -482,6 +483,18 @@
 
 (provide (rename-out [-when when]
                      [-unless unless]))
+
+
+
+
+
+;; ASL's member returns booleans.
+(define (-member x L)
+  (cond
+    [(false? (member x L)) #f]
+    [else #t]))
+
+(provide (rename-out [-member member]))
 
 
 
