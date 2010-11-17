@@ -67,6 +67,7 @@ var jsworld = {};
 		eventDetachers[i]();
 	}
 	eventDetachers = [];
+	changingWorld = false;
     }
 
 
