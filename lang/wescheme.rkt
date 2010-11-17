@@ -498,10 +498,23 @@
 (provide (all-from-out "posn.rkt"))
 
 
+;; re-export shared
+(require "../shared.rkt")
+(provide (all-from-out "../shared.rkt"))
+
+
+
+
 ;; re-export check-expect
 (require "check-expect/check-expect.rkt")
 (provide (all-from-out "check-expect/check-expect.rkt"))
 
-;; re-export shared
-(require "../shared.rkt")
-(provide (all-from-out "../shared.rkt"))
+;; EXAMPLE and example are aliases for check-expect.
+(define-syntax (EXAMPLE stx)
+  (syntax-case stx ()
+    ((_ test expected)
+     #'(check-expect test expected))))
+
+(define-syntax example (syntax-local-value #'EXAMPLE))
+
+(provide EXAMPLE example)

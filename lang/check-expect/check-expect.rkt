@@ -1,21 +1,52 @@
 #lang s-exp "../base.rkt"
 
+(require (for-syntax racket/base)
+         "../location.rkt")
+
+(provide check-expect 
+         check-within 
+         check-error
+         run-tests)
 
 
-(require "private/check-expect.rkt"
-         (for-syntax racket/base))
-(provide (all-from-out "private/check-expect.rkt"))
+(define-for-syntax (syntax-location-values stx)
+  (list (format "~a" (syntax-source stx))
+        (syntax-position stx)
+        (syntax-line stx)
+        (syntax-column stx)
+        (syntax-span stx)))
 
 
-
-(define-syntax (EXAMPLE stx)
+(define-syntax (check-expect stx)
   (syntax-case stx ()
-    ((_ test expected)
-     #'(check-expect test expected))))
+    [(_ test expected)
+     (with-syntax ([(id offset line column span)
+                    (syntax-location-values stx)])
+       #'(check-expect* (make-location id offset line column span)
+                        (lambda () test)
+                        (lambda () expected)))]))
+    
+(define-syntax (check-within stx)
+  (syntax-case stx ()
+    [(_ test expected delta)
+     #'(void)]))
 
-(define-syntax example (syntax-local-value #'EXAMPLE))
+
+(define-syntax (check-error stx)
+  (syntax-case stx ()
+    [(_ test expected-msg)
+     #'(void)]))
 
 
+
+(define (run-tests)
+  (void))
+
+
+
+
+
+#|
 (define-struct unexpected-no-error (result))
 
 (define (error-matches? exn msg)
@@ -53,7 +84,4 @@
 
 
 
-
-
-
-(provide example EXAMPLE check-error)
+|#
