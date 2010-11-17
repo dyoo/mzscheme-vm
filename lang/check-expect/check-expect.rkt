@@ -23,7 +23,8 @@
 (define-syntax (check-expect stx)
   (syntax-case stx ()
     [(_ test expected)
-     (with-syntax ([(id offset line column span)
+     (with-syntax ([stx stx]
+                   [(id offset line column span)
                     (syntax-location-values stx)])
        #'(accumulate-test!
           (lambda ()
@@ -35,7 +36,8 @@
 (define-syntax (check-within stx)
   (syntax-case stx ()
     [(_ test expected delta)
-     (with-syntax ([(id offset line column span)
+     (with-syntax ([stx stx]
+                   [(id offset line column span)
                     (syntax-location-values stx)])
        #'(accumulate-test!
           (lambda ()
@@ -48,7 +50,8 @@
 (define-syntax (check-error stx)
   (syntax-case stx ()
     [(_ test expected-msg)
-     (with-syntax ([(id offset line column span)
+     (with-syntax ([stx stx]
+                   [(id offset line column span)
                     (syntax-location-values stx)])
        #'(accumulate-test!
           (lambda ()
@@ -163,6 +166,15 @@
     [else (format "~a tests" n)]))
   
 
+;; capitalize: string -> string
+(define (capitalize s)
+  (cond [(> (string-length s) 0)
+         (string-append (string (char-upcase (string-ref s 0)))
+                        (substring s 1))]
+        [else
+         s]))
+
+
 ;; run-tests: -> void
 (define (run-tests)
   (when (> (length *tests*) 0)
@@ -184,8 +196,10 @@
                [else
                 (printf "Ran ~a.\n" 
                         (test-suffixed (length *tests*)))
-                (printf "~a passed.\n" tests-passed)
-                (printf "~a failed.\n" tests-failed)])
+                (printf "~a passed.\n" 
+                        (capitalize (test-suffixed tests-passed)))
+                (printf "~a failed.\n" 
+                        (capitalize (test-suffixed tests-failed)))])
          (set! *tests* '())]
         [else
          (let* ([test-thunk (first tests)]
