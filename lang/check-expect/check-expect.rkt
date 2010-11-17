@@ -12,7 +12,7 @@
 
 
 (define-for-syntax (syntax-location-values stx)
-  (list (format "~a" (syntax-source stx))
+  (list (syntax-source stx) ;; can be path or symbol
         (syntax-position stx)
         (syntax-line stx)
         (syntax-column stx)
@@ -33,17 +33,29 @@
 (define-syntax (check-within stx)
   (syntax-case stx ()
     [(_ test expected delta)
-     #'(void)]))
-
+     (with-syntax ([(id offset line column span)
+                    (syntax-location-values stx)])
+       #'(accumulate-test!
+          (lambda ()
+            (check-within* (make-location id offset line column span)
+                           (lambda () test)
+                           (lambda () expected)
+                           (lambda () delta)))))]))
 
 (define-syntax (check-error stx)
   (syntax-case stx ()
     [(_ test expected-msg)
-     #'(void)]))
+     (with-syntax ([(id offset line column span)
+                    (syntax-location-values stx)])
+       #'(accumulate-test!
+          (lambda ()
+            (check-error* (make-location id offset line column span)
+                          (lambda () test)
+                          (lambda () expected-msg)))))]))
+
 
 
 (define (check-expect* a-loc test-thunk expected-thunk)
-  ;; add exception handlers
   (with-handlers ([void
                    (lambda (exn)
                      (printf "check-expect: ~s"
@@ -61,6 +73,73 @@
          (newline)
          (display-location a-loc)
          #f]))))
+
+
+(define (check-within* a-loc test-thunk expected-thunk delta-thunk)
+  (with-handlers ([void
+                   (lambda (exn)
+                     (printf "check-within: ~s"
+                             (exn-message exn))
+                     (newline)
+                     (display-location a-loc)
+                     #f)])
+    (with-handlers ([void
+                     (lambda (exn)
+                       (printf "check-within: ~s"
+                               (exn-message exn))
+                       (newline)
+                       (display-location a-loc)
+                       #f)])
+      (let ([expected-value (expected-thunk)]
+            [test-value (test-thunk)]
+            [delta-value (delta-thunk)])
+        (cond
+          [(not (real? delta-value))
+           (printf "check-within requires an inexact number for the range.  ~s is not inexact.\n" delta-value)
+           (display-location a-loc)
+           #f]
+          [(equal~? test-value expected-value delta-value)
+           #t]
+          [else
+           (printf "check-within: actual value ~s differs from ~s, the expected value." test-value expected-value)
+           (display-location a-loc)
+           #f])))))
+
+
+
+(define (check-error* a-loc test-thunk expected-message-thunk)
+  (with-handlers ([void
+                   (lambda (exn)
+                     (printf "check-error: ~s"
+                             (exn-message exn))
+                     (newline)
+                     (display-location a-loc)
+                     #f)])
+    (let ([expected-message (expected-message-thunk)])
+      (with-handlers 
+          ([unexpected-no-error?
+            (lambda (une)
+              (printf "check-error expected the error ~s, but got ~s instead."
+                      expected-message
+                      (unexpected-no-error-result une))
+              (display-location a-loc)
+              #f)]
+           [exn:fail?
+            (lambda (exn)
+              (cond [(string=? (exn-message exn) expected-message)
+                     #t]
+                    [else
+                     (printf "check-error: expected the error ~s, but got ~s instead."
+                             expected-message
+                             (exn-message exn))
+                     #f]))])
+        (let ([result (test-thunk)])
+          (raise (make-unexpected-no-error result)))))))
+  
+
+
+
+
 
 
 ;; a test is a thunk of type: (-> boolean)
@@ -117,7 +196,10 @@
                     (add1 tests-failed)
                     (rest tests))]))]))))
   
-  
+
+
+(define-struct unexpected-no-error (result))
+
   
   
   
