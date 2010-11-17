@@ -94,12 +94,12 @@
 
 
 
-(let ([my-escape
-       (let ([prim-escape (js-get-global-value "escape")])
-	 (lambda (s)
-	   (prim-js->scheme (js-call prim-escape #f s))))])
-  (check-expect (my-escape "hello world") "hello%20world")
-  (check-expect (my-escape "x.mv,") "x.mv%2C"))
+(define my-escape
+  (let ([prim-escape (js-get-global-value "escape")])
+    (lambda (s)
+      (prim-js->scheme (js-call prim-escape #f s)))))
+(check-expect (my-escape "hello world") "hello%20world")
+(check-expect (my-escape "x.mv,") "x.mv%2C")
 
 
 
@@ -121,5 +121,5 @@
 
 
 
-
+(run-tests)
 "end of ffi tests"

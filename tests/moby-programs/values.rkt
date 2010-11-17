@@ -1,16 +1,17 @@
 #lang s-exp "../../lang/wescheme.rkt"
+(require "../../lang/check-expect/test-expect.rkt")
 
 "values.rkt"
 
 (call-with-values (lambda () (values 3 4 5))
                              (lambda (x y z)
-			       (check-expect x 3)
-			       (check-expect y 4)
-			       (check-expect z 5)))
+			       (test-expect x 3)
+			       (test-expect y 4)
+			       (test-expect z 5)))
 
 (call-with-values (lambda () (values 3 4 5))
                              (lambda args
-			       (check-expect args '(3 4 5))))
+			       (test-expect args '(3 4 5))))
 
 (call-with-values (lambda () (values))
                              (lambda ()

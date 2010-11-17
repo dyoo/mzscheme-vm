@@ -1,5 +1,7 @@
 #lang s-exp "../../lang/wescheme.ss"
 
+(require "../../lang/check-expect/test-expect.rkt")
+
 (printf "begin.rkt\n")
 (printf "You should see the string \"hello world\" immediately after this: ")
 
@@ -9,7 +11,7 @@
 
 
 (let ([counter 17])
-  (check-expect (begin
+  (test-expect (begin
 		  counter
 		  (set! counter (add1 counter))
 		  counter)
@@ -17,7 +19,7 @@
 
 
 (let ([counter 17])
-  (check-expect (begin0 counter
+  (test-expect (begin0 counter
 			(set! counter (add1 counter))
 			counter)
 		17))

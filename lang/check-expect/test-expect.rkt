@@ -18,59 +18,41 @@
         (syntax-span stx)))
 
 
-(define-for-syntax (check-at-toplevel! who stx)
-  (unless (eq? (syntax-local-context) 'module)
-    (raise-syntax-error #f 
-                        (format "~a: found a test that is not at the top level."
-                                who)
-                        stx)))
-
-
 (define-syntax (test-expect stx)
   (syntax-case stx ()
     [(_ test expected)
-     (begin
-       (check-at-toplevel! 'test-expect stx)
-       (with-syntax ([stx stx]
-                     [(id offset line column span)
-                      (syntax-location-values stx)])
-         #'(accumulate-test!
-            (lambda ()
-              (test-expect* 'stx
-                             (make-location id offset line column span)
-                             (lambda () test)
-                             (lambda () expected))))))]))
+     (with-syntax ([stx stx]
+                   [(id offset line column span)
+                    (syntax-location-values stx)])
+       #'(void
+          (test-expect* 'stx
+                        (make-location id offset line column span)
+                        (lambda () test)
+                        (lambda () expected))))]))
     
 (define-syntax (test-within stx)
   (syntax-case stx ()
     [(_ test expected delta)
-     (begin
-       (check-at-toplevel! 'test-within stx)
-       (with-syntax ([stx stx]
-                     [(id offset line column span)
-                      (syntax-location-values stx)])
-         #'(accumulate-test!
-            (lambda ()
-              (test-within* 'stx
+     (with-syntax ([stx stx]
+                   [(id offset line column span)
+                    (syntax-location-values stx)])
+       #'(void (test-within* 'stx
                              (make-location id offset line column span)
                              (lambda () test)
                              (lambda () expected)
-                             (lambda () delta))))))]))
+                             (lambda () delta))))]))
 
 (define-syntax (test-error stx)
   (syntax-case stx ()
     [(_ test expected-msg)
-     (begin
-       (check-at-toplevel! 'test-error stx)
-       (with-syntax ([stx stx]
-                     [(id offset line column span)
-                      (syntax-location-values stx)])
-         #'(accumulate-test!
-            (lambda ()
-              (test-error* 'stx
-                            (make-location id offset line column span)
-                            (lambda () test)
-                            (lambda () expected-msg))))))]))
+     (with-syntax ([stx stx]
+                   [(id offset line column span)
+                    (syntax-location-values stx)])
+       #'(void
+          (test-error* 'stx
+                       (make-location id offset line column span)
+                       (lambda () test)
+                       (lambda () expected-msg))))]))
 
 
 
@@ -168,67 +150,7 @@
 ;; where it returns true if the test was successful,
 ;; false otherwise.
 
-;; accumulate-test!
-(define (accumulate-test! a-test)
-  (set! *tests* (cons a-test *tests*)))
 
-    
-;; test-suffixed: number -> string
-(define (test-suffixed n)
-  (case n 
-    [(0) "zero tests"]
-    [(1) "one test"]
-    [else (format "~a tests" n)]))
-  
-
-;; capitalize: string -> string
-(define (capitalize s)
-  (cond [(> (string-length s) 0)
-         (string-append (string (char-upcase (string-ref s 0)))
-                        (substring s 1))]
-        [else
-         s]))
-
-
-;; run-tests: -> void
-(define (run-tests)
-  (when (> (length *tests*) 0)
-    ;; Run through the tests
-    (let loop ([tests-passed 0]
-               [tests-failed 0]
-               [tests (reverse *tests*)])
-      (cond
-        [(empty? tests)
-         ;; Report test results
-         (cond [(= tests-passed (length *tests*))
-                (display (case (length *tests*)
-                           [(1) "The test passed!"]
-                           [(2) "Both tests passed!"]
-                           [else
-                            (format "All ~a tests passed!"
-                                    (length *tests*))]))
-                (newline)]
-               [else
-                (printf "Ran ~a.\n" 
-                        (test-suffixed (length *tests*)))
-                (printf "~a passed.\n" 
-                        (capitalize (test-suffixed tests-passed)))
-                (printf "~a failed.\n" 
-                        (capitalize (test-suffixed tests-failed)))])
-         (set! *tests* '())]
-        [else
-         (let* ([test-thunk (first tests)]
-                [test-result (test-thunk)])
-           (cond
-             [test-result
-              (loop (add1 tests-passed)
-                    tests-failed
-                    (rest tests))]
-             [else
-              (loop tests-passed
-                    (add1 tests-failed)
-                    (rest tests))]))]))))
-  
 
 
 (define-struct unexpected-no-error (result))

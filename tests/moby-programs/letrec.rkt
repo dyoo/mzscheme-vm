@@ -1,4 +1,5 @@
 #lang s-exp "../../lang/wescheme.rkt"
+(require "../../lang/check-expect/test-expect.rkt")
 
 "letrec"
 
@@ -10,10 +11,10 @@
 		 (if (= x 0)
 		     false
 		     (even? (sub1 x))))])
-  (check-expect (even? 1024) true)
-  (check-expect (even? 1023) false)
-  (check-expect (even? 2172) true)
-  (check-expect (even? 2171) false))
+  (test-expect (even? 1024) true)
+  (test-expect (even? 1023) false)
+  (test-expect (even? 2172) true)
+  (test-expect (even? 2171) false))
 
 
 
@@ -28,10 +29,10 @@
 			 (if (= x 0)
 			     false
 			     (even? (sub1 x)))))])
-  (check-expect (even? 1024) true)
-  (check-expect (even? 1023) false)
-  (check-expect (even? 2172) true)
-  (check-expect (even? 2171) false))
+  (test-expect (even? 1024) true)
+  (test-expect (even? 1023) false)
+  (test-expect (even? 2172) true)
+  (test-expect (even? 2171) false))
 
 
 
@@ -41,9 +42,9 @@
 		 (if (= x 0)
 		     1
 		     (* x (fact (sub1 x)))))])
-  (check-expect (fact 3) 6)
-  (check-expect (fact 4) 24)
-  (check-expect (fact 5) 120))
+  (test-expect (fact 3) 6)
+  (test-expect (fact 4) 24)
+  (test-expect (fact 5) 120))
 
 
 "letrec.rkt end"

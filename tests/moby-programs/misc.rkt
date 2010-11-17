@@ -1,5 +1,6 @@
 #lang s-exp "../../lang/wescheme.rkt"
 
+(require "../../lang/check-expect/test-expect.rkt")
 "misc.rkt"
 
 ;; The tests here make sure that all of the functions
@@ -112,7 +113,7 @@
 (let loop ([i -300])
   (when (< i 300)
     (begin
-      (check-expect (byte? i)
+      (test-expect (byte? i)
                     (and (<= 0 i) (< i 256)))
       (loop (add1 i)))))
 
@@ -378,19 +379,19 @@
 
 (let ([ht (make-hash)])
   (hash-set! ht 'name "danny")
-  (check-expect (hash-ref ht 'name)
+  (test-expect (hash-ref ht 'name)
 		"danny")
-  (check-expect (hash-map ht (lambda (k v) (list k v)))
+  (test-expect (hash-map ht (lambda (k v) (list k v)))
 		'((name "danny"))))
 
 
 
 (let* ([holder (make-placeholder #f)]
        [template `(hello world ,holder)])
-  (check-expect (make-reader-graph template)
+  (test-expect (make-reader-graph template)
 		'(hello world #f))
   (placeholder-set! holder "test")
-  (check-expect (make-reader-graph template)
+  (test-expect (make-reader-graph template)
 		'(hello world "test")))
 
 
@@ -441,15 +442,15 @@
 	      true)
 
 (let ([p (make-posn 3 4)])
-  (check-expect (posn? p) true)
-  (check-expect (posn? 42) false)
-  (check-expect (posn-x p) 3)
-  (check-expect (posn-y p) 4)
+  (test-expect (posn? p) true)
+  (test-expect (posn? 42) false)
+  (test-expect (posn-x p) 3)
+  (test-expect (posn-y p) 4)
   (set-posn-x! p 17)
-  (check-expect (posn-x p) 17)
-  (check-expect p (make-posn 17 4))
+  (test-expect (posn-x p) 17)
+  (test-expect p (make-posn 17 4))
   (set-posn-y! p -23)
-  (check-expect p (make-posn 17 -23)))
+  (test-expect p (make-posn 17 -23)))
 
 
 (check-expect (replicate 3 "hi") "hihihi")
@@ -495,8 +496,8 @@
 
 
 (let ([b (box-immutable 42)])
-  (check-expect (unbox b) 42)
-  (check-expect (exn:fail:contract?
+  (test-expect (unbox b) 42)
+  (test-expect (exn:fail:contract?
 		 (with-handlers ([void identity])
 		   (set-box! b 16)))
 		true))
@@ -505,12 +506,12 @@
 
 (let ([ht (make-hasheq)])
   (hash-set! ht 'name "danny")
-  (check-expect (hash-ref ht 'name)
+  (test-expect (hash-ref ht 'name)
 		"danny")
-  (check-expect (hash-map ht (lambda (k v) (list k v)))
+  (test-expect (hash-map ht (lambda (k v) (list k v)))
 		'((name "danny")))
   (hash-remove! ht 'name)
-  (check-expect (hash-map ht (lambda (k v) (list k v)))
+  (test-expect (hash-map ht (lambda (k v) (list k v)))
 		'()))
 
 
@@ -550,10 +551,10 @@
 (let ([ht (make-hasheq)]
       [l '()])
   (hash-set! ht 'name "danny")
-  (check-expect (hash-ref ht 'name)
+  (test-expect (hash-ref ht 'name)
 		"danny")
   (hash-for-each ht (lambda (k v) (set! l (cons (list k v) l))))
-  (check-expect l '((name "danny"))))
+  (test-expect l '((name "danny"))))
 
 (check-expect (string-numeric? "928173419") true)
 (check-expect (string-numeric? "") true)
@@ -627,7 +628,7 @@
 
 (let ([s (string #\A #\p #\p #\l #\e)])
   (string-fill! s #\q)
-  (check-expect s "qqqqq"))
+  (test-expect s "qqqqq"))
 
 (check-expect (substring "Apple" 1 3)
 	      "pp")
@@ -847,9 +848,9 @@
 (check-expect (bytes->immutable-bytes (bytes 65 65 65))
 	      #"AAA")
 (let ([b (bytes->immutable-bytes (make-bytes 5 65))])
-  (check-expect (bytes->immutable-bytes b)
+  (test-expect (bytes->immutable-bytes b)
 		#"AAAAA")
-  (check-expect (eq? (bytes->immutable-bytes b) b)
+  (test-expect (eq? (bytes->immutable-bytes b) b)
 		#t))
 
 (check-expect (subbytes #"Apple" 1 3)
@@ -868,13 +869,13 @@
 
 (let ([s (bytes 65 112 112 108 101)])
   (bytes-set! s 4 121)
-  (check-expect s
+  (test-expect s
 		#"Apply"))
 
 
 (let ([s (bytes 65 112 112 108 101)])
   (bytes-fill! s 113)
-  (check-expect s
+  (test-expect s
 		#"qqqqq"))
 
 
@@ -920,7 +921,7 @@
 		   (do [(x n (- x 1)) (lst (list) (cons x lst))]
 		       ((= x 0)
 			lst)))])
-  (check-expect (make-nums 3)
+  (test-expect (make-nums 3)
 		'(1 2 3)))
 
 
@@ -971,9 +972,9 @@
 
 (let ()
   (define-values (x y z) (values 3 4 5))
-  (check-expect x 3)
-  (check-expect y 4)
-  (check-expect z 5))
+  (test-expect x 3)
+  (test-expect y 4)
+  (test-expect z 5))
 
 
 
@@ -1047,7 +1048,7 @@
 	      true)
 (let ([x (string-copy "x")])
   (string-set! x 0 #\X)
-  (check-expect x "X"))
+  (test-expect x "X"))
 
 
 

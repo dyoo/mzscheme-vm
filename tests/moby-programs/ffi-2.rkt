@@ -39,4 +39,6 @@
 			 (lambda (n) (= n 10))))
 	      10)
 
+
+(run-tests)
 "end my-ffi-2.rkt"

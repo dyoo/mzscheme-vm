@@ -1,5 +1,7 @@
 #lang s-exp "../../lang/wescheme.rkt"
 
+(require "../../lang/check-expect/test-expect.rkt")
+
 "apply.rkt"
 
 (check-expect (apply + '()) 0)
@@ -10,7 +12,7 @@
 (check-expect (apply f 'hello 'world '()) '(hello world))
 
 (let ([g (λ (x) (* x x))])
-  (check-expect (apply g 3 '()) 9))
+  (test-expect (apply g 3 '()) 9))
 
 
 "apply.rkt end"
