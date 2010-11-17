@@ -77,6 +77,10 @@ var jsworld = {};
     // change_world: CPS( CPS(world -> world) -> void )
     // Adjust the world, and notify all listeners.
     var change_world = function(updater, k) {
+
+	// Check to see if we're in the middle of changing
+	// the world already.  If so, put on the queue
+	// and exit quickly.
 	if (changingWorld) {
 	    setTimeout(
 		function() {
@@ -84,6 +88,8 @@ var jsworld = {};
 		DELAY_BEFORE_RETRY);
 	    return;
 	}
+
+
 	changingWorld = true;
 	var originalWorld = world;
 
@@ -128,12 +134,13 @@ var jsworld = {};
 				changeWorldHelp();
 			});
 	} catch(e) {
-		world = originalWorld;
+	    changingWorld = false;
+	    world = originalWorld;
 
 	    if (typeof(console) !== 'undefined' && console.log && e.stack) {
-			console.log(e.stack);
-		}
-		throw e;
+		console.log(e.stack);
+	    }
+	    throw e;
 	}
     }
     Jsworld.change_world = change_world;
