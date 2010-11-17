@@ -59,6 +59,7 @@
 	 "exn.rkt"
 	 "misc.rkt"
 	 "jsworld.rkt"
+	 "location.rkt"
          "rotate.rkt")
 
 
