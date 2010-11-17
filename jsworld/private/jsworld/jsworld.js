@@ -874,19 +874,28 @@ var jsworld = {};
 	return function() {
 	    var scheduleTick, ticker;
 
-	    scheduleTick = function() {
+
+	    (new Date()).valueOf()
+
+	    scheduleTick = function(t) {
 		ticker.watchId = setTimeout(
 		    function() { 
 			ticker.watchId = undefined;
-			change_world(tick, scheduleTick); 
+			var startTime = (new Date()).valueOf();
+			change_world(tick, 
+				     function() { 
+					 var endTime = (new Date()).valueOf();
+					 scheduleTick(Math.max(delay - (endTime - startTime),
+							       0)); 
+				     }); 
 		    },
-		    delay);
+		    t);
 	    };
 	    
 	    ticker = {
 		watchId: -1,
 		onRegister: function (top) { 
-		    scheduleTick();
+		    scheduleTick(delay);
 		},
 
 		onUnregister: function (top) {
