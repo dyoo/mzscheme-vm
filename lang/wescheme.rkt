@@ -26,10 +26,23 @@
                      case
                      when
                      unless
+                     #%module-begin
                      ))
 
 (require (for-syntax racket/base
-                     syntax/stx))
+                     syntax/stx)
+         "check-expect/check-expect.rkt")
+
+
+(define-syntax (-module-begin stx)
+  (syntax-case stx ()
+    [(_ body ...)
+     #'(#%module-begin 
+        body ... 
+        (run-tests))]))
+(provide (rename-out [-module-begin #%module-begin]))
+
+
 
 
 (provide (rename-out [-define-struct define-struct]))
@@ -505,9 +518,10 @@
 
 
 
-;; re-export check-expect
-(require "check-expect/check-expect.rkt")
-(provide (all-from-out "check-expect/check-expect.rkt"))
+;; re-export check-expect's test functions
+(provide check-expect
+         check-error
+         check-within)
 
 ;; EXAMPLE and example are aliases for check-expect.
 (define-syntax (EXAMPLE stx)

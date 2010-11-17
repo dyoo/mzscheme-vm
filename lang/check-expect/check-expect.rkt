@@ -49,7 +49,7 @@
                      (printf "check-expect: ~s"
                              (exn-message exn))
                      (newline)
-                     (display a-loc)
+                     (display-location a-loc)
                      #f)])
     (let ([expected-value (expected-thunk)]
           [test-value (test-thunk)])
