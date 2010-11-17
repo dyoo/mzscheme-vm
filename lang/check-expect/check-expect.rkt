@@ -1,7 +1,8 @@
 #lang s-exp "../base.rkt"
 
 (require (for-syntax racket/base)
-         "../location.rkt")
+         "../location.rkt"
+         "display-location.rkt")
 
 (provide check-expect 
          check-within 
@@ -26,7 +27,8 @@
                     (syntax-location-values stx)])
        #'(accumulate-test!
           (lambda ()
-            (check-expect* (make-location id offset line column span)
+            (check-expect* 'stx
+                           (make-location id offset line column span)
                            (lambda () test)
                            (lambda () expected)))))]))
     
@@ -37,7 +39,8 @@
                     (syntax-location-values stx)])
        #'(accumulate-test!
           (lambda ()
-            (check-within* (make-location id offset line column span)
+            (check-within* 'stx
+                           (make-location id offset line column span)
                            (lambda () test)
                            (lambda () expected)
                            (lambda () delta)))))]))
@@ -49,19 +52,20 @@
                     (syntax-location-values stx)])
        #'(accumulate-test!
           (lambda ()
-            (check-error* (make-location id offset line column span)
+            (check-error* 'stx
+                          (make-location id offset line column span)
                           (lambda () test)
                           (lambda () expected-msg)))))]))
 
 
 
-(define (check-expect* a-loc test-thunk expected-thunk)
+(define (check-expect* test-datum a-loc test-thunk expected-thunk)
   (with-handlers ([void
                    (lambda (exn)
                      (printf "check-expect: ~s"
                              (exn-message exn))
                      (newline)
-                     (display-location a-loc)
+                     (display-location test-datum a-loc)
                      #f)])
     (let ([expected-value (expected-thunk)]
           [test-value (test-thunk)])
@@ -71,24 +75,24 @@
         [else
          (printf "check-expect: actual value ~s differs from ~s, the expected value" test-value expected-value)
          (newline)
-         (display-location a-loc)
+         (display-location test-datum a-loc)
          #f]))))
 
 
-(define (check-within* a-loc test-thunk expected-thunk delta-thunk)
+(define (check-within* test-datum a-loc test-thunk expected-thunk delta-thunk)
   (with-handlers ([void
                    (lambda (exn)
                      (printf "check-within: ~s"
                              (exn-message exn))
                      (newline)
-                     (display-location a-loc)
+                     (display-location test-datum a-loc)
                      #f)])
     (with-handlers ([void
                      (lambda (exn)
                        (printf "check-within: ~s"
                                (exn-message exn))
                        (newline)
-                       (display-location a-loc)
+                       (display-location test-datum a-loc)
                        #f)])
       (let ([expected-value (expected-thunk)]
             [test-value (test-thunk)]
@@ -96,24 +100,24 @@
         (cond
           [(not (real? delta-value))
            (printf "check-within requires an inexact number for the range.  ~s is not inexact.\n" delta-value)
-           (display-location a-loc)
+           (display-location test-datum a-loc)
            #f]
           [(equal~? test-value expected-value delta-value)
            #t]
           [else
            (printf "check-within: actual value ~s differs from ~s, the expected value." test-value expected-value)
-           (display-location a-loc)
+           (display-location test-datum a-loc)
            #f])))))
 
 
 
-(define (check-error* a-loc test-thunk expected-message-thunk)
+(define (check-error* test-datum a-loc test-thunk expected-message-thunk)
   (with-handlers ([void
                    (lambda (exn)
                      (printf "check-error: ~s"
                              (exn-message exn))
                      (newline)
-                     (display-location a-loc)
+                     (display-location test-datum a-loc)
                      #f)])
     (let ([expected-message (expected-message-thunk)])
       (with-handlers 
@@ -122,7 +126,7 @@
               (printf "check-error expected the error ~s, but got ~s instead."
                       expected-message
                       (unexpected-no-error-result une))
-              (display-location a-loc)
+              (display-location test-datum a-loc)
               #f)]
            [exn:fail?
             (lambda (exn)
