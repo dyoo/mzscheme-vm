@@ -105,7 +105,7 @@
           [(equal~? test-value expected-value delta-value)
            #t]
           [else
-           (printf "check-within: actual value ~s differs from ~s, the expected value." test-value expected-value)
+           (printf "check-within: actual value ~s differs from ~s, the expected value.\n" test-value expected-value)
            (display-location test-datum a-loc)
            #f])))))
 
@@ -169,7 +169,7 @@
     ;; Run through the tests
     (let loop ([tests-passed 0]
                [tests-failed 0]
-               [tests *tests*])
+               [tests (reverse *tests*)])
       (cond
         [(empty? tests)
          ;; Report test results
