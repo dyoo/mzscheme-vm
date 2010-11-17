@@ -32,6 +32,8 @@ var jsworld = {};
     var eventDetachers = [];
     var runningBigBangs = [];
 
+    var changingWorld = false;
+
 
 
     // Close all world computations.
@@ -68,18 +70,34 @@ var jsworld = {};
     }
 
 
+    // If we're in the middle of a change_world, delay.
+    var DELAY_BEFORE_RETRY = 10;
+
 
     // change_world: CPS( CPS(world -> world) -> void )
     // Adjust the world, and notify all listeners.
-    function change_world(updater, k) {
+    var change_world = function(updater, k) {
+	if (changingWorld) {
+	    setTimeout(
+		function() {
+		    change_world(updater, k)}, 
+		DELAY_BEFORE_RETRY);
+	    return;
+	}
+	changingWorld = true;
 	var originalWorld = world;
 
 	var changeWorldHelp = function() {
 		if (world instanceof WrappedWorldWithEffects) {
 			var effects = world.getEffects();
 			helpers.forEachK(effects,
-				 function(anEffect, k2) { anEffect.invokeEffect(change_world, k2); },
-				 function (e) { throw e; },
+				 function(anEffect, k2) { 
+				     anEffect.invokeEffect(change_world, k2); 
+				 },
+				 function (e) { 
+				     changingWorld = false;
+				     throw e; 
+				 },
 				 function() {
 				 	world = world.getWorld();
 					changeWorldHelp2();
@@ -91,9 +109,17 @@ var jsworld = {};
 	
 	var changeWorldHelp2 = function() {
 		helpers.forEachK(worldListeners,
-			 function(listener, k2) { listener(world, originalWorld, k2); },
-			 function(e) { world = originalWorld; throw e; },
-			 k);
+				 function(listener, k2) { 
+				     listener(world, originalWorld, k2);
+				 },
+				 function(e) { 
+				     changingWorld = false;
+				     world = originalWorld;
+				     throw e; },
+				 function() {
+				     changingWorld = false;
+				     k();
+				 });
 	};
 
 	try {
@@ -839,16 +865,26 @@ var jsworld = {};
     // on_tick: number CPS(world -> world) -> handler
     function on_tick(delay, tick) {
 	return function() {
-	    var ticker = {
+	    var scheduleTick, ticker;
+
+	    scheduleTick = function() {
+		ticker.watchId = setTimeout(
+		    function() { 
+			ticker.watchId = undefined;
+			change_world(tick, scheduleTick); 
+		    },
+		    delay);
+	    };
+	    
+	    ticker = {
 		watchId: -1,
 		onRegister: function (top) { 
-		    ticker.watchId = setInterval(function() { 
-			change_world(tick, doNothing); }, 
-						 delay);
+		    scheduleTick();
 		},
 
 		onUnregister: function (top) {
-		    clearInterval(ticker.watchId);
+		    if (ticker.watchId)
+			clearTimeout(ticker.watchId);
 		}
 	    };
 	    return ticker;
