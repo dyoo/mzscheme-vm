@@ -54,7 +54,8 @@ EXPORTS['key=?'] =
 		 2,
 		 false, false,
 		 function(key1, key2) {
-		 	return (key1.toString().toLowerCase() === key2.toString().toLowerCase());
+		 	return (key1.toString().toLowerCase() === 
+				key2.toString().toLowerCase());
 		 });
 
 
@@ -344,18 +345,20 @@ EXPORTS['js-button!'] =
 
 
 var jsInput = function(type, updateF, attribList) {
-	check(type, isString, 'js-input', 'string', 1);
-	check(updateF, isFunction, 'js-input', 'procedure', 2);
-	checkListOf(attribList, isAssocList, 'js-input', '(listof X Y)', 3);
+    check(type, isString, 'js-input', 'string', 1);
+    check(updateF, isFunction, 'js-input', 'procedure', 2);
+    checkListOf(attribList, isAssocList, 'js-input', '(listof X Y)', 3);
 
-	var attribs = attribList ? assocListToHash(attribList) : {};
-	var node = jsworld.MobyJsworld.input(type, updateF, attribs);
+    var attribs = attribList ? assocListToHash(attribList) : {};
+    var node = jsworld.MobyJsworld.input(type.toString(), 
+					 updateF, attribs);
 
-	node.toWrittenString = function(cache) { return "(js-input ...)"; }
-	node.toDisplayedString = node.toWrittenString;
-	node.toDomNode = function(cache) { return node; }
-	return helpers.wrapJsValue(node);
+    node.toWrittenString = function(cache) { return "(js-input ...)"; }
+    node.toDisplayedString = node.toWrittenString;
+    node.toDomNode = function(cache) { return node; }
+    return helpers.wrapJsValue(node);
 };
+
 EXPORTS['js-input'] =
 	new CasePrimitive('js-input', 
 	[new PrimProc('js-input', 2, false, false, 
@@ -366,17 +369,20 @@ EXPORTS['js-input'] =
 
 
 var jsImg = function(src, attribList) {
-	check(src, isString, "js-img", "string", 1);
-	checkListOf(attribList, isAssocList, 'js-img', '(listof X Y)', 2);
+    check(src, isString, "js-img", "string", 1);
+    checkListOf(attribList, isAssocList, 'js-img', '(listof X Y)', 2);
 
-	var attribs = assocListToHash(attribList);
-	var node = jsworld.MobyJsworld.img(src, attribs);
+    var attribs = assocListToHash(attribList);
+    var node = jsworld.MobyJsworld.img(src.toString(), attribs);
 
-	node.toWrittenString = function(cache) { return "(js-img ...)"; }
-	node.toDisplayedString = node.toWrittenString;
-	node.toDomNode = function(cache) { return node; }
-	return helpers.wrapJsValue(node);
+    node.toWrittenString = function(cache) { return "(js-img ...)"; }
+    node.toDisplayedString = node.toWrittenString;
+    node.toDomNode = function(cache) { return node; }
+    return helpers.wrapJsValue(node);
 };
+
+
+
 EXPORTS['js-img'] =
     new CasePrimitive('js-img',
 	[new PrimProc('js-img', 1, false, false, 
@@ -390,30 +396,35 @@ EXPORTS['js-text'] =
 		 1,
 		 false, false,
 		 function(s) {
-		 	check(s, isString, 'js-text', 'string', 1);
+		     check(s, isString, 'js-text', 'string', 1);
 
-			var node = jsworld.MobyJsworld.text(s, []);
-			node.toWrittenString = function(cache) { return "(js-text ...)"; }
-			node.toDisplayedString = node.toWrittenString;
-			node.toDomNode = function(cache) { return node; }
-			return helpers.wrapJsValue(node);
+		     var node = jsworld.MobyJsworld.text(s.toString(), []);
+		     node.toWrittenString = function(cache) { return "(js-text ...)"; }
+		     node.toDisplayedString = node.toWrittenString;
+		     node.toDomNode = function(cache) { return node; }
+		     return helpers.wrapJsValue(node);
 		 });
 
 
 var jsSelect = function(optionList, updateF, attribList) {
-	checkListOf(optionList, isString, 'js-select', 'listof string', 1);
-	check(updateF, isFunction, 'js-select', 'procedure', 2);
-	checkListOf(attribList, isAssocList, 'js-select', '(listof X Y)', 3);
+    checkListOf(optionList, isString, 'js-select', 'listof string', 1);
+    check(updateF, isFunction, 'js-select', 'procedure', 2);
+    checkListOf(attribList, isAssocList, 'js-select', '(listof X Y)', 3);
 
-	var attribs = attribList ? assocListToHash(attribList) : {};
-	var options = helpers.deepListToArray(optionList);
-	var node = jsworld.MobyJsworld.select(options, updateF, attribs);
+    var attribs = attribList ? assocListToHash(attribList) : {};
+    var options = helpers.deepListToArray(optionList);
+    for (var i = 0 ; i < options.length; i++) {
+	options[i] = options[i].toString();
+    }
+    var node = jsworld.MobyJsworld.select(options, updateF, attribs);
 
-	node.toWrittenString = function(cache) { return '(js-select ...)'; };
-	node.toDisplayedString = node.toWrittenString;
-	node.toDomNode = function(cache) { return node; };
-	return helpers.wrapJsValue(node);
+    node.toWrittenString = function(cache) { return '(js-select ...)'; };
+    node.toDisplayedString = node.toWrittenString;
+    node.toDomNode = function(cache) { return node; };
+    return helpers.wrapJsValue(node);
 };
+
+
 EXPORTS['js-select'] =
     new CasePrimitive(
 	'js-select',
@@ -433,20 +444,20 @@ EXPORTS['big-bang'] =
 		 1,
 		 true, true,
 		 function(state, initW, handlers) {
-		 	arrayEach(handlers,
-				function(x, i) {
-					check(x, function(y) { return isWorldConfigOption(y) || isList(y) || types.isWorldConfig(y); },
-					      'js-big-bang', 'handler or attribute list', i+2);
-				});
+		     arrayEach(handlers,
+			       function(x, i) {
+				   check(x, function(y) { return isWorldConfigOption(y) || isList(y) || types.isWorldConfig(y); },
+					 'js-big-bang', 'handler or attribute list', i+2);
+			       });
 		     var unwrappedConfigs = 
 			 helpers.map(function(x) {
-					if ( isWorldConfigOption(x) ) {
-						return function(config) { return x.configure(config); };
-					}
-					else {
-						return x;
-					}
-			 	     },
+			     if ( isWorldConfigOption(x) ) {
+				 return function(config) { return x.configure(config); };
+			     }
+			     else {
+				 return x;
+			     }
+			 },
 				     handlers);
 		     return types.internalPause(function(caller, restarter, onFail) {
 			 var bigBangController;
@@ -500,7 +511,7 @@ var emptyPage = function(attribList) {
 			 check(left, isReal, 'place-on-page', 'real', 2);
 			 check(top, isReal, 'place-on-page', 'real', 3);
 			 return jsworld.MobyJsworld.placeOnPage(
-			     elt, left, top, page);
+			     elt, jsnums.toFixnum(left), jsnums.toFixnum(top), page);
 		     });
 					    
 
