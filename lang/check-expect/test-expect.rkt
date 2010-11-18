@@ -26,7 +26,7 @@
                     (syntax-location-values stx)])
        #'(void
           (test-expect* 'stx
-                        (make-location id offset line column span)
+                        (make-location 'id offset line column span)
                         (lambda () test)
                         (lambda () expected))))]))
     
@@ -37,7 +37,7 @@
                    [(id offset line column span)
                     (syntax-location-values stx)])
        #'(void (test-within* 'stx
-                             (make-location id offset line column span)
+                             (make-location 'id offset line column span)
                              (lambda () test)
                              (lambda () expected)
                              (lambda () delta))))]))
@@ -50,7 +50,7 @@
                     (syntax-location-values stx)])
        #'(void
           (test-error* 'stx
-                       (make-location id offset line column span)
+                       (make-location 'id offset line column span)
                        (lambda () test)
                        (lambda () expected-msg))))]))
 

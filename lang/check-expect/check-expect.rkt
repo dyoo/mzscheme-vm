@@ -39,7 +39,7 @@
          #'(accumulate-test!
             (lambda ()
               (check-expect* 'stx
-                             (make-location id offset line column span)
+                             (make-location 'id offset line column span)
                              (lambda () test)
                              (lambda () expected))))))]))
     
@@ -54,7 +54,7 @@
          #'(accumulate-test!
             (lambda ()
               (check-within* 'stx
-                             (make-location id offset line column span)
+                             (make-location 'id offset line column span)
                              (lambda () test)
                              (lambda () expected)
                              (lambda () delta))))))]))
@@ -70,7 +70,7 @@
          #'(accumulate-test!
             (lambda ()
               (check-error* 'stx
-                            (make-location id offset line column span)
+                            (make-location 'id offset line column span)
                             (lambda () test)
                             (lambda () expected-msg))))))]))
 
