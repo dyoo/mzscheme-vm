@@ -9,7 +9,6 @@ var makeOptionPrimitive = types.makeOptionPrimitive;
 var checkListOf = helpers.checkListOf;
 var procArityContains = helpers.procArityContains;
 var raise = helpers.raise;
-var assocListToHash = helpers.assocListToHash;
 
 
 
@@ -41,6 +40,26 @@ WorldConfigOption.prototype.toDisplayedString = function(cache) {
 
 
 var isWorldConfigOption = function(x) { return x instanceof WorldConfigOption; };
+
+
+
+
+
+// convertAttribList: (listof (list string string)) -> (hashof string string)
+var convertAttribList = function(attribList) {
+    var newList = types.EMPTY;
+    var nextElt;
+    while (!types.isEmpty(attribList)) {
+	nextElt = attribList.first();
+	// ensure each element in the hash are primitive strings
+	newList = types.cons(types.list([nextElt.first().toString(),
+					 nextElt.rest().first().toString()]),
+			     newList);
+	attribList = attribList.rest();
+    }
+    return helpers.assocListToHash(newList);
+}
+
 
 
 
@@ -272,7 +291,7 @@ EXPORTS['initial-effect'] =
 var jsp = function(attribList) {
 	checkListOf(attribList, function(x) { return isList(x) && length(x) == 2; },
 		    'js-p', 'list of (list of X Y)', 1);
-	var attribs = assocListToHash(attribList);
+	var attribs = convertAttribList(attribList);
 	var node = jsworld.MobyJsworld.p(attribs);
 	node.toWrittenString = function(cache) { return "(js-p)"; };
 	node.toDisplayedString = node.toWrittenString;
@@ -288,7 +307,7 @@ EXPORTS['js-p'] =
 var jsdiv = function(attribList) {
 	checkListOf(attribList, isAssocList, 'js-div', '(listof X Y)', 1);
 
-	var attribs = assocListToHash(attribList);
+	var attribs = convertAttribList(attribList);
 	var node = jsworld.MobyJsworld.div(attribs);
 	
 	node.toWrittenString = function(cache) { return "(js-div)"; };
@@ -312,7 +331,7 @@ var jsButtonBang = function(funName) {
 		check(effectF, isFunction, funName, 'procedure', 2);
 		checkListOf(attribList, isAssocList, funName, '(listof X Y)', 3);
 
-		var attribs = attribList ? assocListToHash(attribList) : {};
+		var attribs = attribList ? convertAttribList(attribList) : {};
 		var node = jsworld.MobyJsworld.buttonBang(worldUpdateF, effectF, attribs);
 
 		node.toWrittenString = function(cache) { return '(' + funName + ' ...)'; };
@@ -349,7 +368,7 @@ var jsInput = function(type, updateF, attribList) {
     check(updateF, isFunction, 'js-input', 'procedure', 2);
     checkListOf(attribList, isAssocList, 'js-input', '(listof X Y)', 3);
 
-    var attribs = attribList ? assocListToHash(attribList) : {};
+    var attribs = attribList ? convertAttribList(attribList) : {};
     var node = jsworld.MobyJsworld.input(type.toString(), 
 					 updateF, attribs);
 
@@ -372,7 +391,7 @@ var jsImg = function(src, attribList) {
     check(src, isString, "js-img", "string", 1);
     checkListOf(attribList, isAssocList, 'js-img', '(listof X Y)', 2);
 
-    var attribs = assocListToHash(attribList);
+    var attribs = convertAttribList(attribList);
     var node = jsworld.MobyJsworld.img(src.toString(), attribs);
 
     node.toWrittenString = function(cache) { return "(js-img ...)"; }
@@ -411,7 +430,7 @@ var jsSelect = function(optionList, updateF, attribList) {
     check(updateF, isFunction, 'js-select', 'procedure', 2);
     checkListOf(attribList, isAssocList, 'js-select', '(listof X Y)', 3);
 
-    var attribs = attribList ? assocListToHash(attribList) : {};
+    var attribs = attribList ? convertAttribList(attribList) : {};
     var options = helpers.deepListToArray(optionList);
     for (var i = 0 ; i < options.length; i++) {
 	options[i] = options[i].toString();
@@ -483,37 +502,37 @@ EXPORTS['big-bang'] =
 
 
 var emptyPage = function(attribList) {
-	checkListOf(attribList, isAssocList, 'empty-page', '(listof X Y)', 1);
+    checkListOf(attribList, isAssocList, 'empty-page', '(listof X Y)', 1);
 
-	var attribs = assocListToHash(attribList);
-	var node = jsworld.MobyJsworld.emptyPage(attribs);
-	
-// 	node.toWrittenString = function(cache) { return "(js-div)"; };
-// 	node.toDisplayedString = node.toWrittenString;
-// 	node.toDomNode = function(cache) { return node; };
-// 	return helpers.wrapJsValue(node);
-	return node;
-    };
-
-    EXPORTS['empty-page'] =
-	new CasePrimitive('empty-page',
-			  [new PrimProc('empty-page', 0, false, false, 
-					function() {  return emptyPage(types.EMPTY); }),
-			   new PrimProc('empty-page', 1, false, false, emptyPage)]);
-
+    var attribs = convertAttribList(attribList);
+    var node = jsworld.MobyJsworld.emptyPage(attribs);
     
-    EXPORTS['place-on-page'] = 
-	new PrimProc('empty-page',
-		     4,
-		     false, false,
-		     function(elt, left, top, page) {
-			 // FIXME: add type checking
-			 check(left, isReal, 'place-on-page', 'real', 2);
-			 check(top, isReal, 'place-on-page', 'real', 3);
-			 return jsworld.MobyJsworld.placeOnPage(
-			     elt, jsnums.toFixnum(left), jsnums.toFixnum(top), page);
-		     });
-					    
+    // 	node.toWrittenString = function(cache) { return "(js-div)"; };
+    // 	node.toDisplayedString = node.toWrittenString;
+    // 	node.toDomNode = function(cache) { return node; };
+    // 	return helpers.wrapJsValue(node);
+    return node;
+};
+
+EXPORTS['empty-page'] =
+    new CasePrimitive('empty-page',
+		      [new PrimProc('empty-page', 0, false, false, 
+				    function() {  return emptyPage(types.EMPTY); }),
+		       new PrimProc('empty-page', 1, false, false, emptyPage)]);
+
+
+EXPORTS['place-on-page'] = 
+    new PrimProc('empty-page',
+		 4,
+		 false, false,
+		 function(elt, left, top, page) {
+		     // FIXME: add type checking
+		     check(left, isReal, 'place-on-page', 'real', 2);
+		     check(top, isReal, 'place-on-page', 'real', 3);
+		     return jsworld.MobyJsworld.placeOnPage(
+			 elt, jsnums.toFixnum(left), jsnums.toFixnum(top), page);
+		 });
+
 
 
 
