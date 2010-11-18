@@ -35,4 +35,4 @@
 	(li "miscellaneous fixes: corrected errors involving
     struct-mutator-procedure, exn structures constructors, and some
     arithmetic edge cases.")
-	(list "    exposed the struct-out form for provides.")))))
+	(li "exposed the struct-out form for provides.")))))
