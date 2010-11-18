@@ -350,7 +350,8 @@ letter, digit, -, +, or _.
 
 ;; rewrite-module-locations/modidx: module-path-index path -> module-path-index
 (define (rewrite-module-locations/modidx a-modidx self-path main-module-path)
-  (let ([resolved-path (resolve-module-path-index a-modidx self-path)])
+  (let ([resolved-path (maybe-correct-rkt-to-ss 
+                        (resolve-module-path-index a-modidx self-path))])
     (cond
       [(symbol? resolved-path)
        a-modidx]
@@ -454,10 +455,37 @@ letter, digit, -, +, or _.
          [(eq? phase0+paths #f)
           empty]
          [else
-          (map normalize-path
+          (map (lambda (p) (maybe-correct-rkt-to-ss (normalize-path p)))
                (filter path? (map resolve (rest phase0+paths))))]))]
     [else
      empty]))
+
+
+;; maybe-correct-rkt-to-ss: resolved-module-path -> resolved-module-path
+;; Given a module path, possibly repair the damage that the module resolve
+;; is doing in giving us a normalized .rkt path, even if the module in question
+;; is a .ss file.
+(define (maybe-correct-rkt-to-ss p)
+  (cond [(path? p) 
+         (cond
+           [(file-exists? p)
+            p]
+           [else
+            (let* ([ps (path->string p)]
+                   [ss-path (build-path 
+                             (string-append
+                              (substring ps 0 
+                                         (- (string-length ps)
+                                            (bytes-length 
+                                             (filename-extension p))))
+                              "ss"))])
+              (cond [(file-exists? ss-path)
+                     ss-path]
+                    [else
+                     p]))])]
+        [else
+         p]))
+
 
 
 ;; collect-provided-names: compilation-top -> (listof symbol)

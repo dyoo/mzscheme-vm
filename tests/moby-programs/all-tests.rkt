@@ -60,7 +60,8 @@
 	 "misc.rkt"
 	 "jsworld.rkt"
 	 "location.rkt"
-         "rotate.rkt")
+         "rotate.rkt"
+	 "more-jsworld.ss")
 
 
 (printf "all-tests completed\n")
