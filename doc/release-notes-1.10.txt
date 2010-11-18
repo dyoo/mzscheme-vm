@@ -1,0 +1,19 @@
+Fixes:
+
+    check-expect: check-expect now works by
+    applying tests after all of the definitions and other expressions
+    have evaluated.
+
+    jsworld reentrancy: there was an issue where jsworld behaved badly
+    (reverting to old worlds) if events came in at a rate faster than
+    it could handle them.
+
+    member: the definition of member can been corrected to return a
+    boolean in the WeScheme (Moby) languages.
+
+    miscellaneous fixes: corrected errors involving
+    struct-mutator-procedure, exn structures constructors, and some
+    arithmetic edge cases.
+
+new:
+    exposed the struct-out form for provides.
