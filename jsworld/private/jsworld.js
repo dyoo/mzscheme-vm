@@ -67,6 +67,25 @@
 
 
 
+    // mutateStringsInDeepArray: array -> array
+    // walks and in-place mutates Scheme strings to primitive strings.
+    var mutateStringsInDeepArray = function(thing) {
+	var i, length;
+	if (typeof(thing) === 'object' &&
+	    thing.constructor === Array) {
+	    length = thing.length;
+	    for (i = 0; i < length; i++) {
+		thing[i] = mutateStringsInDeepArray(thing[i]);
+	    }
+	} else if (types.isString(thing)) {
+	    return thing.toString();
+	}
+	return thing;
+    };
+
+
+
+
     var userConfigs = [];
 
     var startUserConfigs = function(k) {
@@ -450,6 +469,7 @@
 			    caller(config.lookup('onDrawCss'), [w],
 				    function(res) {
 					var result = helpers.deepListToArray(res);
+					result = mutateStringsInDeepArray(result);
 	//				plt.Kernel.setLastLoc(undefined);
 					k(result);
 				    });
