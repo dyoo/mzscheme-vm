@@ -15,5 +15,24 @@
 (define repositories '("4.x"))
 (define blurb 
   '("Provides support for compiling Racket programs to run as Javascript on the browser."))
+
 (define release-notes
-  '())
+  '(
+    (p "Fixes:"
+       (ul
+
+	(li "check-expect: check-expect now works by
+    applying tests after all of the definitions and other expressions
+    have evaluated.")
+	
+	(li "jsworld reentrancy: there was an issue where jsworld behaved badly
+    (reverting to old worlds) if events came in at a rate faster than
+    it could handle them.")
+	
+	(li "member: the definition of member can been corrected to return a
+    boolean in the WeScheme (Moby) languages.")
+	
+	(li "miscellaneous fixes: corrected errors involving
+    struct-mutator-procedure, exn structures constructors, and some
+    arithmetic edge cases.")
+	(list "    exposed the struct-out form for provides.")))))
