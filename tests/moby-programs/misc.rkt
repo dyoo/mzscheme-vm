@@ -1104,5 +1104,14 @@
 
 
 
+(check-expect (string-append (string-copy "hello")
+	      		     (string-copy "world"))
+	      "helloworld")
+(check-expect (string-append (string-copy "hello")
+	      		     (string-copy "world"))
+	      (string-copy "helloworld"))
+
+
+
 
 "misc.rkt end"

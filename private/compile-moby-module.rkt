@@ -462,7 +462,7 @@ letter, digit, -, +, or _.
 
 
 ;; maybe-correct-rkt-to-ss: resolved-module-path -> resolved-module-path
-;; Given a module path, possibly repair the damage that the module resolve
+;; Given a module path, possibly repair the damage that the module resolver
 ;; is doing in giving us a normalized .rkt path, even if the module in question
 ;; is a .ss file.
 (define (maybe-correct-rkt-to-ss p)

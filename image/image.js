@@ -299,7 +299,7 @@ EXPORTS['star'] =
 			return world.Kernel.starImage(jsnums.toFixnum(aPoints),
 						      jsnums.toFixnum(anOuter),
 						      jsnums.toFixnum(anInner),
-						      aStyle,
+						      aStyle.toString(),
 						      aColor);
 		 });
 
@@ -319,7 +319,7 @@ EXPORTS['nw:rectangle'] =
 			}
 			var aRect = world.Kernel.rectangleImage(jsnums.toFixnum(w),
 								jsnums.toFixnum(h),
-								s, c);
+								s.toString(), c);
 			return aRect.updatePinhole(0, 0);
 		 });
 
@@ -339,7 +339,7 @@ EXPORTS['rectangle'] =
 			}
 			return world.Kernel.rectangleImage(jsnums.toFixnum(w),
 							   jsnums.toFixnum(h),
-							   s, c);
+							   s.toString(), c);
 		 });
 
 
@@ -354,7 +354,7 @@ EXPORTS['triangle'] =
 			if (colorDb.get(c)) {
 				c = colorDb.get(c);
 			}
-			return world.Kernel.triangleImage(jsnums.toFixnum(r), s, c);
+		     return world.Kernel.triangleImage(jsnums.toFixnum(r), s.toString(), c);
 		 });
 
 
@@ -373,7 +373,8 @@ EXPORTS['ellipse'] =
 			}
 			return world.Kernel.ellipseImage(jsnums.toFixnum(w),
 							 jsnums.toFixnum(h),
-							 s, c);
+							 s.toString(),
+							 c);
 		 });
 
 
