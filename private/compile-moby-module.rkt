@@ -54,17 +54,27 @@
 (define (compile-moby-modules main-module-path)
   (let*-values ([(a-path) (normalize-path main-module-path)])    
     (let loop ([to-visit (list a-path)]
-               [module-records empty])
+               [module-records empty]
+               [visited-paths empty])
       (cond
         [(empty? to-visit)
          module-records]
+        [(ormap (lambda (p)
+                  (same-path? p (first to-visit)))
+                visited-paths)
+         (loop (rest to-visit)
+               module-records
+               visited-paths)]
         [else
-         (let* ([record (compile-moby-module (first to-visit) (normalize-path main-module-path))]
-                [neighbors (filter-already-visited-modules
+         (let* ([record (compile-moby-module 
+                         (first to-visit) 
+                         (normalize-path main-module-path))]
+                [neighbors (filter-already-visited-modules+hardcodeds
                             (module-neighbors (first to-visit))
-                            (map module-record-path module-records))])
+                            visited-paths)])
            (loop (append neighbors (rest to-visit))
-                 (cons record module-records)))]))))
+                 (cons record module-records)
+                 (cons (module-record-path record) visited-paths)))]))))
 
 
 
@@ -153,12 +163,18 @@
 
 
 ;; filter-already-visited-modules: (listof path) (listof path) -> (listof path)
-(define (filter-already-visited-modules paths visited-paths)
-  (filter (lambda (p1)
-            (and (not (findf (lambda (p2) (same-path? p1 p2))
-                        visited-paths))
-                 (not (known-hardcoded-module-path? p1))))
-          paths))
+(define (filter-already-visited-modules+hardcodeds paths visited-paths)
+  (let ([result
+         (filter (lambda (p1)
+                   (cond
+                     [(findf (lambda (p2) (same-path? p1 p2)) visited-paths)
+                      #f]
+                     [(known-hardcoded-module-path? p1)
+                      #f]
+                     [else
+                      #t]))
+                 paths)])
+    result))
 
 
 
