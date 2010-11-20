@@ -22,6 +22,11 @@
                                    (string->symbol 
                                     (format "struct:~a"
                                             (syntax-e #'name))))]
+                   [make-name
+                    (datum->syntax #'name
+                                   (string->symbol
+                                    (format "make-~a"
+                                            (syntax-e #'name))))]
                    [name? 
                     (datum->syntax #'name 
                                    (string->symbol 
@@ -53,7 +58,7 @@
        
        (syntax/loc stx
          (begin (define-values (struct:name
-                                constructor
+                                make-name
                                 name?
                                 name-accessor
                                 name-mutator)
@@ -61,13 +66,13 @@
                                     supertype
                                     field-count
                                     impl))
-                #;(begin 
+                (begin 
                     (define accessor 
                       (make-struct-field-accessor
                        name-accessor field-index 'field)) 
                     ...)
                 
-                #;(begin 
+                (begin 
                   (define mutator 
                     (make-struct-field-mutator 
                      name-mutator field-index 'field)) 
