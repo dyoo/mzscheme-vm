@@ -209,6 +209,27 @@ var makeStructureType = function(theName, parentType, initFieldCnt, autoFieldCnt
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 //////////////////////////////////////////////////////////////////////
 
 // Regular expressions.
@@ -2007,6 +2028,47 @@ var makeOptionPrimitive = function(name,
     return new CasePrimitive(name, cases);
 };
 
+
+
+
+
+
+
+// Struct Procedure types
+var StructProc = function(type, name, numParams, isRest, usesState, impl) {
+    PrimProc.call(this, name, numParams, isRest, usesState, impl);
+    this.type = type;
+};
+StructProc.prototype = helpers.heir(PrimProc.prototype);
+
+var StructConstructorProc = function() {
+    StructProc.apply(this, arguments);
+};
+StructConstructorProc.prototype = helpers.heir(StructProc.prototype);
+
+var StructPredicateProc = function() {
+    StructProc.apply(this, arguments);
+};
+StructPredicateProc.prototype = helpers.heir(StructProc.prototype);
+
+var StructAccessorProc = function() {
+    StructProc.apply(this, arguments);
+};
+StructAccessorProc.prototype = helpers.heir(StructProc.prototype);
+
+var StructMutatorProc = function() {
+    StructProc.apply(this, arguments);
+};
+StructMutatorProc.prototype = helpers.heir(StructProc.prototype);
+
+
+
+
+
+
+
+
+
 //////////////////////////////////////////////////////////////////////
 
 
@@ -2343,6 +2405,12 @@ types.ThreadCell = ThreadCell;
 
 types.makeStructureType = makeStructureType;
 types.isStructType = function(x) { return x instanceof StructType; };
+
+types.StructProc = StructProc;
+types.StructConstructorProc = StructConstructorProc;
+types.StructPredicateProc = StructPredicateProc;
+types.StructAccessorProc = StructAccessorProc;
+types.StructMutatorProc = StructMutatorProc;
 
 
 types.makeLowLevelEqHash = makeLowLevelEqHash;

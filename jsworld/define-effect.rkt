@@ -4,10 +4,13 @@
 
 (require (for-syntax racket/base))
 
+(provide define-effect)
+
 (define-syntax (define-effect stx)
   (syntax-case stx ()
 
     [(_ name (field ...) #:impl impl)
+     (identifier? #'name)
      (syntax/loc stx 
        (define-effect (name #f) (field ...) #:impl impl))]
 
@@ -25,7 +28,8 @@
                                     (format "~a?"
                                             (syntax-e #'name))))]
                    [(field-index ...)
-                    (build-list (length #'(field ...)) 
+                    (build-list (length (syntax->list
+                                         #'(field ...))) 
                                 (lambda (i) i))]
                    [(accessor ...)
                     (map (lambda (field)
@@ -57,13 +61,17 @@
                                     supertype
                                     field-count
                                     impl))
-                (define accessor 
-                  (make-struct-field-accessor
-                   name-accessor field-index 'field)) ...
+                #;(begin 
+                    (define accessor 
+                      (make-struct-field-accessor
+                       name-accessor field-index 'field)) 
+                    ...)
                 
-                (define mutator 
-                  (make-struct-field-mutator 
-                   name-mutator field-index 'field)) ...
+                #;(begin 
+                  (define mutator 
+                    (make-struct-field-mutator 
+                     name-mutator field-index 'field)) 
+                  ...)
                 
                 )))]))                                   
     

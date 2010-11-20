@@ -35,7 +35,7 @@
 	 place-on-page
 
 	 make-world-config
-	 #;make-effect-type
+	 make-effect-type
 	 effect-type?
 	 effect?
 

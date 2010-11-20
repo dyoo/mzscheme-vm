@@ -348,45 +348,19 @@ var checkAndGetGuard = function(funName, guard, numberOfGuardArgs) {
 
 
 
-// Struct Procedure types
-var StructProc = function(type, name, numParams, isRest, usesState, impl) {
-    PrimProc.call(this, name, numParams, isRest, usesState, impl);
-    this.type = type;
-};
-StructProc.prototype = helpers.heir(PrimProc.prototype);
-
-var StructConstructorProc = function() {
-    StructProc.apply(this, arguments);
-};
-StructConstructorProc.prototype = helpers.heir(StructProc.prototype);
-
-var StructPredicateProc = function() {
-    StructProc.apply(this, arguments);
-};
-StructPredicateProc.prototype = helpers.heir(StructProc.prototype);
-
-var StructAccessorProc = function() {
-    StructProc.apply(this, arguments);
-};
-StructAccessorProc.prototype = helpers.heir(StructProc.prototype);
-
-var StructMutatorProc = function() {
-    StructProc.apply(this, arguments);
-};
-StructMutatorProc.prototype = helpers.heir(StructProc.prototype);
 
 var getMakeStructTypeReturns = function(aStructType) {
 	var name = aStructType.name;
 	return new types.ValuesWrapper(
 		[aStructType,
-		 (new StructConstructorProc(aStructType,
+		 (new types.StructConstructorProc(aStructType,
 					    'make-'+name,
 					    aStructType.numberOfArgs,
 					    false,
 					    false,
 					    aStructType.constructor)),
-		 (new StructPredicateProc(aStructType, name+'?', 1, false, false, aStructType.predicate)),
-		 (new StructAccessorProc(aStructType,
+		 (new types.StructPredicateProc(aStructType, name+'?', 1, false, false, aStructType.predicate)),
+		 (new types.StructAccessorProc(aStructType,
 					 name+'-ref',
 					 2,
 					 false,
@@ -403,7 +377,7 @@ var getMakeStructTypeReturns = function(aStructType) {
 						}
 						return aStructType.accessor(x, jsnums.toFixnum(i));
 					 })),
-		 (new StructMutatorProc(aStructType,
+		 (new types.StructMutatorProc(aStructType,
 					name+'-set!',
 					3,
 					false,
@@ -942,7 +916,7 @@ PRIMITIVES['make-struct-field-accessor'] =
 	    [false],
 	    false,
 	    function(userArgs, accessor, fieldPos, fieldName) {
-	    	check(accessor, function(x) { return x instanceof StructAccessorProc && x.numParams > 1; },
+	    	check(accessor, function(x) { return x instanceof types.StructAccessorProc && x.numParams > 1; },
 		      'make-struct-field-accessor', 'accessor procedure that requires a field index', 1, userArgs);
 		check(fieldPos, isNatural, 'make-struct-field-accessor', 'exact non-negative integer', 2, userArgs);
 		check(fieldName, function(x) { return x === false || isSymbol(x); },
@@ -951,7 +925,7 @@ PRIMITIVES['make-struct-field-accessor'] =
 	    	var procName = accessor.type.name + '-'
 			+ (fieldName ? fieldName.toString() : 'field' + fieldPos.toString());
 
-		return new StructAccessorProc(accessor.type, procName, 1, false, false,
+		return new types.StructAccessorProc(accessor.type, procName, 1, false, false,
 					      function(x) {
 						  check(x, accessor.type.predicate, procName, 'struct:'+accessor.type.name, 1);
 						  return accessor.impl(x, fieldPos);
@@ -967,7 +941,7 @@ PRIMITIVES['make-struct-field-mutator'] =
 	    [false],
 	    false,
 	    function(userArgs, mutator, fieldPos, fieldName) {
-	    	check(mutator, function(x) { return x instanceof StructMutatorProc && x.numParams > 1; },
+	    	check(mutator, function(x) { return x instanceof types.StructMutatorProc && x.numParams > 1; },
 		      'make-struct-field-mutator', 'mutator procedure that requires a field index', 1, userArgs);
 		check(fieldPos, isNatural, 'make-struct-field-mutator', 'exact non-negative integer', 2, userArgs);
 		check(fieldName, function(x) { return x === false || isSymbol(x); },
@@ -976,7 +950,7 @@ PRIMITIVES['make-struct-field-mutator'] =
 	    	var procName = mutator.type.name + '-'
 			+ (fieldName ? fieldName.toString() : 'field' + fieldPos.toString());
 
-		return new StructMutatorProc(mutator.type, procName, 2, false, false,
+		return new types.StructMutatorProc(mutator.type, procName, 2, false, false,
 					     function(x, v) {
 						 check(x, mutator.type.predicate, procName, 'struct:'+mutator.type.name, 1, arguments);
 						 return mutator.impl(x, fieldPos, v);
@@ -990,22 +964,22 @@ PRIMITIVES['struct-type?'] =
 PRIMITIVES['struct-constructor-procedure?'] =
     new PrimProc('struct-constructor-procedure?', 1, false, false,
 		 function(x) {
-		     return x instanceof StructConstructorProc; });
+		     return x instanceof types.StructConstructorProc; });
 
 PRIMITIVES['struct-predicate-procedure?'] =
     new PrimProc('struct-predicate-procedure?', 1, false, false,
 		 function(x) { 
-		     return x instanceof StructPredicateProc; });
+		     return x instanceof types.StructPredicateProc; });
 
 PRIMITIVES['struct-accessor-procedure?'] =
     new PrimProc('struct-accessor-procedure?', 1, false, false,
 		 function(x) { 
-		     return x instanceof StructAccessorProc; });
+		     return x instanceof types.StructAccessorProc; });
 
 PRIMITIVES['struct-mutator-procedure?'] =
     new PrimProc('struct-mutator-procedure?', 1, false, false,
 		 function(x) {
-		     return (x instanceof StructMutatorProc); });
+		     return (x instanceof types.StructMutatorProc); });
 
 
 

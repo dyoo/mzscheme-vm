@@ -11,6 +11,13 @@ var procArityContains = helpers.procArityContains;
 var raise = helpers.raise;
 
 
+var makeCaller = function(aState) {
+    return function(operator, operands, k, callSite) {
+	interpret.call(aState, operator, operands, k, aState.onFail, callSite);
+    };
+};
+
+
 
 
 // Every world configuration function (on-tick, stop-when, ...)
@@ -769,14 +776,14 @@ var getMakeStructTypeReturns = function(aStructType) {
 	var name = aStructType.name;
 	return new types.ValuesWrapper(
 		[aStructType,
-		 (new StructConstructorProc(name,
+		 (new types.StructConstructorProc(name,
 					    'make-'+name,
 					    aStructType.numberOfArgs,
 					    false,
 					    false,
 					    aStructType.constructor)),
-		 (new StructPredicateProc(name, name+'?', 1, false, false, aStructType.predicate)),
-		 (new StructAccessorProc(name,
+		 (new types.StructPredicateProc(name, name+'?', 1, false, false, aStructType.predicate)),
+		 (new types.StructAccessorProc(name,
 					 name+'-ref',
 					 2,
 					 false,
@@ -793,7 +800,7 @@ var getMakeStructTypeReturns = function(aStructType) {
 						}
 						return aStructType.accessor(x, jsnums.toFixnum(i));
 					 })),
-		 (new StructMutatorProc(name,
+		 (new types.StructMutatorProc(name,
 					name+'-set!',
 					3,
 					false,
