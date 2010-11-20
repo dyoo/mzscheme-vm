@@ -15,8 +15,5 @@
 
 
 (big-bang 0
-          (on-tick (lambda (w)
-                     (add1 w))
-                   1)
           (initial-effect (make-effect:beep))
-          (stop-when (lambda (w) (= w 5))))
+          (stop-when (lambda (w) true)))

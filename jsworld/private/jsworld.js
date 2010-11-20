@@ -563,48 +563,22 @@
 		    caller(config.lookup('onKey'), [w, helpers.getKeyCodeName(e)], k);
 	    }
 	    wrappedHandlers.push(_js.on_key(wrappedKey));
-//	    // Add event handlers that listen in on key events that are applied
-//	    // directly on the toplevelNode.  We pay attention to keydown, and
-//	    // omit keypress.
-//	    attachEvent(toplevelNode,
-//			'keydown',
-//			function(e) {
-//			    stimuli.onKey([e], function() {});
-//			    preventDefault(e);
-//			    stopPropagation(e);
-//			    return false;
-//			});
-//	    attachEvent(toplevelNode,
-//			'keypress',
-//			function(e) {
-//			    preventDefault(e);
-//			    stopPropagation(e);
-//			    return false;
-//			});
-//	    attachEvent(toplevelNode,
-//			'keyup',
-//			function(e) {
-//			    console.log(e);
-//			    preventDefault(e);
-//			    stopPropagation(e);
-//			    return false;
-//			});
 	    toplevelNode.focus();
 	}
 
 
-// 	if (config.lookup('initialEffect')) {
-// 	    var updaters =
-// 		world.Kernel.applyEffect(config.lookup('initialEffect'));
-// 	    for (var i = 0 ; i < updaters.length; i++) {
-// 		if (config.lookup('stopWhen') && 
-// 		    config.lookup('stopWhen')([initWorld])) {
-// 		    break;
-// 		} else {
-// 		    initWorld = updaters[i](initWorld);
-// 		}
-// 	    }
-// 	}
+	if (config.lookup('initialEffect')) {
+	    var updaters =
+		world.Kernel.applyEffect(config.lookup('initialEffect'));
+	    for (var i = 0 ; i < updaters.length; i++) {
+		if (config.lookup('stopWhen') && 
+		    config.lookup('stopWhen')([initWorld])) {
+		    break;
+		} else {
+		    initWorld = updaters[i](initWorld);
+		}
+	    }
+	}
 	
 
 	_js.big_bang(toplevelNode,
