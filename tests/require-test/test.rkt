@@ -7,12 +7,28 @@
          racket/runtime-path)
 
 (define-runtime-path m.rkt 
-  "/home/dyoo/Downloads/tmp/Package/tourguide.rkt")
+  "m.rkt"
+  #;"/home/dyoo/Downloads/tmp/Package/tourguide.rkt")
 
 (define (check-module-names-unique! module-records)
   (let ([names (map module-record-name module-records)])
-    names))
+    (unless (unique? names)
+      (error 'check-module-names-unique!
+             "modules with non-unique names: ~s" names))))
 
+
+(define (unique? names)
+  (let ([ht (make-hash)])
+    (let/ec return
+      (for ([n names])
+        (cond [(hash-ref ht n #f)
+               (return #f)]
+              [else
+               (hash-set! ht n #t)])
+        (return #t)))))
+             
+        
+  
 
 
 (define (test)
