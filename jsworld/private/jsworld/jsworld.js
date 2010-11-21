@@ -453,6 +453,20 @@ var jsworld = {};
     }
 
 
+    // Preorder traversal.
+    var preorder = function(node, f) {
+	f(node, function() {
+	    var child = node.firstChild;
+	    var nextSibling;
+	    while (child) {
+		var nextSibling = child.nextSibling;
+		preorder(child, f);
+		child = nextSibling;
+	    }
+	});
+    };
+
+
     // update_dom(nodes(Node), relations(Node)) = void
     function update_dom(toplevelNode, nodes, relations) {
 
@@ -470,43 +484,28 @@ var jsworld = {};
 	
 	// arrange siblings in proper order
 	// truly terrible... BUBBLE SORT
-// 	var unsorted = true;
-// 	while (unsorted) {
-// 	    unsorted = false;
-		
-// 	    for (var i = 0; i < relations.length; i++) {
-// 		if (relations[i].relation == 'neighbor') {
-// 		    var left = relations[i].left, right = relations[i].right;
+	var unsorted = true;
+	while (unsorted) {
+	    unsorted = false;
+	    for (var i = 0; i < relations.length; i++) {
+		if (relations[i].relation == 'neighbor') {
+		    var left = relations[i].left, right = relations[i].right;
 				
-// 		    if (nodeNotEq(left.nextSibling, right)) {
-// 			left.parentNode.insertBefore(left, right)
-// 			unsorted = true;
-// 		    }
-// 		}
-// 	    }
-		
-// //	    if (!unsorted) break;
-// 	}
+		    if (nodeNotEq(left.nextSibling, right)) {
+			left.parentNode.insertBefore(left, right)
+			unsorted = true;
+		    }
+		}
+	    }
+	}
 
 	
 
 	var node = toplevelNode, stop = toplevelNode.parentNode;
 
-	var preorder = function(node, f) {
-	    f(node, function() {
-		var child = node.firstChild;
-		var nextSibling;
-		while (child) {
-		    var nextSibling = child.nextSibling;
-		    preorder(child, f);
-		    child = nextSibling;
-		}
-	    });
-	};
-
 
 	var nodesPlus = nodes.concat([toplevelNode]);
-	preorder(toplevelNode, function(aNode, continuePreorder) {
+	preorder(toplevelNode, function(aNode, continueTraversalDown) {
 	    if (aNode.jsworldOpaque) {
 		if (! isMemq(aNode, nodesPlus)) {
 		    aNode.parentNode.removeChild(aNode);
@@ -515,7 +514,7 @@ var jsworld = {};
 		if (! isMemq(aNode, nodesPlus)) {
 		    aNode.parentNode.removeChild(aNode);
 		} else {
-		    continuePreorder();
+		    continueTraversalDown();
 		}
 	    }
 	});
