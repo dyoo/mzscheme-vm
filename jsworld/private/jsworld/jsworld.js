@@ -1289,7 +1289,6 @@ var jsworld = {};
     function text(s, attribs) {
 	var result = document.createElement("div");
 	result.appendChild(document.createTextNode(String(s)));
-	result.style['white-space'] = 'pre';
 	result.jsworldOpaque = true;
 	return result;
     }
