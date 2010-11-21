@@ -396,12 +396,13 @@ var jsworld = {};
 
     // nodes(tree(N)) = nodes(N)
     function nodes(tree) {
-	var ret = [tree.node];
+	var ret;
 	
 	if (tree.node.jsworldOpaque == true) {
-	    return ret;
+	    return [tree.node];
 	}
 
+	ret = [tree.node];
 	for (var i = 0; i < tree.children.length; i++)
 	    ret = ret.concat(nodes(tree.children[i]));
 	
@@ -422,25 +423,33 @@ var jsworld = {};
 
     // relations(tree(N)) = relations(N)
     function relations(tree) {
-	var ret = [];
-	
-	if (tree.node.jsworldOpaque == true) { return []; }
+	var ret = [];	
 
 	for (var i = 0; i < tree.children.length; i++)
-	    ret.push({ relation: 'parent', parent: tree.node, child: tree.children[i].node });
+	    ret.push({ relation: 'parent', 
+		       parent: tree.node, 
+		       child: tree.children[i].node });
 	
 	for (var i = 0; i < tree.children.length - 1; i++)
-	    ret.push({ relation: 'neighbor', left: tree.children[i].node, right: tree.children[i + 1].node });
+	    ret.push({ relation: 'neighbor', 
+		       left: tree.children[i].node,
+		       right: tree.children[i + 1].node });
 	
-	for (var i = 0; i < tree.children.length; i++)
-	    ret = ret.concat(relations(tree.children[i]));
+	if (! tree.node.jsworldOpaque) {
+	    for (var i = 0; i < tree.children.length; i++) {
+		ret = ret.concat(relations(tree.children[i]));
+	    }
+	}
 	
 	return ret;
     }
 
 
-    function appendChild(parent, child) {
-	parent.appendChild(child);
+
+    var removeAllChildren = function(n) {
+	while (n.firstChild) {
+	    n.removeChild(n.firstChild);
+	}
     }
 
 
@@ -453,121 +462,115 @@ var jsworld = {};
 	for (var i = 0; i < relations.length; i++) {
 	    if (relations[i].relation == 'parent') {
 		var parent = relations[i].parent, child = relations[i].child;
-		if (nodeNotEq(child.parentNode, parent)) {
-		    appendChild(parent, child);
-		} else {
+		if (child.parentNode !== parent) {
+		    parent.appendChild(child);
 		}
 	    }
 	}
 	
 	// arrange siblings in proper order
 	// truly terrible... BUBBLE SORT
-	var unsorted = true;
-	while (unsorted) {
-	    unsorted = false;
+// 	var unsorted = true;
+// 	while (unsorted) {
+// 	    unsorted = false;
 		
-	    for (var i = 0; i < relations.length; i++) {
-		if (relations[i].relation == 'neighbor') {
-		    var left = relations[i].left, right = relations[i].right;
+// 	    for (var i = 0; i < relations.length; i++) {
+// 		if (relations[i].relation == 'neighbor') {
+// 		    var left = relations[i].left, right = relations[i].right;
 				
-		    if (nodeNotEq(left.nextSibling, right)) {
-			left.parentNode.insertBefore(left, right)
-			unsorted = true;
-		    }
-		}
-	    }
+// 		    if (nodeNotEq(left.nextSibling, right)) {
+// 			left.parentNode.insertBefore(left, right)
+// 			unsorted = true;
+// 		    }
+// 		}
+// 	    }
 		
-//	    if (!unsorted) break;
-	}
+// //	    if (!unsorted) break;
+// 	}
 
 	
-	// remove dead nodes
-	var live_nodes;
-	
-	// it is my hope that by sorting the nodes we get the worse of
-	// O(n*log n) or O(m) performance instead of O(n*m)
-	// for all I know Node.compareDocumentPosition is O(m)
-	// and now we get O(n*m*log n)
-	function positionComparator(a, b) {
-	    var rel = a.compareDocumentPosition(b);
-	    // children first
-	    if (rel & a.DOCUMENT_POSITION_CONTAINED_BY) return 1;
-	    if (rel & a.DOCUMENT_POSITION_CONTAINS) return -1;
-	    // otherwise use precedes/follows
-	    if (rel & a.DOCUMENT_POSITION_FOLLOWING) return -1;
-	    if (rel & a.DOCUMENT_POSITION_PRECEDING) return 1;
-	    // otherwise same node or don't care, we'll skip it anyway
-	    return 0;
-	}
-	
-	try {
-	    // don't take out concat, it doubles as a shallow copy
-	    // (as well as ensuring we keep document.body)
-	    live_nodes = nodes.concat(toplevelNode).sort(positionComparator);
-	}
-	catch (e) {
-	    // probably doesn't implement Node.compareDocumentPosition
-	    live_nodes = null;
-	}
-	
+
 	var node = toplevelNode, stop = toplevelNode.parentNode;
-	while (node != stop) {
-	    while ( !(node.firstChild == null || node.jsworldOpaque) ) {
-		// process first
-		// move down
-		node = node.firstChild;
-	    }
-		
-	    while (node != stop) {
-		var next = node.nextSibling, parent = node.parentNode;
-		
-		// process last
-		var found = false;
-		var foundNode = undefined;
 
-		if (live_nodes != null)
-		    while (live_nodes.length > 0 && positionComparator(node, live_nodes[0]) >= 0) {
-			var other_node = live_nodes.shift();
-			if (nodeEq(other_node, node)) {
-			    found = true;
-			    foundNode = other_node;
-			    break;
-			}
-			// need to think about this
-			//live_nodes.push(other_node);
-		    }
-		else
-		    for (var i = 0; i < nodes.length; i++)
-			if (nodeEq(nodes[i], node)) {
-			    found = true;
-			    foundNode = nodes[i];
-			    break;
-			}
-			
-		if (!found) {
-		    if (node.isJsworldOpaque) {
-		    } else {
-			// reparent children, remove node
-			while (node.firstChild != null) {
-			    appendChild(node.parentNode, node.firstChild);
-			}
-		    }
-				
-		    next = node.nextSibling; // HACKY
-		    node.parentNode.removeChild(node);
-		} else {
-		    mergeNodeValues(node, foundNode);
+	var preorder = function(node, f) {
+	    f(node, function() {
+		var child = node.firstChild;
+		var nextSibling;
+		while (child) {
+		    var nextSibling = child.nextSibling;
+		    preorder(child, f);
+		    child = nextSibling;
 		}
+	    });
+	};
 
-		// move sideways
-		if (next == null) node = parent;
-		else { node = next; break; }
+
+	var nodesPlus = nodes.concat([toplevelNode]);
+	preorder(toplevelNode, function(aNode, continuePreorder) {
+	    if (aNode.jsworldOpaque) {
+		if (! isMemq(aNode, nodesPlus)) {
+		    aNode.parentNode.removeChild(aNode);
+		}
+	    } else {
+		if (! isMemq(aNode, nodesPlus)) {
+		    aNode.parentNode.removeChild(aNode);
+		} else {
+		    continuePreorder();
+		}
 	    }
-	}
+	});
 
-	
+	// Postorder traversal.
+// 	while (node != stop) {
+// 	    while ( node.firstChild !== null && 
+// 		    !(node.jsworldOpaque) ) {
+// 		node = node.firstChild;
+// 	    }
+		
+// 	    while (node != stop) {
+// 		var next = node.nextSibling, parent = node.parentNode;
+		
+// 		// process last
+// 		var foundNode = undefined;
+
+// 		if (! isMemq(node, nodes)) {
+// // 		    if (node.isJsworldOpaque) {
+// // 		    } else {
+// // 			// reparent children, remove node
+// // 			while (node.firstChild != null) {
+// // 			    appendChild(node.parentNode, node.firstChild);
+// // 			}
+// // 		    }
+				
+// 		    next = node.nextSibling; // HACKY
+// 		    node.parentNode.removeChild(node);
+// 		}
+
+// 		// move sideways
+// 		if (next === null) {
+// 		    node = parent;
+// 		} else { 
+// 		    node = next;
+// 		    break; 
+// 		}
+// 	    }
+// 	}
+
 	refresh_node_values(nodes);
     }
+    
+    
+    var isMemq = function(x, L) {
+	var i;
+	for (i = 0 ; i < L.length; i++) {
+	    if (nodeEq(x, L[i])) {
+		return true;
+	    }
+	}
+	return false;
+    };
+
+
 
     function mergeNodeValues(node, foundNode) {
 //	for (attr in node) {
@@ -1199,19 +1202,6 @@ var jsworld = {};
     Jsworld.button = button;
 
 
-//     function bidirectional_input(type, toVal, updateVal, attribs) {
-// 	var n = document.createElement('input');
-// 	n.type = type;
-// 	function onKey(w, e) {
-// 	    return updateVal(w, n.value);
-// 	}
-// 	// This established the widget->world direction
-// 	add_ev_after(n, 'keypress', onKey);
-// 	// and this establishes the world->widget.
-// 	n.onWorldChange = function(w) {n.value = toVal(w)};
-// 	return addFocusTracking(copy_attribs(n, attribs));
-//     }
-//     Jsworld.bidirectional_input = bidirectional_input;
 
 
     var preventDefault = function(event) {
@@ -1345,25 +1335,11 @@ var jsworld = {};
 
 
 
-    // worldToValF: CPS(world -> string)
-    // updateF: CPS(world string -> world)
-    function bidirectional_text_input(worldToValF, updateF, attribs) {
-	var n = document.createElement('input');
-	n.type = "text";
-	var lastValue = undefined;
-	function monitor(w, e, k) {
-	    updateF(w, n.value, k);
-	}
-	add_ev(n, 'keypress', monitor);
-	return stopClickPropagation(
-	    addFocusTracking(
-		copy_attribs(n, attribs)));
-    }
     
 
     function text(s, attribs) {
 	var result = document.createElement("div");
-	result.appendChild(document.createTextNode(s));
+	result.appendChild(document.createTextNode(String(s)));
 	result.style['white-space'] = 'pre';
 	result.jsworldOpaque = true;
 	return result;

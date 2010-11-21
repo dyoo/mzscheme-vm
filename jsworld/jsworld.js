@@ -59,8 +59,8 @@ var convertAttribList = function(attribList) {
     while (!types.isEmpty(attribList)) {
 	nextElt = attribList.first();
 	// ensure each element in the hash are primitive strings
-	newList = types.cons(types.list([nextElt.first().toString(),
-					 nextElt.rest().first().toString()]),
+	newList = types.cons(types.list([String(nextElt.first()),
+					 String(nextElt.rest().first())]),
 			     newList);
 	attribList = attribList.rest();
     }
@@ -80,8 +80,8 @@ EXPORTS['key=?'] =
 		 2,
 		 false, false,
 		 function(key1, key2) {
-		 	return (key1.toString().toLowerCase() === 
-				key2.toString().toLowerCase());
+		     return (String(key1).toLowerCase() === 
+			     String(key2).toLowerCase());
 		 });
 
 
@@ -376,7 +376,7 @@ var jsInput = function(type, updateF, attribList) {
     checkListOf(attribList, isAssocList, 'js-input', '(listof X Y)', 3);
 
     var attribs = attribList ? convertAttribList(attribList) : {};
-    var node = jsworld.MobyJsworld.input(type.toString(), 
+    var node = jsworld.MobyJsworld.input(String(type), 
 					 updateF, attribs);
 
     node.toWrittenString = function(cache) { return "(js-input ...)"; }
@@ -399,7 +399,7 @@ var jsImg = function(src, attribList) {
     checkListOf(attribList, isAssocList, 'js-img', '(listof X Y)', 2);
 
     var attribs = convertAttribList(attribList);
-    var node = jsworld.MobyJsworld.img(src.toString(), attribs);
+    var node = jsworld.MobyJsworld.img(String(src), attribs);
 
     node.toWrittenString = function(cache) { return "(js-img ...)"; }
     node.toDisplayedString = node.toWrittenString;
@@ -424,7 +424,7 @@ EXPORTS['js-text'] =
 		 function(s) {
 		     check(s, isString, 'js-text', 'string', 1);
 
-		     var node = jsworld.MobyJsworld.text(s.toString(), []);
+		     var node = jsworld.MobyJsworld.text(String(s), []);
 		     node.toWrittenString = function(cache) { return "(js-text ...)"; }
 		     node.toDisplayedString = node.toWrittenString;
 		     node.toDomNode = function(cache) { return node; }
@@ -440,7 +440,7 @@ var jsSelect = function(optionList, updateF, attribList) {
     var attribs = attribList ? convertAttribList(attribList) : {};
     var options = helpers.deepListToArray(optionList);
     for (var i = 0 ; i < options.length; i++) {
-	options[i] = options[i].toString();
+	options[i] = String(options[i]);
     }
     var node = jsworld.MobyJsworld.select(options, updateF, attribs);
 
@@ -616,7 +616,7 @@ EXPORTS['make-effect-type'] =
 //			});
 //		}
 
-		var anEffectType = types.makeEffectType(name.toString(),
+		var anEffectType = types.makeEffectType(String(name),
 							superType,
 							fieldCnt,
 							impl,
@@ -660,7 +660,7 @@ EXPORTS['make-render-effect-type'] =
 		}
 		var jsGuard = (guard ? schemeProcToJs(aState, guard) : false);
 
-		var aRenderEffectType = types.makeRenderEffectType(name.toString(),
+		var aRenderEffectType = types.makeRenderEffectType(String(name),
 								   superType,
 								   fieldCnt,
 								   impl,
@@ -888,8 +888,8 @@ var isEqv = function(x, y) {
 
 var isStyle = function(x) {
 	return ((isString(x) || isSymbol(x)) &&
-		(x.toString().toLowerCase() == "solid" ||
-		 x.toString().toLowerCase() == "outline"));
+		(String(x).toLowerCase() == "solid" ||
+		 String(x).toLowerCase() == "outline"));
 };
 
 
