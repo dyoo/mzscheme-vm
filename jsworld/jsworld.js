@@ -81,7 +81,6 @@ var convertAttribList = function(attribList) {
 		val = String(val);
 	    }
 	} else {
-	    console.log(val);
 	    // raise error: neither string nor boolean
 	    raise(types.incompleteExn(
 		types.exnFailContract,		  

@@ -9,7 +9,6 @@ EXPORTS['display-location'] =
 	2,
 	false, true,
 	function(aState, thing, aLoc) {
-	    console.log(locationStructType.accessor(aLoc, 0));
             var aHash = {'id': String(locationStructType.accessor(aLoc, 0)),
                          'offset' : locationStructType.accessor(aLoc, 0),
                          'line' : locationStructType.accessor(aLoc, 2),
