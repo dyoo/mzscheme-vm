@@ -409,17 +409,6 @@ var jsworld = {};
 	return ret;
     }
 
-    // nodeEq: node node -> boolean
-    // Returns true if the two nodes should be the same.
-    function nodeEq(node1, node2) {
-	return (node1 && node2 && node1 === node2);
-    }
-
-    function nodeNotEq(node1, node2) {
-	return ! nodeEq(node1, node2);
-    }
-
-
 
     // relations(tree(N)) = relations(N)
     function relations(tree) {
@@ -491,7 +480,7 @@ var jsworld = {};
 		if (relations[i].relation == 'neighbor') {
 		    var left = relations[i].left, right = relations[i].right;
 				
-		    if (nodeNotEq(left.nextSibling, right)) {
+		    if (! nodeEq(left.nextSibling, right)) {
 			left.parentNode.insertBefore(left, right)
 			unsorted = true;
 		    }
@@ -499,11 +488,7 @@ var jsworld = {};
 	    }
 	}
 
-	
-
-	var node = toplevelNode, stop = toplevelNode.parentNode;
-
-
+	// Finally, remove nodes that shouldn't be attached anymore.
 	var nodesPlus = nodes.concat([toplevelNode]);
 	preorder(toplevelNode, function(aNode, continueTraversalDown) {
 	    if (aNode.jsworldOpaque) {
@@ -519,46 +504,12 @@ var jsworld = {};
 	    }
 	});
 
-	// Postorder traversal.
-// 	while (node != stop) {
-// 	    while ( node.firstChild !== null && 
-// 		    !(node.jsworldOpaque) ) {
-// 		node = node.firstChild;
-// 	    }
-		
-// 	    while (node != stop) {
-// 		var next = node.nextSibling, parent = node.parentNode;
-		
-// 		// process last
-// 		var foundNode = undefined;
-
-// 		if (! isMemq(node, nodes)) {
-// // 		    if (node.isJsworldOpaque) {
-// // 		    } else {
-// // 			// reparent children, remove node
-// // 			while (node.firstChild != null) {
-// // 			    appendChild(node.parentNode, node.firstChild);
-// // 			}
-// // 		    }
-				
-// 		    next = node.nextSibling; // HACKY
-// 		    node.parentNode.removeChild(node);
-// 		}
-
-// 		// move sideways
-// 		if (next === null) {
-// 		    node = parent;
-// 		} else { 
-// 		    node = next;
-// 		    break; 
-// 		}
-// 	    }
-// 	}
-
 	refresh_node_values(nodes);
     }
     
-    
+
+    // isMemq: X (arrayof X) -> boolean
+    // Produces true if any of the elements of L are nodeEq to x.
     var isMemq = function(x, L) {
 	var i;
 	for (i = 0 ; i < L.length; i++) {
@@ -570,11 +521,10 @@ var jsworld = {};
     };
 
 
-
-    function mergeNodeValues(node, foundNode) {
-//	for (attr in node) {
-//	    foundNode[attr] = node[attr];
-//	}
+    // nodeEq: node node -> boolean
+    // Returns true if the two nodes should be the same.
+    var nodeEq = function(node1, node2) {
+	return (node1 && node2 && node1 === node2);
     }
 
 
