@@ -27,7 +27,10 @@ var WorldConfigOption = function(name) {
 };
 
 WorldConfigOption.prototype.configure = function(config) {
-    throw types.internalError("unimplemented", false);
+    raise(types.incompleteExn(
+	types.exnFailContract,
+	'unimplemented WorldConfigOption',
+	[]));
 };
 
 WorldConfigOption.prototype.toDomNode = function(cache) {  
@@ -52,15 +55,34 @@ var isWorldConfigOption = function(x) { return x instanceof WorldConfigOption; }
 
 
 
-// convertAttribList: (listof (list string string)) -> (hashof string string)
+// convertAttribList: (listof (list string (or string boolean))) -> (hashof string string)
 var convertAttribList = function(attribList) {
     var newList = types.EMPTY;
     var nextElt;
+    var key, val;
     while (!types.isEmpty(attribList)) {
 	nextElt = attribList.first();
+
+	key = nextElt.first();
+	val = nextElt.rest().first();
+
+	key = String(key);
+	if (types.isString(val)) {
+	    val = String(val);
+	} else if (types.isBoolean(val)) {
+	    // do nothing: the representation is the same.
+	} else {
+	    console.log(val);
+	    // raise error: neither string nor boolean
+	    raise(types.incompleteExn(
+		types.exnFailContract,		  
+		helpers.format(
+		    "attribute value ~s neither a string nor a boolean",
+		    [val]),
+		[]));
+	}
 	// ensure each element in the hash are primitive strings
-	newList = types.cons(types.list([String(nextElt.first()),
-					 String(nextElt.rest().first())]),
+	newList = types.cons(types.list([key, val]),
 			     newList);
 	attribList = attribList.rest();
     }
@@ -748,12 +770,12 @@ var checkList = function(x, functionName, position, args) {
 
 
 var length = function(lst) {
-	checkList(lst, 'length', 1, [lst]);
-	var ret = 0;
-	for (; !lst.isEmpty(); lst = lst.rest()) {
-		ret = ret+1;
-	}
-	return ret;
+    checkList(lst, 'length', 1, [lst]);
+    var ret = 0;
+    for (; !isEmpty(lst); lst = lst.rest()) {
+	ret = ret+1;
+    }
+    return ret;
 }
 
 

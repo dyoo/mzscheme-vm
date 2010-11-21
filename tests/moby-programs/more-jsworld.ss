@@ -85,3 +85,34 @@
   (big-bang ""
             (to-draw-page draw draw-css)
 	    (stop-when true-f)))
+
+
+
+
+
+
+
+
+
+
+(big-bang 0
+	  (stop-when (lambda (x) true))
+          (to-draw-page (lambda (x)
+                          (list (js-div)
+                                (list 
+				 (js-input "checkbox" 
+					   (lambda (x y) x)
+					   '(("checked" true))));This checkbox is checked
+                                (list
+				 (js-input "checkbox"
+					   (lambda (x y) x)
+					   '(("checked" false))));This checkbox is checked
+                                (list
+				 (js-input "checkbox" 
+					   (lambda (x y) x) 
+					   '(("value" true))));This checkbox is not checked
+                                (list
+				 (js-input "checkbox"
+					   (lambda (x y) x)
+					   '(("value" false))))));This checkbox is not checked
+                        (lambda (x) empty)))
