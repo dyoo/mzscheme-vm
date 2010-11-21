@@ -67,10 +67,19 @@ var convertAttribList = function(attribList) {
 	val = nextElt.rest().first();
 
 	key = String(key);
+
 	if (types.isString(val)) {
 	    val = String(val);
 	} else if (types.isBoolean(val)) {
 	    // do nothing: the representation is the same.
+	} else if (types.isSymbol(val)) {
+	    if (String(val) === 'true') {
+		val = true;
+	    } else if (String(val) === 'false') {
+		val = false;
+	    } else {
+		val = String(val);
+	    }
 	} else {
 	    console.log(val);
 	    // raise error: neither string nor boolean
