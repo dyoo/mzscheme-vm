@@ -254,9 +254,13 @@ var makeOnCall = function(state) {
 // step: state -> void
 // Takes one step in the abstract machine.
 var step = function(aState) {
-    var nextCode = aState.popControl();
-    //debugF(function() { return sys.inspect(nextCode) });
-    if (nextCode['invoke']) {
+    var nextCode;
+    if (aState.cstack.length === 0) {
+	throw types.internalError("cstack empty", 
+				  captureCurrentContinuationMarks(aState));
+    }
+    nextCode = aState.cstack.pop();
+    if (nextCode.invoke) {
 	nextCode.invoke(aState);
     } else {
 	// we should never get here.

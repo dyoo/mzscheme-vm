@@ -179,16 +179,6 @@ State.prototype.pushManyControls = function(forms) {
 };
 
 
-
-// Pop the last pushed form.
-State.prototype.popControl = function() {
-    if (this.cstack.length === 0) {
-	throw types.internalError("cstack empty", captureCurrentContinuationMarks(this));
-    }
-    return this.cstack.pop();
-};
-
-
 // Push a value.
 State.prototype.pushValue = function(aVal) {
     debugF(function(){ return "pushValue" + sys.inspect(aVal); } );
