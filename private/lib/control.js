@@ -833,6 +833,7 @@ CallControl.prototype.invoke = function(state) {
 var callProcedure = function(aState, procValue, n, operandValues) {
     var args;
     var result;
+    var argCount;
 
     procValue = selectProcedureByArity(n, procValue, operandValues);
 
@@ -853,11 +854,48 @@ var callProcedure = function(aState, procValue, n, operandValues) {
 
     } else if (procValue instanceof types.ClosureValue) {
 
-	callClosureProcedure(aState, procValue, n, operandValues);
+	// Tail call optimization
+	if (aState.cstack.length !== 0 && 
+	    aState.cstack[aState.cstack.length - 1] instanceof PopnControl) {
+	    aState.cstack.pop().invoke(aState);
+	    argCount = prepareClosureArgumentsOnStack(aState, 
+						      procValue, 
+						      operandValues,
+						      n);
+	    aState.cstack.push(new PopnControl(argCount));
+	    aState.cstack.push(procValue.body);
+
+	} else if (aState.cstack.length >= 2 &&
+		   types.isContMarkRecordControl(aState.cstack[aState.cstack.length - 1]) &&
+		   aState.cstack[aState.cstack.length - 2] instanceof PopnControl) {
+	    // Other tail call optimzation: if there's a continuation mark frame...
+	    aState.cstack[aState.cstack.length - 2].invoke(aState);
+	    argCount = prepareClosureArgumentsOnStack(aState, 
+						      procValue, 
+						      operandValues,
+						      n);
+	    aState.cstack[aState.cstack.length - 2] = new PopnControl(argCount);
+	    aState.cstack.push(procValue.body);
+	} else {
+	    // General case:
+	    argCount = prepareClosureArgumentsOnStack(aState, 
+						      procValue, 
+						      operandValues,
+						      n);
+	    aState.cstack.push(new PopnControl(argCount));
+	    aState.cstack.push(procValue.body);
+	}
+
     } else if (procValue instanceof types.ContinuationClosureValue) {
 
+	if (n === 1) {
+	    aState.v = operandValues[0];
+	} else {
+	    aState.v = new types.ValuesWrapper(operandValues);
+	}
+	aState.vstack = procValue.vstack;
+	aState.cstack = procValue.cstack;
 
-	callContinuationProcedure(aState, procValue, n, operandValues);
     } else {
 
 
@@ -915,53 +953,6 @@ InternalCallRestartControl.prototype.invoke = function(state) {
 
 
 
-
-
-
-var callClosureProcedure = function(state, procValue, n, operandValues) {
-    // Tail call optimization
-    if (state.cstack.length !== 0 && 
-	state.cstack[state.cstack.length - 1] instanceof PopnControl) {
-	state.cstack.pop().invoke(state);
-	var argCount = prepareClosureArgumentsOnStack(state, 
-						      procValue, 
-						      operandValues,
-						      n);
-	state.cstack.push(new PopnControl(argCount));
-	state.cstack.push(procValue.body);
-
-    } else if (state.cstack.length >= 2 &&
-	       types.isContMarkRecordControl(state.cstack[state.cstack.length - 1]) &&
-	       state.cstack[state.cstack.length - 2] instanceof PopnControl) {
-	// Other tail call optimzation: if there's a continuation mark frame...
-	state.cstack[state.cstack.length - 2].invoke(state);
-	var argCount = prepareClosureArgumentsOnStack(state, 
-						      procValue, 
-						      operandValues,
-						      n);
-	state.cstack[state.cstack.length - 2] = new PopnControl(argCount);
-	state.cstack.push(procValue.body);
-    } else {
-	// General case:
-	var argCount = prepareClosureArgumentsOnStack(state, 
-						      procValue, 
-						      operandValues,
-						      n);
-	state.cstack.push(new PopnControl(argCount));
-	state.cstack.push(procValue.body);
-    }
-};
-
-
-var callContinuationProcedure = function(state, procValue, n, operandValues) {
-    if (n === 1) {
-	state.v = operandValues[0];
-    } else {
-	state.v = new types.ValuesWrapper(operandValues);
-    }
-    state.vstack = procValue.vstack;
-    state.cstack = procValue.cstack;
-};
 
 
 
