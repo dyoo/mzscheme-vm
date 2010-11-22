@@ -821,9 +821,9 @@ var CallControl = function(n) {
 };
 
 CallControl.prototype.invoke = function(state) {
-    debug("CALL " + this.n);
-    var operandValues = [];
-    for (var i = 0; i < this.n; i++) {
+//    debug("CALL " + this.n);
+    var operandValues = [], i;
+    for (i = 0; i < this.n; i++) {
 	operandValues.push(state.popValue());
     }
     callProcedure(state, state.v, this.n, operandValues);
@@ -831,33 +831,42 @@ CallControl.prototype.invoke = function(state) {
 
 
 var callProcedure = function(aState, procValue, n, operandValues) {
+    var args;
+    var result;
+
     procValue = selectProcedureByArity(n, procValue, operandValues);
+
     if (primitive.isPrimitive(procValue)) {
-	callPrimitiveProcedure(aState, procValue, n, operandValues);
+	// callPrimitiveProcedure
+
+	// Tail call optimization:
+	if (aState.cstack.length !== 0 && 
+	    aState.cstack[aState.cstack.length - 1] instanceof PopnControl) {
+	    aState.cstack.pop().invoke(aState);
+	}
+	args = preparePrimitiveArguments(aState, 
+					 procValue, 
+					 operandValues,
+					 n);
+	result = procValue.impl.apply(procValue.impl, args);
+	processPrimitiveResult(aState, result, procValue);
+
     } else if (procValue instanceof types.ClosureValue) {
+
 	callClosureProcedure(aState, procValue, n, operandValues);
     } else if (procValue instanceof types.ContinuationClosureValue) {
+
+
 	callContinuationProcedure(aState, procValue, n, operandValues);
     } else {
+
+
 	throw types.internalError("Something went wrong with checking procedures!",
 				  state.captureCurrentContinuationMarks(aState));
     }
 };
 
 
-var callPrimitiveProcedure = function(state, procValue, n, operandValues) {
-    // Tail call optimization:
-    if (state.cstack.length !== 0 && 
-	state.cstack[state.cstack.length - 1] instanceof PopnControl) {
-	state.cstack.pop().invoke(state);
-    }
-    var args = preparePrimitiveArguments(state, 
-					 procValue, 
-					 operandValues,
-					 n);
-    var result = procValue.impl.apply(procValue.impl, args);
-    processPrimitiveResult(state, result, procValue);
-};
 
 
 var processPrimitiveResult = function(state, result, procValue) {
