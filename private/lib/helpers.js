@@ -543,6 +543,26 @@ var helpers = {};
 
 
 
+
+
+    var startProfile = function(name) {
+	if (console.profile) {
+	    console.profile(name);
+	    
+	}
+    };
+    var endProfile = function(name) {
+	if (console.profileEnd) {
+	    console.profileEnd(name);
+	}
+    };
+
+
+
+
+
+
+
 	////////////////////////////////////////////////
 
 	helpers.format = format;
@@ -580,6 +600,9 @@ var helpers = {};
         helpers.makeLowLevelEqHash = makeLowLevelEqHash;
 
         helpers.heir = heir;
+
+    helpers.startProfile = startProfile;
+    helpers.endProfile = endProfile;
 
 })();
 
