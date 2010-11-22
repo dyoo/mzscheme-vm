@@ -787,31 +787,29 @@ ApplicationControl.prototype.invoke = function(state) {
     var rator = this.rator;
     var rands = this.rands;
     var randsLength = rands.length;
-    var cmds = [];    
+    var randsLengthSub1 = rands.length - 1;
     var i;
+
+    state.cstack.push(new CallControl(randsLength));
+    for (i = randsLengthSub1; i >= 0; i--) {
+	if (i !== randsLengthSub1) {
+	    state.cstack.push(new SetControl(i));
+	    state.cstack.push(rands[i]);
+	} else {
+	    state.cstack.push(new SwapControl(randsLengthSub1));
+	    state.cstack.push(rands[randsLengthSub1]);
+	}
+
+    }
+    if (randsLength !== 0) {
+	state.cstack.push(new SetControl(randsLengthSub1));
+    }
+    state.cstack.push(rator);    
+
     // We allocate as many values as there are operands.
     if (randsLength !== 0) {
-	cmds.push(new PushnControl(randsLength));
+	state.cstack.push(new PushnControl(randsLength));
     }
-    cmds.push(rator);    
-    if (randsLength !== 0) {
-	cmds.push(new SetControl(randsLength-1));
-    }
-
-    for (i = 0; i < randsLength; i++) {
-	if (i !== randsLength - 1) {
-	    cmds.push(rands[i]);
-	    cmds.push(new SetControl(i));
-	} else {
-	    cmds.push(rands[randsLength-1]);
-	    cmds.push(new SwapControl(randsLength-1));
-	}
-    }
-    cmds.push(new CallControl(randsLength));
-    // CallControl will be responsible for popping off the 
-    // value stack elements.
-
-    state.pushManyControls(cmds);
 };
 
 
