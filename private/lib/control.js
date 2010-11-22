@@ -788,27 +788,28 @@ ApplicationControl.prototype.invoke = function(state) {
     var rands = this.rands;
     var randsLength = rands.length;
     var randsLengthSub1 = rands.length - 1;
+    var cstack = state.cstack;
     var i;
 
-    state.cstack.push(new CallControl(randsLength));
+    cstack.push(new CallControl(randsLength));
     for (i = randsLengthSub1; i >= 0; i--) {
 	if (i !== randsLengthSub1) {
-	    state.cstack.push(new SetControl(i));
-	    state.cstack.push(rands[i]);
+	    cstack.push(new SetControl(i));
+	    cstack.push(rands[i]);
 	} else {
-	    state.cstack.push(new SwapControl(randsLengthSub1));
-	    state.cstack.push(rands[randsLengthSub1]);
+	    cstack.push(new SwapControl(randsLengthSub1));
+	    cstack.push(rands[randsLengthSub1]);
 	}
 
     }
     if (randsLength !== 0) {
-	state.cstack.push(new SetControl(randsLengthSub1));
+	cstack.push(new SetControl(randsLengthSub1));
     }
-    state.cstack.push(rator);    
+    cstack.push(rator);    
 
     // We allocate as many values as there are operands.
     if (randsLength !== 0) {
-	state.cstack.push(new PushnControl(randsLength));
+	cstack.push(new PushnControl(randsLength));
     }
 };
 
@@ -1177,17 +1178,18 @@ var WithContMarkVal = function(key, body) {
 
 WithContMarkVal.prototype.invoke = function(aState) {
     var evaluatedVal = aState.v;
+    var cstack = aState.cstack;
     // Check to see if there's an existing ContMarkRecordControl
-    if (aState.cstack.length !== 0 && 
-	( types.isContMarkRecordControl(aState.cstack[aState.cstack.length - 1]) )) {
-	aState.cstack.push(aState.cstack.pop().update
-			  (this.key, evaluatedVal));
+    if (cstack.length !== 0 && 
+	( types.isContMarkRecordControl(cstack[cstack.length - 1]) )) {
+	cstack.push(cstack.pop().update
+		    (this.key, evaluatedVal));
     } else {
 	var aHash = types.makeLowLevelEqHash();
 	aHash.put(this.key, evaluatedVal);
-	aState.cstack.push(types.contMarkRecordControl(aHash));
+	cstack.push(types.contMarkRecordControl(aHash));
     }
-    aState.cstack.push(this.body);
+    cstack.push(this.body);
 };
 
 
