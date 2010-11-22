@@ -179,10 +179,6 @@ State.prototype.pushManyControls = function(forms) {
 };
 
 
-// Returns true if the machine is in a stuck state.
-State.prototype.isStuck = function() {
-    return this.cstack.length === 0;
-};
 
 // Pop the last pushed form.
 State.prototype.popControl = function() {

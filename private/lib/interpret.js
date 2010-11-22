@@ -125,7 +125,7 @@ var run = function(aState, callSite) {
     var MAX_STEPS_BEFORE_BOUNCE = aState.MAX_STEPS_BEFORE_BOUNCE;
     try {
 	var gas = MAX_STEPS_BEFORE_BOUNCE;
-	while( (! aState.isStuck()) && (gas > 0)) {
+	while( (! (aState.cstack.length === 0)) && (gas > 0)) {
 	    step(aState);
 	    gas--;
 	}
