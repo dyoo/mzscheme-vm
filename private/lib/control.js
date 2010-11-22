@@ -786,27 +786,28 @@ var ApplicationControl = function(rator, rands) {
 ApplicationControl.prototype.invoke = function(state) {
     var rator = this.rator;
     var rands = this.rands;
-
+    var randsLength = rands.length;
     var cmds = [];    
+    var i;
     // We allocate as many values as there are operands.
-    if (rands.length !== 0) {
-	cmds.push(new PushnControl(rands.length));
+    if (randsLength !== 0) {
+	cmds.push(new PushnControl(randsLength));
     }
     cmds.push(rator);    
-    if (rands.length !== 0) {
-	cmds.push(new SetControl(rands.length-1));
+    if (randsLength !== 0) {
+	cmds.push(new SetControl(randsLength-1));
     }
 
-    for (var i = 0; i < rands.length; i++) {
-	if (i !== rands.length - 1) {
+    for (i = 0; i < randsLength; i++) {
+	if (i !== randsLength - 1) {
 	    cmds.push(rands[i]);
 	    cmds.push(new SetControl(i));
 	} else {
-	    cmds.push(rands[rands.length-1]);
-	    cmds.push(new SwapControl(rands.length-1));
+	    cmds.push(rands[randsLength-1]);
+	    cmds.push(new SwapControl(randsLength-1));
 	}
     }
-    cmds.push(new CallControl(rands.length));
+    cmds.push(new CallControl(randsLength));
     // CallControl will be responsible for popping off the 
     // value stack elements.
 

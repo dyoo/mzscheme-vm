@@ -119,20 +119,24 @@ var makeClosureValsFromMap = function(state, closureMap, closureTypes) {
 var run = function(aState, callSite) {
     // Save the onSuccess and onFail because we're going to use these
     // even if something changes later (such as if an error gets thrown)
-    var onSuccess = aState.onSuccess;
-    var onFail = aState.onFail;
-
-    var MAX_STEPS_BEFORE_BOUNCE = aState.MAX_STEPS_BEFORE_BOUNCE;
+    var onSuccess = aState.onSuccess,
+        onFail = aState.onFail,
+        MAX_STEPS_BEFORE_BOUNCE = aState.MAX_STEPS_BEFORE_BOUNCE,
+        gas,
+        breakExn,
+        stateValues,
+        onCall,
+        aCompleteError;
     try {
-	var gas = MAX_STEPS_BEFORE_BOUNCE;
+	gas = MAX_STEPS_BEFORE_BOUNCE;
 	while( (! (aState.cstack.length === 0)) && (gas > 0)) {
 	    step(aState);
 	    gas--;
 	}
 	if (aState.breakRequested) {
-	    var breakExn = types.exnBreak("user break", 
-					  state.captureCurrentContinuationMarks(aState),
-					  state.captureContinuationClosure(aState));
+	    breakExn = types.exnBreak("user break", 
+				      state.captureCurrentContinuationMarks(aState),
+				      state.captureContinuationClosure(aState));
 	    helpers.raise(breakExn);
 	} else if (gas <= 0) {
 	    aState.pausedForGas = true;
@@ -144,7 +148,7 @@ var run = function(aState, callSite) {
 	}
     } catch (e) {
 	if (e instanceof control.PauseException) {
-		var stateValues = aState.save();
+		stateValues = aState.save();
 		aState.clearForEval({preserveBreak: true});
 
 		aState.onSuccess = function(v, callSite) {
@@ -156,7 +160,7 @@ var run = function(aState, callSite) {
 		    aState.restore(stateValues);
 		    onFail( completeError(aState, e2) );
 		};
-		var onCall = makeOnCall(aState);
+		onCall = makeOnCall(aState);
 	    	e.onPause(onCall, aState.onSuccess, aState.onFail);
 	}
 	else {
@@ -164,7 +168,7 @@ var run = function(aState, callSite) {
 	    // Check to see if we have a continuation mark with the exception
 	    // handler.  If so, run it!
 
-	    var aCompleteError = completeError(aState, e);
+	    aCompleteError = completeError(aState, e);
 	    if (isExceptionHandlerInContext(aState) && types.isSchemeError(aCompleteError)) {
 		applyExceptionHandler(aState, aCompleteError.val, callSite);
 	    } else {
