@@ -2108,7 +2108,7 @@ var defaultContinuationPromptTagHandler = new PrimProc(
     false, 
     true,
     function(aState, thunk) {
-	aState.pushControl(
+	aState.cstack.push(
 	    new control.ApplicationControl(
 		new control.ConstantControl(thunk), 
 		[]));

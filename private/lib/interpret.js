@@ -24,12 +24,12 @@ var load = function(compilationTop, aState) {
 
 	// Add the default prompt.  Its handler consumes any number
 	// of arguments and just returns them.
-	aState.pushControl(new control.PromptControl(
+	aState.cstack.push(new control.PromptControl(
 	    aState.vstack.length,
 	    types.defaultContinuationPromptTag, 
 	    types.defaultContinuationPromptTagHandler));
 	// Add the code form to the control stack.
-	aState.pushControl(loader.loadCode(aState, compilationTop.code));
+	aState.cstack.push(loader.loadCode(aState, compilationTop.code));
     } catch(e) {
 	if (types.isSchemeError(e)) {
 	    // scheme exception
@@ -187,7 +187,7 @@ var isExceptionHandlerInContext = function(aState) {
 var applyExceptionHandler = function(aState, aSchemeError, callSite) {
     var contMarks = state.captureCurrentContinuationMarks(aState);
     var exceptionHandlers = contMarks.ref(types.exceptionHandlerKey);
-    aState.pushControl(
+    aState.cstack.push(
 	new control.ApplicationControl(
 	    new control.ConstantControl(exceptionHandlers[0]), 
 	    helpers.map(function(op) {
@@ -224,7 +224,7 @@ var call = function(aState, operator, operands, k, onFail, callSite) {
     aState.clearForEval({preserveBreak: true});
 
 
-    aState.pushControl(
+    aState.cstack.push(
 	new control.ApplicationControl(
 	    new control.ConstantControl(operator), 
 	    helpers.map(function(op) {

@@ -787,11 +787,11 @@ PRIMITIVES['call-with-continuation-prompt'] =
 			 }
 			 
 			 // Add the prompt.
-			 aState.pushControl(new control.PromptControl(aState.vstack.length,
+			 aState.cstack.push(new control.PromptControl(aState.vstack.length,
 								      promptTag,
 								      handler));
 			 // Within the context of the prompt, do the procedure application.
-			 aState.pushControl(
+			 aState.cstack.push(
 			     new control.ApplicationControl(
 				 new control.ConstantControl(proc), 
 				 helpers.map(function(op) {
@@ -830,7 +830,7 @@ var defaultCallWithContinuationPromptHandler =
 			 // argument, and then re-installs the prompt and continues
 			 // with the abort thunk.
 			 // (call-with-continuation-prompt abort-thunk prompt-tag #f)
-			 aState.pushControl(
+			 aState.cstack.push(
 			     new control.ApplicationControl(
 				 new control.ConstantControl(PRIMITIVES['call-with-continuation-prompt']), 
 				 helpers.map(function(op) {
@@ -4555,7 +4555,7 @@ var callCCPrim = new types.PrimProc('call/cc',
 					    state.captureContinuationClosure(aState);
 					aState.pushValue(continuationClosure);
 					aState.v = f;
-					aState.pushControl(
+					aState.cstack.push(
 					    new control.CallControl(1));
 				    });
     

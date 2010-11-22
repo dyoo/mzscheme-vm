@@ -329,9 +329,9 @@ var BranchRestControl = function(thenPart, elsePart) {
 BranchRestControl.prototype.invoke = function(state) {
     debug("BRANCH");
     if (state.v !== false && state.v !== undefined) {
-	state.pushControl(this.thenPart);
+	state.cstack.push(this.thenPart);
     } else {
-	state.pushControl(this.elsePart);
+	state.cstack.push(this.elsePart);
     }
 };
 
@@ -558,7 +558,7 @@ var Beg0Control = function(seq) {
 
 Beg0Control.prototype.invoke = function(state) {
     if (this.seq.length === 1) {
-	state.pushControl(this.seq[0]);
+	state.cstack.push(this.seq[0]);
     } else {
 	var rest = [];
 	for (var i = 1; i < this.seq.length; i++) {
@@ -578,7 +578,7 @@ Beg0RestControl.prototype.invoke = function(state) {
     // begin sequence will evaluate, followed by 
     // bringing the first expression's value back into
     // the value register.
-    state.pushControl(new ConstantControl(state.v));
+    state.cstack.push(new ConstantControl(state.v));
     state.pushManyControls(this.rest);
 };
 
@@ -918,8 +918,8 @@ var callClosureProcedure = function(state, procValue, n, operandValues) {
 						      procValue, 
 						      operandValues,
 						      n);
-	state.pushControl(new PopnControl(argCount));
-	state.pushControl(procValue.body);
+	state.cstack.push(new PopnControl(argCount));
+	state.cstack.push(procValue.body);
 
     } else if (state.cstack.length >= 2 &&
 	       types.isContMarkRecordControl(state.cstack[state.cstack.length - 1]) &&
@@ -931,15 +931,15 @@ var callClosureProcedure = function(state, procValue, n, operandValues) {
 						      operandValues,
 						      n);
 	state.cstack[state.cstack.length - 2] = new PopnControl(argCount);
-	state.pushControl(procValue.body);
+	state.cstack.push(procValue.body);
     } else {
 	// General case:
 	var argCount = prepareClosureArgumentsOnStack(state, 
 						      procValue, 
 						      operandValues,
 						      n);
-	state.pushControl(new PopnControl(argCount));
-	state.pushControl(procValue.body);
+	state.cstack.push(new PopnControl(argCount));
+	state.cstack.push(procValue.body);
     }
 };
 
@@ -1176,19 +1176,19 @@ var WithContMarkVal = function(key, body) {
     this.body = body;
 };
 
-WithContMarkVal.prototype.invoke = function(state) {
-    var evaluatedVal = state.v;
+WithContMarkVal.prototype.invoke = function(aState) {
+    var evaluatedVal = aState.v;
     // Check to see if there's an existing ContMarkRecordControl
-    if (state.cstack.length !== 0 && 
-	( types.isContMarkRecordControl(state.cstack[state.cstack.length - 1]) )) {
-	state.pushControl(state.cstack.pop().update
+    if (aState.cstack.length !== 0 && 
+	( types.isContMarkRecordControl(aState.cstack[aState.cstack.length - 1]) )) {
+	aState.cstack.push(aState.cstack.pop().update
 			  (this.key, evaluatedVal));
     } else {
 	var aHash = types.makeLowLevelEqHash();
 	aHash.put(this.key, evaluatedVal);
-	state.pushControl(types.contMarkRecordControl(aHash));
+	aState.cstack.push(types.contMarkRecordControl(aHash));
     }
-    state.pushControl(this.body);
+    aState.cstack.push(this.body);
 };
 
 
@@ -1236,10 +1236,10 @@ ApplyValuesAppControl.prototype.invoke = function(state) {
 	for(var i = elts.length - 1; i >= 0; i--) {
 	    state.pushValue(elts[i]);
 	}
-	state.pushControl(new CallControl(elts.length));
+	state.cstack.push(new CallControl(elts.length));
     } else {
 	state.pushValue(exprValue);
-	state.pushControl(new CallControl(1));
+	state.cstack.push(new CallControl(1));
     }
 };
 
@@ -1304,7 +1304,7 @@ var BoxenvControl = function(pos, body) {
 BoxenvControl.prototype.invoke = function(state) {
     state.setn(this.pos,
 	       types.box(state.peekn(this.pos)));
-    state.pushControl(this.body);
+    state.cstack.push(this.body);
 };
 
 
@@ -1370,7 +1370,7 @@ InstallValueRhsControl.prototype.invoke = function(state) {
 	    state.setn(i + this.pos, vals[i]);
 	}
     }
-    state.pushControl(this.body);
+    state.cstack.push(this.body);
 };
 
 
@@ -1464,10 +1464,10 @@ CaseLamControl.prototype.invoke = function(state) {
     if (clauses.length === 0) {
 	state.v = new types.CaseLambdaValue(this.name, []);
     } else {
-	state.pushControl(new CaseLambdaComputeControl(this.name, 
+	state.cstack.push(new CaseLambdaComputeControl(this.name, 
 						       types.list(clauses).rest(),
 						       types.list([])));
-	state.pushControl(clauses[0]);
+	state.cstack.push(clauses[0]);
     }
 };
 
@@ -1490,12 +1490,12 @@ CaseLambdaComputeControl.prototype.invoke = function(state) {
 	}
 	state.v = new types.CaseLambdaValue(this.name, clauses);
     } else {
-	state.pushControl(new CaseLambdaComputeControl(
+	state.cstack.push(new CaseLambdaComputeControl(
 	    this.name,
 	    this.lamsToEvaluate.rest(),
 	    types.cons(nextEvaluatedLam,
 		       this.evaluatedLams)));
-	state.pushControl(this.lamsToEvaluate.first());
+	state.cstack.push(this.lamsToEvaluate.first());
     }
 };
 
@@ -1545,7 +1545,7 @@ var setupAbortToPrompt = function(aState, promptTag, args) {
 
     // Set up the call the prompt's handler with the given arguments.
     // The handler will be called in tail position with respect to its prompt.    
-    aState.pushControl(
+    aState.cstack.push(
 	new control.ApplicationControl(
 	    new control.ConstantControl(promptValue.handler), 
 	    helpers.map(function(op) {
