@@ -893,9 +893,8 @@ var callProcedure = function(aState, procValue, n, operandValues) {
 	} else {
 	    aState.v = new types.ValuesWrapper(operandValues);
 	}
-	aState.vstack = procValue.vstack;
-	aState.cstack = procValue.cstack;
-
+	aState.vstack = procValue.vstack.slice();
+	aState.cstack = procValue.cstack.slice();
     } else {
 
 
