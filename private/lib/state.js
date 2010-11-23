@@ -206,12 +206,10 @@ State.prototype.pushn = function(n) {
 // Pop n values from the stack.
 State.prototype.popn = function(n) {
 //    debugF(function(){ return "POPN " + n } );
-    for (var i = 0; i < n; i++) {
-	if (this.vstack.length === 0) {
- 	    throw types.internalError("vstack empty", captureCurrentContinuationMarks(this));
-	}
-	this.vstack.pop();
+    if (this.vstack.length < n) {
+	throw types.internalError("vstack empty", captureCurrentContinuationMarks(this));
     }
+    this.vstack.splice(this.vstack.length - n, n);
 };
 
 

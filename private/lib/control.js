@@ -318,11 +318,10 @@ var BranchControl = function(test, thenPart, elsePart) {
 };
 
 
-BranchControl.prototype.invoke = function(state) {
-    var cmds = [];
-    cmds.push(this.test);
-    cmds.push(new BranchRestControl(this.thenPart, this.elsePart));
-    state.pushManyControls(cmds);
+BranchControl.prototype.invoke = function(aState) {
+    aState.cstack.push(new BranchRestControl(
+	this.thenPart, this.elsePart));
+    aState.cstack.push(this.test);
 };
 
 var BranchRestControl = function(thenPart, elsePart) {
@@ -1168,12 +1167,10 @@ var WithContMarkControl = function(key, val, body) {
     this.body = body;
 };
 
-WithContMarkControl.prototype.invoke = function(state) {
-    var cmds = [];
-    cmds.push(this.key);
-    cmds.push(new WithContMarkKeyControl(this.val,
-					 this.body));
-    state.pushManyControls(cmds);
+WithContMarkControl.prototype.invoke = function(aState) {
+    aState.cstack.push(new WithContMarkKeyControl(this.val,
+						  this.body));
+    aState.cstack.push(this.key);
 };
 
 
@@ -1182,13 +1179,9 @@ var WithContMarkKeyControl = function(val, body) {
     this.body = body;
 };
 
-WithContMarkKeyControl.prototype.invoke = function(state) {
-    var evaluatedKey = state.v;
-    var cmds = [];
-    cmds.push(this.val);
-    cmds.push(new WithContMarkVal(evaluatedKey,
-				  this.body));
-    state.pushManyControls(cmds);
+WithContMarkKeyControl.prototype.invoke = function(aState) {
+    aState.cstack.push(new WithContMarkVal(aState.v, this.body));
+    aState.cstack.push(this.val);
 };
 
 var WithContMarkVal = function(key, body) {
