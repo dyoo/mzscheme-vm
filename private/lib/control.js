@@ -79,7 +79,7 @@ var SwapControl = function(depth) {
 };
 
 SwapControl.prototype.invoke = function(state) {
-    debug("SWAP " + this.depth);
+//    debug("SWAP " + this.depth);
     if (state.vstack.length - 1 - (this.depth || 0) < 0) {
 	throw types.internalError("vstack not long enough",
 				  state.captureCurrentContinuationMarks(aState));
@@ -332,7 +332,7 @@ var BranchRestControl = function(thenPart, elsePart) {
 
 
 BranchRestControl.prototype.invoke = function(state) {
-    debug("BRANCH");
+//    debug("BRANCH");
     if (state.v !== false && state.v !== undefined) {
 	state.cstack.push(this.thenPart);
     } else {
@@ -749,7 +749,7 @@ var DefValuesInstallControl = function(ids) {
 };
 
 DefValuesInstallControl.prototype.invoke = function(aState) {
-    debug("DEF_VALUES");
+//    debug("DEF_VALUES");
     var bodyValue = aState.v;
     if (bodyValue instanceof types.ValuesWrapper) {
 	if (this.ids.length !== bodyValue.elts.length) {
@@ -1429,7 +1429,7 @@ var SetToplevelControl = function(depth, pos, isUndefOk) {
 };
 
 SetToplevelControl.prototype.invoke = function(aState) {
-    debug("SET_TOPLEVEL " + this.depth + ", " + this.pos);
+//    debug("SET_TOPLEVEL " + this.depth + ", " + this.pos);
     if (aState.vstack.length - 1 - (this.depth || 0) < 0) {
 	throw types.internalError("vstack not long enough",
 				  state.captureCurrentContinuationMarks(aState));

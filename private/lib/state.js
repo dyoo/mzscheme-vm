@@ -181,14 +181,14 @@ State.prototype.pushManyControls = function(forms) {
 
 // Push a value.
 State.prototype.pushValue = function(aVal) {
-    debugF(function(){ return "pushValue" + sys.inspect(aVal); } );
+//    debugF(function(){ return "pushValue" + sys.inspect(aVal); } );
     this.vstack.push(aVal);
 };
 
 
 // Pop a value.
 State.prototype.popValue = function() {
-    debugF(function(){ return "popValue" });
+//    debugF(function(){ return "popValue" });
     if (this.vstack.length === 0) {
  	throw types.internalError("vstack empty", captureCurrentContinuationMarks(this));
     }
@@ -197,7 +197,7 @@ State.prototype.popValue = function() {
 
 // Push n undefined values onto the stack.
 State.prototype.pushn = function(n) {
-    debugF(function(){ return "PUSHN " + n } );
+//    debugF(function(){ return "PUSHN " + n } );
     for (var i = 0; i < n; i++) {
 	this.vstack.push(types.UNDEFINED);
     }
@@ -205,7 +205,7 @@ State.prototype.pushn = function(n) {
 
 // Pop n values from the stack.
 State.prototype.popn = function(n) {
-    debugF(function(){ return "POPN " + n } );
+//    debugF(function(){ return "POPN " + n } );
     for (var i = 0; i < n; i++) {
 	if (this.vstack.length === 0) {
  	    throw types.internalError("vstack empty", captureCurrentContinuationMarks(this));
@@ -262,7 +262,7 @@ State.prototype.refPrefix = function(depth, pos) {
 
 // Set an element of a prefix on the value stack.
 State.prototype.setPrefix = function(depth, pos, v) {
-    debug("setPrefix");
+//    debug("setPrefix");
     this.vstack[this.vstack.length - 1 - depth].set(pos, v);
 };
 
