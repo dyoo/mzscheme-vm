@@ -36,6 +36,8 @@ var control = {};
 
 
     var PrimProc = types.PrimProc;
+    var isFunction = types.isFunction;
+
 
 
 //////////////////////////////////////////////////////////////////////
@@ -837,9 +839,7 @@ CallControl.prototype.invoke = function(state) {
 
 
 var callProcedure = function(aState, procValue, n, operandValues) {
-    var args;
-    var result;
-    var argCount;
+    var args, result, argCount;
 
     procValue = selectProcedureByArity(n, procValue, operandValues);
 
@@ -972,30 +972,33 @@ var acceptableParameterArityToString = function(acceptableParameterArity) {
 	return "1 argument";
     }
     return "[" + acceptableParameterArity.join(', ') + "] arguments";
-}
+};
+
+
+
+
+
+var getArgStr = function(operands) {
+    var argStrBuffer;
+    if (operands.length > 0) {
+	argStrBuffer = [':'];
+	for (var i = 0; i < operands.length; i++) {
+	    argStrBuffer.push( types.toWrittenString(operands[i]) );
+	}
+	return argStrBuffer.join(' ');
+    }
+    return '';
+};
 
 
 // selectProcedureByArity: (CaseLambdaValue | CasePrimitive | Continuation | Closure | Primitive) -> (Continuation | Closure | Primitive)
 var selectProcedureByArity = function(n, procValue, operands) {
-    var getArgStr = function() {
-	var argStr = '';
-	if (operands.length > 0) {
-		var argStrBuffer = [':'];
-		for (var i = 0; i < operands.length; i++) {
-			argStrBuffer.push( types.toWrittenString(operands[i]) );
-		}
-		argStr = argStrBuffer.join(' ');
-	}
-	return argStr;
-    }
-
-    if ( !types.isFunction(procValue) ) {
-	    var argStr = getArgStr('; arguments were:');
+    if ( ! isFunction(procValue) ) {
 	    helpers.raise(
 		types.incompleteExn(types.exnFailContract,
 				    helpers.format("procedure application: expected procedure, given: ~s~a",
 						   [procValue,
-						    (operands.length == 0) ? ' (no arguments)' : '; arguments were' + getArgStr()]),
+						    (operands.length == 0) ? ' (no arguments)' : '; arguments were' + getArgStr(operands)]),
 				    []));
     }
 
@@ -1017,7 +1020,7 @@ var selectProcedureByArity = function(n, procValue, operands) {
 			       [(procValue.name ? procValue.name : "#<case-lambda-procedure>"),
 			        acceptableParameterArityToString(acceptableParameterArity),
 				n,
-				getArgStr()]),
+				getArgStr(operands)]),
 		[]));
     } else if (procValue instanceof types.CasePrimitive) {
 	for (var j = 0; j < procValue.cases.length; j++) {
@@ -1035,7 +1038,7 @@ var selectProcedureByArity = function(n, procValue, operands) {
 		types.exnFailContractArity,
 		helpers.format("~a: expects ~a, given ~s~a",
 			       [procValue.name, 
-				acceptableParameterArityToString(acceptableParameterArity), n, getArgStr()]),
+				acceptableParameterArityToString(acceptableParameterArity), n, getArgStr(operands)]),
 		[]));
     }
 
@@ -1059,7 +1062,7 @@ var selectProcedureByArity = function(n, procValue, operands) {
 			        (procValue.isRest ? 'at least' : ''),
 				numParamsToString(procValue.numParams),
 				n,
-				getArgStr()]),
+				getArgStr(operands)]),
 		[]));
 	}
     }
