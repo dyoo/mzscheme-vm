@@ -35,6 +35,9 @@ var control = {};
 (function() {
 
 
+    var PrimProc = types.PrimProc;
+
+
 //////////////////////////////////////////////////////////////////////
 
 
@@ -830,6 +833,9 @@ CallControl.prototype.invoke = function(state) {
 };
 
 
+
+
+
 var callProcedure = function(aState, procValue, n, operandValues) {
     var args;
     var result;
@@ -837,7 +843,7 @@ var callProcedure = function(aState, procValue, n, operandValues) {
 
     procValue = selectProcedureByArity(n, procValue, operandValues);
 
-    if (primitive.isPrimitive(procValue)) {
+    if (procValue instanceof PrimProc) {
 	// callPrimitiveProcedure
 
 	// Tail call optimization:
