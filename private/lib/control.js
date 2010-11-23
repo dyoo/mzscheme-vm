@@ -825,13 +825,25 @@ var CallControl = function(n) {
     this.n = n;
 };
 
-CallControl.prototype.invoke = function(state) {
-//    debug("CALL " + this.n);
-    var operandValues = [], i;
-    for (i = 0; i < this.n; i++) {
-	operandValues.push(state.popValue());
+CallControl.prototype.invoke = function(aState) {
+    var operandValues;
+    if (aState.vstack.length >= this.n) {
+	operandValues = aState.vstack.splice(
+	    aState.vstack.length - this.n,
+	    this.n);
+	operandValues.reverse();
+	callProcedure(aState, aState.v, this.n, operandValues);
+    } else {
+	throw types.internalError(
+	    "vstack empty", 
+	    state.captureCurrentContinuationMarks(aState));
     }
-    callProcedure(state, state.v, this.n, operandValues);
+//    debug("CALL " + this.n);
+//    var operandValues = [], i;
+//     for (i = 0; i < this.n; i++) {
+// 	operandValues.push(state.popValue());
+//     }
+//    callProcedure(state, state.v, this.n, operandValues);
 };
 
 
