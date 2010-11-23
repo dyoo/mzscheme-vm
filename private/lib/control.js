@@ -138,18 +138,19 @@ var ModControl = function(prefix, requires, body) {
 
 ModControl.prototype.invoke = function(state) {
     var prefixValue = processPrefix(state, this.prefix);
-    var cmds = [];
-    
-    // Invoke all the requires before hitting the body.
-    for (var i = 0; i < this.requires.length; i++) {
-	cmds.push(new RequireControl(this.requires[i]));
-    }
+    var cstack = state.cstack;
 
-    for(var i = 0; i < this.body.length; i++) {
-	cmds.push(this.body[i]);
+    // After evaluating the body, do ModControlAfterControl.
+    cstack.push(new ModControlAfterControl(prefixValue));
+
+    // Add the body
+    for(var i = this.body.length - 1; i >= 0; i--) {
+	cstack.push(this.body[i]);
     }
-    cmds.push(new ModControlAfterControl(prefixValue));
-    state.pushManyControls(cmds);
+    // Invoke all the requires before hitting the body.
+    for (var i = this.requires.length - 1; i >= 0; i--) {
+	cstack.push(new RequireControl(this.requires[i]));
+    }
 };
 
 
@@ -691,16 +692,13 @@ var LetRecControl = function(procs, body) {
 };
 
 LetRecControl.prototype.invoke = function(aState) {
-    var cmds = [];
     var n = this.procs.length;
     var cstack = aState.cstack;
-
     cstack.push(this.body);
     cstack.push(new LetrecReinstallClosureControls(this.procs));
     for (var i = n-1; i >= 0; i--) {
 	cstack.push(new SetControl(n - 1 - i));
 	cstack.push(this.procs[i]);
-
     }
 };
 
@@ -1281,7 +1279,6 @@ var LetVoidControl = function(params) {
 };
 
 LetVoidControl.prototype.invoke = function(state) {
-    var cmds = [];
     var n = this.count;
     state.pushn(n);
     if (this.isBoxes) {
@@ -1289,9 +1286,8 @@ LetVoidControl.prototype.invoke = function(state) {
 	    state.setn(i, types.box(types.UNDEFINED));
 	}
     }
-    cmds.push(this.body);
-    cmds.push(new PopnControl(n));
-    state.pushManyControls(cmds);
+    state.cstack.push(new PopnControl(n));
+    state.cstack.push(this.body);
 };
 
 
@@ -1328,13 +1324,11 @@ var InstallValueControl = function(params) {
 
 
 InstallValueControl.prototype.invoke = function(state) {
-    var cmds = [];
-    cmds.push(this.rhs);
-    cmds.push(new InstallValueRhsControl(this.count,
+    state.cstack.push(new InstallValueRhsControl(this.count,
 					 this.pos,
 					 this.isBoxes,
 					 this.body));
-    state.pushManyControls(cmds);
+    state.cstack.push(this.rhs);
 };
 
 
