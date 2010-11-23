@@ -45,7 +45,7 @@
 	 "cycles.rkt"
 	 "list.rkt"
 	 "vararity.rkt"
-         "check-error.rkt"
+	 "check-error.rkt"
 	 "vector.rkt"
 	 "struct.rkt"
 	 "arity.rkt"
@@ -55,12 +55,13 @@
 	 "seconds.rkt"
 	 "random.rkt"
 	 "identity.rkt"
-         "raise.rkt"
+	 "raise.rkt"
 	 "exn.rkt"
 	 "misc.rkt"
 	 "jsworld.rkt"
 	 "location.rkt"
-         "rotate.rkt"
+	 "rotate.rkt"
+	 "images.rkt"
 	 "more-jsworld.ss")
 
 

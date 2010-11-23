@@ -345,6 +345,36 @@ EXPORTS['rectangle'] =
 							   s.toString(), c);
 		 });
 
+EXPORTS['rhombus'] =
+new PrimProc('rhombus',
+			 4,
+			 false, false,
+			 function(l, a, s, c) {
+			 check(l, isNonNegativeReal, "rhombus", "non-negative number", 1, arguments);
+			 check(a, isNonNegativeReal, "rhombus", "non-negative number", 2, arguments);
+			 check(s, isStyle, "rhombus", "style", 3, arguments);
+			 check(c, isColor, "rhombus", "color", 4, arguments);
+			 
+			 if (colorDb.get(c)) {
+			 c = colorDb.get(c);
+			 }
+			 return world.Kernel.rhombusImage(jsnums.toFixnum(l), jsnums.toFixnum(a), s.toString(), c);
+			 });
+
+EXPORTS['square'] =
+new PrimProc('square',
+			 3,
+			 false, false,
+			 function(l, s, c) {
+			 check(l, isNonNegativeReal, "square", "non-negative number", 1, arguments);
+			 check(s, isStyle, "square", "style", 3, arguments);
+			 check(c, isColor, "square", "color", 4, arguments);
+			 
+			 if (colorDb.get(c)) {
+			 c = colorDb.get(c);
+			 }
+			 return world.Kernel.squareImage(jsnums.toFixnum(l), s.toString(), c);
+			 });
 
 EXPORTS['triangle'] =
     new PrimProc('triangle',
@@ -359,6 +389,38 @@ EXPORTS['triangle'] =
 			}
 		     return world.Kernel.triangleImage(jsnums.toFixnum(r), s.toString(), c);
 		 });
+
+
+EXPORTS['right-triangle'] =
+new PrimProc('right-triangle',
+			 4,
+			 false, false,
+			 function(side1, side2, s, c) {
+			 check(side1, isNonNegativeReal, "right-triangle", "non-negative number", 1, arguments);
+			 check(side2, isNonNegativeReal, "right-triangle", "non-negative number", 2, arguments);
+			 check(s, isStyle, "right-triangle", "style", 3, arguments);
+			 check(c, isColor, "right-triangle", "color", 4, arguments);
+			 if (colorDb.get(c)) {
+			 c = colorDb.get(c);
+			 }
+		     return world.Kernel.rightTriangleImage(jsnums.toFixnum(side1), jsnums.toFixnum(side2), s.toString(), c);
+			 });
+
+
+EXPORTS['isosceles-triangle'] =
+new PrimProc('isosceles-triangle',
+			 4,
+			 false, false,
+			 function(side, angle, s, c) {
+			 check(side, isNonNegativeReal, "isosceles-triangle", "non-negative number", 1, arguments);
+			 check(angle, isReal, "isosceles-triangle", "finite real number", 2, arguments);
+			 check(s, isStyle, "isosceles-triangle", "style", 3, arguments);
+			 check(c, isColor, "isosceles-triangle", "color", 4, arguments);
+			 if (colorDb.get(c)) {
+			 c = colorDb.get(c);
+			 }
+		     return world.Kernel.isoscelesTriangleImage(jsnums.toFixnum(side), jsnums.toFixnum(angle), s.toString(), c);
+			 });
 
 
 EXPORTS['ellipse'] =

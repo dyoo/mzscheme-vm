@@ -448,7 +448,87 @@ FileImage.prototype.isEqual = function(other, aUnionFind) {
     //		    types.isEqual(this.img, other.img, aUnionFind));
 };
 
+//////////////////////////////////////////////////////////////////////
 
+/*
+var VideoImage = function(src, rawVideo) {
+    BaseImage.call(this, 0, 0);
+    var self = this;
+    this.src = src;
+    this.isLoaded = false;
+    if (rawVideo) { 
+		this.video = rawVideo;
+		this.isLoaded = true;
+		this.pinholeX = self.video.width / 2;
+		this.pinholeY = self.video.height / 2;
+    } else {
+		// fixme: we may want to do something blocking here for
+		// onload, since we don't know at this time what the file size
+		// should be, nor will drawImage do the right thing until the
+		// file is loaded.
+		this.video = document.createElement('video');
+		this.video.onload = function() {
+			self.isLoaded = true;
+			self.pinholeX = self.video.width / 2;
+			self.pinholeY = self.video.height / 2;
+		};
+		this.video.onerror = function(e) {
+			self.video.onerror = "";
+			self.video.poster = "http://www.wescheme.org/images/broken.png";
+		}
+		this.video.src = src;
+    }
+}
+VideoImage.prototype = heir(BaseImage.prototype);
+
+
+var videoCache = {};
+VideoImage.makeInstance = function(path, rawVideo) {
+    if (! (path in videoCache)) {
+		videoCache[path] = new VideoImage(path, rawVideo);
+    } 
+    return videoCache[path];
+};
+
+VideoImage.installInstance = function(path, rawVideo) {
+    videoCache[path] = new FileImage(path, rawVideo);
+};
+
+VideoImage.installBrokenImage = function(path) {
+    videoCache[path] = new TextImage("Unable to load " + path, 10, 
+									 colorDb.get("red"));
+};
+
+
+
+VideoImage.prototype.render = function(ctx, x, y) {
+    ctx.drawImage(this.video, x, y);
+};
+
+
+VideoImage.prototype.getWidth = function() {
+    return this.video.width;
+};
+
+
+VideoImage.prototype.getHeight = function() {
+    return this.video.height;
+};
+
+// Override toDomNode: we don't need a full-fledged canvas here.
+VideoImage.prototype.toDomNode = function(cache) {
+    return this.video.cloneNode(true);
+};
+
+VideoImage.prototype.isEqual = function(other, aUnionFind) {
+    return (other instanceof VideoImage &&
+			this.pinholeX == other.pinholeX &&
+			this.pinholeY == other.pinholeY &&
+			this.src == other.src);
+    //		    types.isEqual(this.img, other.img, aUnionFind));
+};
+
+*/
 //////////////////////////////////////////////////////////////////////
 
 
@@ -702,6 +782,64 @@ RectangleImage.prototype.isEqual = function(other, aUnionFind) {
 
 //////////////////////////////////////////////////////////////////////
 
+var RhombusImage = function(side, angle, style, color) {
+	// sin(angle/2-in-radians) * side = half of base
+    this.width = Math.sin(angle/2 * Math.PI / 180) * side * 2;
+	// cos(angle/2-in-radians) * side = half of height
+    this.height = Math.abs(Math.cos(angle/2 * Math.PI / 180)) * side * 2;
+    BaseImage.call(this, this.width/2, this.height/2);
+    this.side = side;
+    this.angle = angle;
+    this.style = style;
+    this.color = color;
+};
+RhombusImage.prototype = heir(BaseImage.prototype);
+
+
+RhombusImage.prototype.render = function(ctx, x, y) {
+    var width = this.getWidth();
+    var height = this.getHeight();
+    ctx.save();
+    ctx.beginPath();
+	// if angle < 180 start at the top of the canvas, otherwise start at the bottom
+	ctx.moveTo(width/2, 0);
+	ctx.lineTo(width, height/2);
+	ctx.lineTo(width/2, height);
+	ctx.lineTo(0, height/2);
+    ctx.closePath();
+	
+    if (this.style.toString().toLowerCase() == "outline") {
+		ctx.strokeStyle = colorString(this.color);
+		ctx.stroke();
+    }
+    else {
+		ctx.fillStyle = colorString(this.color);
+		ctx.fill();
+    }
+	ctx.restore();
+};
+
+RhombusImage.prototype.getWidth = function() {
+    return this.width;
+};
+
+
+RhombusImage.prototype.getHeight = function() {
+    return this.height;
+};
+
+RhombusImage.prototype.isEqual = function(other, aUnionFind) {
+    return (other instanceof RectangleImage &&
+			this.pinholeX == other.pinholeX &&
+			this.pinholeY == other.pinholeY &&
+			this.side == other.side &&
+			this.angle == other.angle &&
+			this.style == other.style &&
+			types.isEqual(this.color, other.color, aUnionFind));
+};
+
+
+//////////////////////////////////////////////////////////////////////
 var TextImage = function(msg, size, color) {
     BaseImage.call(this, 0, 0);
     this.msg = msg;
@@ -924,6 +1062,131 @@ TriangleImage.prototype.isEqual = function(other, aUnionFind) {
 	    this.side == other.side &&
 	    this.style == other.style &&
 	    types.isEqual(this.color, other.color, aUnionFind));
+};
+
+
+//////////////////////////////////////////////////////////////////////
+//Right-Triangle
+///////
+var RightTriangleImage = function(side1, side2, style, color) {
+    this.width = side1;
+    this.height = side2;
+	
+    BaseImage.call(this, Math.floor(this.width/2), Math.floor(this.height/2));
+    this.side1 = side1;
+    this.side2 = side2;
+    this.style = style;
+    this.color = color;
+}
+RightTriangleImage.prototype = heir(BaseImage.prototype);
+
+
+RightTriangleImage.prototype.render = function(ctx, x, y) {
+    var width = this.getWidth();
+    var height = this.getHeight();
+    ctx.save();
+    ctx.beginPath();
+    ctx.moveTo(0, this.side2);
+    ctx.lineTo(this.side1, this.side2);
+    ctx.lineTo(0, 0);
+    ctx.closePath();
+	
+    if (this.style.toString().toLowerCase() == "outline") {
+		ctx.strokeStyle = colorString(this.color);
+		ctx.stroke();
+    }
+    else {
+		ctx.fillStyle = colorString(this.color);
+		ctx.fill();
+    }
+    ctx.restore();
+};
+
+
+
+RightTriangleImage.prototype.getWidth = function() {
+    return this.width;
+};
+
+RightTriangleImage.prototype.getHeight = function() {
+    return this.height;
+};
+
+RightTriangleImage.prototype.isEqual = function(other, aUnionFind) {
+    return (other instanceof TriangleImage &&
+			this.pinholeX == other.pinholeX &&
+			this.pinholeY == other.pinholeY &&
+			this.side1 == other.side1 &&
+			this.side2 == other.side2 &&
+			this.style == other.style &&
+			types.isEqual(this.color, other.color, aUnionFind));
+};
+
+
+/////////////////////////////////////////////////////////////////////
+//Isosceles-Triangle
+///////
+var IsoscelesTriangleImage = function(side, angle, style, color) {
+	// sin(angle/2-in-radians) * side = half of base
+    this.width = Math.sin(angle/2 * Math.PI / 180) * side * 2;
+	// cos(angle/2-in-radians) * side = height of altitude
+    this.height = Math.abs(Math.cos(angle/2 * Math.PI / 180)) * side;
+	
+    BaseImage.call(this, Math.floor(this.width/2), Math.floor(this.height/2));
+    this.side = side;
+    this.angle = angle;
+    this.style = style;
+    this.color = color;
+}
+IsoscelesTriangleImage.prototype = heir(BaseImage.prototype);
+
+
+IsoscelesTriangleImage.prototype.render = function(ctx, x, y) {
+    var width = this.getWidth();
+    var height = this.getHeight();
+    ctx.save();
+    ctx.beginPath();
+	// if angle < 180 start at the top of the canvas, otherwise start at the bottom
+	if(this.angle < 180){
+		ctx.moveTo(width/2, 0);
+		ctx.lineTo(0, height);
+		ctx.lineTo(width, height);		
+	} else {
+		ctx.moveTo(width/2, height);
+		ctx.lineTo(0, 0);
+		ctx.lineTo(width, 0);				
+	}
+    ctx.closePath();
+	
+    if (this.style.toString().toLowerCase() == "outline") {
+		ctx.strokeStyle = colorString(this.color);
+		ctx.stroke();
+    }
+    else {
+		ctx.fillStyle = colorString(this.color);
+		ctx.fill();
+    }
+    ctx.restore();
+};
+
+
+
+IsoscelesTriangleImage.prototype.getWidth = function() {
+    return this.width;
+};
+
+IsoscelesTriangleImage.prototype.getHeight = function() {
+    return this.height;
+};
+
+IsoscelesTriangleImage.prototype.isEqual = function(other, aUnionFind) {
+    return (other instanceof TriangleImage &&
+			this.pinholeX == other.pinholeX &&
+			this.pinholeY == other.pinholeY &&
+			this.side == other.side &&
+			this.angle == other.angle &&
+			this.style == other.style &&
+			types.isEqual(this.color, other.color, aUnionFind));
 };
 
 
@@ -1351,8 +1614,20 @@ world.Kernel.starImage = function(points, outer, inner, style, color) {
 world.Kernel.rectangleImage = function(width, height, style, color) {
     return new RectangleImage(width, height, style, color);
 };
+world.Kernel.rhombusImage = function(side, angle, style, color) {
+    return new RhombusImage(side, angle, style, color);
+};
+world.Kernel.squareImage = function(length, style, color) {
+    return new RectangleImage(length, length, style, color);
+};
 world.Kernel.triangleImage = function(side, style, color) {
     return new TriangleImage(side, style, color);
+};
+world.Kernel.rightTriangleImage = function(side1, side2, style, color) {
+    return new RightTriangleImage(side1, side2, style, color);
+};
+world.Kernel.isoscelesTriangleImage = function(side, angle, style, color) {
+    return new IsoscelesTriangleImage(side, angle, style, color);
 };
 world.Kernel.ellipseImage = function(width, height, style, color) {
     return new EllipseImage(width, height, style, color);
@@ -1381,7 +1656,10 @@ world.Kernel.isSceneImage = function(x) { return x instanceof SceneImage; };
 world.Kernel.isCircleImage = function(x) { return x instanceof CircleImage; };
 world.Kernel.isStarImage = function(x) { return x instanceof StarImage; };
 world.Kernel.isRectangleImage = function(x) { return x instanceof RectangleImage; };
+world.Kernel.isSquareImage = function(x) { return x instanceof SquareImage; };
 world.Kernel.isTriangleImage = function(x) { return x instanceof TriangleImage; };
+world.Kernel.isRightTriangleImage = function(x) { return x instanceof RightTriangleImage; };
+world.Kernel.isIsoscelesTriangleImage = function(x) { return x instanceof IsoscelesTriangleImage; };
 world.Kernel.isEllipseImage = function(x) { return x instanceof EllipseImage; };
 world.Kernel.isLineImage = function(x) { return x instanceof LineImage; };
 world.Kernel.isOverlayImage = function(x) { return x instanceof OverlayImage; };

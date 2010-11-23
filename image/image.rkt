@@ -17,7 +17,11 @@
 	 star
 	 nw:rectangle
 	 rectangle
+	 rhombus
+	 square
 	 triangle
+	 right-triangle
+	 isosceles-triangle
 	 ellipse
 	 line
 	 overlay
