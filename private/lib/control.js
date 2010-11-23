@@ -544,11 +544,9 @@ var SeqControl = function(forms) {
 
 SeqControl.prototype.invoke = function(state) {
     var forms = this.forms;
-    var cmds = [];
-    for (var i = 0; i < forms.length; i++) {
-	cmds.push(forms[i]);
+    for (var i = forms.length - 1; i >= 0; i--) {
+	state.cstack.push(forms[i]);
     }
-    state.pushManyControls(cmds);    
 };
 
 
@@ -692,16 +690,18 @@ var LetRecControl = function(procs, body) {
     this.body = body;
 };
 
-LetRecControl.prototype.invoke = function(state) {
+LetRecControl.prototype.invoke = function(aState) {
     var cmds = [];
     var n = this.procs.length;
-    for (var i = 0; i < n; i++) {
-	cmds.push(this.procs[i]);
-	cmds.push(new SetControl(n - 1 - i));
+    var cstack = aState.cstack;
+
+    cstack.push(this.body);
+    cstack.push(new LetrecReinstallClosureControls(this.procs));
+    for (var i = n-1; i >= 0; i--) {
+	cstack.push(new SetControl(n - 1 - i));
+	cstack.push(this.procs[i]);
+
     }
-    cmds.push(new LetrecReinstallClosureControls(this.procs));
-    cmds.push(this.body);
-    state.pushManyControls(cmds);
 };
 
 
@@ -736,10 +736,8 @@ var DefValuesControl = function(ids, body) {
 
 
 DefValuesControl.prototype.invoke = function(state) {
-    var cmds = [];
-    cmds.push(this.body);
-    cmds.push(new DefValuesInstallControl(this.ids))
-    state.pushManyControls(cmds);
+    state.cstack.push(new DefValuesInstallControl(this.ids))
+    state.cstack.push(this.body);
 };
 
 
@@ -1219,10 +1217,8 @@ var ApplyValuesControl = function(proc, argsExpr) {
 };
 
 ApplyValuesControl.prototype.invoke = function(state) {
-    var cmds = [];
-    cmds.push(this.proc);
-    cmds.push(new ApplyValuesArgControl(this.argsExpr));
-    state.pushManyControls(cmds);
+    state.cstack.push(new ApplyValuesArgControl(this.argsExpr));
+    state.cstack.push(this.proc);
 };
 
 var ApplyValuesArgControl = function(expr) {
@@ -1230,11 +1226,8 @@ var ApplyValuesArgControl = function(expr) {
 };
 
 ApplyValuesArgControl.prototype.invoke = function(state) {
-    var cmds = [];
-    cmds.push(this.expr);
-    cmds.push(new ApplyValuesAppControl(state.v));
-    state.pushManyControls(cmds);
-
+    state.cstack.push(new ApplyValuesAppControl(state.v));
+    state.cstack.push(this.expr);
 };
 
 
@@ -1269,13 +1262,12 @@ var LetOneControl = function(rhs, body) {
 
 
 LetOneControl.prototype.invoke = function(state) {
-    var cmds = [];
+    var cstack = state.cstack;
     state.pushn(1);
-    cmds.push(this.rhs);
-    cmds.push(new SetControl(0));
-    cmds.push(this.body);
-    cmds.push(new PopnControl(1));
-    state.pushManyControls(cmds);
+    cstack.push(new PopnControl(1));
+    cstack.push(this.body);
+    cstack.push(new SetControl(0));
+    cstack.push(this.rhs);
 };
 
 
@@ -1405,12 +1397,10 @@ var AssignControl = function(params) {
 
 
 AssignControl.prototype.invoke = function(state) {
-    var cmds = [];
-    cmds.push(this.rhs);
-    cmds.push(new SetToplevelControl(this.id.depth,
-				     this.id.pos,
-				     this.isUndefOk));
-    state.pushManyControls(cmds);
+    state.cstack.push(new SetToplevelControl(this.id.depth,
+					     this.id.pos,
+					     this.isUndefOk));
+    state.cstack.push(this.rhs);
 };
 
 
