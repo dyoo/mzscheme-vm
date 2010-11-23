@@ -307,11 +307,12 @@ var captureCurrentContinuationMarks = function(state) {
     var dict = types.makeLowLevelEqHash();
     for (var i = state.cstack.length - 1; i >= 0; i--) {
 	if ( types.isContMarkRecordControl(state.cstack[i]) ) {
-	    var aDict = state.cstack[i].dict;
-	    var keys = aDict.keys();
-	    for (var j = 0; j < keys.length; j++) {
-		dict.put(keys[j], (dict.get(keys[j]) || []) );
-		dict.get(keys[j]).push(aDict.get(keys[j]) );
+	    var listOfPairs = state.cstack[i].listOfPairs;
+	    while (listOfPairs !== types.EMPTY) {
+		var nextPair = listOfPairs.first();
+		dict.put(nextPair.first(), dict.get(nextPair.first()) || []);
+		dict.get(nextPair.first()).push(nextPair.rest());
+		listOfPairs = listOfPairs.next();
 	    }
 	}
     }

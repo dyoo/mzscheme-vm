@@ -1169,8 +1169,12 @@ runTest("with-cont-mark",
 	    }
 	    assert.equal(state.cstack.length, 2);
 	    assert.ok( types.isContMarkRecordControl(state.cstack[0]) );
-	    assert.equal(state.cstack[0].dict.get(types.symbol('x')),
-			 "42");
+	    assert.equal(state.cstack[0].listOfPairs.first().first(),
+			 types.symbol('x'));
+	    assert.equal(state.cstack[0].listOfPairs.first().rest(), 
+			 "42")
+	    assert.equal(state.cstack[0].listOfPairs.rest(),
+			 types.EMPTY);
 	    var result = run(state);
 	    assert.equal(result, "peep");
 	});

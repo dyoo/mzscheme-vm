@@ -1893,8 +1893,8 @@ VariableReference.prototype.set = function(v) {
 
 // Continuation Marks
 
-var ContMarkRecordControl = function(dict) {
-    this.dict = dict || makeLowLevelEqHash();
+var ContMarkRecordControl = function(listOfPairs) {
+    this.listOfPairs = listOfPairs || types.EMPTY;
 };
 
 ContMarkRecordControl.prototype.invoke = function(state) {
@@ -1902,15 +1902,31 @@ ContMarkRecordControl.prototype.invoke = function(state) {
 };
 
 ContMarkRecordControl.prototype.update = function(key, val) {
-    var newDict = makeLowLevelEqHash();
-    // FIXME: what's the javascript idiom for hash key copy?
-    // Maybe we should use a rbtree instead?
-    var oldKeys = this.dict.keys();
-    for (var i = 0; i < oldKeys.length; i++) {
-	    newDict.put( oldKeys[i], this.dict.get(oldKeys[i]) );
+    var l = this.listOfPairs;
+    var acc;
+    while (l !== types.EMPTY) {
+	if (l.first().first() === key) {
+	    // slow path: walk the list and replace with the
+	    // new key/value pair.
+	    l = this.listOfPairs;
+	    acc = types.EMPTY;
+	    while (l !== types.EMPTY) {
+		if (l.first().first() === key) {
+		    acc = types.cons(types.cons(key, val), 
+				     acc);
+		} else {
+		    acc = types.cons(l.first(), acc);
+		}
+		l = l.rest();
+	    }
+	    return new ContMarkRecordControl(acc);
+	}
+	l = l.rest();
     }
-    newDict.put(key, val);
-    return new ContMarkRecordControl(newDict);
+    // fast path: just return a new record with the element tacked at the
+    // front of the original list.
+    return new ContMarkRecordControl(types.cons(types.cons(key, val),
+						this.listOfPairs));
 };
 
 

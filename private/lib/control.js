@@ -46,13 +46,13 @@ var control = {};
 var SetControl = function(depth) {
     this.depth = depth;
 };
-SetControl.prototype.invoke = function(state) {
-    debug("SET " + this.depth);
-    if (state.vstack.length - 1 - (this.depth || 0) < 0) {
+SetControl.prototype.invoke = function(aState) {
+//    debug("SET " + this.depth);
+    if (aState.vstack.length - 1 - (this.depth || 0) < 0) {
 	throw types.internalError("vstack not long enough",
-				  state.captureCurrentContinuationMarks(aState));
+				  aState.captureCurrentContinuationMarks(aState));
     }
-    state.setn(this.depth, state.v);
+    aState.setn(this.depth, aState.v);
 };
 
 
@@ -1185,9 +1185,9 @@ WithContMarkVal.prototype.invoke = function(aState) {
 	cstack.push(cstack.pop().update
 		    (this.key, evaluatedVal));
     } else {
-	var aHash = types.makeLowLevelEqHash();
-	aHash.put(this.key, evaluatedVal);
-	cstack.push(types.contMarkRecordControl(aHash));
+	cstack.push(types.contMarkRecordControl(
+	    types.cons(types.cons(this.key, evaluatedVal),
+		       types.EMPTY)));
     }
     cstack.push(this.body);
 };
