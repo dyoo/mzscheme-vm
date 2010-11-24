@@ -67,7 +67,7 @@ var State = function() {
 
     // Internal: how many steps in the interpreter loop before bouncing.
     // We bounce every so often to allow UI events to process.
-    this.MAX_STEPS_BEFORE_BOUNCE = 50000;
+    this.MAX_STEPS_BEFORE_BOUNCE = 100;
 };
 
 
@@ -125,14 +125,14 @@ var copyHash = function(hash) {
 
 State.prototype.restore = function(params) {
     this.v = params.v;
-    this.vstack = params.vstack;
-    this.cstack = params.cstack;
+    this.vstack = params.vstack.slice(0);
+    this.cstack = params.cstack.slice(0);
     this.heap = params.heap;
-    this.globals = params.globals;
+    this.globals = copyHash(params.globals);
     this.hooks = params.hooks;
     // DELIBERATE: don't restore breakRequested
     // this.breakRequested = params.breakRequested;
-    this.breakRequestListeners = params.breakRequestListeners;
+    this.breakRequestListeners = copyHash(params.breakRequestListeners);
     this.invokedModules = params.invokedModules;
     this.onSuccess = params.onSuccess;
     this.onFail = params.onFail;

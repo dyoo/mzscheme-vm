@@ -120,19 +120,20 @@ var run = function(aState, callSite) {
     // Save the onSuccess and onFail because we're going to use these
     // even if something changes later (such as if an error gets thrown)
     var onSuccess = aState.onSuccess,
-        onFail = aState.onFail,
-        MAX_STEPS_BEFORE_BOUNCE = aState.MAX_STEPS_BEFORE_BOUNCE,
-        gas,
-        breakExn,
-        stateValues,
-        onCall,
-        aCompleteError;
+    onFail = aState.onFail,
+    MAX_STEPS_BEFORE_BOUNCE = aState.MAX_STEPS_BEFORE_BOUNCE,
+    gas,
+    breakExn,
+    stateValues,
+    onCall,
+    aCompleteError;
     try {
 	gas = MAX_STEPS_BEFORE_BOUNCE;
 	while( (! (aState.cstack.length === 0)) && (gas > 0)) {
 	    step(aState);
 	    gas--;
 	}
+
 	if (aState.breakRequested) {
 	    breakExn = types.exnBreak("user break", 
 				      state.captureCurrentContinuationMarks(aState),
@@ -143,25 +144,26 @@ var run = function(aState, callSite) {
 	    setTimeout(function() { aState.pausedForGas = false;
 			    	    run(aState, callSite); },
 		       0);
+	    return;
 	} else {
 	    onSuccess(aState.v);
 	}
     } catch (e) {
 	if (e instanceof control.PauseException) {
-		stateValues = aState.save();
-		aState.clearForEval({preserveBreak: true});
+	    stateValues = aState.save();
+	    aState.clearForEval({preserveBreak: true});
 
-		aState.onSuccess = function(v, callSite) {
-		    aState.restore(stateValues);
-		    aState.v = v;
-		    run(aState, callSite);
-		};
-		aState.onFail = function(e2) {
-		    aState.restore(stateValues);
-		    onFail( completeError(aState, e2) );
-		};
-		onCall = makeOnCall(aState);
-	    	e.onPause(onCall, aState.onSuccess, aState.onFail);
+	    aState.onSuccess = function(v, callSite) {
+		aState.restore(stateValues);
+		aState.v = v;
+		run(aState, callSite);
+	    };
+	    aState.onFail = function(e2) {
+		aState.restore(stateValues);
+		onFail( completeError(aState, e2) );
+	    };
+	    onCall = makeOnCall(aState);
+	    e.onPause(onCall, aState.onSuccess, aState.onFail);
 	}
 	else {
 	    // Exception handling.
