@@ -56,8 +56,11 @@ var State = function() {
 
     this.invokedModules = {};
 
+    // If the interpreter is running, this flag is set to true.
+    this.running = false;
+
+
     // Internal flag: if set, then we stop evaluation immediately.
-    this.pausedForGas = false;
     this.breakRequested = false;
     this.breakRequestedListeners = [];
 
@@ -126,14 +129,14 @@ var copyHash = function(hash) {
 
 State.prototype.restore = function(params) {
     this.v = params.v;
-    this.vstack = params.vstack;
-    this.cstack = params.cstack;
+    this.vstack = params.vstack.slice(0);
+    this.cstack = params.cstack.slice(0);
     this.heap = params.heap;
-    this.globals = params.globals;
+    this.globals = copyHash(params.globals);
     this.hooks = params.hooks;
     // DELIBERATE: don't restore breakRequested
     // this.breakRequested = params.breakRequested;
-    this.breakRequestListeners = params.breakRequestListeners;
+    this.breakRequestListeners = copyHash(params.breakRequestListeners);
     this.invokedModules = params.invokedModules;
     this.onSuccess = params.onSuccess;
     this.onFail = params.onFail;

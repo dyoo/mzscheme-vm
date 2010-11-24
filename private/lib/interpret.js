@@ -137,6 +137,10 @@ var recomputeGas = function(aState, observedDelay) {
 // consumes a state (that contains success and fail callbacks)
 // and an optional string representing where this call came from
 // executes whatever computation is currently on the call stack in the given state
+// 
+// Invariant: if aState is already running, run must never be called re-entrantly.
+// Functions that call run (like call()) first check to see if run.running is true, and
+// reschedule themselves accordingly.
 var run = function(aState, callSite) {
     // Save the onSuccess and onFail because we're going to use these
     // even if something changes later (such as if an error gets thrown)
@@ -152,58 +156,78 @@ var run = function(aState, callSite) {
     try {
 	startTime = (new Date()).valueOf();
 	gas = MAX_STEPS_BEFORE_BOUNCE;
+
+	aState.running = true;
 	while((gas > 0) && (! (aState.cstack.length === 0))) {
 	    // step(aState);
 	    // inlined:
 	    aState.cstack.pop().invoke(aState);
-
 	    gas--;
 	}
+	aState.running = false;
+
+
 	if (aState.breakRequested) {
 	    breakExn = types.exnBreak("user break", 
 				      state.captureCurrentContinuationMarks(aState),
 				      state.captureContinuationClosure(aState));
 	    helpers.raise(breakExn);
-	} else if (gas <= 0 && aState.cstack.length > 0) {
+	} else if (gas <= 0) {
 	    recomputeGas(aState, (new Date()).valueOf() - startTime);
-	    aState.pausedForGas = true;
-	    setTimeout(function() { aState.pausedForGas = false;
-			    	    run(aState, callSite); },
-		       0);
+	    // Temporarily flag aState.running = true
+	    // so that no one else can come in.
+	    aState.running = true;
+	    setTimeout(
+		function() { 
+		    aState.running = false;
+		    run(aState, callSite); },
+		0);
+	    return;
 	} else {
 	    onSuccess(aState.v);
 	}
     } catch (e) {
-	if (e instanceof control.PauseException) {
-		stateValues = aState.save();
-		aState.clearForEval({preserveBreak: true});
+	aState.running = false;
+	doExceptionHandling(e, stateValues, aState, onFail, callSite);
+    }
+};
 
-		aState.onSuccess = function(v, callSite) {
-		    aState.restore(stateValues);
-		    aState.v = v;
-		    run(aState, callSite);
-		};
-		aState.onFail = function(e2) {
-		    aState.restore(stateValues);
-		    onFail( completeError(aState, e2) );
-		};
-		onCall = makeOnCall(aState);
-	    	e.onPause(onCall, aState.onSuccess, aState.onFail);
-	}
-	else {
-	    // Exception handling.
-	    // Check to see if we have a continuation mark with the exception
-	    // handler.  If so, run it!
 
-	    aCompleteError = completeError(aState, e);
-	    if (isExceptionHandlerInContext(aState) && types.isSchemeError(aCompleteError)) {
-		applyExceptionHandler(aState, aCompleteError.val, callSite);
-	    } else {
-		onFail( aCompleteError );
-	    }
+
+var doExceptionHandling = function(e, stateValues, aState, onFail, callSite) {
+    var onCall, aCompleteError;
+    if (e instanceof control.PauseException) {
+	stateValues = aState.save();
+	aState.clearForEval({preserveBreak: true});
+	
+	aState.onSuccess = function(v, callSite) {
+	    aState.restore(stateValues);
+	    aState.v = v;
+	    run(aState, callSite);
+	};
+	aState.onFail = function(e2) {
+	    aState.restore(stateValues);
+	    onFail( completeError(aState, e2) );
+	};
+	onCall = makeOnCall(aState);
+	e.onPause(onCall, aState.onSuccess, aState.onFail);
+    } else {
+	// Exception handling.
+	// Check to see if we have a continuation mark with the exception
+	// handler.  If so, run it!
+
+	aCompleteError = completeError(aState, e);
+	if (isExceptionHandlerInContext(aState) && types.isSchemeError(aCompleteError)) {
+	    applyExceptionHandler(aState, aCompleteError.val, callSite);
+	} else {
+	    onFail( aCompleteError );
 	}
     }
 };
+
+
+
+
 
 // isExceptionHandlerInContext: state -> boolean
 // Produces true if we're in a context that does have an exception handler.
@@ -246,12 +270,16 @@ var completeError = function(aState, error) {
 
 // call: state scheme-procedure (arrayof scheme-values) (scheme-value -> void) -> void
 var call = function(aState, operator, operands, k, onFail, callSite) {
-    if ( aState.pausedForGas ) {
-	    setTimeout(function() { call(aState, operator, operands, k, onFail, callSite); }, 1);
-	    return;
+    var stateValues;
+    if ( aState.running ) {
+	setTimeout(function() { 
+	    call(aState, operator, operands, k, onFail, callSite); }, 
+		   1);
+	return;
     }
     
-    var stateValues = aState.save();
+
+    stateValues = aState.save();
     aState.clearForEval({preserveBreak: true});
 
 

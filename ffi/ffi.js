@@ -269,20 +269,25 @@ EXPORTS['js-call'] =
 		 2,
 		 true, false,
 		 function(fun, parent, initArgs) {
-		 	var allArgs = [fun, parent].concat(initArgs);
-		 	check(fun, isJsFunction, 'js-call', 'javascript function', 1, allArgs);
-			check(parent, function(x) { return (x === false || isJsObject(x)); },
-			      'js-call', 'javascript object or false', 2, allArgs);
+		     var allArgs = [fun, parent].concat(initArgs);
+		     check(fun, isJsFunction, 'js-call', 'javascript function', 1, allArgs);
+		     check(parent, function(x) { return (x === false || isJsObject(x)); },
+			   'js-call', 'javascript object or false', 2, allArgs);
 		     
-			var args = helpers.map(function(x) { return (types.isJsValue(x) ? x.val : x); }, initArgs);
-			var thisArg = parent ? parent.val : null;
-			var jsCallReturn = fun.val.apply(thisArg, args);
-			if ( jsCallReturn === undefined ) {
-				return types.VOID;
-			}
-			else {
-				return helpers.wrapJsValue(jsCallReturn);
-			}
+		     var args = helpers.map(function(x) { return (types.isJsValue(x) ? x.val : x); }, initArgs);
+		     var thisArg = parent ? parent.val : null;
+		     
+		     return types.internalPause(function(caller, success, fail) {
+			 try {
+			     var jsCallReturn = fun.val.apply(thisArg, args);
+			     if ( jsCallReturn === undefined ) {
+				 success(types.VOID);
+			     }
+			     else {
+				 success(helpers.wrapJsValue(jsCallReturn));
+			     }
+			 } catch(e) { fail(e); }
+		     });
 		 });
 
 
