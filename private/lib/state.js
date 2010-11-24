@@ -56,8 +56,11 @@ var State = function() {
 
     this.invokedModules = {};
 
+    // If the interpreter is running, this flag is set to true.
+    this.running = false;
+
+
     // Internal flag: if set, then we stop evaluation immediately.
-    this.pausedForGas = false;
     this.breakRequested = false;
     this.breakRequestedListeners = [];
 
