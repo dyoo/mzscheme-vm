@@ -51,11 +51,11 @@ var makeBranch = function(x, y, z) {
 };
 
 var makeSeq = function() {
-    return new control.SeqControl(arguments);
+    return new control.SeqControl([].slice.call(arguments));
 };
 
 var makeBeg0 = function() {
-    return new control.Beg0Control(arguments);
+    return new control.Beg0Control([].slice.call(arguments));
 };
 
 var makeToplevel = function(depth, pos) {

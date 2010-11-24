@@ -560,20 +560,20 @@ var Beg0Control = function(seq) {
 };
 
 Beg0Control.prototype.invoke = function(state) {
+    var rest;
     if (this.seq.length === 1) {
 	state.cstack.push(this.seq[0]);
     } else {
-	var rest = [];
-	for (var i = 1; i < this.seq.length; i++) {
-	    rest.push(this.seq[i]);
-	}
-	state.pushManyControls([this.seq[0], new Beg0RestControl(rest)]);
+	rest = this.seq.slice(1);
+	rest.reverse();
+	state.cstack.push(new Beg0RestControl(rest));
+	state.cstack.push(this.seq[0]);
     }
 };
 
 
-var Beg0RestControl = function(rest) {
-    this.rest = rest;
+var Beg0RestControl = function(restRev) {
+    this.restRev = restRev;
 };
 
 Beg0RestControl.prototype.invoke = function(state) {
@@ -582,7 +582,9 @@ Beg0RestControl.prototype.invoke = function(state) {
     // bringing the first expression's value back into
     // the value register.
     state.cstack.push(new ConstantControl(state.v));
-    state.pushManyControls(this.rest);
+    state.cstack.splice.apply(state.cstack,
+			      [state.cstack.length,
+			       0].concat(this.restRev));
 };
 
 

@@ -170,15 +170,6 @@ State.prototype.removeBreakRequestedListener = function(listener) {
 
 
 
-
-// Add several forms to the control stack in reverse order.
-State.prototype.pushManyControls = function(forms) {
-    for (var i = 0; i < forms.length; i++) {
-	this.cstack.push(forms[forms.length-1-i]);
-    }
-};
-
-
 // Push a value.
 State.prototype.pushValue = function(aVal) {
 //    debugF(function(){ return "pushValue" + sys.inspect(aVal); } );
