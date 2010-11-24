@@ -170,13 +170,6 @@ State.prototype.removeBreakRequestedListener = function(listener) {
 
 
 
-// Push a value.
-State.prototype.pushValue = function(aVal) {
-//    debugF(function(){ return "pushValue" + sys.inspect(aVal); } );
-    this.vstack.push(aVal);
-};
-
-
 // Pop a value.
 State.prototype.popValue = function() {
 //    debugF(function(){ return "popValue" });

@@ -363,21 +363,23 @@ RequireControl.prototype.invoke = function(aState) {
 };
 
 
+
+var hardcodedModules = [
+    types.list([types.symbol("quote"), types.symbol("#%kernel")]),
+    types.list([types.symbol("quote"), types.symbol("#%paramz")]),
+    types.list([types.symbol("quote"), types.symbol("#%utils")]),
+    types.symbol("moby/kernel"),
+    types.symbol("moby/paramz"),
+    types.symbol("moby/js-impl")];
+    
+
 var isHardcodedModule = function(resolvedModuleName) {
-    var hardcodedModules = [
-	types.list([types.symbol("quote"), types.symbol("#%kernel")]),
-	types.list([types.symbol("quote"), types.symbol("#%paramz")]),
-	types.list([types.symbol("quote"), types.symbol("#%utils")]),
-	types.symbol("moby/kernel"),
-	types.symbol("moby/paramz"),
-	types.symbol("moby/js-impl")];
     for (var i = 0; i < hardcodedModules.length; i++) {
 	if (types.isEqual(hardcodedModules[i], resolvedModuleName))
 	    return true;
     }
     return false;
 };
-
 
 
 
@@ -539,15 +541,14 @@ var isJavascriptModuleRecord = function(aModuleRecord) {
 
 
 var SeqControl = function(forms) {
-    this.forms = forms;
+    this.formsRev = forms.slice(0).reverse();
 };
 
 
 SeqControl.prototype.invoke = function(state) {
-    var forms = this.forms;
-    for (var i = forms.length - 1; i >= 0; i--) {
-	state.cstack.push(forms[i]);
-    }
+    state.cstack.splice.apply(state.cstack,
+			      [state.cstack.length,
+			       0].concat(this.formsRev));
 };
 
 
