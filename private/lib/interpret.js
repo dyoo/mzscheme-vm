@@ -112,55 +112,24 @@ var makeClosureValsFromMap = function(state, closureMap, closureTypes) {
 
 // We'd like to see a delay of DESIRED_DELAY_BETWEEN_BOUNCES
 // so that we get 25 bounces per second.
-//
-// For the first 100 bounces, calibrates the MAX_STEPS_BEFORE_BOUNCE
-// value.
-
 var DESIRED_DELAY_BETWEEN_BOUNCES = 1000/25;
-var MAXIMUM_BOUNCES_FOR_RECOMPUTE = 100;
 
-// Some parameters for the heat function
-var RECOMPUTE_HEIGHT = 5000;
-var RECOMPUTE_WIDTH = 20;
-
-var MAX_BOUNCES_TO_ESTIMATE = 100;
-
-    // FIXME: ugliness between the constants here and in state.js.  Need to
-    // lift up a separate module for common parameters.
-
+var ALPHA = 5000;
 
 // recomputeGas: state number -> number
 var recomputeGas = function(aState, observedDelay) {
     var delta;
-    if (aState.bouncesToEstimate <= 0) {
-	return;
-    }
-    delta = exponentialDecay(RECOMPUTE_HEIGHT,
-			     RECOMPUTE_WIDTH,
-			     MAX_BOUNCES_TO_ESTIMATE - aState.bouncesToEstimate);
-    if (observedDelay > DESIRED_DELAY_BETWEEN_BOUNCES) {
-	aState.MAX_STEPS_BEFORE_BOUNCE = 
-	    Math.max(aState.MAX_STEPS_BEFORE_BOUNCE - delta,
-		     100);
-    } else {
-	aState.MAX_STEPS_BEFORE_BOUNCE = 
-	    Math.max(aState.MAX_STEPS_BEFORE_BOUNCE + delta,
-		     100);
-    }
-    aState.bouncesToEstimate--;
-
-
-    // DEBUG: show the MAX_STEPS_BEFORE_BOUNCE parameter if console.log's available.
-    if (aState.bouncesToEstimate === 0) {
-	if (typeof(console) !== 'undefined' && console.log !== undefined) {
-	    console.log("debug: gas estimate is: " + aState.MAX_STEPS_BEFORE_BOUNCE);
-	}
-    }
+    delta = ALPHA * ((DESIRED_DELAY_BETWEEN_BOUNCES - observedDelay) / 
+		     DESIRED_DELAY_BETWEEN_BOUNCES);
+    aState.MAX_STEPS_BEFORE_BOUNCE = 
+	Math.max(aState.MAX_STEPS_BEFORE_BOUNCE + delta,
+		 100);
+//     // DEBUG: show the MAX_STEPS_BEFORE_BOUNCE parameter if console.log's available.
+//      if (typeof(console) !== 'undefined' && console.log !== undefined) {
+//   	console.log("debug: gas estimate is: " + aState.MAX_STEPS_BEFORE_BOUNCE);
+//      }
 };
 
-var exponentialDecay = function(height, width, n) {
-    return height * Math.exp(-(n / width));
-}
 
 
 
@@ -181,9 +150,7 @@ var run = function(aState, callSite) {
         aCompleteError,
         startTime;
     try {
-	if (aState.bouncesToEstimate >= 0) { 
-	    startTime = (new Date()).valueOf();
-	}
+	startTime = (new Date()).valueOf();
 	gas = MAX_STEPS_BEFORE_BOUNCE;
 	while((gas > 0) && (! (aState.cstack.length === 0))) {
 	    // step(aState);
@@ -198,9 +165,7 @@ var run = function(aState, callSite) {
 				      state.captureContinuationClosure(aState));
 	    helpers.raise(breakExn);
 	} else if (gas <= 0 && aState.cstack.length > 0) {
-	    if (aState.bouncesToEstimate >= 0) {
-		recomputeGas(aState, (new Date()).valueOf() - startTime);
-	    }
+	    recomputeGas(aState, (new Date()).valueOf() - startTime);
 	    aState.pausedForGas = true;
 	    setTimeout(function() { aState.pausedForGas = false;
 			    	    run(aState, callSite); },
