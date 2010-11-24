@@ -110,6 +110,50 @@ var makeClosureValsFromMap = function(state, closureMap, closureTypes) {
 };
 
 
+// We'd like to see a delay of DESIRED_DELAY_BETWEEN_BOUNCES
+// so that we get 25 bounces per second.
+//
+// For the first 100 bounces, calibrates the MAX_STEPS_BEFORE_BOUNCE
+// value.
+
+var DESIRED_DELAY_BETWEEN_BOUNCES = 1000/25;
+var MAXIMUM_BOUNCES_FOR_RECOMPUTE = 100;
+
+// Some parameters for the heat function
+var RECOMPUTE_HEIGHT = 5000;
+var RECOMPUTE_WIDTH = 20;
+
+var MAX_BOUNCES_TO_ESTIMATE = 100;
+
+    // FIXME: ugliness between the constants here and in state.js.  Need to
+    // lift up a separate module for common parameters.
+
+
+// recomputeGas: state number -> number
+var recomputeGas = function(aState, observedDelay) {
+    var delta;
+    if (aState.bouncesToEstimate < 0) {
+	return;
+    }
+    delta = exponentialDecay(RECOMPUTE_HEIGHT,
+			     RECOMPUTE_WIDTH,
+			     MAX_BOUNCES_TO_ESTIMATE - aState.bouncesToEstimate);
+    if (observedDelay > DESIRED_DELAY_BETWEEN_BOUNCES) {
+	aState.MAX_STEPS_BEFORE_BOUNCE = 
+	    Math.max(aState.MAX_STEPS_BEFORE_BOUNCE - delta,
+		     100);
+    } else {
+	aState.MAX_STEPS_BEFORE_BOUNCE = 
+	    Math.max(aState.MAX_STEPS_BEFORE_BOUNCE + delta,
+		     100);
+    }
+    aState.bouncesToEstimate--;
+};
+
+var exponentialDecay = function(height, width, n) {
+    return height * Math.exp(-(n / width));
+}
+
 
 
 // run: state [string] ->
@@ -126,8 +170,12 @@ var run = function(aState, callSite) {
         breakExn,
         stateValues,
         onCall,
-        aCompleteError;
+        aCompleteError,
+
+        startTime,
+        endTime;
     try {
+	startTime = (new Date()).valueOf();
 	gas = MAX_STEPS_BEFORE_BOUNCE;
 	while((gas > 0) && (! (aState.cstack.length === 0))) {
 	    // step(aState);
@@ -142,6 +190,8 @@ var run = function(aState, callSite) {
 				      state.captureContinuationClosure(aState));
 	    helpers.raise(breakExn);
 	} else if (gas <= 0) {
+	    endTime = (new Date()).valueOf();
+	    recomputeGas(aState, endTime - startTime);
 	    aState.pausedForGas = true;
 	    setTimeout(function() { aState.pausedForGas = false;
 			    	    run(aState, callSite); },
