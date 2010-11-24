@@ -132,7 +132,7 @@ var MAX_BOUNCES_TO_ESTIMATE = 100;
 // recomputeGas: state number -> number
 var recomputeGas = function(aState, observedDelay) {
     var delta;
-    if (aState.bouncesToEstimate < 0) {
+    if (aState.bouncesToEstimate <= 0) {
 	return;
     }
     delta = exponentialDecay(RECOMPUTE_HEIGHT,
@@ -148,6 +148,14 @@ var recomputeGas = function(aState, observedDelay) {
 		     100);
     }
     aState.bouncesToEstimate--;
+
+
+    // DEBUG: show the MAX_STEPS_BEFORE_BOUNCE parameter if console.log's available.
+    if (aState.bouncesToEstimate === 0) {
+	if (typeof(console) !== 'undefined' && console.log !== undefined) {
+	    console.log("debug: gas estimate is: " + aState.MAX_STEPS_BEFORE_BOUNCE);
+	}
+    }
 };
 
 var exponentialDecay = function(height, width, n) {
@@ -171,11 +179,11 @@ var run = function(aState, callSite) {
         stateValues,
         onCall,
         aCompleteError,
-
-        startTime,
-        endTime;
+        startTime;
     try {
-	startTime = (new Date()).valueOf();
+	if (aState.bouncesToEstimate >= 0) { 
+	    startTime = (new Date()).valueOf();
+	}
 	gas = MAX_STEPS_BEFORE_BOUNCE;
 	while((gas > 0) && (! (aState.cstack.length === 0))) {
 	    // step(aState);
@@ -189,9 +197,10 @@ var run = function(aState, callSite) {
 				      state.captureCurrentContinuationMarks(aState),
 				      state.captureContinuationClosure(aState));
 	    helpers.raise(breakExn);
-	} else if (gas <= 0) {
-	    endTime = (new Date()).valueOf();
-	    recomputeGas(aState, endTime - startTime);
+	} else if (gas <= 0 && aState.cstack.length > 0) {
+	    if (aState.bouncesToEstimate >= 0) {
+		recomputeGas(aState, (new Date()).valueOf() - startTime);
+	    }
 	    aState.pausedForGas = true;
 	    setTimeout(function() { aState.pausedForGas = false;
 			    	    run(aState, callSite); },
