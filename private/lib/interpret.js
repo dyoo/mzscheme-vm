@@ -129,8 +129,11 @@ var run = function(aState, callSite) {
         aCompleteError;
     try {
 	gas = MAX_STEPS_BEFORE_BOUNCE;
-	while( (! (aState.cstack.length === 0)) && (gas > 0)) {
-	    step(aState);
+	while((gas > 0) && (! (aState.cstack.length === 0))) {
+	    // step(aState);
+	    // inlined:
+	    aState.cstack.pop().invoke(aState);
+
 	    gas--;
 	}
 	if (aState.breakRequested) {
@@ -259,18 +262,19 @@ var makeOnCall = function(state) {
 // Takes one step in the abstract machine.
 var step = function(aState) {
     var nextCode;
-    if (aState.cstack.length === 0) {
-	throw types.internalError("cstack empty", 
-				  captureCurrentContinuationMarks(aState));
-    }
+//     if (aState.cstack.length === 0) {
+// 	throw types.internalError("cstack empty", 
+// 				  captureCurrentContinuationMarks(aState));
+//     }
     nextCode = aState.cstack.pop();
-    if (nextCode.invoke) {
-	nextCode.invoke(aState);
-    } else {
-	// we should never get here.
-	throw types.internalError("I don't know how to handle " + sys.inspect(nextCode),
-				  state.captureCurrentContinuationMarks(aState));
-    }
+    nextCode.invoke(aState);
+//     if (nextCode.invoke) {
+// 	nextCode.invoke(aState);
+//     } else {
+// 	// we should never get here.
+// 	throw types.internalError("I don't know how to handle " + sys.inspect(nextCode),
+// 				  state.captureCurrentContinuationMarks(aState));
+//     }
 };
 
 
