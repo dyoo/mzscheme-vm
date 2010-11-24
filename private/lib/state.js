@@ -67,7 +67,7 @@ var State = function() {
 
     // Internal: how many steps in the interpreter loop before bouncing.
     // We bounce every so often to allow UI events to process.
-    this.MAX_STEPS_BEFORE_BOUNCE = 100;
+    this.MAX_STEPS_BEFORE_BOUNCE = 1;
 };
 
 

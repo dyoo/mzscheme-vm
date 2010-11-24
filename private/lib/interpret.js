@@ -127,6 +127,7 @@ var run = function(aState, callSite) {
     stateValues,
     onCall,
     aCompleteError;
+    var vBefore, vAfter;
     try {
 	gas = MAX_STEPS_BEFORE_BOUNCE;
 	while( (! (aState.cstack.length === 0)) && (gas > 0)) {
@@ -141,7 +142,15 @@ var run = function(aState, callSite) {
 	    helpers.raise(breakExn);
 	} else if (gas <= 0) {
 	    aState.pausedForGas = true;
+	    vBefore = aState.v;
 	    setTimeout(function() { aState.pausedForGas = false;
+				    vAfter = aState.v;
+				    if (vBefore !== vAfter) {
+					console.log("invariant broken");
+					console.log(vBefore);
+					console.log(vAfter);
+					throw new Error("invariant broken!\n");
+				    }
 			    	    run(aState, callSite); },
 		       0);
 	    return;
@@ -149,36 +158,49 @@ var run = function(aState, callSite) {
 	    onSuccess(aState.v);
 	}
     } catch (e) {
-	if (e instanceof control.PauseException) {
-	    stateValues = aState.save();
-	    aState.clearForEval({preserveBreak: true});
+	doExceptionHandling(e, stateValues, aState, onFail);
+    }
+};
 
-	    aState.onSuccess = function(v, callSite) {
-		aState.restore(stateValues);
-		aState.v = v;
-		run(aState, callSite);
-	    };
-	    aState.onFail = function(e2) {
-		aState.restore(stateValues);
-		onFail( completeError(aState, e2) );
-	    };
-	    onCall = makeOnCall(aState);
-	    e.onPause(onCall, aState.onSuccess, aState.onFail);
-	}
-	else {
-	    // Exception handling.
-	    // Check to see if we have a continuation mark with the exception
-	    // handler.  If so, run it!
 
-	    aCompleteError = completeError(aState, e);
-	    if (isExceptionHandlerInContext(aState) && types.isSchemeError(aCompleteError)) {
-		applyExceptionHandler(aState, aCompleteError.val, callSite);
-	    } else {
-		onFail( aCompleteError );
-	    }
+
+var doExceptionHandling = function(e, stateValues, aState, onFail) {
+    var onCall, aCompleteError;
+    if (e instanceof control.PauseException) {
+	console.log("PauseException");
+	stateValues = aState.save();
+	aState.clearForEval({preserveBreak: true});
+	
+	aState.onSuccess = function(v, callSite) {
+	    aState.restore(stateValues);
+	    aState.v = v;
+	    run(aState, callSite);
+	};
+	aState.onFail = function(e2) {
+	    aState.restore(stateValues);
+	    onFail( completeError(aState, e2) );
+	};
+	onCall = makeOnCall(aState);
+	e.onPause(onCall, aState.onSuccess, aState.onFail);
+    } else {
+	console.log("other exception");
+	// Exception handling.
+	// Check to see if we have a continuation mark with the exception
+	// handler.  If so, run it!
+
+	aCompleteError = completeError(aState, e);
+	if (isExceptionHandlerInContext(aState) && types.isSchemeError(aCompleteError)) {
+	    applyExceptionHandler(aState, aCompleteError.val, callSite);
+	} else {
+	    console.log("run: onFail");
+	    onFail( aCompleteError );
 	}
     }
 };
+
+
+
+
 
 // isExceptionHandlerInContext: state -> boolean
 // Produces true if we're in a context that does have an exception handler.
@@ -221,12 +243,21 @@ var completeError = function(aState, error) {
 
 // call: state scheme-procedure (arrayof scheme-values) (scheme-value -> void) -> void
 var call = function(aState, operator, operands, k, onFail, callSite) {
+    var stateValues;
     if ( aState.pausedForGas ) {
-	    setTimeout(function() { call(aState, operator, operands, k, onFail, callSite); }, 1);
-	    return;
+	console.log('call re-queued');
+	setTimeout(function() { 
+	    call(aState, operator, operands, k, onFail, callSite); }, 
+		   1);
+	return;
     }
     
-    var stateValues = aState.save();
+    console.log("beginning of call.  Saving v:");
+    console.log(aState.v);
+
+    stateValues = aState.save();
+    console.log('saved to: ');
+    console.log(stateValues.v);
     aState.clearForEval({preserveBreak: true});
 
 
@@ -238,13 +269,18 @@ var call = function(aState, operator, operands, k, onFail, callSite) {
 			operands)));
 
     aState.onSuccess = function(v) {
+	console.log('after call');
 	aState.restore(stateValues);
+	console.log(aState.v);
+	console.log(stateValues.v);
 	k(v);
     };
     aState.onFail = function(e) {
+	console.log('failed');
 	aState.restore(stateValues);
 	onFail(e);
     };
+    console.log("calling run");
     run(aState, callSite);
 };
 
