@@ -1101,15 +1101,15 @@ var prepareClosureArgumentsOnStack = function(state, procValue, operandValues, n
 	for (var i = 0; i < n - procValue.numParams ; i++) {
 	    restArg = types.cons(operandValues.pop(), restArg);
 	}
-	state.pushValue(restArg);
+	state.vstack.push(restArg);
 	argCount++;
     }	
     for (var i = operandValues.length -1; i >= 0; i--) {
-	state.pushValue(operandValues[i]);
+	state.vstack.push(operandValues[i]);
 	argCount++;
     }
     for(var i = procValue.closureVals.length-1; i >= 0; i--) {
-	state.pushValue(procValue.closureVals[i]);
+	state.vstack.push(procValue.closureVals[i]);
 	argCount++;
     }
     return argCount;
@@ -1241,11 +1241,11 @@ ApplyValuesAppControl.prototype.invoke = function(state) {
     if (exprValue instanceof types.ValuesWrapper) {
 	var elts = exprValue.elts;
 	for(var i = elts.length - 1; i >= 0; i--) {
-	    state.pushValue(elts[i]);
+	    state.vstack.push(elts[i]);
 	}
 	state.cstack.push(new CallControl(elts.length));
     } else {
-	state.pushValue(exprValue);
+	state.vstack.push(exprValue);
 	state.cstack.push(new CallControl(1));
     }
 };

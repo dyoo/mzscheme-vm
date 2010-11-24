@@ -4553,7 +4553,7 @@ var callCCPrim = new types.PrimProc('call/cc',
 				    function(aState, f) {
 					var continuationClosure = 
 					    state.captureContinuationClosure(aState);
-					aState.pushValue(continuationClosure);
+					aState.vstack.push(continuationClosure);
 					aState.v = f;
 					aState.cstack.push(
 					    new control.CallControl(1));
