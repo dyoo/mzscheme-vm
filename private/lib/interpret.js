@@ -117,7 +117,9 @@ var makeClosureValsFromMap = function(state, closureMap, closureTypes) {
 // and an optional string representing where this call came from
 // executes whatever computation is currently on the call stack in the given state
 // 
-// Invariant: if aState is already running, run must fail.
+// Invariant: if aState is already running, run must never be called re-entrantly.
+// Functions that call run (like call()) first check to see if run.running is true, and
+// reschedule themselves accordingly.
 var run = function(aState, callSite) {
     // Save the onSuccess and onFail because we're going to use these
     // even if something changes later (such as if an error gets thrown)
