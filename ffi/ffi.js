@@ -30,8 +30,9 @@ var check = helpers.check;
 
 
 var makeCaller = function(aState) {
-    return function(operator, operands, k, callSite) {
-	interpret.call(aState, operator, operands, k, aState.onFail, callSite);
+    return function(operator, operands, onSuccess, callSite) {
+	interpret.call(aState, operator, operands, onSuccess,
+		       aState.onFail, callSite);
     };
 };
 
@@ -128,34 +129,59 @@ EXPORTS['prim-js->scheme'] = EXPORTS['prim-js->racket'];
 
 
 EXPORTS['procedure->cps-js-fun'] =
-    new types.PrimProc('procedure->cps-js-fun',
-		       1,
-		       false, true,
-		       function(aState, proc) {
-		 	   check(proc, types.isFunction, 'procedure->cps-js-fun', 'procedure', 1);
+    new types.PrimProc(
+	'procedure->cps-js-fun',
+	1,
+	false, true,
+	function(aState, proc) {
+	    check(proc, types.isFunction, 
+		  'procedure->cps-js-fun', 'procedure', 1);
+	    
+	    var caller = makeCaller(aState);
+	    aState.v = types.jsValue(
+		proc.name + ' (cps)',
+		function() {
+		    var args = helpers.map(helpers.wrapJsValue, arguments);
+		    var k = (args.length == 0 ? 
+			     function() {} :
+			     args.shift().val);
+		    
+		    caller(proc, args, k, 'proc->cps-js: ' + proc.name);
+		});
+	});
 
-			   var caller = makeCaller(aState);
-			   aState.v = types.jsValue(proc.name + ' (cps)', function() {
-			       var args = helpers.map(helpers.wrapJsValue, arguments);
-			       var k = (args.length == 0 ? function() {} : args.shift().val);
 
-			       caller(proc, args, k, 'proc->cps-js: ' + proc.name);
-			   });
-		       });
+
+var makeWrappedRacketFunction = function(aState, proc) {
+    var caller = makeCaller(aState);
+    var closure = function() {
+	var args = helpers.map(helpers.wrapJsValue,
+			       arguments);
+	caller(proc, args, 
+	       function(v) {},
+	       'proc->void-js: ' + proc.name);
+    };
+//     // Magic: the closure has an additional field that cooperates
+//     // with js-call if js-call see the application.
+//     closure.__isRacketFunction = true;
+//     closure.__racketFunction = proc;
+    return closure;
+};
+
+
 
 EXPORTS['procedure->void-js-fun'] =
-    new types.PrimProc('procedure->void-js-fun',
-		       1,
-		       false, true,
-		       function(aState, proc) {
-		 	   check(proc, types.isFunction, 'procedure->void-js-fun', 'procedure', 1);
-
-			   var caller = makeCaller(aState);
-			   aState.v = types.jsValue(proc.name + ' (void)', function() {
-			       var args = helpers.map(helpers.wrapJsValue, arguments);
-			       caller(proc, args, function() {}, 'proc->void-js: ' + proc.name);
-			   });
-		       });
+    new types.PrimProc(
+	'procedure->void-js-fun',
+	1,
+	false, true,
+	function(aState, proc) {
+	    check(proc, types.isFunction,
+		  'procedure->void-js-fun', 'procedure', 1);
+	    aState.v = types.jsValue(
+		proc.name + ' (void)',
+		makeWrappedRacketFunction(aState, proc));
+	});
 
 
 EXPORTS['js-==='] =
@@ -265,30 +291,60 @@ EXPORTS['js-instanceof'] =
 
 
 EXPORTS['js-call'] =
-    new types.PrimProc('js-call',
-		       2,
-		       true, false,
-		       function(fun, parent, initArgs) {
-			   var allArgs = [fun, parent].concat(initArgs);
-			   check(fun, isJsFunction, 'js-call', 'javascript function', 1, allArgs);
-			   check(parent, function(x) { return (x === false || isJsObject(x)); },
-				 'js-call', 'javascript object or false', 2, allArgs);
-			   
-			   var args = helpers.map(function(x) { return (types.isJsValue(x) ? x.val : x); }, initArgs);
-			   var thisArg = parent ? parent.val : null;
-			   
-			   return types.internalPause(function(caller, success, fail) {
-			       try {
-				   var jsCallReturn = fun.val.apply(thisArg, args);
-				   if ( jsCallReturn === undefined ) {
-				       success(types.VOID);
-				   }
-				   else {
-				       success(helpers.wrapJsValue(jsCallReturn));
-				   }
-			       } catch(e) { fail(e); }
-			   });
-		       });
+    new types.PrimProc(
+	'js-call',
+	2,
+	true, false,
+	function(fun, parent, initArgs) {
+	    var allArgs = [fun, parent].concat(initArgs);
+	    check(fun, isJsFunction, 
+		  'js-call', 'javascript function', 1, allArgs);
+	    check(parent, 
+		  function(x) {
+		      return (x === false || isJsObject(x)); 
+		  },
+		  'js-call', 'javascript object or false', 2, allArgs);
+	    
+// 	    if (fun.__isRacketFunction) {
+// 		var racketOperator = fun.__racketFunction;
+// 		var args = helpers.map(
+// 		    function(x) { 
+// 			return (types.isJsValue(x) ? 
+// 				x : helpers.wrapJsValue(x));
+// 		    },
+// 		    initArgs);
+// 		return types.internalPause(
+// 		    function(caller, success, fail)  {
+// 			caller(proc,
+// 			       args,
+// 			       function(v) {
+// 				   success(helpers.wrapJsValue(v));
+// 			       }, 
+// 			       fail);
+// 		    });
+// 	    } else {
+		var args = helpers.map(
+		    function(x) { 
+			return (types.isJsValue(x) ? x.val : x); },
+		    initArgs);
+		var thisArg = parent ? parent.val : null;
+		
+		return types.internalPause(
+		    function(caller, success, fail) {
+			try {
+			    var jsCallReturn = fun.val.apply(thisArg, args);
+			    if ( jsCallReturn === undefined ) {
+				success(types.VOID);
+			    }
+			    else {
+				success(helpers.wrapJsValue(jsCallReturn));
+			    }
+			} catch(e) {
+			    fail(e);
+			}
+		});
+//	    }
+	});
 
 
 EXPORTS['js-new'] =

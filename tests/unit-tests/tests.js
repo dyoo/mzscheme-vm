@@ -318,7 +318,8 @@ runTest("external call",
 	    interpret.call(state, 
 			   primitive.getPrimitive("*"),
 			   [2, 3],
-			   function(v) { assert.equal(v, 6) });
+			   function(v) { assert.equal(v, 6) },
+			   function(e) { throw e; });
 	});
 
 

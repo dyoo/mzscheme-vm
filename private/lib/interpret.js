@@ -269,11 +269,13 @@ var completeError = function(aState, error) {
     
 
 // call: state scheme-procedure (arrayof scheme-values) (scheme-value -> void) -> void
-var call = function(aState, operator, operands, k, onFail, callSite) {
+var call = function(aState, operator, operands, 
+		    onSuccess, onFail, callSite) {
     var stateValues;
     if ( aState.running ) {
 	setTimeout(function() { 
-	    call(aState, operator, operands, k, onFail, callSite); }, 
+	    call(aState, operator, operands, 
+		 onSuccess, onFail, callSite); }, 
 		   1);
 	return;
     }
@@ -292,7 +294,7 @@ var call = function(aState, operator, operands, k, onFail, callSite) {
 
     aState.onSuccess = function(v) {
 	aState.restore(stateValues);
-	k(v);
+	onSuccess(v);
     };
     aState.onFail = function(e) {
 	aState.restore(stateValues);
@@ -303,8 +305,8 @@ var call = function(aState, operator, operands, k, onFail, callSite) {
 
 
 var makeOnCall = function(state) {
-    return function(operator, operands, k, onFail, callSite) {
-	call(state, operator, operands, k, onFail, callSite);
+    return function(operator, operands, onSuccess, onFail, callSite) {
+	call(state, operator, operands, onSuccess, onFail, callSite);
     };
 };
 
