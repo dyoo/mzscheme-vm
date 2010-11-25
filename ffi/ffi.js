@@ -161,10 +161,10 @@ var makeWrappedRacketFunction = function(aState, proc) {
 	       function(v) {},
 	       'proc->void-js: ' + proc.name);
     };
-//     // Magic: the closure has an additional field that cooperates
-//     // with js-call if js-call see the application.
-//     closure.__isRacketFunction = true;
-//     closure.__racketFunction = proc;
+    // Magic: the closure has an additional field that cooperates
+    // with js-call if js-call see the application.
+    closure.__isRacketFunction = true;
+    closure.__racketFunction = proc;
     return closure;
 };
 
@@ -305,24 +305,26 @@ EXPORTS['js-call'] =
 		  },
 		  'js-call', 'javascript object or false', 2, allArgs);
 	    
-// 	    if (fun.__isRacketFunction) {
-// 		var racketOperator = fun.__racketFunction;
-// 		var args = helpers.map(
-// 		    function(x) { 
-// 			return (types.isJsValue(x) ? 
-// 				x : helpers.wrapJsValue(x));
-// 		    },
-// 		    initArgs);
-// 		return types.internalPause(
-// 		    function(caller, success, fail)  {
-// 			caller(proc,
-// 			       args,
-// 			       function(v) {
-// 				   success(helpers.wrapJsValue(v));
-// 			       }, 
-// 			       fail);
-// 		    });
-// 	    } else {
+	    if (fun.__isRacketFunction) {
+		console.log('here');
+		var racketOperator = fun.__racketFunction;
+		var args = helpers.map(
+		    function(x) { 
+			return (types.isJsValue(x) ? 
+				x : helpers.wrapJsValue(x));
+		    },
+		    initArgs);
+		return types.internalPause(
+		    function(caller, success, fail)  {
+			caller(proc,
+			       args,
+			       function(v) {
+				   success(helpers.wrapJsValue(v));
+			       }, 
+			       fail);
+		    });
+	    } else {
+		console.log(fun);
 		var args = helpers.map(
 		    function(x) { 
 			return (types.isJsValue(x) ? x.val : x); },
@@ -343,7 +345,7 @@ EXPORTS['js-call'] =
 			    fail(e);
 			}
 		});
-//	    }
+	    }
 	});
 
 
