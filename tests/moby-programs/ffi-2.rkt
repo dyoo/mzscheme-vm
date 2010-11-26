@@ -7,20 +7,22 @@
 
 ;; Check to see that we can expression on-tick with make-world-config.
 
+(define setInterval (js-get-global-value "setInterval"))
+(define clearInterval (js-get-global-value "clearInterval"))
+
 
 (define (my-on-tick world-updater)
   (make-world-config
-   (lambda (success)
-     (js-call (js-get-global-value "setInterval")
-	      #f
-	      (procedure->void-js-fun (lambda args (js-call success #f)))
-	      1000))
+   (lambda (tick)
+     (js-call setInterval #f
+              (procedure->void-js-fun 
+               (lambda args 
+                 (js-call tick #f)))
+              1000))
 
    (lambda (id)
      (printf "shutdown with clearInterval id=~s\n" id)
-     (js-call (js-get-global-value "clearInterval")
-	      #f
-	      id))
+     (js-call clearInterval #f id))
 
    (lambda (w)
      (world-updater w))))
@@ -29,7 +31,6 @@
 
 
 (check-expect (big-bang 1
-
 			(my-on-tick 
 			 (lambda (w)
 			   (printf "tick!\n")

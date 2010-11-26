@@ -120,19 +120,21 @@
 			     k);
     }
 
+
+
     var expandHandler = function(handler) {
 	return types.jsValue('function', function() {
-		var wrappedStimulusArgs = [];
-		for (var i = 0; i < arguments.length; i++) {
-			wrappedStimulusArgs.push( helpers.wrapJsValue(arguments[i]) );
-		}
+	    var wrappedStimulusArgs = [];
+	    for (var i = 0; i < arguments.length; i++) {
+		wrappedStimulusArgs.push( helpers.wrapJsValue(arguments[i]) );
+	    }
 
-		Jsworld.updateWorld(
-			function(w, k) {
-				var args = [w].concat(wrappedStimulusArgs);
-				caller(handler, args, k);
-			},
-			function() {});
+	    Jsworld.updateWorld(
+		function(w, k) {
+		    var args = [w].concat(wrappedStimulusArgs);
+		    caller(handler, args, k);
+		},
+		function() {});
 	});
     };
 
@@ -432,8 +434,9 @@
 		config = handlers[i](config);
 	    }
 	    else if ( types.isWorldConfig(handlers[i]) ) {
-		    handlers[i].startupArgs = helpers.map(expandHandler, handlers[i].startupArgs);
-		    userConfigs.push(handlers[i]); 
+		    handlers[i].startupArgs = 
+		    helpers.map(expandHandler, handlers[i].startupArgs);
+		userConfigs.push(handlers[i]); 
 	    }
 	}
 	config = config.updateAll({'changeWorld': Jsworld.updateWorld,

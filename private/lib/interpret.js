@@ -148,11 +148,21 @@ var run = function(aState, callSite) {
         onFail = aState.onFail,
         MAX_STEPS_BEFORE_BOUNCE = aState.MAX_STEPS_BEFORE_BOUNCE,
         gas,
-        breakExn,
         stateValues,
         onCall,
         aCompleteError,
         startTime;
+    
+    // Defensive: check for invariant: run() must NOT be called
+    // if we're already running.
+    if (aState.running) {
+	onFail(types.internalError(
+	    "run() called in unsafe re-entrant context",
+	    state.captureCurrentContinuationMarks(aState)));
+	return;
+    }
+
+
     try {
 	startTime = (new Date()).valueOf();
 	gas = MAX_STEPS_BEFORE_BOUNCE;
@@ -168,10 +178,10 @@ var run = function(aState, callSite) {
 
 
 	if (aState.breakRequested) {
-	    breakExn = types.exnBreak("user break", 
-				      state.captureCurrentContinuationMarks(aState),
-				      state.captureContinuationClosure(aState));
-	    helpers.raise(breakExn);
+	    helpers.raise(
+		types.exnBreak("user break", 
+			       state.captureCurrentContinuationMarks(aState),
+			       state.captureContinuationClosure(aState)));
 	} else if (gas <= 0) {
 	    recomputeGas(aState, (new Date()).valueOf() - startTime);
 	    // Temporarily flag aState.running = true
