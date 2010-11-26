@@ -20,7 +20,7 @@
 	 ;"with-handlers-1.rkt"
 	 ;"with-handlers-2.rkt"
 	 ;"when-unless.rkt"
-	 ;"setbang.rkt"
+	 "setbang.rkt"
 	 ;"require.rkt"
 	 ;"quasiquote.rkt"
 	 ;"permissions.rkt"
