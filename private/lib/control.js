@@ -348,6 +348,7 @@ var RequireControl = function(name) {
     this.name = name;
 };
 
+
 RequireControl.prototype.invoke = function(aState) {
     var that = this;
     var resolvedModuleName = resolveModulePathIndex(this.name, aState);
@@ -389,6 +390,16 @@ var isHardcodedModule = function(resolvedModuleName) {
 var invokeModuleAndRestart = function(aState, 
 				      resolvedModuleName,
 				      onSuccess, onFail) {
+    
+    // Defensive: check for invariant: run() must NOT be called
+    // if we're already running.
+    if (aState.running) {
+	onFail(types.internalError(
+	    "run() called in unsafe re-entrant context",
+	    state.captureCurrentContinuationMarks(aState)));
+	return;
+    }
+
 
     // Check to see if we've already invoked.
     if (aState.invokedModules[resolvedModuleName] || 
@@ -438,7 +449,9 @@ InvokedModule.prototype.lookup = function(n) {
 
 
 var invokeSchemeModuleAndRestart = function(aState, resolvedModuleName, moduleRecord, onSuccess, onFail) {
+    console.log(resolvedModuleName + " being invoked.");
     var newOnSuccess = function(modulePrefix) {
+	console.log(resolvedModuleName + " module invokation done.");
 	var providedValues = {};
 
 	var moduleControl = moduleRecord.bytecode.code;

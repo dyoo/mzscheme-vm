@@ -156,6 +156,8 @@ var run = function(aState, callSite) {
     // Defensive: check for invariant: run() must NOT be called
     // if we're already running.
     if (aState.running) {
+	console.log("run() called in unsafe re-entrant context");
+	console.trace();
 	onFail(types.internalError(
 	    "run() called in unsafe re-entrant context",
 	    state.captureCurrentContinuationMarks(aState)));

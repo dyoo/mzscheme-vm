@@ -306,7 +306,7 @@ EXPORTS['js-call'] =
 		  'js-call', 'javascript object or false', 2, allArgs);
 	    
 	    if (fun.__isRacketFunction) {
-		console.log('here');
+		//console.log('here');
 		var racketOperator = fun.__racketFunction;
 		var args = helpers.map(
 		    function(x) { 
@@ -324,7 +324,7 @@ EXPORTS['js-call'] =
 			       fail);
 		    });
 	    } else {
-		console.log(fun);
+		//		console.log(fun);
 		var args = helpers.map(
 		    function(x) { 
 			return (types.isJsValue(x) ? x.val : x); },
