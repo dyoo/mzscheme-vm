@@ -155,6 +155,8 @@ EXPORTS['procedure->cps-js-fun'] =
 var makeWrappedRacketFunction = function(aState, proc) {
     var caller = makeCaller(aState);
     var closure = function() {
+//	console.log("wrapped function being called");
+//	console.log(aState);
 	var args = helpers.map(helpers.wrapJsValue,
 			       arguments);
 	caller(proc, args, 
@@ -305,26 +307,25 @@ EXPORTS['js-call'] =
 		  },
 		  'js-call', 'javascript object or false', 2, allArgs);
 	    
-	    if (fun.__isRacketFunction) {
-		//console.log('here');
-		var racketOperator = fun.__racketFunction;
-		var args = helpers.map(
-		    function(x) { 
-			return (types.isJsValue(x) ? 
-				x : helpers.wrapJsValue(x));
-		    },
-		    initArgs);
-		return types.internalPause(
-		    function(caller, success, fail)  {
-			caller(proc,
-			       args,
-			       function(v) {
-				   success(helpers.wrapJsValue(v));
-			       }, 
-			       fail);
-		    });
-	    } else {
-		//		console.log(fun);
+// 	    if (fun.__isRacketFunction) {
+// 		//console.log('here');
+// 		var racketOperator = fun.__racketFunction;
+// 		var args = helpers.map(
+// 		    function(x) { 
+// 			return (types.isJsValue(x) ? 
+// 				x : helpers.wrapJsValue(x));
+// 		    },
+// 		    initArgs);
+// 		return types.internalPause(
+// 		    function(caller, success, fail)  {
+// 			caller(proc,
+// 			       args,
+// 			       function(v) {
+// 				   success(helpers.wrapJsValue(v));
+// 			       }, 
+// 			       fail);
+// 		    });
+// 	    } else {
 		var args = helpers.map(
 		    function(x) { 
 			return (types.isJsValue(x) ? x.val : x); },
@@ -336,16 +337,29 @@ EXPORTS['js-call'] =
 			try {
 			    var jsCallReturn = fun.val.apply(thisArg, args);
 			    if ( jsCallReturn === undefined ) {
-				success(types.VOID);
+//				console.trace();
+				setTimeout(
+				    function() {
+//					console.log("here");
+					success(types.VOID);
+				    },
+				    0);
 			    }
 			    else {
-				success(helpers.wrapJsValue(jsCallReturn));
+				setTimeout(
+				    function() {
+					success(helpers.wrapJsValue(
+					    jsCallReturn))
+				    },
+				    0);
 			    }
 			} catch(e) {
+//			    console.log("Failure");
+//			    console.log(e);
 			    fail(e);
 			}
 		});
-	    }
+//	    }
 	});
 
 

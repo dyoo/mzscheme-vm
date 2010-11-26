@@ -18,7 +18,7 @@
               (procedure->void-js-fun 
                (lambda args 
                  (js-call tick #f)))
-              1000))
+              0))
 
    (lambda (id)
      (printf "shutdown with clearInterval id=~s\n" id)
@@ -33,12 +33,12 @@
 (check-expect (big-bang 1
 			(my-on-tick 
 			 (lambda (w)
-			   (printf "tick!\n")
+			   ;(printf "tick!\n")
 			   (add1 w)))
 
 			(stop-when 
-			 (lambda (n) (= n 10))))
-	      10)
+			 (lambda (n) (= n 2))))
+	      2)
 
 
 (run-tests)

@@ -15,12 +15,12 @@
 
     var caller;
     var setCaller = function(c) {
-    	caller = function(op, args, k) {
-	    c(op, args, k, handleError);
+    	caller = function(op, args, onSuccess) {
+	    c(op, args, onSuccess, handleError);
 	};
     };
     var unsetCaller = function() {
-    	caller = function(op, args, k) {
+    	caller = function(op, args, onSuccess) {
 		throw new Error('caller not defined!');
 	};
     };
@@ -60,7 +60,7 @@
     };
     var unsetTerminator = function() {
 	terminator = function() {
-		throw new Error('terminator not defined!');
+	    throw new Error('terminator not defined!');
 	};
     };
     unsetTerminator();
@@ -91,12 +91,13 @@
     var startUserConfigs = function(k) {
 	    helpers.forEachK(userConfigs,
 			     function(aConfig, k2) {
-				caller(aConfig.startup, aConfig.startupArgs,
-					function(res) {
-					    aConfig.isRunning = true;
-						aConfig.shutdownArg = res;
-						k2()
-					});
+				caller(aConfig.startup, 
+				       aConfig.startupArgs,
+				       function(res) {
+					   aConfig.isRunning = true;
+					   aConfig.shutdownArg = res;
+					   k2()
+				       });
 			     },
 			     handleError,
 			     k);
@@ -623,18 +624,23 @@
 			}
 		}
 		if ( types.isSchemeError(e) ) {
+		    console.log(e);
 			terminator(e);
 		}
 		else if ( types.isInternalError(e) ) {
+		    console.log(e);
 			terminator(e);
 		}
 		else if (typeof(e) == 'string') {
+		    console.log(e);
 			terminator( types.schemeError(types.incompleteExn(types.exnFail, e, [])) );
 		}
 		else if (e instanceof Error) {
+		    console.log(e);
 			terminator( types.schemeError(types.incompleteExn(types.exnFail, e.message, [])) );
 		}
 		else {
+		    console.log(e);
 			terminator( types.schemeError(e) );
 		}
 	});

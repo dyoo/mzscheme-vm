@@ -449,9 +449,7 @@ InvokedModule.prototype.lookup = function(n) {
 
 
 var invokeSchemeModuleAndRestart = function(aState, resolvedModuleName, moduleRecord, onSuccess, onFail) {
-    console.log(resolvedModuleName + " being invoked.");
     var newOnSuccess = function(modulePrefix) {
-	console.log(resolvedModuleName + " module invokation done.");
 	var providedValues = {};
 
 	var moduleControl = moduleRecord.bytecode.code;
