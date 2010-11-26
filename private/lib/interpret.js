@@ -191,6 +191,7 @@ var run = function(aState, callSite) {
 	    aState.running = true;
 	    setTimeout(
 		function() { 
+		    console.log("bounce");
 		    aState.running = false;
 		    run(aState, callSite); },
 		0);

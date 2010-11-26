@@ -482,11 +482,26 @@ var invokeSchemeModuleAndRestart = function(aState, resolvedModuleName, moduleRe
 
 	onSuccess(types.VOID);
     };
+
     aState.clearForEval({preserveBreak: true, clearGlobals: true});
     interpret.load(moduleRecord.bytecode, aState);
-    aState.onSuccess = newOnSuccess;
-    aState.onFail = onFail;
-    interpret.run(aState);
+
+    aState.onSuccess = function(v) {
+	newOnSuccess(v);
+    };
+    aState.onFail = function(e) {
+	onFail(e);
+    };
+
+    if(resolvedModuleName.toString() === "mzscheme-vm/tests/moby-programs/setbang") {
+	console.log("HAAACK!");
+	HACKK = true;
+	interpret.run(aState);
+	
+
+    } else {
+	interpret.run(aState);
+    }
 };
 
 

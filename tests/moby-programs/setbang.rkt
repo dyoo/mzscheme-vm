@@ -13,7 +13,8 @@
 (define (bottles-of-beer)
   (let ([x 1])
     (define (loop)
-      (if (< x 1)
+      (loop)
+      #;(if (< x 1)
 	  (void)
 	  (begin
 	    #;(set! x (sub1 x))
@@ -22,6 +23,7 @@
 	    (loop))))
     (loop)))
 (bottles-of-beer)
+
 
 
 ;; (check-expect (reverse song)
