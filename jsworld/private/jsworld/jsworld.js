@@ -79,6 +79,11 @@ var jsworld = {};
     // Adjust the world, and notify all listeners.
     var change_world = function(updater, k) {
 
+	if(runningBigBangs.length === 0) {
+	    k();
+	    return;
+	}
+
 	// Check to see if we're in the middle of changing
 	// the world already.  If so, put on the queue
 	// and exit quickly.
@@ -730,6 +735,7 @@ var jsworld = {};
     //////////////////////////////////////////////////////////////////////
 
     function BigBangRecord(top, world, handlerCreators, handlers, attribs) {    
+	this.isRunning = false;
 	this.top = top;
 	this.world = world;
 	this.handlers = handlers;
@@ -738,10 +744,12 @@ var jsworld = {};
     }
 
     BigBangRecord.prototype.restart = function() {
+	this.isRunning = true;
 	big_bang(this.top, this.world, this.handlerCreators, this.attribs);
     }
     
     BigBangRecord.prototype.pause = function() {
+	this.isRunning = false;
 	for(var i = 0 ; i < this.handlers.length; i++) {
 	    if (this.handlers[i] instanceof StopWhenHandler) {
 		// Do nothing for now.

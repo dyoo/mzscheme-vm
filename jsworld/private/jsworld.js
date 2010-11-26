@@ -382,18 +382,6 @@
 	// bigBang, to do cleanup.
 	var shutdownListeners = [];
 
-	var onTermination = function(w) {
-	    for (var i = 0; i < shutdownListeners.length; i++) {
-		try { 
-		    shutdownListeners[i]();
-		} catch (e) { }
-	    }
-	    shutdownUserConfigs(function() {
-		//unsetCaller();
-		//theRestarter(w);
-	    });
-	}
-
 
 	//console.log('in high level big-bang');
 	errorReporter = onFail;
@@ -401,12 +389,14 @@
 	setCaller(theCaller);
 	setRestarter(theRestarter);
 	setTerminator(function(w) {
-		detachEvent(toplevelNode, 'click', absorber);
-		shutdownUserConfigs(function() {
-		    //unsetCaller();
-		    //unsetTerminator();
-		    //restarter(w);
-		});
+	    //console.trace();
+	    //console.log("shutting down");
+	    detachEvent(toplevelNode, 'click', absorber);
+	    shutdownUserConfigs(function() {
+		unsetCaller();
+		unsetTerminator();
+		restarter(w);
+	    });
 	});
 
 	var attribs = types.EMPTY;
@@ -416,9 +406,9 @@
 
 	// Absorb all click events so they don't bubble up.
 	var absorber = function(e) {
-		preventDefault(e);
-		stopPropagation(e);
-		return false;
+	    preventDefault(e);
+	    stopPropagation(e);
+	    return false;
 	}
 
 	attachEvent(toplevelNode, 'click', absorber);
@@ -589,7 +579,10 @@
 		     initWorld,
 		     wrappedHandlers,
 		     helpers.assocListToHash(attribs),
-		     terminator);
+		     function(w) { 
+			 //console.log("the low level jsbigbang is calling the terminator");
+			 terminator(w);
+		     });
 
 	startUserConfigs(function() {});
 
@@ -624,23 +617,18 @@
 			}
 		}
 		if ( types.isSchemeError(e) ) {
-		    console.log(e);
 			terminator(e);
 		}
 		else if ( types.isInternalError(e) ) {
-		    console.log(e);
 			terminator(e);
 		}
 		else if (typeof(e) == 'string') {
-		    console.log(e);
 			terminator( types.schemeError(types.incompleteExn(types.exnFail, e, [])) );
 		}
 		else if (e instanceof Error) {
-		    console.log(e);
 			terminator( types.schemeError(types.incompleteExn(types.exnFail, e.message, [])) );
 		}
 		else {
-		    console.log(e);
 			terminator( types.schemeError(e) );
 		}
 	});
