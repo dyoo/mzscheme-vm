@@ -91,11 +91,9 @@
     var startUserConfigs = function(k) {
 	    helpers.forEachK(userConfigs,
 			     function(aConfig, k2) {
-				 console.log('starting up a config');
 				 caller(aConfig.startup, 
 					aConfig.startupArgs,
 					function(res) {
-					    console.log("config initialized");
 					    aConfig.isRunning = true;
 					    aConfig.shutdownArg = res;
 					    k2()
@@ -106,18 +104,14 @@
     }
 
     var shutdownUserConfigs = function(k) {
-//	    console.log('shutting down user configs');
 	    var theConfigs = userConfigs;
 	    userConfigs = []
 	    helpers.forEachK(theConfigs,
 			     function(aConfig, k2) {
 				 if (aConfig.isRunning) {
-			     	     console.log('shutting down a config');
-
 				     aConfig.isRunning = false;
 			     	     caller(aConfig.shutdown, [aConfig.shutdownArg], k2);
 				 } else {
-			     	     console.log('config never started');
 				     k2();
 				 }
 			     },
@@ -588,6 +582,7 @@
 			 terminator(w);
 		     },
 		     function(activationRecord) {
+			 activationRecord.isRunning = false;
 			 startUserConfigs(function() {
 			     activationRecord.isRunning = true;
 			 });

@@ -826,8 +826,10 @@ var jsworld = {};
 
 	// Finally, begin the big-bang.
 	copy_attribs(top, attribs);
+
+	activationRecord.isRunning = true;
 	change_world(function(w, k2) { k2(init_world); },
-		     function() { 
+		     function() {
 			 afterInitialization(activationRecord);
 		     });
     }
