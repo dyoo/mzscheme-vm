@@ -389,8 +389,8 @@
 		} catch (e) { }
 	    }
 	    shutdownUserConfigs(function() {
-		unsetCaller();
-		theRestarter(w);
+		//unsetCaller();
+		//theRestarter(w);
 	    });
 	}
 
@@ -403,9 +403,9 @@
 	setTerminator(function(w) {
 		detachEvent(toplevelNode, 'click', absorber);
 		shutdownUserConfigs(function() {
-		    unsetCaller();
-		    unsetTerminator();
-		    restarter(w);
+		    //unsetCaller();
+		    //unsetTerminator();
+		    //restarter(w);
 		});
 	});
 
