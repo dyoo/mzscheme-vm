@@ -91,13 +91,15 @@
     var startUserConfigs = function(k) {
 	    helpers.forEachK(userConfigs,
 			     function(aConfig, k2) {
-				caller(aConfig.startup, 
-				       aConfig.startupArgs,
-				       function(res) {
-					   aConfig.isRunning = true;
-					   aConfig.shutdownArg = res;
-					   k2()
-				       });
+				 console.log('starting up a config');
+				 caller(aConfig.startup, 
+					aConfig.startupArgs,
+					function(res) {
+					    console.log("config initialized");
+					    aConfig.isRunning = true;
+					    aConfig.shutdownArg = res;
+					    k2()
+					});
 			     },
 			     handleError,
 			     k);
@@ -109,11 +111,13 @@
 	    userConfigs = []
 	    helpers.forEachK(theConfigs,
 			     function(aConfig, k2) {
-//			     	console.log('    shutting down a config');
 				 if (aConfig.isRunning) {
+			     	     console.log('shutting down a config');
+
 				     aConfig.isRunning = false;
 			     	     caller(aConfig.shutdown, [aConfig.shutdownArg], k2);
 				 } else {
+			     	     console.log('config never started');
 				     k2();
 				 }
 			     },
@@ -582,9 +586,14 @@
 		     function(w) { 
 			 //console.log("the low level jsbigbang is calling the terminator");
 			 terminator(w);
+		     },
+		     function(activationRecord) {
+			 startUserConfigs(function() {
+			     activationRecord.isRunning = true;
+			 });
 		     });
 
-	startUserConfigs(function() {});
+
 
 	return {
 	    breaker: function() {

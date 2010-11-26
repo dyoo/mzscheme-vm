@@ -83,6 +83,10 @@ var jsworld = {};
 	    k();
 	    return;
 	}
+	if(! (runningBigBangs[runningBigBangs.length-1].isRunning)) {
+	    k();
+	    return;
+	}
 
 	// Check to see if we're in the middle of changing
 	// the world already.  If so, put on the queue
@@ -762,7 +766,9 @@ var jsworld = {};
 
     // Notes: big_bang maintains a stack of activation records; it should be possible
     // to call big_bang re-entrantly.
-    function big_bang(top, init_world, handlerCreators, attribs, k) {
+    function big_bang(top, init_world, handlerCreators, attribs,
+		      k,
+		      afterInitialization) {
 	// clear_running_state();
 
 	// Construct a fresh set of the handlers.
@@ -820,10 +826,12 @@ var jsworld = {};
 
 	// Finally, begin the big-bang.
 	copy_attribs(top, attribs);
-	change_world(function(w, k2) { k2(init_world); }, doNothing);
-
-
+	change_world(function(w, k2) { k2(init_world); },
+		     function() { 
+			 afterInitialization(activationRecord);
+		     });
     }
+
     Jsworld.big_bang = big_bang;
 
 
