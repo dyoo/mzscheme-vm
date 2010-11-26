@@ -527,9 +527,13 @@ EXPORTS['big-bang'] =
 			     unwrappedConfigs,
 			     caller,
 			     function(v) {
-				 //console.log("big bang finished");
+				 console.log("big bang finished");
 				 state.removeBreakRequestedListener(onBreak);
-				 restarter(v);
+				 setTimeout(
+				     function() {
+					 restarter(v);
+				     },
+				     0);
 			     },
  			     onFail);
 		     })

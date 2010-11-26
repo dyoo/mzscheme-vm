@@ -153,6 +153,12 @@ var run = function(aState, callSite) {
         aCompleteError,
         startTime;
     
+    if (typeof(HACKK) !== 'undefined') {
+	console.log("run in HACKK");
+	console.trace();
+	console.log(aState.cstack.slice(0));
+    }
+
     // Defensive: check for invariant: run() must NOT be called
     // if we're already running.
     if (aState.running) {

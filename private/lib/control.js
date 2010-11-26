@@ -395,7 +395,7 @@ var invokeModuleAndRestart = function(aState,
     // if we're already running.
     if (aState.running) {
 	onFail(types.internalError(
-	    "run() called in unsafe re-entrant context",
+	    "invokeModuleAndRestart: run() called in unsafe re-entrant context",
 	    state.captureCurrentContinuationMarks(aState)));
 	return;
     }
@@ -418,6 +418,8 @@ var invokeModuleAndRestart = function(aState,
 	return;
     }
 
+
+    console.log("invoking " + resolvedModuleName);
 	
     var moduleRecord = MODULES[resolvedModuleName];
     // Finally, dispatch based on module record type.
@@ -494,11 +496,7 @@ var invokeSchemeModuleAndRestart = function(aState, resolvedModuleName, moduleRe
     };
 
     if(resolvedModuleName.toString() === "mzscheme-vm/tests/moby-programs/setbang") {
-	console.log("HAAACK!");
-	HACKK = true;
 	interpret.run(aState);
-	
-
     } else {
 	interpret.run(aState);
     }
