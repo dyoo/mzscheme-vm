@@ -418,8 +418,6 @@ var invokeModuleAndRestart = function(aState,
 	return;
     }
 
-
-    console.log("invoking " + resolvedModuleName);
 	
     var moduleRecord = MODULES[resolvedModuleName];
     // Finally, dispatch based on module record type.
@@ -495,11 +493,7 @@ var invokeSchemeModuleAndRestart = function(aState, resolvedModuleName, moduleRe
 	onFail(e);
     };
 
-    if(resolvedModuleName.toString() === "mzscheme-vm/tests/moby-programs/setbang") {
-	interpret.run(aState);
-    } else {
-	interpret.run(aState);
-    }
+    interpret.run(aState);
 };
 
 

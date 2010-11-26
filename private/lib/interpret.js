@@ -153,17 +153,9 @@ var run = function(aState, callSite) {
         aCompleteError,
         startTime;
     
-    if (typeof(HACKK) !== 'undefined') {
-	console.log("run in HACKK");
-	console.trace();
-	console.log(aState.cstack.slice(0));
-    }
-
     // Defensive: check for invariant: run() must NOT be called
     // if we're already running.
     if (aState.running) {
-	console.log("run() called in unsafe re-entrant context");
-	console.trace();
 	onFail(types.internalError(
 	    "run() called in unsafe re-entrant context",
 	    state.captureCurrentContinuationMarks(aState)));
@@ -197,7 +189,6 @@ var run = function(aState, callSite) {
 	    aState.running = true;
 	    setTimeout(
 		function() { 
-		    console.log("bounce");
 		    aState.running = false;
 		    run(aState, callSite); },
 		0);

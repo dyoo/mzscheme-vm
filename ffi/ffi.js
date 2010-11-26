@@ -155,9 +155,6 @@ EXPORTS['procedure->cps-js-fun'] =
 var makeWrappedRacketFunction = function(aState, proc) {
     var caller = makeCaller(aState);
     var closure = function() {
-	console.log("wrapped closure being called");
-//	console.log("wrapped function being called");
-//	console.log(aState);
 	var args = helpers.map(helpers.wrapJsValue,
 			       arguments);
 	caller(proc, args, 
