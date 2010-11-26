@@ -211,9 +211,16 @@ var doExceptionHandling = function(e, stateValues, aState, onFail, callSite) {
 	aState.clearForEval({preserveBreak: true});
 	
 	aState.onSuccess = function(v, callSite) {
-	    aState.restore(stateValues);
-	    aState.v = v;
-	    run(aState, callSite);
+	    // SUBTLE: this needs to be a setTimeout
+	    // to help clear out any potential stack
+	    // from previous callers.
+	    setTimeout(
+		function() {
+		    aState.restore(stateValues);
+		    aState.v = v;
+		    run(aState, callSite);
+		}, 
+		0);
 	};
 	aState.onFail = function(e2) {
 	    aState.restore(stateValues);

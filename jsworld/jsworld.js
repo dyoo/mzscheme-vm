@@ -528,11 +528,7 @@ EXPORTS['big-bang'] =
 			     caller,
 			     function(v) {
 				 state.removeBreakRequestedListener(onBreak);
-				 setTimeout(
-				     function() {
-					 restarter(v);
-				     },
-				     0);
+				 restarter(v);
 			     },
  			     onFail);
 		     })
