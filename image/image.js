@@ -2,6 +2,7 @@
  *** Image Primitives ***
  ************************/
 
+
 var world = {};
 world.Kernel = STATE.invokedModules["mzscheme-vm/world/kernel"].lookup("kernel");
 
@@ -90,15 +91,6 @@ var isCompoundEffect = function(x) {
 	return ( types.isEffect(x) || isListOf(x, isCompoundEffect) );
 };
 
-var isJsValue = types.isJsValue;
-
-var isJsObject = function(x) {
-	return isJsValue(x) && typeof(x.val) == 'object';
-};
-
-var isJsFunction = function(x) {
-	return isJsValue(x) && typeof(x.val) == 'function';
-};
 
 
 var arrayEach = function(arr, f) {

@@ -1,7 +1,6 @@
 #lang s-exp "../lang/js-impl/js-impl.rkt"
 
 (require "../world/kernel.rkt")
-
 (require-js "image.js")
 
 (provide image?
