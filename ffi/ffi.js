@@ -11,6 +11,8 @@ Javascript values exposed that shouldn't be accessible from Racket:
      isJsFunction
      wrapJsValue
 
+     wrappedSchemeValue
+     isWrappedSchemeValue
 */
 
 
@@ -76,7 +78,6 @@ EXPORTS['isJsFunction'] = isJsFunction;
 
 
 
-
 var wrapJsValue = function(x) {
     if (x === undefined) {
 	return new JsValue('undefined', x);
@@ -98,6 +99,50 @@ var wrapJsValue = function(x) {
     }
 };
 EXPORTS['wrapJsValue'] = wrapJsValue;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+var WrappedSchemeValue = function(val) {
+	this.val = val;
+};
+
+WrappedSchemeValue.prototype.toString = function() { return toString(this.val); };
+WrappedSchemeValue.prototype.toWrittenString = function(cache) { return toWrittenString(this.val, cache); };
+WrappedSchemeValue.prototype.toDisplayedString = function(cache) { return toDisplayedString(this.val, cache); };
+
+
+// unbox: jsvalue -> any
+// Unwraps the value out of the WrappedSchemeValue box.
+WrappedSchemeValue.prototype.unbox = function() {
+    return this.val;
+};
+
+
+var wrappedSchemeValue =
+    function(val) { return new WrappedSchemeValue(val); };
+EXPORTS['wrappedSchemeValue'] = wrappedSchemeValue;
+
+
+
+var isWrappedSchemeValue = 
+    function(x) { return x instanceof WrappedSchemeValue; };
+EXPORTS['isWrappedSchemeValue'] = isWrappedSchemeValue;
+
+
+
+
+
 
 
 
@@ -330,7 +375,7 @@ EXPORTS['js-get-field'] =
 			       if ( obj === undefined ) {
 				   fail('undefined');
 			       }
-			       else if ( types.isWrappedSchemeValue(obj) ) {
+			       else if ( isWrappedSchemeValue(obj) ) {
 				   fail( helpers.format('the racket value ~s', [obj.val]) );
 			       }
 
@@ -338,7 +383,7 @@ EXPORTS['js-get-field'] =
 			       obj = obj[selectors[i].toString()];
 			   }
 
-			   if ( types.isWrappedSchemeValue(obj) ) {
+			   if ( isWrappedSchemeValue(obj) ) {
 			       return obj.val;
 			   }
 			   else {
@@ -356,7 +401,7 @@ EXPORTS['js-set-field!'] =
 				 'js-set-field!', 'javascript object or function', 1, arguments);
 			   check(field, types.isString, 'js-set-field!', 'string', 2, arguments);
 
-			   obj.val[field.toString()] = (isJsValue(v) ? v.val : types.wrappedSchemeValue(v));
+			   obj.val[field.toString()] = (isJsValue(v) ? v.val : wrappedSchemeValue(v));
 			   return types.VOID;
 		       });
 

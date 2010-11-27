@@ -1,8 +1,6 @@
 //////////////////////////////////////////////////////////////////////
 // helper functions
 
-//var jsnums = require('./js-numbers');
-
 
 var types = {};
 
@@ -1200,20 +1198,6 @@ EqualHashTable.prototype.isEqual = function(other, aUnionFind) {
 
 
 
-var WrappedSchemeValue = function(val) {
-	this.val = val;
-};
-
-WrappedSchemeValue.prototype.toString = function() { return toString(this.val); };
-WrappedSchemeValue.prototype.toWrittenString = function(cache) { return toWrittenString(this.val, cache); };
-WrappedSchemeValue.prototype.toDisplayedString = function(cache) { return toDisplayedString(this.val, cache); };
-
-
-// unbox: jsvalue -> any
-// Unwraps the value out of the WrappedSchemeValue box.
-WrappedSchemeValue.prototype.unbox = function() {
-    return this.val;
-};
 
 
 //////////////////////////////////////////////////////////////////////
@@ -2297,7 +2281,6 @@ types.keyword = function(k) { return new Keyword(k); };
 types.pair = function(x, y) { return Cons.makeInstance(x, y); };
 types.hash = makeHashEqual;
 types.hashEq = makeHashEq;
-types.wrappedSchemeValue = function(val) { return new WrappedSchemeValue(val); };
 
 types.toWrittenString = toWrittenString;
 types.toDisplayedString = toDisplayedString;
@@ -2350,7 +2333,7 @@ types.isFunction = function(x) {
 		x instanceof CaseLambdaValue ||
 		x instanceof ContinuationClosureValue);
 };
-types.isWrappedSchemeValue = function(x) { return x instanceof WrappedSchemeValue; };
+
 
 types.UnionFind = UnionFind;
 types.cons = Cons.makeInstance;
