@@ -26,4 +26,11 @@
 	 js-null?
 
 	 maximum-js-fixnum
-	 minimum-js-fixnum)
+	 minimum-js-fixnum
+
+
+
+	 js-object?
+	 js-value?
+	 js-function?
+)

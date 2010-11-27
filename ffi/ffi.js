@@ -2,6 +2,18 @@
  *** Racket -> Javascript FFI ***
  ********************************/
 
+/*
+Javascript values exposed that shouldn't be accessible from Racket:
+
+     JsValue
+     isJsValue
+     isJsObject
+     isJsFunction
+     wrapJsValue
+
+*/
+
+
 
 var arrayEach = function(arr, f) {
     for (var i = 0; i < arr.length; i++) {
@@ -10,14 +22,87 @@ var arrayEach = function(arr, f) {
 }
 
 
-var isJsObject = function(x) {
-    return types.isJsValue(x) && typeof(x.val) == 'object';
+
+
+
+
+var JsValue = function(name, val) {
+	this.name = name;
+	this.val = val;
 };
+EXPORTS['JsValue'] = JsValue;
+
+
+
+
+JsValue.prototype.toString = function() {
+	return '#<js-value:' + typeof(this.val) + ':' + this.name + '>';
+};
+
+JsValue.prototype.toDomNode = function(cache) {
+	return toDomNode(this.val, cache);
+};
+
+JsValue.prototype.isEqual = function(other, aUnionFind) {
+	return (this.val === other.val);
+};
+
+
+// unbox: jsvalue -> any
+// Unwraps the value out of the JsValue box.
+JsValue.prototype.unbox = function()  {
+    return this.val;
+};
+
+
+var isJsValue = function(x) { 
+    return x instanceof JsValue; 
+};
+EXPORTS['isJsValue'] = isJsValue;
+
+
+var isJsObject = function(x) {
+    return isJsValue(x) && typeof(x.val) == 'object';
+};
+EXPORTS['isJsObject'] = isJsObject;
+
 
 
 var isJsFunction = function(x) {
-    return types.isJsValue(x) && typeof(x.val) == 'function';
+    return isJsValue(x) && typeof(x.val) == 'function';
 };
+EXPORTS['isJsFunction'] = isJsFunction;
+
+
+
+
+
+var wrapJsValue = function(x) {
+    if (x === undefined) {
+	return new JsValue('undefined', x);
+    }
+    else if (x === null) {
+	return new JsValue('null', x);
+    }
+    else if (typeof(x) == 'function') {
+	return new JsValue('function', x);
+    }
+    else if ( x instanceof Array ) {
+	return new JsValue('array', x);
+    }
+    else if ( typeof(x) == 'string' ) {
+	return new JsValue("'" + x.toString() + "'", x);
+    }
+    else {
+	return new JsValue(x.toString(), x);
+    }
+};
+EXPORTS['wrapJsValue'] = wrapJsValue;
+
+
+
+
+
 
 
 var isAssocList = function(x) {
@@ -38,6 +123,14 @@ var makeCaller = function(aState) {
 
 var MIN_FIXNUM = jsnums.fromFixnum(-9e15);
 var MAX_FIXNUM = jsnums.fromFixnum(9e15);
+
+
+
+
+
+
+
+
 
 
 
@@ -88,10 +181,10 @@ EXPORTS['racket->prim-js'] =
 			       returnVal = x;
 			   }
 			   else if ( types.isVector(x) ) {
-			       returnVal = helpers.map(function(y) { return (types.isJsValue(y) ? y.val : y); },
+			       returnVal = helpers.map(function(y) { return (isJsValue(y) ? y.val : y); },
 						       x.elts);
 			   }
-			   return helpers.wrapJsValue(returnVal);
+			   return wrapJsValue(returnVal);
 		       });
 
 EXPORTS['scheme->prim-js'] = EXPORTS['racket->prim-js'];
@@ -102,7 +195,7 @@ EXPORTS['prim-js->racket'] =
 		       1,
 		       false, false,
 		       function(x) {
-		 	   check(x, function(y) { return types.isJsValue(y) &&
+		 	   check(x, function(y) { return isJsValue(y) &&
 						  ( typeof(y.val) == 'number' ||
 						    typeof(y.val) == 'string' ||
 						    typeof(y.val) == 'boolean' ||
@@ -120,7 +213,7 @@ EXPORTS['prim-js->racket'] =
 			       return new types.PrimProc('', 0, true, false, function(args) { return x.val.apply(null, args); });
 			   }
 			   else if ( x.val instanceof Array ) {
-			       return types.vector( helpers.map(helpers.wrapJsValue, x.val) );
+			       return types.vector( helpers.map(wrapJsValue, x.val) );
 			   }
 		       });
 
@@ -138,10 +231,10 @@ EXPORTS['procedure->cps-js-fun'] =
 		  'procedure->cps-js-fun', 'procedure', 1);
 	    
 	    var caller = makeCaller(aState);
-	    aState.v = types.jsValue(
+	    aState.v = new JsValue(
 		proc.name + ' (cps)',
 		function() {
-		    var args = helpers.map(helpers.wrapJsValue, arguments);
+		    var args = helpers.map(wrapJsValue, arguments);
 		    var k = (args.length == 0 ? 
 			     function() {} :
 			     args.shift().val);
@@ -155,7 +248,7 @@ EXPORTS['procedure->cps-js-fun'] =
 var makeWrappedRacketFunction = function(aState, proc) {
     var caller = makeCaller(aState);
     var closure = function() {
-	var args = helpers.map(helpers.wrapJsValue,
+	var args = helpers.map(wrapJsValue,
 			       arguments);
 	caller(proc, args, 
 	       function(v) {},
@@ -178,7 +271,7 @@ EXPORTS['procedure->void-js-fun'] =
 	function(aState, proc) {
 	    check(proc, types.isFunction,
 		  'procedure->void-js-fun', 'procedure', 1);
-	    aState.v = types.jsValue(
+	    aState.v = new JsValue(
 		proc.name + ' (void)',
 		makeWrappedRacketFunction(aState, proc));
 	});
@@ -189,8 +282,8 @@ EXPORTS['js-==='] =
 		       2,
 		       false, false,
 		       function(v1, v2) {
-		 	   check(v1, types.isJsValue, 'js-===', 'javascript value', 1);
-			   check(v2, types.isJsValue, 'js-===', 'javascript value', 2);
+		 	   check(v1, isJsValue, 'js-===', 'javascript value', 1);
+			   check(v2, isJsValue, 'js-===', 'javascript value', 2);
 
 			   return v1.val === v2.val;
 		       });
@@ -205,7 +298,7 @@ EXPORTS['js-get-global-value'] =
 
 			   var nameStr = name.toString();
 			   var obj = (nameStr === 'window') ? window : window[nameStr];
-			   return types.jsValue(nameStr, obj);
+			   return new JsValue(nameStr, obj);
 		       });
 
 
@@ -217,7 +310,7 @@ EXPORTS['js-get-field'] =
 		       function(root, firstSelector, selectors) {
 		 	   selectors.unshift(firstSelector);
 			   var allArgs = [root].concat(selectors);
-		 	   check(root, types.isJsValue, 'js-get-field', 'js-value', 1, allArgs);
+		 	   check(root, isJsValue, 'js-get-field', 'js-value', 1, allArgs);
 			   arrayEach(selectors, function(x, i) { 
 			       check(x, types.isString, 'js-get-field', 'string', i+2, allArgs); });
 
@@ -249,7 +342,7 @@ EXPORTS['js-get-field'] =
 			       return obj.val;
 			   }
 			   else {
-			       return types.jsValue(name.join(''), obj);
+			       return new JsValue(name.join(''), obj);
 			   }
 		       });
 
@@ -259,11 +352,11 @@ EXPORTS['js-set-field!'] =
 		       3,
 		       false, false,
 		       function(obj, field, v) {
-		 	   check(obj, function(x) { return types.isJsValue(x) && (typeof(x) == 'object' || typeof(x) == 'function'); },
+		 	   check(obj, function(x) { return isJsValue(x) && (typeof(x) == 'object' || typeof(x) == 'function'); },
 				 'js-set-field!', 'javascript object or function', 1, arguments);
 			   check(field, types.isString, 'js-set-field!', 'string', 2, arguments);
 
-			   obj.val[field.toString()] = (types.isJsValue(v) ? v.val : types.wrappedSchemeValue(v));
+			   obj.val[field.toString()] = (isJsValue(v) ? v.val : types.wrappedSchemeValue(v));
 			   return types.VOID;
 		       });
 
@@ -273,7 +366,7 @@ EXPORTS['js-typeof'] =
 		       1,
 		       false, false,
 		       function(v) {
-		 	   check(v, types.isJsValue, 'js-typeof', 'js-value', 1);
+		 	   check(v, isJsValue, 'js-typeof', 'js-value', 1);
 			   return typeof(v.val);
 		       });
 
@@ -283,7 +376,7 @@ EXPORTS['js-instanceof'] =
 		       2,
 		       false, false,
 		       function(v, type) {
-		 	   check(v, types.isJsValue, 'js-instanceof', 'js-value', 1, arguments);
+		 	   check(v, isJsValue, 'js-instanceof', 'js-value', 1, arguments);
 			   check(type, isJsFunction, 'js-instanceof', 'javascript function', 2, arguments);
 
 			   return (v.val instanceof type.val);
@@ -310,8 +403,8 @@ EXPORTS['js-call'] =
 // 		var racketOperator = fun.__racketFunction;
 // 		var args = helpers.map(
 // 		    function(x) { 
-// 			return (types.isJsValue(x) ? 
-// 				x : helpers.wrapJsValue(x));
+// 			return (isJsValue(x) ? 
+// 				x : wrapJsValue(x));
 // 		    },
 // 		    initArgs);
 // 		return types.internalPause(
@@ -319,14 +412,14 @@ EXPORTS['js-call'] =
 // 			caller(proc,
 // 			       args,
 // 			       function(v) {
-// 				   success(helpers.wrapJsValue(v));
+// 				   success(wrapJsValue(v));
 // 			       }, 
 // 			       fail);
 // 		    });
 // 	    } else {
 		var args = helpers.map(
 		    function(x) { 
-			return (types.isJsValue(x) ? x.val : x); },
+			return (isJsValue(x) ? x.val : x); },
 		    initArgs);
 		var thisArg = parent ? parent.val : null;
 		
@@ -346,7 +439,7 @@ EXPORTS['js-call'] =
 			    else {
 				setTimeout(
 				    function() {
-					success(helpers.wrapJsValue(
+					success(wrapJsValue(
 					    jsCallReturn))
 				    },
 				    0);
@@ -368,19 +461,19 @@ EXPORTS['js-new'] =
 		       function(constructor, initArgs) {
 		 	   check(constructor, isJsFunction, 'js-new', 'javascript function', 1);
 
-			   var args = helpers.map(function(x) { return (types.isJsValue(x) ? x.val : x); }, initArgs);
+			   var args = helpers.map(function(x) { return (isJsValue(x) ? x.val : x); }, initArgs);
 			   var proxy = function() {
 			       constructor.val.apply(this, args);
 			   };
 			   proxy.prototype = constructor.val.prototype;
 
-			   return helpers.wrapJsValue(new proxy());
+			   return wrapJsValue(new proxy());
 		       });
 
 
 EXPORTS['js-make-hash'] =
     new types.CasePrimitive('js-make-hash',
-			    [new types.PrimProc('js-make-hash', 0, false, false, function() { return types.jsValue('hash', {}); }),
+			    [new types.PrimProc('js-make-hash', 0, false, false, function() { return new JsValue('hash', {}); }),
 			     new types.PrimProc('js-make-hash',
 						1,
 						false, false,
@@ -392,15 +485,15 @@ EXPORTS['js-make-hash'] =
 						    while ( !bindings.isEmpty() ) {
 			  				var key = bindings.first().first().toString();
 							var val = bindings.first().rest().first();
-							ret[key] = (types.isJsValue(val) ? val.val : val);
+							ret[key] = (isJsValue(val) ? val.val : val);
 							bindings = bindings.rest();
 						    }
-						    return types.jsValue('hash', ret);
+						    return new JsValue('hash', ret);
 						}) ]);
 
 
-EXPORTS['js-undefined'] = types.jsValue('undefined', undefined);
-EXPORTS['js-null'] = types.jsValue('null', null);
+EXPORTS['js-undefined'] = new JsValue('undefined', undefined);
+EXPORTS['js-null'] = new JsValue('null', null);
 
 
 EXPORTS['js-undefined?'] =
@@ -409,7 +502,7 @@ EXPORTS['js-undefined?'] =
 		       false,
 		       false, 
 		       function(x) {
-			   return types.isJsValue(x) && x.val === undefined;
+			   return isJsValue(x) && x.val === undefined;
 		       });
 
 EXPORTS['js-null?'] =
@@ -418,5 +511,17 @@ EXPORTS['js-null?'] =
 		       false,
 		       false, 
 		       function(x) {
-			   return types.isJsValue(x) && x.val === null;
+			   return isJsValue(x) && x.val === null;
 		       });
+
+
+
+
+
+
+EXPORTS['js-value?'] = 
+    new types.PrimProc('js-value?', 1, false, false, isJsValue);
+EXPORTS['js-object?'] =
+    new types.PrimProc('js-object?', 1, false, false, isJsObject);
+EXPORTS['js-function?'] = 
+    new types.PrimProc('js-function?', 1, false, false, isJsFunction);

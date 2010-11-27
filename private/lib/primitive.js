@@ -469,15 +469,6 @@ var isCompoundEffect = function(x) {
 	return ( types.isEffect(x) || isListOf(x, isCompoundEffect) );
 };
 
-var isJsValue = types.isJsValue;
-
-var isJsObject = function(x) {
-	return isJsValue(x) && typeof(x.val) == 'object';
-};
-
-var isJsFunction = function(x) {
-	return isJsValue(x) && typeof(x.val) == 'function';
-};
 
 
 
@@ -2171,10 +2162,6 @@ PRIMITIVES['symbol=?'] =
 			return isEqual(x, y);
 		 });
 
-
-PRIMITIVES['js-value?'] = new PrimProc('js-value?', 1, false, false, isJsValue);
-PRIMITIVES['js-object?'] = new PrimProc('js-object?', 1, false, false, isJsObject);
-PRIMITIVES['js-function?'] = new PrimProc('js-function?', 1, false, false, isJsFunction);
 
 
 /***********************

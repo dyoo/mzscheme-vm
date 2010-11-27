@@ -1,8 +1,11 @@
 #lang s-exp "../lang/js-impl/js-impl.rkt"
 
+
 ;; Loaded so we have access to image library stuff, as well as the world kernel
 (require "../world/kernel.rkt"
-	 "../image/image.rkt")
+	 "../image/image.rkt"
+	 "../ffi/ffi.rkt")
+
 
 
 (require-js "private/jsworld/jsworld.js"

@@ -3,7 +3,15 @@
 (function() {
 
     var world = {};
+
+    var ffiModule = STATE.invokedModules["mzscheme-vm/ffi/ffi"];
+
     world.Kernel = STATE.invokedModules["mzscheme-vm/world/kernel"].lookup("kernel");
+
+
+    var JsValue = ffiModule.lookup("JsValue");
+    var isJsValue = ffiModule.lookup("isJsValue");
+    var wrapJsValue = ffiModule.lookup('wrapJsValue');
 
 
 
@@ -122,10 +130,10 @@
 
 
     var expandHandler = function(handler) {
-	return types.jsValue('function', function() {
+	return new JsValue('function', function() {
 	    var wrappedStimulusArgs = [];
 	    for (var i = 0; i < arguments.length; i++) {
-		wrappedStimulusArgs.push( helpers.wrapJsValue(arguments[i]) );
+		wrappedStimulusArgs.push( wrapJsValue(arguments[i]) );
 	    }
 
 	    Jsworld.updateWorld(
@@ -162,7 +170,7 @@
 
 
     var deepUnwrapJsValues = function(x, k) {
-	    if ( types.isJsValue(x) ) {
+	    if ( isJsValue(x) ) {
 		k(x.unbox());
 	    }
 	    else if ( types.isRenderEffect(x) ) {

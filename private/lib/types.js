@@ -1197,28 +1197,6 @@ EqualHashTable.prototype.isEqual = function(other, aUnionFind) {
 
 //////////////////////////////////////////////////////////////////////
 
-var JsValue = function(name, val) {
-	this.name = name;
-	this.val = val;
-};
-
-JsValue.prototype.toString = function() {
-	return '#<js-value:' + typeof(this.val) + ':' + this.name + '>';
-};
-
-JsValue.prototype.toDomNode = function(cache) {
-	return toDomNode(this.val, cache);
-};
-
-JsValue.prototype.isEqual = function(other, aUnionFind) {
-	return (this.val === other.val);
-};
-
-// unbox: jsvalue -> any
-// Unwraps the value out of the JsValue box.
-JsValue.prototype.unbox = function()  {
-    return this.val;
-};
 
 
 
@@ -2319,7 +2297,6 @@ types.keyword = function(k) { return new Keyword(k); };
 types.pair = function(x, y) { return Cons.makeInstance(x, y); };
 types.hash = makeHashEqual;
 types.hashEq = makeHashEq;
-types.jsValue = function(name, val) { return new JsValue(name, val); };
 types.wrappedSchemeValue = function(val) { return new WrappedSchemeValue(val); };
 
 types.toWrittenString = toWrittenString;
@@ -2373,7 +2350,6 @@ types.isFunction = function(x) {
 		x instanceof CaseLambdaValue ||
 		x instanceof ContinuationClosureValue);
 };
-types.isJsValue = function(x) { return x instanceof JsValue; };
 types.isWrappedSchemeValue = function(x) { return x instanceof WrappedSchemeValue; };
 
 types.UnionFind = UnionFind;
@@ -2503,18 +2479,18 @@ types.isExnFailContractDivisionByZero = ExnFailContractDivisionByZero.predicate;
 ///////////////////////////////////////
 // World-specific exports
 
-// big bang info to be passed into a make-world-config startup argument
-var BigBangInfo = makeStructureType('bb-info', false, 2, 0, false,
-			function(args, name, k) {
-				helpers.check(args[0], helpers.procArityContains(1), name, 'procedure (arity 1)', 1);
-				helpers.check(args[1], types.isJsValue, name, 'js-object', 2);
-				return k(args);
-			});
-types.BigBangInfo = BigBangInfo;
-types.makeBigBangInfo = BigBangInfo.constructor;
-types.isBigBangInfo = BigBangInfo.predicate;
-types.bbInfoChangeWorld = function(info) { return BigBangInfo.accessor(info, 0); };
-types.bbInfoToplevelNode = function(info) { return BigBangInfo.accessor(info, 1); };
+// // big bang info to be passed into a make-world-config startup argument
+// var BigBangInfo = makeStructureType('bb-info', false, 2, 0, false,
+// 			function(args, name, k) {
+// 				helpers.check(args[0], helpers.procArityContains(1), name, 'procedure (arity 1)', 1);
+// 				helpers.check(args[1], types.isJsValue, name, 'js-object', 2);
+// 				return k(args);
+// 			});
+// types.BigBangInfo = BigBangInfo;
+// types.makeBigBangInfo = BigBangInfo.constructor;
+// types.isBigBangInfo = BigBangInfo.predicate;
+// types.bbInfoChangeWorld = function(info) { return BigBangInfo.accessor(info, 0); };
+// types.bbInfoToplevelNode = function(info) { return BigBangInfo.accessor(info, 1); };
 
 
 
