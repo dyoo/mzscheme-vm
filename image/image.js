@@ -81,6 +81,20 @@ var isStyle = function(x) {
 		 x.toString().toLowerCase() == "outline"));
 };
 
+var isPlaceX = function(x) {
+	return ((isString(x) || isSymbol(x)) &&
+			(x.toString().toLowerCase() == "left"  ||
+			 x.toString().toLowerCase() == "right" ||
+			 x.toString().toLowerCase() == "middle"));
+};
+
+var isPlaceY = function(x) {
+	return ((isString(x) || isSymbol(x)) &&
+			(x.toString().toLowerCase() == "top"	||
+			 x.toString().toLowerCase() == "bottom" ||
+			 x.toString().toLowerCase() == "middle"));
+};
+
 var isAssocList = function(x) {
 	return isPair(x) && isPair(x.rest()) && isEmpty(x.rest().rest());
 };
@@ -345,6 +359,22 @@ EXPORTS['rectangle'] =
 							   s.toString(), c);
 		 });
 
+EXPORTS['regular-polygon'] =
+new PrimProc('regular-polygon',
+			 4,
+			 false, false,
+			 function(length, count, s, c) {
+			 check(length, isNonNegativeReal, "regular-polygon", "non-negative number", 1, arguments);
+			 check(count, isNonNegativeReal, "regular-polygon", "non-negative integer greater than 3", 2, arguments);
+			 check(s, isStyle, "regular-polygon", "style", 3, arguments);
+			 check(c, isColor, "regular-polygon", "color", 4, arguments);
+			 
+			 if (colorDb.get(c)) {
+			 c = colorDb.get(c);
+			 }
+			 return world.Kernel.polygonImage(jsnums.toFixnum(length), jsnums.toFixnum(count), s.toString(), c);
+			 });
+
 EXPORTS['rhombus'] =
 new PrimProc('rhombus',
 			 4,
@@ -470,7 +500,7 @@ EXPORTS['overlay'] =
 			check(img2, isImage, "overlay", "image", 2, arguments);
 			arrayEach(restImages, function(x, i) { check(x, isImage, "overlay", "image", i+3); }, arguments);
 
-			var img = world.Kernel.overlayImage(img1, img2, 0, 0);
+			var img = world.Kernel.overlayImage(img1, img2, 0, 0, "absolute");
 			for (var i = 0; i < restImages.length; i++) {
 				img = world.Kernel.overlayImage(img, restImages[i], 0, 0);
 			}
@@ -489,11 +519,36 @@ EXPORTS['overlay/xy'] =
 			check(img2, isImage, "overlay/xy", "image", 4, arguments);
 
 		     return world.Kernel.overlayImage(img1.updatePinhole(0, 0),
-						      img2.updatePinhole(0, 0),
-						      jsnums.toFixnum(deltaX),
-						      jsnums.toFixnum(deltaY));
+											  img2.updatePinhole(0, 0),
+											  jsnums.toFixnum(deltaX),
+											  jsnums.toFixnum(deltaY));
 		 });
 
+
+EXPORTS['overlay/align'] =
+new PrimProc('overlay/align',
+			 4,
+			 true, false,
+			 function(placeX, placeY, img1, img2, restImages) {
+			 check(placeX, isPlaceX, "overlay/align", "x-place", 1, arguments);
+			 check(placeY, isPlaceY, "overlay/align", "y-place", 2, arguments);
+			 check(img1, isImage, "overlay/align", "image", 3, arguments);
+			 check(img2, isImage, "overlay/align", "image", 4, arguments);
+			 arrayEach(restImages, function(x, i) { check(x, isImage, "overlay/align", "image", i+4); }, arguments);
+			 
+			 var img = world.Kernel.overlayImage(img1,
+												 img2,
+												 placeX.toString(),
+												 placeY.toString());
+			 
+			 for (var i = 0; i < restImages.length; i++)
+				img = world.Kernel.overlayImage(img,
+												restImages[i], 
+												placeX.toString(), 
+												placeY.toString());
+
+		     return img;
+			 });
 
 EXPORTS['underlay'] =
     new PrimProc('underlay',
@@ -528,6 +583,126 @@ EXPORTS['underlay/xy'] =
 						      -jsnums.toFixnum(deltaY));
 		 });
 
+
+EXPORTS['underlay/align'] =
+new PrimProc('underlay/align',
+			 4,
+			 true, false,
+			 function(placeX, placeY, img1, img2, restImages) {
+			 check(placeX, isPlaceX, "underlay/align", "x-place", 1, arguments);
+			 check(placeY, isPlaceY, "underlay/align", "y-place", 2, arguments);
+			 check(img1, isImage, "underlay/align", "image", 3, arguments);
+			 check(img2, isImage, "underlay/align", "image", 4, arguments);
+			 arrayEach(restImages, function(x, i) { check(x, isImage, "underlay/align", "image", i+4); }, arguments);
+			 
+			 var img = world.Kernel.overlayImage(img2,
+												  img1,
+												  placeX.toString(),
+												  placeY.toString());
+			 
+			 for (var i = 0; i < restImages.length; i++)
+			 img = world.Kernel.overlayImage(restImages[i], 
+											  img,
+											  placeX.toString(), 
+											  placeY.toString());
+			 
+		     return img;
+			 });
+
+
+EXPORTS['beside'] =
+new PrimProc('beside',
+			 2,
+			 true, false,
+			 function(img1, img2, restImages) {
+			 check(img1, isImage, "beside", "image", 1, arguments);
+			 check(img2, isImage, "beside", "image", 2, arguments);
+			 arrayEach(restImages, function(x, i) { check(x, isImage, "beside", "image", i+4); }, arguments);
+			 
+			 var img = world.Kernel.overlayImage(img1,
+												 img2,
+												 "beside",
+												 "middle");
+			 
+			 for (var i = 0; i < restImages.length; i++)
+			 img = world.Kernel.overlayImage(img,
+											 restImages[i], 
+											 "beside",
+											 "middle");
+			 
+		     return img;
+			 });
+
+EXPORTS['beside/align'] =
+new PrimProc('beside/align',
+			 3,
+			 true, false,
+			 function(placeY, img1, img2, restImages) {
+			 check(placeY, isPlaceY, "beside/align", "y-place", 1, arguments);
+			 check(img1, isImage, "beside/align", "image", 2, arguments);
+			 check(img2, isImage, "beside/align", "image", 3, arguments);
+			 arrayEach(restImages, function(x, i) { check(x, isImage, "beside", "image", i+3); }, arguments);
+			 
+			 var img = world.Kernel.overlayImage(img1,
+												 img2,
+												 "beside",
+												 placeY.toString());
+			 
+			 for (var i = 0; i < restImages.length; i++)
+			 img = world.Kernel.overlayImage(img,
+											 restImages[i], 
+											 "beside",
+											 placeY.toString());
+			 
+		     return img;
+			 });
+
+EXPORTS['above'] =
+new PrimProc('above',
+			 2,
+			 true, false,
+			 function(img1, img2, restImages) {
+			 check(img1, isImage, "above", "image", 1, arguments);
+			 check(img2, isImage, "above", "image", 2, arguments);
+			 arrayEach(restImages, function(x, i) { check(x, isImage, "above", "image", i+4); }, arguments);
+			 
+			 var img = world.Kernel.overlayImage(img1,
+												 img2,
+												 "middle",
+												 "above");
+			 
+			 for (var i = 0; i < restImages.length; i++)
+			 img = world.Kernel.overlayImage(img,
+											 restImages[i], 
+											 "middle",
+											 "above");
+			 
+		     return img;
+			 });
+
+EXPORTS['above/align'] =
+new PrimProc('above/align',
+			 3,
+			 true, false,
+			 function(placeX, img1, img2, restImages) {
+			 check(placeX, isPlaceX, "above/align", "x-place", 1, arguments);
+			 check(img1, isImage, "above/align", "image", 1, arguments);
+			 check(img2, isImage, "above/align", "image", 2, arguments);
+			 arrayEach(restImages, function(x, i) { check(x, isImage, "above/align", "image", i+4); }, arguments);
+			 
+			 var img = world.Kernel.overlayImage(img1,
+												 img2,
+												 placeX.toString(),
+												 "above");
+			 
+			 for (var i = 0; i < restImages.length; i++)
+			 img = world.Kernel.overlayImage(img,
+											 restImages[i], 
+											 placeX.toString(),
+											 "above");
+			 
+		     return img;
+			 });
 
 EXPORTS['rotate'] =
 new PrimProc('rotate',

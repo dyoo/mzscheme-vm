@@ -17,6 +17,7 @@
 	 star
 	 nw:rectangle
 	 rectangle
+	 regular-polygon
 	 rhombus
 	 square
 	 triangle
@@ -26,8 +27,14 @@
 	 line
 	 overlay
 	 overlay/xy
+	 overlay/align
 	 underlay
 	 underlay/xy
+	 underlay/align
+	 beside
+	 beside/align
+	 above
+	 above/align
 	 rotate
 	 scale
 	 scale/xy

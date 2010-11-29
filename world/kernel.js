@@ -534,18 +534,31 @@ VideoImage.prototype.isEqual = function(other, aUnionFind) {
 
 // OverlayImage: image image -> image
 // Creates an image that overlays img1 on top of the
-// other image.  shiftX and shiftY are deltas off the first
-// image's pinhole.
-var OverlayImage = function(img1, img2, shiftX, shiftY) {
-    var deltaX = img1.pinholeX - img2.pinholeX + shiftX;
-    var deltaY = img1.pinholeY - img2.pinholeY + shiftY;
-    var left = Math.min(0, deltaX);
-    var top = Math.min(0, deltaY);
-    var right = Math.max(deltaX + img2.getWidth(), 
-			 img1.getWidth());
-    var bottom = Math.max(deltaY + img2.getHeight(),
-			  img1.getHeight());
+// other image.  X and Y are absolute deltas off the
+// first image's pinhole, OR relative places.
+var OverlayImage = function(img1, img2, X, Y) {
+	var pin1X = img1.pinholeX;
+	var pin1Y = img1.pinholeY;
+	var pin2X = img2.pinholeX;
+	var pin2Y = img2.pinholeY;
+	
+	// convert relative places to absolute amounts
+	if		(X == "left"  )	var moveX = (pin1X>pin2X)? (img2.getWidth()-pin1X)-pin2X : (img1.getWidth()-pin2X)-pin1X;
+	else if (X == "right" )	var moveX = (pin1X>pin2X)? (img1.getWidth()-pin2X)-pin1X : (img2.getWidth()-pin1X)-pin2X;
+	else if (X == "beside") var moveX = pin1X+pin2X;
+	else					var moveX = 0;
+	if		(Y == "top"   )	var moveY = (pin1Y>pin2Y)? (img2.getHeight()-pin1Y)-pin2Y : (img1.getHeight()-pin2Y)-pin1Y;
+	else if (Y == "bottom")	var moveY = (pin1Y>pin2Y)? (img1.getHeight()-pin2Y)-pin1Y : (img2.getHeight()-pin1Y)-pin2Y;
+	else if (Y == "above" )	var moveY = pin1Y+pin2Y;
+	else					var moveY = 0;
 
+	var deltaX	= pin1X - pin2X + moveX;
+	var deltaY	= pin1Y - pin2Y + moveY;
+
+	var left	= Math.min(0, deltaX);
+	var top		= Math.min(0, deltaY);
+	var right	= Math.max(deltaX + img2.getWidth(), img1.getWidth());
+	var bottom	= Math.max(deltaY + img2.getHeight(), img1.getHeight());				
     BaseImage.call(this, 
 		   Math.floor((right-left) / 2),
 		   Math.floor((bottom-top) / 2));
@@ -834,6 +847,96 @@ RhombusImage.prototype.isEqual = function(other, aUnionFind) {
 			this.pinholeY == other.pinholeY &&
 			this.side == other.side &&
 			this.angle == other.angle &&
+			this.style == other.style &&
+			types.isEqual(this.color, other.color, aUnionFind));
+};
+
+//////////////////////////////////////////////////////////////////////
+
+var PolygonImage = function(length, count, style, color) {
+	this.aVertices = [];
+	var xMax = 0;
+	var yMax = 0;
+	var xMin = 0;
+	var yMin = 0;
+	
+	// the polygon is inscribed in a circle, whose radius is length/2sin(pi/count)
+	// rotate a 3/4 quarter turn plus half the angle length to keep bottom base level
+	var radius = Math.round(length/(2*Math.sin(Math.PI/count)));
+	var adjust = (3*Math.PI/2)+Math.PI/count;
+	
+	// rotate around said circle, storing x,y pairs as vertices
+	for(var radians = 0; radians < 2*Math.PI; radians += 2*Math.PI/count) {
+		var v = {	x: radius*Math.cos(radians-adjust),
+					y: radius*Math.sin(radians-adjust) };
+		if(v.x < xMin) xMin = Math.floor(v.x);
+		if(v.x > xMax) xMax = Math.ceil(v.x);
+		if(v.y < yMin) yMin = Math.floor(v.y);
+		if(v.y > yMax) yMax = Math.ceil(v.y);
+		this.aVertices.push(v);		
+	}
+	// HACK: try to work around handling of rational coordinates in CANVAS
+	// by ensuring that the boundaries of the canvas are outside of the vertices
+	for(var i=0; i<this.aVertices.length; i++){
+		if(this.aVertices[i].x < xMin) xMin = this.aVertices[i].x-1;
+		if(this.aVertices[i].x > xMax) xMax = this.aVertices[i].x+1;
+		if(this.aVertices[i].y < yMin) yMin = this.aVertices[i].y-1;
+		if(this.aVertices[i].y > yMax) yMax = this.aVertices[i].y+1;
+	}
+    this.width = xMax-xMin;
+    this.height= yMax-yMin;
+	alert("putting pinhole at "+radius+', '+radius);
+    BaseImage.call(this, radius, radius, 0);
+    this.length= length;
+    this.count = count;
+    this.style = style;
+    this.color = color;
+};
+PolygonImage.prototype = heir(BaseImage.prototype);
+
+
+PolygonImage.prototype.render = function(ctx, x, y) {
+	// shift all vertices by "radius" to put the center of the polygon at the 
+	// center of the canvas (don't trust "translate()")
+	// HACK: move an extra pixel if there are an odd-number of sides
+	var hack = (this.count % 2);
+	var radius = hack+this.getHeight()/2;
+    ctx.save();
+
+    ctx.beginPath();
+	ctx.moveTo(radius+this.aVertices[0].x, radius+this.aVertices[0].y);
+	for(var i=1; i<this.aVertices.length; i++){
+		ctx.lineTo(radius+this.aVertices[i].x, radius+this.aVertices[i].y);
+	}
+	ctx.lineTo(radius+this.aVertices[0].x, radius+this.aVertices[0].y);
+    ctx.closePath();
+	
+    if (this.style.toString().toLowerCase() == "outline") {
+		ctx.strokeStyle = colorString(this.color);
+		ctx.stroke();
+    }
+    else {
+		ctx.fillStyle = colorString(this.color);
+		ctx.fill();
+    }
+	ctx.restore();
+};
+
+PolygonImage.prototype.getWidth = function() {
+    return this.width;
+};
+
+
+PolygonImage.prototype.getHeight = function() {
+    return this.height;
+};
+
+PolygonImage.prototype.isEqual = function(other, aUnionFind) {
+    return (other instanceof RectangleImage &&
+			this.pinholeX == other.pinholeX &&
+			this.pinholeY == other.pinholeY &&
+			this.length == other.length &&
+			this.count == other.count &&
 			this.style == other.style &&
 			types.isEqual(this.color, other.color, aUnionFind));
 };
@@ -1617,6 +1720,9 @@ world.Kernel.rectangleImage = function(width, height, style, color) {
 world.Kernel.rhombusImage = function(side, angle, style, color) {
     return new RhombusImage(side, angle, style, color);
 };
+world.Kernel.polygonImage = function(length, count, style, color) {
+    return new PolygonImage(length, count, style, color);
+};
 world.Kernel.squareImage = function(length, style, color) {
     return new RectangleImage(length, length, style, color);
 };
@@ -1635,8 +1741,8 @@ world.Kernel.ellipseImage = function(width, height, style, color) {
 world.Kernel.lineImage = function(x, y, color) {
     return new LineImage(x, y, color);
 };
-world.Kernel.overlayImage = function(img1, img2, shiftX, shiftY) {
-    return new OverlayImage(img1, img2, shiftX, shiftY);
+world.Kernel.overlayImage = function(img1, img2, X, Y) {
+    return new OverlayImage(img1, img2, X, Y);
 };
 world.Kernel.rotateImage = function(angle, img) {
     return new RotateImage(angle, img);
@@ -1656,6 +1762,8 @@ world.Kernel.isSceneImage = function(x) { return x instanceof SceneImage; };
 world.Kernel.isCircleImage = function(x) { return x instanceof CircleImage; };
 world.Kernel.isStarImage = function(x) { return x instanceof StarImage; };
 world.Kernel.isRectangleImage = function(x) { return x instanceof RectangleImage; };
+world.Kernel.isPolygonImage = function(x) { return x instanceof PolygonImage; };
+world.Kernel.isRhombusImage = function(x) { return x instanceof RhombusImage; };
 world.Kernel.isSquareImage = function(x) { return x instanceof SquareImage; };
 world.Kernel.isTriangleImage = function(x) { return x instanceof TriangleImage; };
 world.Kernel.isRightTriangleImage = function(x) { return x instanceof RightTriangleImage; };
