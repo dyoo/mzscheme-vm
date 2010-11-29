@@ -70,7 +70,7 @@
 			 
 "should be an overlay/xy"
 (overlay/xy (circle 20 'solid 'green)
-	    0 0
+	    30 10
 	    (rectangle 10 20 'solid 'blue))
 		
 "should be two examples of overlay/align"
@@ -104,7 +104,7 @@
 
 "should be an underlay/xy"
 (underlay/xy (circle 20 'solid 'green)
-	     0 0
+	     30 10
 	     (rectangle 10 20 'solid 'blue))
 
 "should be some examples of underlay/align"
@@ -186,7 +186,7 @@
 
 "Some regular polygons..."
 "A triangle of side-length 20"
-(regular-polygon 20 3 "solid" "purple")
+(regular-polygon 20 3 "outline" "purple")
 "A square of side-length 40"
 (regular-polygon 40 4 "outline" "aquamarine")
 "A pentagon of side-length 30"
@@ -194,8 +194,8 @@
 "A hexagon of side-length 20"
 (regular-polygon 20 6 "outline" "gold")
 "A septagon of side-length 40"
-(regular-polygon 40 7 "solid" "goldenrod")
+(regular-polygon 40 7 "outline" "goldenrod")
 "An octagon of side-length 30"
-(regular-polygon 30 8 "solid" "darkgoldenrod")
+(regular-polygon 30 8 "outline" "darkgoldenrod")
 "A nonagon of side-length 20"
 (regular-polygon 20 9 "outline" "sienna")

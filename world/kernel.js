@@ -543,14 +543,18 @@ var OverlayImage = function(img1, img2, X, Y) {
 	var pin2Y = img2.pinholeY;
 	
 	// convert relative places to absolute amounts
+	// if X and Y are *not* relative, they are 
+	// absolute, and we can just use them as they are
 	if		(X == "left"  )	var moveX = (pin1X>pin2X)? (img2.getWidth()-pin1X)-pin2X : (img1.getWidth()-pin2X)-pin1X;
 	else if (X == "right" )	var moveX = (pin1X>pin2X)? (img1.getWidth()-pin2X)-pin1X : (img2.getWidth()-pin1X)-pin2X;
 	else if (X == "beside") var moveX = pin1X+pin2X;
-	else					var moveX = 0;
+	else if (X == "middle") var moveX = 0;
+	else					var moveX = X;
 	if		(Y == "top"   )	var moveY = (pin1Y>pin2Y)? (img2.getHeight()-pin1Y)-pin2Y : (img1.getHeight()-pin2Y)-pin1Y;
 	else if (Y == "bottom")	var moveY = (pin1Y>pin2Y)? (img1.getHeight()-pin2Y)-pin1Y : (img2.getHeight()-pin1Y)-pin2Y;
 	else if (Y == "above" )	var moveY = pin1Y+pin2Y;
-	else					var moveY = 0;
+	else if (Y == "middle") var moveY = 0;
+	else					var moveY = Y;
 
 	var deltaX	= pin1X - pin2X + moveX;
 	var deltaY	= pin1Y - pin2Y + moveY;
@@ -885,8 +889,7 @@ var PolygonImage = function(length, count, style, color) {
 	}
     this.width = xMax-xMin;
     this.height= yMax-yMin;
-	alert("putting pinhole at "+radius+', '+radius);
-    BaseImage.call(this, radius, radius, 0);
+    BaseImage.call(this, radius, radius);
     this.length= length;
     this.count = count;
     this.style = style;
