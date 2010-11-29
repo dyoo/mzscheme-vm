@@ -29,6 +29,10 @@ var isNonNegativeReal = function(x) {
 	return isReal(x) && jsnums.greaterThanOrEqual(x, 0);
 };
 
+var isAngle = function(x) {
+	return isReal(x) && jsnums.greaterThanOrEqual(x, 0) && jsnums.lessThan(x, 360);
+};
+
 var isSymbol = types.isSymbol;
 var isChar = types.isChar;
 var isString = types.isString;
@@ -85,6 +89,7 @@ var isPlaceX = function(x) {
 	return ((isString(x) || isSymbol(x)) &&
 			(x.toString().toLowerCase() == "left"  ||
 			 x.toString().toLowerCase() == "right" ||
+			 x.toString().toLowerCase() == "center" ||
 			 x.toString().toLowerCase() == "middle"));
 };
 
@@ -92,6 +97,7 @@ var isPlaceY = function(x) {
 	return ((isString(x) || isSymbol(x)) &&
 			(x.toString().toLowerCase() == "top"	||
 			 x.toString().toLowerCase() == "bottom" ||
+			 x.toString().toLowerCase() == "center" ||
 			 x.toString().toLowerCase() == "middle"));
 };
 
@@ -443,7 +449,7 @@ new PrimProc('isosceles-triangle',
 			 false, false,
 			 function(side, angle, s, c) {
 			 check(side, isNonNegativeReal, "isosceles-triangle", "non-negative number", 1, arguments);
-			 check(angle, isReal, "isosceles-triangle", "finite real number", 2, arguments);
+			 check(angle, isAngle, "isosceles-triangle", "finite real number between 0 and 360", 2, arguments);
 			 check(s, isStyle, "isosceles-triangle", "style", 3, arguments);
 			 check(c, isColor, "isosceles-triangle", "color", 4, arguments);
 			 if (colorDb.get(c)) {
@@ -500,9 +506,9 @@ EXPORTS['overlay'] =
 			check(img2, isImage, "overlay", "image", 2, arguments);
 			arrayEach(restImages, function(x, i) { check(x, isImage, "overlay", "image", i+3); }, arguments);
 
-			var img = world.Kernel.overlayImage(img1, img2, 0, 0, "absolute");
+			var img = world.Kernel.overlayImage(img1, img2, "middle", "middle");
 			for (var i = 0; i < restImages.length; i++) {
-				img = world.Kernel.overlayImage(img, restImages[i], 0, 0);
+				img = world.Kernel.overlayImage(img, restImages[i], "middle", "middle");
 			}
 			return img;
 		 });
@@ -709,10 +715,10 @@ new PrimProc('rotate',
 			 2,
 			 false, false,
 			 function(angle, img) {
-			 check(angle, isReal, "rotate", "finite real number", 1, arguments);
+			 check(angle, isAngle, "rotate", "finite real number between 0 and 360", 1, arguments);
 			 check(img, isImage, "rotate", "image", 2, arguments);
-			 
-			     return world.Kernel.rotateImage(jsnums.toFixnum(angle), img);
+				 // negate the angle, to make it a counterclockwise rotation
+			     return world.Kernel.rotateImage(jsnums.toFixnum(-angle), img);
 			 });
 
 EXPORTS['scale/xy'] =

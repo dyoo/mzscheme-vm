@@ -542,18 +542,19 @@ var OverlayImage = function(img1, img2, X, Y) {
 	var pin2X = img2.pinholeX;
 	var pin2Y = img2.pinholeY;
 	
+//alert('X:'+X+'\nY:'+Y);
 	// convert relative places to absolute amounts
 	// if X and Y are *not* relative, they are 
 	// absolute, and we can just use them as they are
 	if		(X == "left"  )	var moveX = (pin1X>pin2X)? (img2.getWidth()-pin1X)-pin2X : (img1.getWidth()-pin2X)-pin1X;
 	else if (X == "right" )	var moveX = (pin1X>pin2X)? (img1.getWidth()-pin2X)-pin1X : (img2.getWidth()-pin1X)-pin2X;
 	else if (X == "beside") var moveX = pin1X+pin2X;
-	else if (X == "middle") var moveX = 0;
+	else if (X == "middle" || X == "center") var moveX = 0;
 	else					var moveX = X;
 	if		(Y == "top"   )	var moveY = (pin1Y>pin2Y)? (img2.getHeight()-pin1Y)-pin2Y : (img1.getHeight()-pin2Y)-pin1Y;
 	else if (Y == "bottom")	var moveY = (pin1Y>pin2Y)? (img1.getHeight()-pin2Y)-pin1Y : (img2.getHeight()-pin1Y)-pin2Y;
 	else if (Y == "above" )	var moveY = pin1Y+pin2Y;
-	else if (Y == "middle") var moveY = 0;
+	else if (Y == "middle" || Y == "center") var moveY = 0;
 	else					var moveY = Y;
 
 	var deltaX	= pin1X - pin2X + moveX;
@@ -864,19 +865,22 @@ var PolygonImage = function(length, count, style, color) {
 	var xMin = 0;
 	var yMin = 0;
 	
+	// See http://www.algebra.com/algebra/homework/Polygons/Inscribed-and-circumscribed-polygons.lesson
 	// the polygon is inscribed in a circle, whose radius is length/2sin(pi/count)
+	// another circle is inscribed in the polygon, whose radius is length/2tan(pi/count)
 	// rotate a 3/4 quarter turn plus half the angle length to keep bottom base level
-	var radius = Math.round(length/(2*Math.sin(Math.PI/count)));
+	this.outerRadius = Math.floor(length/(2*Math.sin(Math.PI/count)));
+	this.innerRadius = Math.floor(length/(2*Math.tan(Math.PI/count)));
 	var adjust = (3*Math.PI/2)+Math.PI/count;
 	
 	// rotate around said circle, storing x,y pairs as vertices
 	for(var radians = 0; radians < 2*Math.PI; radians += 2*Math.PI/count) {
-		var v = {	x: radius*Math.cos(radians-adjust),
-					y: radius*Math.sin(radians-adjust) };
-		if(v.x < xMin) xMin = Math.floor(v.x);
-		if(v.x > xMax) xMax = Math.ceil(v.x);
-		if(v.y < yMin) yMin = Math.floor(v.y);
-		if(v.y > yMax) yMax = Math.ceil(v.y);
+		var v = {	x: this.outerRadius*Math.cos(radians-adjust),
+					y: this.outerRadius*Math.sin(radians-adjust) };
+		if(v.x < xMin) xMin = v.x;//Math.ceil(v.x);
+		if(v.x > xMax) xMax = v.y;//Math.floor(v.x);
+		if(v.y < yMin) yMin = v.x;//Math.ceil(v.y);
+		if(v.y > yMax) yMax = v.y;//Math.floor(v.y);
 		this.aVertices.push(v);		
 	}
 	// HACK: try to work around handling of rational coordinates in CANVAS
@@ -887,9 +891,9 @@ var PolygonImage = function(length, count, style, color) {
 		if(this.aVertices[i].y < yMin) yMin = this.aVertices[i].y-1;
 		if(this.aVertices[i].y > yMax) yMax = this.aVertices[i].y+1;
 	}
-    this.width = xMax-xMin;
-    this.height= yMax-yMin;
-    BaseImage.call(this, radius, radius);
+    this.width = Math.round(xMax-xMin);
+    this.height= Math.floor(yMax-yMin);
+    BaseImage.call(this, this.innerRadius, this.innerRadius);
     this.length= length;
     this.count = count;
     this.style = style;
@@ -899,19 +903,20 @@ PolygonImage.prototype = heir(BaseImage.prototype);
 
 
 PolygonImage.prototype.render = function(ctx, x, y) {
-	// shift all vertices by "radius" to put the center of the polygon at the 
-	// center of the canvas (don't trust "translate()")
-	// HACK: move an extra pixel if there are an odd-number of sides
-	var hack = (this.count % 2);
-	var radius = hack+this.getHeight()/2;
+	// shift all vertices by an offset to put the center of the polygon at the 
+	// center of the canvas. Even-sides polygons highest points are in line with
+	// the innerRadius. Odd-sides polygons highest vertex is on the outerRadius
+	var xOffset = Math.round(this.width/2);
+	var yOffset = (this.count % 2)? this.outerRadius : this.innerRadius;
+	
     ctx.save();
 
     ctx.beginPath();
-	ctx.moveTo(radius+this.aVertices[0].x, radius+this.aVertices[0].y);
+	ctx.moveTo(xOffset+this.aVertices[0].x, yOffset+this.aVertices[0].y);
 	for(var i=1; i<this.aVertices.length; i++){
-		ctx.lineTo(radius+this.aVertices[i].x, radius+this.aVertices[i].y);
+		ctx.lineTo(xOffset+this.aVertices[i].x, yOffset+this.aVertices[i].y);
 	}
-	ctx.lineTo(radius+this.aVertices[0].x, radius+this.aVertices[0].y);
+	ctx.lineTo(xOffset+this.aVertices[0].x, yOffset+this.aVertices[0].y);
     ctx.closePath();
 	
     if (this.style.toString().toLowerCase() == "outline") {
