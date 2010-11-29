@@ -60,7 +60,6 @@
 	 "misc.rkt"
 	 "jsworld.rkt"
 	 "location.rkt"
-	 "rotate.rkt"
 	 "images.rkt"
 	 "more-jsworld.ss")
 

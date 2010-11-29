@@ -52,8 +52,16 @@
 	      true)
 
 "should be some overlays"
-(overlay (circle 20 'solid 'green)
-	 (rectangle 10 20 'solid 'blue))
+(overlay 
+	 (rectangle 10 20 'solid 'blue)
+	 (circle 20 'solid 'green))
+
+"the next two images should be identical"
+(overlay (circle 20 "solid" (make-color  50  50 255))
+             (square 40 "solid" (make-color 100 100 255)))
+
+(overlay (circle 20 "solid" (make-color  50  50 255))
+             (regular-polygon 40 4 "solid" (make-color 100 100 255)))
 
 (overlay (ellipse 10 10 "solid" "red")
              (ellipse 20 20 "solid" "black")
@@ -62,16 +70,37 @@
              (ellipse 50 50 "solid" "red")
              (ellipse 60 60 "solid" "black"))
 
-(overlay (regular-polygon 20 5 "solid" (make-color  50  50 255))
-             (regular-polygon 26 5 "solid" (make-color 100 100 255))
-             (regular-polygon 32 5 "solid" (make-color 150 150 255))
-             (regular-polygon 38 5 "solid" (make-color 200 200 255))
-             (regular-polygon 44 5 "solid" (make-color 250 250 255)))
+"the next two images should be identical"
+(overlay (square 20 "solid" (make-color  50  50 255))
+             (square 26 "solid" (make-color 100 100 255))
+             (square 32 "solid" (make-color 150 150 255))
+             (square 38 "solid" (make-color 200 200 255))
+             (square 44 "solid" (make-color 250 250 255)))
+(overlay (regular-polygon 20 4 "solid" (make-color  50  50 255))
+             (regular-polygon 26 4 "solid" (make-color 100 100 255))
+             (regular-polygon 32 4 "solid" (make-color 150 150 255))
+             (regular-polygon 38 4 "solid" (make-color 200 200 255))
+             (regular-polygon 44 4 "solid" (make-color 250 250 255)))
 			 
-"should be an overlay/xy"
-(overlay/xy (circle 20 'solid 'green)
-	    30 10
-	    (rectangle 10 20 'solid 'blue))
+			 
+"should be some overlay/xys"
+(overlay/xy (rectangle 20 20 "outline" "black")
+                20 0
+                (rectangle 20 20 "outline" "black"))
+(overlay/xy (rectangle 20 20 "solid" "red")
+                20 20
+                (rectangle 20 20 "solid" "black"))
+(overlay/xy (rectangle 20 20 "solid" "red")
+                -20 -20
+                (rectangle 20 20 "solid" "black"))
+(overlay/xy
+     (overlay/xy (ellipse 40 40 "outline" "black")
+                 10
+                 15
+                 (ellipse 10 10 "solid" "forestgreen"))
+     20
+     15
+     (ellipse 10 10 "solid" "forestgreen"))
 		
 "should be two examples of overlay/align"
 (overlay/align "middle" "middle"
@@ -185,17 +214,47 @@
 (rhombus 80 330 "outline" "seagreen")
 
 "Some regular polygons..."
-"A triangle of side-length 20"
+"A triangle of side-length 20: should be 20x17"
 (regular-polygon 20 3 "outline" "purple")
-"A square of side-length 40"
+"A square of side-length 40: should be 40x40"
 (regular-polygon 40 4 "outline" "aquamarine")
-"A pentagon of side-length 30"
+"A pentagon of side-length 30: should be 49x46"
 (regular-polygon 30 5 "solid" "pink")
-"A hexagon of side-length 20"
+"A hexagon of side-length 20: should be 40x35"
 (regular-polygon 20 6 "outline" "gold")
-"A septagon of side-length 40"
+"A septagon of side-length 40: should be 90x88"
 (regular-polygon 40 7 "outline" "goldenrod")
-"An octagon of side-length 30"
+"An octagon of side-length 30: should be 72x72"
 (regular-polygon 30 8 "outline" "darkgoldenrod")
-"A nonagon of side-length 20"
+"A nonagon of side-length 20: should be 58x57"
 (regular-polygon 20 9 "outline" "sienna")
+
+(printf "Three images at 30, 60, 90 degree rotation:\n")
+
+(rotate 30 (image-url "http://racket-lang.org/logo.png"))
+(rotate 60 (image-url "http://racket-lang.org/logo.png"))
+(rotate 90 (image-url "http://racket-lang.org/logo.png"))
+
+
+(printf "scaling small and large")
+(scale 1/2 (image-url "http://racket-lang.org/logo.png"))
+(scale 2 (image-url "http://racket-lang.org/logo.png"))
+
+(scale/xy 1 2 (image-url "http://racket-lang.org/logo.png"))
+(scale/xy 2 1 (image-url "http://racket-lang.org/logo.png"))
+
+"This should be the normal image"
+(scale/xy 1 1 (image-url "http://racket-lang.org/logo.png"))
+
+
+"Rotated, huge image"
+(rotate 30 (scale 3 (image-url "http://racket-lang.org/logo.png")))
+
+"From the racket documentation:"
+(rotate 45 (ellipse 60 20 "solid" "olivedrab"))
+(rotate 5 (rectangle 50 50 "outline" "black"))
+(rotate 45
+            (beside/align
+             "center"
+             (rectangle 40 20 "solid" "darkseagreen")
+             (rectangle 20 100 "solid" "darkseagreen")))
