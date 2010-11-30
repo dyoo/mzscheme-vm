@@ -101,6 +101,7 @@ var isPlaceY = function(x) {
 			 x.toString().toLowerCase() == "middle"));
 };
 
+
 var isAssocList = function(x) {
 	return isPair(x) && isPair(x.rest()) && isEmpty(x.rest().rest());
 };
@@ -750,6 +751,26 @@ new PrimProc('scale',
 			 });
 
 
+EXPORTS['flip-vertical'] =
+new PrimProc('flip-vertical',
+			 1,
+			 false, false,
+			 function(img) {
+			 check(img, isImage, "flip-vertical", "image", 1, arguments);
+			 return world.Kernel.flipImage(img, "vertical");
+			 });
+
+
+EXPORTS['flip-horizontal'] =
+new PrimProc('flip-horizontal',
+			 1,
+			 false, false,
+			 function(img) {
+			 check(img, isImage, "flip-horizontal", "image", 1, arguments);
+			 return world.Kernel.flipImage(img, "horizontal");
+			 });
+
+
 EXPORTS['text'] =
     new PrimProc('text',
 		 3,
@@ -789,6 +810,29 @@ EXPORTS['image-url'] =
 			 rawImage.src = path.toString();
 		     });
 		 });
+
+
+EXPORTS['video-url'] =
+new PrimProc('video-url',
+			 1,
+			 false, true,
+			 function(state, path) {
+		     check(path, isString, "video-url", "string", 1);
+			 return types.internalPause(function(caller, success, fail) {
+										var rawVideo = document.createElement('video');
+										rawVideo.src = path.toString();
+										rawVideo.addEventListener('canplay', function() {
+										success(world.Kernel.videoImage(path.toString(), rawVideo));
+										});
+										rawVideo.addEventListener('error', function(e) {
+										fail(types.schemeError(types.incompleteExn(
+																				   types.exnFail,
+																				   " (unable to load: " + path + ")",
+																				   [])));
+										});
+										rawVideo.src = path.toString();
+										});
+			 });
 
 
 EXPORTS['image-width'] =

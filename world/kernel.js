@@ -450,55 +450,46 @@ FileImage.prototype.isEqual = function(other, aUnionFind) {
 
 //////////////////////////////////////////////////////////////////////
 
-/*
+
 var VideoImage = function(src, rawVideo) {
     BaseImage.call(this, 0, 0);
     var self = this;
     this.src = src;
-    this.isLoaded = false;
     if (rawVideo) { 
-		this.video = rawVideo;
-		this.isLoaded = true;
-		this.pinholeX = self.video.width / 2;
-		this.pinholeY = self.video.height / 2;
+		this.video			= rawVideo;
+		this.width			= self.video.videoWidth;
+		this.height			= self.video.videoHeight;
+		this.pinholeX		= self.width / 2;
+		this.pinholeY		= self.height / 2;
+		this.video.volume	= 1;
+		this.video.poster	= "http://www.wescheme.org/images/broken.png";
+		this.video.autoplay	= true;
+		this.video.autobuffer=true;
+		this.video.play();
     } else {
 		// fixme: we may want to do something blocking here for
 		// onload, since we don't know at this time what the file size
 		// should be, nor will drawImage do the right thing until the
 		// file is loaded.
 		this.video = document.createElement('video');
-		this.video.onload = function() {
-			self.isLoaded = true;
-			self.pinholeX = self.video.width / 2;
-			self.pinholeY = self.video.height / 2;
-		};
-		this.video.onerror = function(e) {
-			self.video.onerror = "";
-			self.video.poster = "http://www.wescheme.org/images/broken.png";
-		}
 		this.video.src = src;
+		this.video.addEventListener('canplay', function() {
+									this.width			= self.video.videoWidth;
+									this.height			= self.video.videoHeight;
+									this.pinholeX		= self.width / 2;
+									this.pinholeY		= self.height / 2;
+									this.video.poster	= "http://www.wescheme.org/images/broken.png";
+									this.video.autoplay	= true;
+									this.video.autobuffer=true;
+									this.video.play();
+									});
+		this.video.addEventListener('error', function(e) {
+									self.video.onerror = "";
+									self.video.poster = "http://www.wescheme.org/images/broken.png";
+									});
     }
 }
 VideoImage.prototype = heir(BaseImage.prototype);
-
-
-var videoCache = {};
-VideoImage.makeInstance = function(path, rawVideo) {
-    if (! (path in videoCache)) {
-		videoCache[path] = new VideoImage(path, rawVideo);
-    } 
-    return videoCache[path];
-};
-
-VideoImage.installInstance = function(path, rawVideo) {
-    videoCache[path] = new FileImage(path, rawVideo);
-};
-
-VideoImage.installBrokenImage = function(path) {
-    videoCache[path] = new TextImage("Unable to load " + path, 10, 
-									 colorDb.get("red"));
-};
-
 
 
 VideoImage.prototype.render = function(ctx, x, y) {
@@ -507,28 +498,27 @@ VideoImage.prototype.render = function(ctx, x, y) {
 
 
 VideoImage.prototype.getWidth = function() {
-    return this.video.width;
+    return this.width;
 };
 
 
 VideoImage.prototype.getHeight = function() {
-    return this.video.height;
+    return this.height;
 };
 
-// Override toDomNode: we don't need a full-fledged canvas here.
+/* Override toDomNode: we don't need a full-fledged canvas here.
 VideoImage.prototype.toDomNode = function(cache) {
     return this.video.cloneNode(true);
 };
-
+*/
 VideoImage.prototype.isEqual = function(other, aUnionFind) {
     return (other instanceof VideoImage &&
 			this.pinholeX == other.pinholeX &&
 			this.pinholeY == other.pinholeY &&
 			this.src == other.src);
-    //		    types.isEqual(this.img, other.img, aUnionFind));
 };
 
-*/
+
 //////////////////////////////////////////////////////////////////////
 
 
@@ -542,17 +532,15 @@ var OverlayImage = function(img1, img2, X, Y) {
 	var pin2X = img2.pinholeX;
 	var pin2Y = img2.pinholeY;
 	
-//alert('X:'+X+'\nY:'+Y);
 	// convert relative places to absolute amounts
-	// if X and Y are *not* relative, they are 
-	// absolute, and we can just use them as they are
-	if		(X == "left"  )	var moveX = (pin1X>pin2X)? (img2.getWidth()-pin1X)-pin2X : (img1.getWidth()-pin2X)-pin1X;
-	else if (X == "right" )	var moveX = (pin1X>pin2X)? (img1.getWidth()-pin2X)-pin1X : (img2.getWidth()-pin1X)-pin2X;
+	// if they're not relative, use them as absolutes
+	if		(X == "left"  )	var moveX = (pin1X>pin2X)? img2.getWidth()-(pin1X+pin2X) : img1.getWidth()-(pin1X+pin2X);
+	else if (X == "right" )	var moveX = (pin1X>pin2X)? img1.getWidth()-(pin1X+pin2X) : img2.getWidth()-(pin1X+pin2X);
 	else if (X == "beside") var moveX = pin1X+pin2X;
 	else if (X == "middle" || X == "center") var moveX = 0;
 	else					var moveX = X;
-	if		(Y == "top"   )	var moveY = (pin1Y>pin2Y)? (img2.getHeight()-pin1Y)-pin2Y : (img1.getHeight()-pin2Y)-pin1Y;
-	else if (Y == "bottom")	var moveY = (pin1Y>pin2Y)? (img1.getHeight()-pin2Y)-pin1Y : (img2.getHeight()-pin1Y)-pin2Y;
+	if		(Y == "top"   )	var moveY = (pin1Y>pin2Y)? img2.getHeight()-(pin1Y+pin2Y) : img1.getHeight()-(pin1Y+pin2Y);
+	else if (Y == "bottom")	var moveY = (pin1Y>pin2Y)? img1.getHeight()-(pin1Y+pin2Y) : img2.getHeight()-(pin1Y+pin2Y);
 	else if (Y == "above" )	var moveY = pin1Y+pin2Y;
 	else if (Y == "middle" || Y == "center") var moveY = 0;
 	else					var moveY = Y;
@@ -563,7 +551,8 @@ var OverlayImage = function(img1, img2, X, Y) {
 	var left	= Math.min(0, deltaX);
 	var top		= Math.min(0, deltaY);
 	var right	= Math.max(deltaX + img2.getWidth(), img1.getWidth());
-	var bottom	= Math.max(deltaY + img2.getHeight(), img1.getHeight());				
+	var bottom	= Math.max(deltaY + img2.getHeight(), img1.getHeight());	
+	
     BaseImage.call(this, 
 		   Math.floor((right-left) / 2),
 		   Math.floor((bottom-top) / 2));
@@ -735,6 +724,57 @@ ScaleImage.prototype.isEqual = function(other, aUnionFind) {
 	     types.isEqual(this.img, other.img, aUnionFind) );
 };
 
+// FlipImage: image string -> image
+// Flip an image either horizontally or vertically
+var FlipImage = function(img, direction) {
+    this.img	= img;
+	this.width	= img.getWidth();
+	this.height = img.getHeight();
+    this.direction = direction;
+    BaseImage.call(this, 
+				   img.pinholeX,
+				   img.pinholeY);
+};
+
+FlipImage.prototype = heir(BaseImage.prototype);
+
+
+FlipImage.prototype.render = function(ctx, x, y) {
+	ctx.save();
+	if(this.direction == "horizontal"){
+		ctx.scale(-1, 1);
+		ctx.translate(-this.width, 0);
+		this.img.render(ctx, x, y);
+		ctx.translate(this.width, 0);
+	} else if (this.direction == "vertical"){
+		ctx.scale(1, -1);
+		ctx.translate(0, -this.height);
+		this.img.render(ctx, x, y);
+		ctx.translate(0, this.height);
+	}
+	ctx.restore();
+};
+
+
+FlipImage.prototype.getWidth = function() {
+    return this.width;
+};
+
+FlipImage.prototype.getHeight = function() {
+    return this.height;
+};
+
+FlipImage.prototype.isEqual = function(other, aUnionFind) {
+    return ( other instanceof FlipImage &&
+			this.pinholeX == other.pinholeX &&
+			this.pinholeY == other.pinholeY &&
+			this.width == other.width &&
+			this.height == other.height &&
+			this.direction == other.direction &&
+			types.isEqual(this.img, other.img, aUnionFind) );
+};
+
+
 //////////////////////////////////////////////////////////////////////
 
 
@@ -873,17 +913,18 @@ var PolygonImage = function(length, count, style, color) {
 	this.innerRadius = Math.floor(length/(2*Math.tan(Math.PI/count)));
 	var adjust = (3*Math.PI/2)+Math.PI/count;
 	
-	// rotate around said circle, storing x,y pairs as vertices
+	// rotate around outer circle, storing x,y pairs as vertices
+	// keep track of mins and maxs
 	for(var radians = 0; radians < 2*Math.PI; radians += 2*Math.PI/count) {
 		var v = {	x: this.outerRadius*Math.cos(radians-adjust),
 					y: this.outerRadius*Math.sin(radians-adjust) };
-		if(v.x < xMin) xMin = v.x;//Math.ceil(v.x);
-		if(v.x > xMax) xMax = v.y;//Math.floor(v.x);
-		if(v.y < yMin) yMin = v.x;//Math.ceil(v.y);
-		if(v.y > yMax) yMax = v.y;//Math.floor(v.y);
+		if(v.x < xMin) xMin = v.x;
+		if(v.x > xMax) xMax = v.y;
+		if(v.y < yMin) yMin = v.x;
+		if(v.y > yMax) yMax = v.y;
 		this.aVertices.push(v);		
 	}
-	// HACK: try to work around handling of rational coordinates in CANVAS
+	// HACK: try to work around handling of non-integer coordinates in CANVAS
 	// by ensuring that the boundaries of the canvas are outside of the vertices
 	for(var i=0; i<this.aVertices.length; i++){
 		if(this.aVertices[i].x < xMin) xMin = this.aVertices[i].x-1;
@@ -891,9 +932,11 @@ var PolygonImage = function(length, count, style, color) {
 		if(this.aVertices[i].y < yMin) yMin = this.aVertices[i].y-1;
 		if(this.aVertices[i].y > yMax) yMax = this.aVertices[i].y+1;
 	}
+	
     this.width = Math.round(xMax-xMin);
     this.height= Math.floor(yMax-yMin);
-    BaseImage.call(this, this.innerRadius, this.innerRadius);
+//    BaseImage.call(this, this.innerRadius, ((count % 2)? this.outerRadius : this.innerRadius));
+	BaseImage.call(this, Math.floor(this.width/2), Math.floor(this.height/2));
     this.length= length;
     this.count = count;
     this.style = style;
@@ -906,8 +949,8 @@ PolygonImage.prototype.render = function(ctx, x, y) {
 	// shift all vertices by an offset to put the center of the polygon at the 
 	// center of the canvas. Even-sides polygons highest points are in line with
 	// the innerRadius. Odd-sides polygons highest vertex is on the outerRadius
-	var xOffset = Math.round(this.width/2);
-	var yOffset = (this.count % 2)? this.outerRadius : this.innerRadius;
+	var xOffset = x+Math.round(this.width/2);
+	var yOffset = y+((this.count % 2)? this.outerRadius : this.innerRadius);
 	
     ctx.save();
 
@@ -1758,11 +1801,17 @@ world.Kernel.rotateImage = function(angle, img) {
 world.Kernel.scaleImage = function(xFactor, yFactor, img) {
 	return new ScaleImage(xFactor, yFactor, img);
 };
+world.Kernel.flipImage = function(img, direction) {
+	return new FlipImage(img, direction);
+};
 world.Kernel.textImage = function(msg, size, color) {
     return new TextImage(msg, size, color);
 };
 world.Kernel.fileImage = function(path, rawImage) {
     return FileImage.makeInstance(path, rawImage);
+};
+world.Kernel.videoImage = function(path, rawVideo) {
+    return new VideoImage(path, rawVideo);
 };
 
 
@@ -1780,8 +1829,11 @@ world.Kernel.isEllipseImage = function(x) { return x instanceof EllipseImage; };
 world.Kernel.isLineImage = function(x) { return x instanceof LineImage; };
 world.Kernel.isOverlayImage = function(x) { return x instanceof OverlayImage; };
 world.Kernel.isRotateImage = function(x) { return x instanceof RotateImage; };
+world.Kernel.isScaleImage = function(x) { return x instanceof ScaleImage; };
+world.Kernel.isFlipImage = function(x) { return x instanceof FlipImage; };
 world.Kernel.isTextImage = function(x) { return x instanceof TextImage; };
 world.Kernel.isFileImage = function(x) { return x instanceof FileImage; };
+world.Kernel.isFileVideo = function(x) { return x instanceof FileVideo; };
 
 
 

@@ -38,7 +38,10 @@
 	 rotate
 	 scale
 	 scale/xy
+	 flip-horizontal
+	 flip-vertical
 	 text
+	 video-url
 	 image-url
 	 image-width
 	 image-height)
