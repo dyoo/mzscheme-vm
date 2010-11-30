@@ -506,11 +506,11 @@ VideoImage.prototype.getHeight = function() {
     return this.height;
 };
 
-/* Override toDomNode: we don't need a full-fledged canvas here.
+// Override toDomNode: we don't need a full-fledged canvas here.
 VideoImage.prototype.toDomNode = function(cache) {
     return this.video.cloneNode(true);
 };
-*/
+
 VideoImage.prototype.isEqual = function(other, aUnionFind) {
     return (other instanceof VideoImage &&
 			this.pinholeX == other.pinholeX &&
