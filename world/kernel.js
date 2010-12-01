@@ -492,6 +492,23 @@ var VideoImage = function(src, rawVideo) {
 VideoImage.prototype = heir(BaseImage.prototype);
 
 
+var videoCache = {};
+VideoImage.makeInstance = function(path, rawImage) {
+    if (! (path in VideoImage)) {
+		videoCache[path] = new VideoImage(path, rawImage);
+    } 
+    return videoCache[path];
+};
+
+VideoImage.installInstance = function(path, rawImage) {
+    videoCache[path] = new VideoImage(path, rawImage);
+};
+
+VideoImage.installBrokenImage = function(path) {
+    videoCache[path] = new TextImage("Unable to load " + path, 10, 
+									 colorDb.get("red"));
+};
+
 VideoImage.prototype.render = function(ctx, x, y) {
     ctx.drawImage(this.video, x, y);
 };
@@ -506,11 +523,11 @@ VideoImage.prototype.getHeight = function() {
     return this.height;
 };
 
-// Override toDomNode: we don't need a full-fledged canvas here.
+/*// Override toDomNode: we don't need a full-fledged canvas here.
 VideoImage.prototype.toDomNode = function(cache) {
     return this.video.cloneNode(true);
 };
-
+*/
 VideoImage.prototype.isEqual = function(other, aUnionFind) {
     return (other instanceof VideoImage &&
 			this.pinholeX == other.pinholeX &&
@@ -532,8 +549,8 @@ var OverlayImage = function(img1, img2, X, Y) {
 	var pin2X = img2.pinholeX;
 	var pin2Y = img2.pinholeY;
 	
-	// convert relative places to absolute amounts
-	// if they're not relative, use them as absolutes
+	// keep absolute X and Y values
+	// convert relative X,Y to absolute amounts
 	if		(X == "left"  )	var moveX = (pin1X>pin2X)? img2.getWidth()-(pin1X+pin2X) : img1.getWidth()-(pin1X+pin2X);
 	else if (X == "right" )	var moveX = (pin1X>pin2X)? img1.getWidth()-(pin1X+pin2X) : img2.getWidth()-(pin1X+pin2X);
 	else if (X == "beside") var moveX = pin1X+pin2X;
@@ -552,7 +569,6 @@ var OverlayImage = function(img1, img2, X, Y) {
 	var top		= Math.min(0, deltaY);
 	var right	= Math.max(deltaX + img2.getWidth(), img1.getWidth());
 	var bottom	= Math.max(deltaY + img2.getHeight(), img1.getHeight());	
-	
     BaseImage.call(this, 
 		   Math.floor((right-left) / 2),
 		   Math.floor((bottom-top) / 2));
@@ -571,8 +587,10 @@ OverlayImage.prototype = heir(BaseImage.prototype);
 
 
 OverlayImage.prototype.render = function(ctx, x, y) {
+	ctx.save();
     this.img2.render(ctx, x + this.img2Dx, y + this.img2Dy);
     this.img1.render(ctx, x + this.img1Dx, y + this.img1Dy);
+	ctx.restore();
 };
 
 
@@ -645,8 +663,15 @@ var RotateImage = function(angle, img) {
 RotateImage.prototype = heir(BaseImage.prototype);
 
 
-// translate drawing point, so that this.img appears in the UL corner. Then rotate and render this.img.
+// translate the canvas using the calculated values, then draw at the rotated (x,y) offset.
 RotateImage.prototype.render = function(ctx, x, y) {
+	// calculate the new x and y offsets, by rotating the radius formed by the hypoteneuse
+    var sin	= Math.sin(this.angle * Math.PI / 180),
+		cos	= Math.cos(this.angle * Math.PI / 180),
+		r	= Math.sqrt(x*x + y*y);
+	x = Math.ceil(cos * r);
+	y = -Math.floor(sin * r);
+	ctx.save();
 	ctx.translate(this.translateX, this.translateY);
 	ctx.rotate(this.angle * Math.PI / 180);
     this.img.render(ctx, x, y);
@@ -740,17 +765,18 @@ FlipImage.prototype = heir(BaseImage.prototype);
 
 
 FlipImage.prototype.render = function(ctx, x, y) {
+	// when flipping an image of dimension M and offset by N across an axis, 
+	// we need to translate the canvas by M+2N in the opposite direction
 	ctx.save();
 	if(this.direction == "horizontal"){
 		ctx.scale(-1, 1);
-		ctx.translate(-this.width, 0);
+		ctx.translate(-(this.width+2*x), 0);
 		this.img.render(ctx, x, y);
-		ctx.translate(this.width, 0);
-	} else if (this.direction == "vertical"){
+	}
+	if (this.direction == "vertical"){
 		ctx.scale(1, -1);
-		ctx.translate(0, -this.height);
+		ctx.translate(0, -(this.height+2*y));
 		this.img.render(ctx, x, y);
-		ctx.translate(0, this.height);
 	}
 	ctx.restore();
 };
@@ -855,15 +881,13 @@ RhombusImage.prototype = heir(BaseImage.prototype);
 
 
 RhombusImage.prototype.render = function(ctx, x, y) {
-    var width = this.getWidth();
-    var height = this.getHeight();
     ctx.save();
     ctx.beginPath();
 	// if angle < 180 start at the top of the canvas, otherwise start at the bottom
-	ctx.moveTo(width/2, 0);
-	ctx.lineTo(width, height/2);
-	ctx.lineTo(width/2, height);
-	ctx.lineTo(0, height/2);
+	ctx.moveTo(this.getWidth()/2, 0);
+	ctx.lineTo(this.getWidth(), this.getHeight()/2);
+	ctx.lineTo(this.getWidth()/2, this.getHeight());
+	ctx.lineTo(0, this.getHeight()/2);
     ctx.closePath();
 	
     if (this.style.toString().toLowerCase() == "outline") {
@@ -1179,13 +1203,11 @@ TriangleImage.prototype = heir(BaseImage.prototype);
 
 
 TriangleImage.prototype.render = function(ctx, x, y) {
-    var width = this.getWidth();
-    var height = this.getHeight();
     ctx.save();
     ctx.beginPath();
     ctx.moveTo(x + this.side/2, y);
-    ctx.lineTo(x + width, y + height);
-    ctx.lineTo(x, y + height);
+    ctx.lineTo(x + this.getWidth(), y + this.getHeight());
+    ctx.lineTo(x, y + this.getHeight());
     ctx.closePath();
 
     if (this.style.toString().toLowerCase() == "outline") {
@@ -1811,7 +1833,7 @@ world.Kernel.fileImage = function(path, rawImage) {
     return FileImage.makeInstance(path, rawImage);
 };
 world.Kernel.videoImage = function(path, rawVideo) {
-    return new VideoImage(path, rawVideo);
+    return VideoImage.makeInstance(path, rawVideo);
 };
 
 

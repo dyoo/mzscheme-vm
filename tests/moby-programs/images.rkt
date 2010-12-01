@@ -55,7 +55,9 @@
 (overlay 
 	 (rectangle 10 20 'solid 'blue)
 	 (circle 20 'solid 'green))
-
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; OVERLAY
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 "the next two images should be identical"
 (overlay (circle 20 "solid" (make-color  50  50 255))
              (square 40 "solid" (make-color 100 100 255)))
@@ -83,6 +85,9 @@
              (regular-polygon 44 4 "solid" (make-color 250 250 255)))
 			 
 			 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; OVERLAY/XY
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 "should be some overlay/xys"
 (overlay/xy (rectangle 20 20 "outline" "black")
                 20 0
@@ -102,7 +107,10 @@
      15
      (ellipse 10 10 "solid" "forestgreen"))
 		
-"should be two examples of overlay/align"
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; OVERLAY/ALIGN
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+"some examples of overlay/align"
 (overlay/align "middle" "middle"
                    (ellipse 60 30 "solid" "purple")
                    (rectangle 30 60 "solid" "orange"))
@@ -119,7 +127,10 @@
                    (rectangle 40 40 "solid" "silver")
                    (rectangle 50 50 "solid" "seagreen"))
 				   
-"should be some underlays"
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; UNDERLAY
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+"some underlays"
 (underlay (circle 20 'solid 'green)
 	  (rectangle 10 20 'solid 'blue))
 	  
@@ -130,12 +141,17 @@
               (ellipse 50 20 "solid" "red")
               (ellipse 60 10 "solid" "black"))
 
-
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; UNDERLAY/XY
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 "should be an underlay/xy"
 (underlay/xy (circle 20 'solid 'green)
 	     30 10
 	     (rectangle 10 20 'solid 'blue))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; UNDERLAY/ALIGN
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 "should be some examples of underlay/align"
 (underlay/align "middle" "middle"
                    (ellipse 60 30 "solid" "purple")
@@ -153,12 +169,18 @@
                    (rectangle 30 30 "solid" "silver")
                    (rectangle 20 20 "solid" "seagreen"))
 		 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; BESIDE
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 "should be some examples of beside and beside/align"
 (beside (ellipse 20 70 "solid" "gray")
             (ellipse 20 50 "solid" "darkgray")
             (ellipse 20 30 "solid" "dimgray")
             (ellipse 20 10 "solid" "black"))
 			
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; BESIDE/ALIGN
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (beside/align "bottom"
                   (ellipse 20 70 "solid" "lightsteelblue")
                   (ellipse 20 50 "solid" "mediumslateblue")
@@ -171,12 +193,18 @@
                   (ellipse 20 30 "solid" "purple")
                   (ellipse 20 10 "solid" "indigo"))
 				  		 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; ABOVE
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 "should be some examples of above and above/align"
 (above (ellipse 70 20 "solid" "gray")
            (ellipse 50 20 "solid" "darkgray")
            (ellipse 30 20 "solid" "dimgray")
            (ellipse 10 20 "solid" "black"))
 										
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; ABOVE/ALIGN
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (above/align "right"
                  (ellipse 70 20 "solid" "gold")
                  (ellipse 50 20 "solid" "goldenrod")
@@ -188,6 +216,9 @@
                  (ellipse 30 20 "solid" "darkolivegreen")
                  (ellipse 10 20 "solid" "darkgreen"))
 				 				 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; ISOSCELES-TRIANGLE
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 "Three isosceles triangles of various sizes and fills"
 
 (isosceles-triangle 60 30 "solid" "aquamarine")
@@ -195,24 +226,33 @@
 (isosceles-triangle 60 330 "solid" "lightseagreen")
 
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; RIGHT-TRIANGLE
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 "Three right triangles of various sizes and fills"
-
 (right-triangle 36 48 "solid" "black")
 (right-triangle 4 60 "solid" "purple")
 (right-triangle 30 40 "outline" "red")
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; SQUARE
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 "Three squares of various sizes and fills"
-
 (square 60 "outline" "black")
 (square 200 "solid" "seagreen")
 (square 100 "outline" "blue")
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; RHOMBUS 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 "Three rhombuses of various sizes and fills"
-
 (rhombus 40 45 "solid" "magenta")
 (rhombus 100 200 "solid" "orange")
 (rhombus 80 330 "outline" "seagreen")
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; REGULAR-POLYGON
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 "Some regular polygons..."
 "A triangle of side-length 20: should be 20x17"
 (regular-polygon 20 3 "outline" "purple")
@@ -229,14 +269,35 @@
 "A nonagon of side-length 20: should be 58x57"
 (regular-polygon 20 9 "outline" "sienna")
 
-(printf "Three images at 30, 60, 90 degree rotation:\n")
-
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; ROTATE
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+"Three images at 30, 60, 90 degree rotation:"
 (rotate 30 (image-url "http://racket-lang.org/logo.png"))
 (rotate 60 (image-url "http://racket-lang.org/logo.png"))
 (rotate 90 (image-url "http://racket-lang.org/logo.png"))
 
+"Rotated, huge image"
+(rotate 30 (scale 3 (image-url "http://racket-lang.org/logo.png")))
 
-(printf "scaling small and large")
+"From the Racket documentation:"
+(rotate 45 (ellipse 60 20 "solid" "olivedrab"))
+(rotate 5 (rectangle 50 50 "outline" "black"))
+(rotate 45
+            (beside/align
+             "center"
+             (rectangle 40 20 "solid" "darkseagreen")
+             (rectangle 20 100 "solid" "darkseagreen")))
+			    
+(beside
+     (rotate 30 (square 50 "solid" "red"))
+     (flip-horizontal
+      (rotate 30 (square 50 "solid" "blue"))))
+			 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; SCALE & SCALE/XY
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;			 
+"scaling small and large"
 (scale 1/2 (image-url "http://racket-lang.org/logo.png"))
 (scale 2 (image-url "http://racket-lang.org/logo.png"))
 
@@ -246,15 +307,72 @@
 "This should be the normal image"
 (scale/xy 1 1 (image-url "http://racket-lang.org/logo.png"))
 
+"From the Racket documentation: two identical ellipses, and a circle"
+(scale 2 (ellipse 20 30 "solid" "blue"))
+(ellipse 40 60 "solid" "blue")
+(scale/xy	3
+			2
+			(ellipse 20 30 "solid" "blue"))
+			
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; FLIP-VERTICAL & FLIP-HORIZONTAL
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+"a red triangle, a blue one flippled horizontally and a green one flippled vertically"
+(right-triangle 30 40 "solid" "red")
+(flip-horizontal (right-triangle 30 40 "solid" "blue"))
+(flip-vertical (right-triangle 30 40 "solid" "green"))
 
-"Rotated, huge image"
-(rotate 30 (scale 3 (image-url "http://racket-lang.org/logo.png")))
+"one image flipped vertically, and one flipped horizontally"
+(flip-vertical (image-url "http://racket-lang.org/logo.png"))
+(flip-horizontal (image-url "http://racket-lang.org/logo.png"))
 
-"From the racket documentation:"
-(rotate 45 (ellipse 60 20 "solid" "olivedrab"))
-(rotate 5 (rectangle 50 50 "outline" "black"))
+"BESIDE: reference image"
+(beside (square 20 "solid" (make-color  50  50 255))
+             (square 34 "solid" (make-color 150 150 255)))
+
+"flip the second one horizontally"			    
+(beside (square 20 "solid" (make-color  50  50 255))
+             (flip-horizontal (square 34 "solid" (make-color 150 150 255))))
+
+"flip the second one vertically"			    
+(beside (square 20 "solid" (make-color  50  50 255))
+             (flip-vertical (square 34 "solid" (make-color 150 150 255))))
+			    
+"flip the first one horizontally"			    
+(beside (flip-horizontal (square 20 "solid" (make-color  50  50 255)))
+             (square 34 "solid" (make-color 150 150 255)))
+
+"flip the first one vertically"			    
+(beside (flip-vertical (square 20 "solid" (make-color  50  50 255)))
+             (square 34 "solid" (make-color 150 150 255)))
+			    
+"ABOVE: reference image"
+(above (square 20 "solid" (make-color  50  50 255))
+             (square 34 "solid" (make-color 150 150 255)))
+
+"flip the second one horizontally"			    
+(above (square 20 "solid" (make-color  50  50 255))
+             (flip-horizontal (square 34 "solid" (make-color 150 150 255))))
+
+"flip the second one vertically"			    
+(above (square 20 "solid" (make-color  50  50 255))
+             (flip-vertical (square 34 "solid" (make-color 150 150 255))))
+			    
+"flip the first one horizontally"			    
+(above (flip-horizontal (square 20 "solid" (make-color  50  50 255)))
+             (square 34 "solid" (make-color 150 150 255)))
+
+"flip the first one vertically"			    
+(above (flip-vertical (square 20 "solid" (make-color  50  50 255)))
+             (square 34 "solid" (make-color 150 150 255)))
+
+	
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; VIDEO-URL
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(video-url "http://www.youtube.com/demo/google_main.mp4")
+(overlay (circle 20 "solid" "red")
+	(video-url "http://www.youtube.com/demo/google_main.mp4"))
 (rotate 45
-            (beside/align
-             "center"
-             (rectangle 40 20 "solid" "darkseagreen")
-             (rectangle 20 100 "solid" "darkseagreen")))
+	(video-url "http://www.youtube.com/demo/google_main.mp4"))
