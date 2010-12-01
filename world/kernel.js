@@ -1143,7 +1143,6 @@ var TextImage = function(msg, size, color, face, family, style, weight, underlin
 TextImage.prototype = heir(BaseImage.prototype);
 
 TextImage.prototype.render = function(ctx, x, y) {
-	alert('drawing text with font string: '+this.font);
     ctx.save();
     ctx.font		= this.font;
     ctx.textAlign	= 'left';
