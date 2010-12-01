@@ -415,8 +415,8 @@ FileImage.installInstance = function(path, rawImage) {
 };
 
 FileImage.installBrokenImage = function(path) {
-    imageCache[path] = new TextImage("Unable to load " + path, 10, 
-				     colorDb.get("red"));
+    imageCache[path] = new TextImage("Unable to load " + path, 10, colorDb.get("red"),
+									 "normal", "Optimer","","",false);
 };
 
 
@@ -505,8 +505,8 @@ VideoImage.installInstance = function(path, rawImage) {
 };
 
 VideoImage.installBrokenImage = function(path) {
-    videoCache[path] = new TextImage("Unable to load " + path, 10, 
-									 colorDb.get("red"));
+    videoCache[path] = new TextImage("Unable to load " + path, 10, colorDb.get("red"),
+									 "normal", "Optimer","","",false);
 };
 
 VideoImage.prototype.render = function(ctx, x, y) {
@@ -523,11 +523,11 @@ VideoImage.prototype.getHeight = function() {
     return this.height;
 };
 
-/*// Override toDomNode: we don't need a full-fledged canvas here.
+// Override toDomNode: we don't need a full-fledged canvas here.
 VideoImage.prototype.toDomNode = function(cache) {
     return this.video.cloneNode(true);
 };
-*/
+
 VideoImage.prototype.isEqual = function(other, aUnionFind) {
     return (other instanceof VideoImage &&
 			this.pinholeX == other.pinholeX &&
@@ -748,6 +748,101 @@ ScaleImage.prototype.isEqual = function(other, aUnionFind) {
 	     this.yFactor == other.yFactor &&
 	     types.isEqual(this.img, other.img, aUnionFind) );
 };
+
+//////////////////////////////////////////////////////////////////////
+
+// CropImage: startX startY width height image -> image
+// Crop an image
+var CropImage = function(x, y, width, height, img) {
+    
+    BaseImage.call(this, 
+				   Math.floor(width / 2),
+				   Math.floor(height / 2));
+    
+	this.x		= x;
+	this.y		= y;
+    this.width	= width;
+    this.height = height;
+    this.img	= img;
+};
+
+CropImage.prototype = heir(BaseImage.prototype);
+
+
+CropImage.prototype.render = function(ctx, x, y) {
+    ctx.save();
+    ctx.translate(-this.x, -this.y);
+	this.img.render(ctx, x, y);
+    ctx.restore();
+};
+
+
+CropImage.prototype.getWidth = function() {
+    return this.width;
+};
+
+CropImage.prototype.getHeight = function() {
+    return this.height;
+};
+
+CropImage.prototype.isEqual = function(other, aUnionFind) {
+    return ( other instanceof CropImage &&
+			this.pinholeX == other.pinholeX &&
+			this.pinholeY == other.pinholeY &&
+			this.width == other.width &&
+			this.height == other.height &&
+			this.x == other.x &&
+			this.y == other.y &&
+			types.isEqual(this.img, other.img, aUnionFind) );
+};
+
+//////////////////////////////////////////////////////////////////////
+
+
+// FrameImage: factor factor image -> image
+// Stick a frame around the image
+var FrameImage = function(img) {
+    
+    BaseImage.call(this, 
+				   Math.floor(img.getWidth()/ 2),
+				   Math.floor(img.getHeight()/ 2));
+    
+    this.img	= img;
+	this.width	= img.getWidth();
+	this.height = img.getHeight();
+};
+
+FrameImage.prototype = heir(BaseImage.prototype);
+
+
+// scale the context, and pass it to the image's render function
+FrameImage.prototype.render = function(ctx, x, y) {
+    ctx.save();
+    this.img.render(ctx, x, y);
+	ctx.beginPath();
+	ctx.strokeStyle = "black";
+	ctx.strokeRect(x, y, this.width, this.height);
+	ctx.closePath();
+    ctx.restore();
+};
+
+
+FrameImage.prototype.getWidth = function() {
+    return this.width;
+};
+
+FrameImage.prototype.getHeight = function() {
+    return this.height;
+};
+
+FrameImage.prototype.isEqual = function(other, aUnionFind) {
+    return ( other instanceof ScaleImage &&
+			this.pinholeX == other.pinholeX &&
+			this.pinholeY == other.pinholeY &&
+			types.isEqual(this.img, other.img, aUnionFind) );
+};
+
+//////////////////////////////////////////////////////////////////////
 
 // FlipImage: image string -> image
 // Flip an image either horizontally or vertically
@@ -1018,13 +1113,21 @@ PolygonImage.prototype.isEqual = function(other, aUnionFind) {
 
 
 //////////////////////////////////////////////////////////////////////
-var TextImage = function(msg, size, color) {
+var TextImage = function(msg, size, color, face, family, style, weight, underline) {
     BaseImage.call(this, 0, 0);
-    this.msg = msg;
-    this.size = size;
-    this.color = color;
-    this.font = this.size + "px Optimer";
-
+    this.msg	= msg;
+    this.size	= size;
+    this.color	= color;
+	this.face	= face;
+	this.family = family;
+	// Racket's "slant" maps to CSS's "oblique", which is implemented as "italic" on most browsers
+	this.style	= (style == "slant")? "oblique" : style;
+	// Racket's "light" maps to CSS's "lighter"
+	this.weight	= (weight == "light")? "lighter" : weight;
+	this.underline	= underline;
+	// example: "bold italic 20px 'Times', sans-serif". 
+	// Default weight is "normal", face is "Optimer"
+    this.font = this.weight + " " + this.style + " " + this.size + "px '"+ this.face + "' " + this.family;
     
     var canvas = world.Kernel.makeCanvas(0, 0);
     var ctx = canvas.getContext("2d");
@@ -1040,11 +1143,12 @@ var TextImage = function(msg, size, color) {
 TextImage.prototype = heir(BaseImage.prototype);
 
 TextImage.prototype.render = function(ctx, x, y) {
+	alert('drawing text with font string: '+this.font);
     ctx.save();
-    ctx.font = this.font;
-    ctx.textAlign = 'left';
-    ctx.textBaseline = 'top';
-    ctx.fillStyle = colorString(this.color);
+    ctx.font		= this.font;
+    ctx.textAlign	= 'left';
+    ctx.textBaseline= 'top';
+    ctx.fillStyle	= colorString(this.color);
     ctx.fillText(this.msg, x, y);
     ctx.restore();
 };
@@ -1062,9 +1166,14 @@ TextImage.prototype.isEqual = function(other, aUnionFind) {
     return (other instanceof TextImage &&
 	    this.pinholeX == other.pinholeX &&
 	    this.pinholeY == other.pinholeY &&
-	    this.msg == other.msg &&
-	    this.size == other.size &&
-	    types.isEqual(this.color, other.color, aUnionFind) &&
+	    this.msg	== other.msg &&
+	    this.size	== other.size &&
+		this.face	== other.face &&
+		this.family == other.size &&
+		this.style	== other.size &&
+		this.weight == other.size &&
+		this.underline == other.size &&
+		types.isEqual(this.color, other.color, aUnionFind) &&
 	    this.font == other.font);
 };
 
@@ -1823,11 +1932,17 @@ world.Kernel.rotateImage = function(angle, img) {
 world.Kernel.scaleImage = function(xFactor, yFactor, img) {
 	return new ScaleImage(xFactor, yFactor, img);
 };
+world.Kernel.cropImage = function(x, y, width, height, img) {
+	return new CropImage(x, y, width, height, img);
+};
+world.Kernel.frameImage = function(img) {
+	return new FrameImage(img);
+};
 world.Kernel.flipImage = function(img, direction) {
 	return new FlipImage(img, direction);
 };
-world.Kernel.textImage = function(msg, size, color) {
-    return new TextImage(msg, size, color);
+world.Kernel.textImage = function(msg, size, color, face, family, style, weight, underline) {
+    return new TextImage(msg, size, color, face, family, style, weight, underline);
 };
 world.Kernel.fileImage = function(path, rawImage) {
     return FileImage.makeInstance(path, rawImage);
@@ -1852,6 +1967,8 @@ world.Kernel.isLineImage = function(x) { return x instanceof LineImage; };
 world.Kernel.isOverlayImage = function(x) { return x instanceof OverlayImage; };
 world.Kernel.isRotateImage = function(x) { return x instanceof RotateImage; };
 world.Kernel.isScaleImage = function(x) { return x instanceof ScaleImage; };
+world.Kernel.isCropImage = function(x) { return x instanceof CropImage; };
+world.Kernel.isFrameImage = function(x) { return x instanceof FrameImage; };
 world.Kernel.isFlipImage = function(x) { return x instanceof FlipImage; };
 world.Kernel.isTextImage = function(x) { return x instanceof TextImage; };
 world.Kernel.isFileImage = function(x) { return x instanceof FileImage; };

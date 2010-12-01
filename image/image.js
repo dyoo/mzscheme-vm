@@ -78,6 +78,32 @@ var isEqv = function(x, y) {
 var isImage = world.Kernel.isImage;
 var isScene = world.Kernel.isScene;
 var isColor = world.Kernel.isColor;
+var isFontFamily = function(x){
+	return ((isString(x) || isSymbol(x)) &&
+			(x.toString().toLowerCase() == "default" ||
+			 x.toString().toLowerCase() == "decorative" ||
+			 x.toString().toLowerCase() == "roman" ||
+			 x.toString().toLowerCase() == "script" ||
+			 x.toString().toLowerCase() == "swiss" ||
+			 x.toString().toLowerCase() == "modern" ||
+			 x.toString().toLowerCase() == "symbol" ||
+			 x.toString().toLowerCase() == "system"))
+	|| !x;		// false is also acceptable
+};
+var isFontStyle = function(x){
+	return ((isString(x) || isSymbol(x)) &&
+			(x.toString().toLowerCase() == "normal" ||
+			 x.toString().toLowerCase() == "italic" ||
+			 x.toString().toLowerCase() == "slant"))
+	|| !x;		// false is also acceptable
+};
+var isFontWeight = function(x){
+	return ((isString(x) || isSymbol(x)) &&
+			(x.toString().toLowerCase() == "normal" ||
+			 x.toString().toLowerCase() == "bold" ||
+			 x.toString().toLowerCase() == "light"))
+	|| !x;		// false is also acceptable
+};
 var colorDb = world.Kernel.colorDb;
 var isStyle = function(x) {
 	return ((isString(x) || isSymbol(x)) &&
@@ -746,10 +772,35 @@ new PrimProc('scale',
 			 check(img, isImage, "scale", "image", 2, arguments);
 			 
 			 return world.Kernel.scaleImage(jsnums.toFixnum(factor),
-							jsnums.toFixnum(factor),
-							img);
+											jsnums.toFixnum(factor),
+											img);
 			 });
 
+EXPORTS['crop'] =
+new PrimProc('crop',
+			 5,
+			 false, false,
+			 function(x, y, width, height, img) {
+			 check(x,	  isReal, "crop", "finite real number", 1, arguments);
+			 check(y,	  isReal, "crop", "finite real number", 2, arguments);
+			 check(width, isNonNegativeReal, "crop", "positive real number", 3, arguments);
+			 check(height,isNonNegativeReal, "crop", "positive real number", 4, arguments);
+			 check(img,   isImage,"crop", "image", 5, arguments);
+			 return world.Kernel.cropImage(jsnums.toFixnum(x),
+										   jsnums.toFixnum(y),
+										   jsnums.toFixnum(width),
+										   jsnums.toFixnum(height),
+										   img);
+			 });
+
+EXPORTS['frame'] =
+new PrimProc('frame',
+			 1,
+			 false, false,
+			 function(img) {
+			 check(img,   isImage,"frame", "image", 1, arguments);
+			 return world.Kernel.frameImage(img);
+			 });
 
 EXPORTS['flip-vertical'] =
 new PrimProc('flip-vertical',
@@ -784,9 +835,34 @@ EXPORTS['text'] =
 			if (colorDb.get(aColor)) {
 				aColor = colorDb.get(aColor);
 			}
-		        return world.Kernel.textImage(aString.toString(), jsnums.toFixnum(aSize), aColor);
+		        return world.Kernel.textImage(aString.toString(), jsnums.toFixnum(aSize), aColor,
+											  "normal", "Optimer","","",false);
 		 });
 
+
+EXPORTS['text/font'] =
+new PrimProc('text/font',
+			 8,
+			 false, false,
+			 function(aString, aSize, aColor, aFace, aFamily, aStyle, aWeight, aUnderline) {
+			 check(aString, isString,		"text/font", "string",	1, arguments);
+		     check(aSize,	function(x) { return isNatural(x) && jsnums.greaterThan(x, 0) && isByte(x); },
+				   "text/font", "exact integer between 1 and 255",	2, arguments);
+			 check(aColor,	isColor,		"text/font", "color",	3, arguments);
+			 check(aFace,	function(x) {return isString(x) || !x;},		
+											"text/font", "face",	4, arguments);
+			 check(aFamily,	isFontFamily,	"text/font", "family",	5, arguments);
+			 check(aStyle,	isFontStyle,	"text/font", "style",	6, arguments);
+			 check(aWeight,	isFontWeight,	"text/font", "weight",	7, arguments);
+			 check(aUnderline,isBoolean,	"text/font", "underline?",8, arguments);
+			 
+			 if (colorDb.get(aColor)) {
+			 aColor = colorDb.get(aColor);
+			 }
+			 return world.Kernel.textImage(aString.toString(), jsnums.toFixnum(aSize), aColor,
+										   aFace.toString(), aFamily.toString(), aStyle.toString(),
+										   aWeight.toString(), aUnderline);
+			 });
 
 EXPORTS['image-url'] =
     new PrimProc('image-url',

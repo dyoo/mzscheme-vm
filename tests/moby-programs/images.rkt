@@ -35,26 +35,48 @@
 				   50
 				   (empty-scene 100 100))
 
-
-"should be a text:" (text "hello world" 20 'black)
-"should be a text as well:" (text (string-copy "hello world") 20 'black)
-
-
-"should be a blue ellipse" (ellipse 100 200 "solid" "blue")
-
-"should be an image from a url:" (image-url "http://racket-lang.org/logo.png")
-"should be an image from a url:" (open-image-url "http://racket-lang.org/logo.png")
-
-
-
 (check-expect (image?
 	       (put-pinhole (rectangle 20 20 'solid 'green) 0 0))
 	      true)
 
-"should be some overlays"
-(overlay 
-	 (rectangle 10 20 'solid 'blue)
-	 (circle 20 'solid 'green))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; TEXT & TEXT/FONT
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+"simple text functionality" 
+(text "hello world" 20 'black)
+(text (string-copy "hello world") 30 'purple)
+(text "hello world" 40 'red)
+
+
+"test font-weight"
+(text/font "Hello" 24 "purple"
+               "Gill Sans" 'swiss 'normal 'bold #f)
+(text/font "Hello" 24 "green"
+               "Gill Sans" 'swiss 'normal 'light #f)
+  
+"test font-style"
+(text/font "Goodbye" 48 "indigo"
+               "Helvetica" 'modern 'italic 'normal #f)
+(text/font "Goodbye" 48 "indigo"
+               "Helvetica" 'modern 'normal 'normal #f)
+  
+"underline is NOT YET IMPLEMENTED" 
+(text/font "not really a link" 36 "blue"
+              "Courier" 'roman 'normal 'normal #t)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; IMAGE-URL & VIDEO-URL
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(image-url "http://racket-lang.org/logo.png")
+(open-image-url "http://racket-lang.org/logo.png")
+
+(video-url "http://www.youtube.com/demo/google_main.mp4")
+(overlay (circle 20 "solid" "red")
+	(video-url "http://www.youtube.com/demo/google_main.mp4"))
+(rotate 45
+	(video-url "http://www.youtube.com/demo/google_main.mp4"))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; OVERLAY
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -315,6 +337,27 @@
 			(ellipse 20 30 "solid" "blue"))
 			
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; FRAME AND CROP
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;			 
+"frame and crop examples from DrRacket documentation"
+(frame (ellipse 20 20 "outline" "black"))
+
+(beside
+     (ellipse 20 70 "solid" "lightsteelblue")
+     (frame (ellipse 20 50 "solid" "mediumslateblue"))
+     (ellipse 20 30 "solid" "slateblue")
+     (ellipse 20 10 "solid" "navy"))
+	 
+(crop 0 0 40 40 (circle 40 "solid" "chocolate"))
+(crop 40 60 40 60 (ellipse 80 120 "solid" "dodgerblue"))
+(above
+     (beside (crop 40 40 40 40 (circle 40 "solid" "palevioletred"))
+             (crop 0 40 40 40 (circle 40 "solid" "lightcoral")))
+     (beside (crop 40 0 40 40 (circle 40 "solid" "lightcoral"))
+             (crop 0 0 40 40 (circle 40 "solid" "palevioletred"))))
+
+			
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; FLIP-VERTICAL & FLIP-HORIZONTAL
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 "a red triangle, a blue one flippled horizontally and a green one flippled vertically"
@@ -365,14 +408,3 @@
 "flip the first one vertically"			    
 (above (flip-vertical (square 20 "solid" (make-color  50  50 255)))
              (square 34 "solid" (make-color 150 150 255)))
-
-	
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; VIDEO-URL
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(video-url "http://www.youtube.com/demo/google_main.mp4")
-(overlay (circle 20 "solid" "red")
-	(video-url "http://www.youtube.com/demo/google_main.mp4"))
-(rotate 45
-	(video-url "http://www.youtube.com/demo/google_main.mp4"))
