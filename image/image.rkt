@@ -17,6 +17,8 @@
 	 put-pinhole
 	 circle
 	 star
+	 radial-star
+	 star-polygon
 	 nw:rectangle
 	 rectangle
 	 regular-polygon

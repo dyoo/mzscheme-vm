@@ -169,28 +169,38 @@ var scheduleTimerTick = function(window, config) {
 	config.lookup('tickDelay'));
 }
 
-// given two images and an X/Y placement, calculate absolute offsets
+// given two images and an X/Y placement, calculate absolute offsets for their pinholes
 var calculateOffset = function(img1, img2, placeX, placeY){
-	var pin1X = img1.pinholeX;
-	var pin1Y = img1.pinholeY;
-	var pin2X = img2.pinholeX;
-	var pin2Y = img2.pinholeY;
+	
+	// calculate centers using width/height, so we are scene/image agnostic
+	var c1x = img1.getWidth()/2;
+	var c1y = img1.getHeight()/2; 
+	var c2x = img2.getWidth()/2;
+	var c2y = img2.getHeight()/2;
+	
 	
 	// keep absolute X and Y values
 	// convert relative X,Y to absolute amounts
-	if		(placeX == "left"  ) var X = (pin1X>pin2X)? img2.getWidth()-(pin1X+pin2X) : img1.getWidth()-(pin1X+pin2X);
-	else if (placeX == "right" ) var X = (pin1X>pin2X)? img1.getWidth()-(pin1X+pin2X) : img2.getWidth()-(pin1X+pin2X);
-	else if (placeX == "beside") var X = pin1X+pin2X;
+	if		(placeX == "left"  ) var X = (c1x>c2x)? img2.getWidth()-(c1x+c2x) : img1.getWidth()-(c1x+c2x);
+	else if (placeX == "right" ) var X = (c1x>c2x)? img1.getWidth()-(c1x+c2x) : img2.getWidth()-(c1x+c2x);
+	else if (placeX == "beside") var X = c1x+c2x;
 	else if (placeX == "middle" || 
 			 placeX == "center") var X = 0;
 	else						 var X = placeX;
-	if		(placeY == "top"   ) var Y = (pin1Y>pin2Y)? img2.getHeight()-(pin1Y+pin2Y) : img1.getHeight()-(pin1Y+pin2Y);
-	else if (placeY == "bottom") var Y = (pin1Y>pin2Y)? img1.getHeight()-(pin1Y+pin2Y) : img2.getHeight()-(pin1Y+pin2Y);
-	else if (placeY == "above" ) var Y = pin1Y+pin2Y;
+	if		(placeY == "top"   ) var Y = (c1y>c2y)? img2.getHeight()-(c1y+c2y) : img1.getHeight()-(c1y+c2y);
+	else if (placeY == "bottom") var Y = (c1y>c2y)? img1.getHeight()-(c1y+c2y) : img2.getHeight()-(c1y+c2y);
+	else if (placeY == "above" ) var Y = c1y+c2y;
 	else if (placeY == "middle" || 
 			 placeY == "center") var Y = 0;
 	else						 var Y = placeY;
 
+	// correct offsets when dealing with Scenes instead of images
+	if(isScene(img1)){
+		X = X + c1x; Y = Y + c1x;
+	}
+	if(isScene(img2)){
+		X = X - c2x; Y = Y - c2x;
+	}
 	return {x: X, y: Y};
 }
 
@@ -1020,7 +1030,7 @@ RhombusImage.prototype.isEqual = function(other, aUnionFind) {
 
 //////////////////////////////////////////////////////////////////////
 
-var PolygonImage = function(length, count, style, color) {
+var PolygonImage = function(length, count, step, style, color) {
 	this.aVertices = [];
 	var xMax = 0;
 	var yMax = 0;
@@ -1037,7 +1047,11 @@ var PolygonImage = function(length, count, style, color) {
 	
 	// rotate around outer circle, storing x,y pairs as vertices
 	// keep track of mins and maxs
-	for(var radians = 0; radians < 2*Math.PI; radians += 2*Math.PI/count) {
+	var radians = 0;
+	for(var i = 0; i < count; i++) {
+		// rotate to the next vertex (skipping by this.step)
+		radians = radians + (step*2*Math.PI/count);
+		
 		var v = {	x: this.outerRadius*Math.cos(radians-adjust),
 					y: this.outerRadius*Math.sin(radians-adjust) };
 		if(v.x < xMin) xMin = v.x;
@@ -1055,14 +1069,14 @@ var PolygonImage = function(length, count, style, color) {
 		if(this.aVertices[i].y > yMax) yMax = this.aVertices[i].y+1;
 	}
 	
-    this.width = Math.round(xMax-xMin);
-    this.height= Math.floor(yMax-yMin);
-//    BaseImage.call(this, this.innerRadius, ((count % 2)? this.outerRadius : this.innerRadius));
+    this.width	= Math.round(xMax-xMin);
+    this.height	= Math.floor(yMax-yMin);
+    this.length	= length;
+    this.count	= count;
+	this.step	= step;
+    this.style	= style;
+    this.color	= color;
 	BaseImage.call(this, Math.floor(this.width/2), Math.floor(this.height/2));
-    this.length= length;
-    this.count = count;
-    this.style = style;
-    this.color = color;
 };
 PolygonImage.prototype = heir(BaseImage.prototype);
 
@@ -1109,6 +1123,7 @@ PolygonImage.prototype.isEqual = function(other, aUnionFind) {
 			this.pinholeX == other.pinholeX &&
 			this.pinholeY == other.pinholeY &&
 			this.length == other.length &&
+			this.step == other.step &&
 			this.count == other.count &&
 			this.style == other.style &&
 			types.isEqual(this.color, other.color, aUnionFind));
@@ -1239,8 +1254,8 @@ CircleImage.prototype.isEqual = function(other, aUnionFind) {
 //////////////////////////////////////////////////////////////////////
 
 
-// StarImage: fixnum fixnum fixnum color -> image
-var StarImage = function(points, outer, inner, style, color) {
+// RadialStarImage: fixnum fixnum fixnum color -> image
+var RadialStarImage = function(points, outer, inner, style, color) {
     BaseImage.call(this,
 		   Math.max(outer, inner),
 		   Math.max(outer, inner));
@@ -1253,7 +1268,7 @@ var StarImage = function(points, outer, inner, style, color) {
     this.radius = Math.max(this.inner, this.outer);
 };
 
-StarImage.prototype = heir(BaseImage.prototype);
+RadialStarImage.prototype = heir(BaseImage.prototype);
 
 var oneDegreeAsRadian = Math.PI / 180;
 
@@ -1261,7 +1276,7 @@ var oneDegreeAsRadian = Math.PI / 180;
 // Draws a star on the given context.
 // Most of this code here adapted from the Canvas tutorial at:
 // http://developer.apple.com/safari/articles/makinggraphicswithcanvas.html
-StarImage.prototype.render = function(ctx, x, y) {
+RadialStarImage.prototype.render = function(ctx, x, y) {
     ctx.save();
     ctx.beginPath();
     for( var pt = 0; pt < (this.points * 2) + 1; pt++ ) {
@@ -1283,18 +1298,18 @@ StarImage.prototype.render = function(ctx, x, y) {
 };
 
 // getWidth: -> fixnum
-StarImage.prototype.getWidth = function() {
+RadialStarImage.prototype.getWidth = function() {
     return this.radius * 2;
 };
 
 
 // getHeight: -> fixnum
-StarImage.prototype.getHeight = function() {
+RadialStarImage.prototype.getHeight = function() {
     return this.radius * 2;
 };
 
-StarImage.prototype.isEqual = function(other, aUnionFind) {
-    return (other instanceof StarImage &&
+RadialStarImage.prototype.isEqual = function(other, aUnionFind) {
+    return (other instanceof RadialStarImage &&
 	    this.pinholeX == other.pinholeX &&
 	    this.pinholeY == other.pinholeY &&
 	    this.points == other.points &&
@@ -1909,8 +1924,8 @@ world.Kernel.sceneImage = function(width, height, children, withBorder) {
 world.Kernel.circleImage = function(radius, style, color) {
     return new CircleImage(radius, style, color);
 };
-world.Kernel.starImage = function(points, outer, inner, style, color) {
-    return new StarImage(points, outer, inner, style, color);
+world.Kernel.radialStarImage = function(points, outer, inner, style, color) {
+    return new RadialStarImage(points, outer, inner, style, color);
 };
 world.Kernel.rectangleImage = function(width, height, style, color) {
     return new RectangleImage(width, height, style, color);
@@ -1918,8 +1933,8 @@ world.Kernel.rectangleImage = function(width, height, style, color) {
 world.Kernel.rhombusImage = function(side, angle, style, color) {
     return new RhombusImage(side, angle, style, color);
 };
-world.Kernel.polygonImage = function(length, count, style, color) {
-    return new PolygonImage(length, count, style, color);
+world.Kernel.polygonImage = function(length, count, step, style, color) {
+    return new PolygonImage(length, count, step, style, color);
 };
 world.Kernel.squareImage = function(length, style, color) {
     return new RectangleImage(length, length, style, color);
@@ -1970,7 +1985,7 @@ world.Kernel.videoImage = function(path, rawVideo) {
 
 world.Kernel.isSceneImage = function(x) { return x instanceof SceneImage; };
 world.Kernel.isCircleImage = function(x) { return x instanceof CircleImage; };
-world.Kernel.isStarImage = function(x) { return x instanceof StarImage; };
+world.Kernel.isRadialStarImage = function(x) { return x instanceof RadialStarImage; };
 world.Kernel.isRectangleImage = function(x) { return x instanceof RectangleImage; };
 world.Kernel.isPolygonImage = function(x) { return x instanceof PolygonImage; };
 world.Kernel.isRhombusImage = function(x) { return x instanceof RhombusImage; };

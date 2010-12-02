@@ -73,9 +73,11 @@
 
 (text/font "not really a link" 36 "blue"
               "Courier" 'roman 'italic 'normal #t)
+			  
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; IMAGE-URL & VIDEO-URL
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+"importing images and video"
 (image-url "http://racket-lang.org/logo.png")
 (open-image-url "http://racket-lang.org/logo.png")
 
@@ -172,17 +174,13 @@
               (ellipse 60 10 "solid" "black"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; UNDERLAY/XY
+;; UNDERLAY/XY & UNDERLAY/ALIGN
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-"should be an underlay/xy"
+"examples of underlay and underlay/align"
 (underlay/xy (circle 20 'solid 'green)
 	     30 10
 	     (rectangle 10 20 'solid 'blue))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; UNDERLAY/ALIGN
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-"should be some examples of underlay/align"
 (underlay/align "middle" "middle"
                    (ellipse 60 30 "solid" "purple")
                    (rectangle 30 60 "solid" "orange"))
@@ -200,17 +198,14 @@
                    (rectangle 20 20 "solid" "seagreen"))
 		 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; BESIDE
+;; BESIDE & BESIDE/ALIGN
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-"should be some examples of beside and beside/align"
+"examples of beside and beside/align"
 (beside (ellipse 20 70 "solid" "gray")
             (ellipse 20 50 "solid" "darkgray")
             (ellipse 20 30 "solid" "dimgray")
             (ellipse 20 10 "solid" "black"))
 			
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; BESIDE/ALIGN
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (beside/align "bottom"
                   (ellipse 20 70 "solid" "lightsteelblue")
                   (ellipse 20 50 "solid" "mediumslateblue")
@@ -224,7 +219,7 @@
                   (ellipse 20 10 "solid" "indigo"))
 				  		 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; ABOVE
+;; ABOVE & ABOVE/ALIGN
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 "should be some examples of above and above/align"
 (above (ellipse 70 20 "solid" "gray")
@@ -232,9 +227,6 @@
            (ellipse 30 20 "solid" "dimgray")
            (ellipse 10 20 "solid" "black"))
 										
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; ABOVE/ALIGN
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (above/align "right"
                  (ellipse 70 20 "solid" "gold")
                  (ellipse 50 20 "solid" "goldenrod")
@@ -251,18 +243,22 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; PLACE-IMAGE/ALIGN
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-"a circle in the center, top-left and bomttom-right of the scene"
+"should be right in the center"
 (place-image/align (circle 16 "solid" "yellow")
                        32 32 "center" "center"
                        (rectangle 64 64 "solid" "goldenrod"))
+
+"should be at the bottom-right corner"
 (place-image/align (circle 16 "solid" "yellow")
                        32 32 "left" "top"
                        (rectangle 64 64 "solid" "goldenrod"))
+
+"should be at the upper-left corner"
 (place-image/align (circle 16 "solid" "yellow")
                        32 32 "right" "bottom"
                        (rectangle 64 64 "solid" "goldenrod"))  
 			   
-"from the DrRacket documentation"
+"test 'beside' with scenes -- from the DrRacket documentation"
 (beside (place-image/align (circle 8 "solid" "tomato")
 				0 0 "center" "center"
 				(rectangle 32 32 "outline" "black"))
@@ -277,7 +273,8 @@
 						(rectangle 32 32 "outline" "black"))
 		(place-image/align (circle 8 "solid" "tomato")
 						32 32 "center" "center"
-						(rectangle 32 32 "outline" "black"))) 				 
+						(rectangle 32 32 "outline" "black"))) 	
+									 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; ISOSCELES-TRIANGLE
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -287,7 +284,19 @@
 (isosceles-triangle 200 170 "outline" "seagreen")
 (isosceles-triangle 60 330 "solid" "lightseagreen")
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; STAR, RADIAL-STAR & STAR-POLYGON
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+"radial stars from the DrRacket documentation"
+(radial-star 8 8 64 "solid" "darkslategray")
+(radial-star 32 30 40 "outline" "black")
+(radial-star 5 20 40 "solid" "red")
 
+(star-polygon 40 5 2 "solid" "seagreen")
+(star-polygon 40 7 3 "outline" "darkred")
+(star-polygon 20 10 3 "solid" "cornflowerblue")
+"should look like a pentagon"
+(star-polygon 20 5 1 "solid" "darkblue")
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; RIGHT-TRIANGLE
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -317,19 +326,19 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 "Some regular polygons..."
 "A triangle of side-length 20: should be 20x17"
-(regular-polygon 20 3 "outline" "purple")
+(regular-polygon 20 3 "solid" "purple")
 "A square of side-length 40: should be 40x40"
-(regular-polygon 40 4 "outline" "aquamarine")
+(regular-polygon 40 4 "solid" "aquamarine")
 "A pentagon of side-length 30: should be 49x46"
 (regular-polygon 30 5 "solid" "pink")
 "A hexagon of side-length 20: should be 40x35"
-(regular-polygon 20 6 "outline" "gold")
+(regular-polygon 20 6 "solid" "gold")
 "A septagon of side-length 40: should be 90x88"
-(regular-polygon 40 7 "outline" "goldenrod")
+(regular-polygon 40 7 "solid" "goldenrod")
 "An octagon of side-length 30: should be 72x72"
-(regular-polygon 30 8 "outline" "darkgoldenrod")
+(regular-polygon 30 8 "solid" "darkgoldenrod")
 "A nonagon of side-length 20: should be 58x57"
-(regular-polygon 20 9 "outline" "sienna")
+(regular-polygon 20 9 "solid" "sienna")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; ROTATE
@@ -415,7 +424,7 @@
   
 (add-line
       (rectangle 100 100 "solid" "darkolivegreen")
-      25 25 75 75
+     25 25 100 100
       "goldenrod")
 	  
 "Three tests for lines+scene: should be identical to above, but cropped around base image"

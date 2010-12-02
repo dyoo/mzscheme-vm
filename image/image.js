@@ -408,12 +408,37 @@ EXPORTS['star'] =
 			if (colorDb.get(aColor)) {
 				aColor = colorDb.get(aColor);
 			}
-			return world.Kernel.starImage(jsnums.toFixnum(aPoints),
+			return world.Kernel.radialStarImage(jsnums.toFixnum(aPoints),
 						      jsnums.toFixnum(anOuter),
 						      jsnums.toFixnum(anInner),
 						      aStyle.toString(),
 						      aColor);
 		 });
+
+
+EXPORTS['radial-star'] =
+new PrimProc('radial-star',
+			 5,
+			 false, false,
+			 function(aPoints, anOuter, anInner, aStyle, aColor) {
+			 check(aPoints, function(x) { return isNatural(x) && jsnums.greaterThanOrEqual(x, 3); },
+									"radial-star", "positive integer greater than or equal to 3", 1, arguments);
+			 check(anOuter, function(x) { return isReal(x) && jsnums.greaterThan(x, 0); },
+									"radial-star", "positive number", 2, arguments);
+			 check(anInner, function(x) { return isReal(x) && jsnums.greaterThan(x, 0); },
+									"radial-star", "positive number", 2, arguments);
+			 check(aStyle, isStyle, "radial-star", "style", 4, arguments);
+			 check(aColor, isColor, "radial-star", "color", 5, arguments);
+			 
+			 if (colorDb.get(aColor)) {
+			 aColor = colorDb.get(aColor);
+			 }
+			 return world.Kernel.radialStarImage(jsnums.toFixnum(aPoints),
+												 jsnums.toFixnum(anOuter),
+												 jsnums.toFixnum(anInner),
+												 aStyle.toString(),
+												 aColor);
+			 });
 
 
 EXPORTS['nw:rectangle'] =
@@ -459,15 +484,43 @@ new PrimProc('regular-polygon',
 			 4,
 			 false, false,
 			 function(length, count, s, c) {
-			 check(length, isNonNegativeReal, "regular-polygon", "non-negative number", 1, arguments);
-			 check(count, isNonNegativeReal, "regular-polygon", "non-negative integer greater than 3", 2, arguments);
-			 check(s, isStyle, "regular-polygon", "style", 3, arguments);
-			 check(c, isColor, "regular-polygon", "color", 4, arguments);
+			 check(length,	isNonNegativeReal, "regular-polygon", "non-negative number", 1, arguments);
+			 check(count,	function(x) { return isNatural(x) && jsnums.greaterThanOrEqual(x, 3); },
+				   "regular-polygon", "positive integer greater than or equal to 3", 2, arguments);
+			 check(s,		isStyle, "regular-polygon", "style", 3, arguments);
+			 check(c,		isColor, "regular-polygon", "color", 4, arguments);
 			 
 			 if (colorDb.get(c)) {
 			 c = colorDb.get(c);
 			 }
-			 return world.Kernel.polygonImage(jsnums.toFixnum(length), jsnums.toFixnum(count), s.toString(), c);
+			 return world.Kernel.polygonImage(jsnums.toFixnum(length), 
+											  jsnums.toFixnum(count), 
+											  jsnums.toFixnum(1), 
+											  s.toString(), 
+											  c);
+			 });
+
+EXPORTS['star-polygon'] =
+new PrimProc('star-polygon',
+			 5,
+			 false, false,
+			 function(length, count, step, s, c) {
+			 check(length,	isNonNegativeReal, "star-polygon", "non-negative number", 1, arguments);
+			 check(count,	function(x) { return isNatural(x) && jsnums.greaterThanOrEqual(x, 3); },
+										"star-polygon", "positive integer greater than or equal to 3", 2, arguments);
+			 check(step,	function(x) { return isNatural(x) && jsnums.greaterThanOrEqual(x, 1); },
+										"star-polygon", "positive integer greater than or equal to 3", 3, arguments);
+			 check(s,		isStyle,	"star-polygon", "style", 4, arguments);
+			 check(c,		isColor,	"star-polygon", "color", 5, arguments);
+			 
+			 if (colorDb.get(c)) {
+			 c = colorDb.get(c);
+			 }
+			 return world.Kernel.polygonImage(jsnums.toFixnum(length), 
+											  jsnums.toFixnum(count), 
+											  jsnums.toFixnum(step), 
+											  s.toString(), 
+											  c);
 			 });
 
 EXPORTS['rhombus'] =
@@ -742,10 +795,7 @@ new PrimProc('beside',
 												 "middle");
 			 
 			 for (var i = 0; i < restImages.length; i++)
-			 img = world.Kernel.overlayImage(img,
-											 restImages[i], 
-											 "beside",
-											 "middle");
+			 img = world.Kernel.overlayImage(img,restImages[i], "beside", "middle");
 			 
 		     return img;
 			 });
