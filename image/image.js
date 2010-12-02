@@ -300,6 +300,68 @@ EXPORTS['place-image'] =
 		 });
 
 
+EXPORTS['place-image/align'] =
+new PrimProc('place-image/align',
+			 6,
+			 false, false,
+			 function(img, x, y, placeX, placeY, background) {
+			 check(img,		isImage,	"place-image/align", "image",	1, arguments);
+			 check(x,		isReal,		"place-image/align", "real",	2, arguments);
+			 check(y,		isReal,		"place-image/align", "real",	3, arguments);
+			 check(placeX,	isPlaceX,	"place-image/align", "x-place", 4, arguments);
+			 check(placeY,	isPlaceY,	"place-image/align", "y-place", 5, arguments);
+			 check(background, function(x) { return isScene(x) || isImage(x) },
+										"place-image/align", "image",	6, arguments);
+			 
+			 // calculate x and y based on placeX and placeY
+			 if		 (placeX == "left"  ) x = x + img.pinholeX;
+			 else if (placeX == "right" ) x = x - img.pinholeX;
+			 if		 (placeY == "top"   ) y = y + img.pinholeY;
+			 else if (placeY == "bottom") y = y - img.pinholeY;
+
+			 if (isScene(background)) {
+			 return background.add(img, jsnums.toFixnum(x), jsnums.toFixnum(y));
+			 } else {
+			 var newScene = world.Kernel.sceneImage(background.getWidth(),
+													background.getHeight(),
+													[], 
+													false);
+			 newScene = newScene.add(background.updatePinhole(0, 0), 0, 0);
+			 newScene = newScene.add(img, jsnums.toFixnum(x), jsnums.toFixnum(y));
+			 return newScene;
+			 }
+			 });
+
+
+EXPORTS['scene+line'] =
+new PrimProc('scene+line',
+			 6,
+			 false, false,
+			 function(img, x1, y1, x2, y2, c) {
+			 check(img,		isImage,	"scene+line", "image",				1, arguments);
+			 check(x1,		isReal,		"scene+line", "finite real number", 2, arguments);
+			 check(y1,		isReal,		"scene+line", "finite real number", 3, arguments);
+			 check(x2,		isReal,		"scene+line", "finite real number", 4, arguments);
+			 check(y2,		isReal,		"scene+line", "finite real number", 5, arguments);
+			 check(c,		isColor,	"scene+line", "color",				6, arguments);
+			 if (colorDb.get(c)) {
+			 c = colorDb.get(c);
+			 }
+			 // make a scene containing the image
+		     newScene = world.Kernel.sceneImage(jsnums.toFixnum(img.getWidth()), 
+												jsnums.toFixnum(img.getHeight()), 
+												[],
+												true);
+			 newScene = newScene.add(img.updatePinhole(0, 0), 0, 0);
+			 // make an image containing the line
+			 line = world.Kernel.lineImage(jsnums.toFixnum(x2-x1),
+										   jsnums.toFixnum(y2-y1),
+										   c,
+										   false);
+			 // add the line to scene, offset by the original amount
+			 return newScene.add(line, jsnums.toFixnum(x1), jsnums.toFixnum(y1));
+			 });
+
 EXPORTS['put-pinhole'] =
     new PrimProc('put-pinhole',
 		 3,
@@ -522,6 +584,28 @@ EXPORTS['line'] =
 							  c);
 		        return line;
 		 });
+
+
+EXPORTS['add-line'] =
+new PrimProc('add-line',
+			 6,
+			 false, false,
+			 function(img, x1, y1, x2, y2, c) {
+			 check(img, isImage,	"add-line", "image",			  1, arguments);
+			 check(x1,	isReal,		"add-line", "finite real number", 2, arguments);
+			 check(y1,	isReal,		"add-line", "finite real number", 3, arguments);
+			 check(x2,	isReal,		"add-line", "finite real number", 4, arguments);
+			 check(y2,	isReal,		"add-line", "finite real number", 5, arguments);
+			 check(c,	isColor,	"add-line", "color",			  6, arguments);
+			 if (colorDb.get(c)) {
+				c = colorDb.get(c);
+			 }
+			 line = world.Kernel.lineImage(jsnums.toFixnum(x2-x1),
+										   jsnums.toFixnum(y2-y1),
+										   c,
+										   true);
+			 return world.Kernel.overlayImage(line, img, "middle", "middle");
+			 });
 
 
 EXPORTS['overlay'] =

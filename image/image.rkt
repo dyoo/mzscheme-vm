@@ -11,7 +11,9 @@
 	 color-green
 	 color-blue
 	 empty-scene
+	 scene+line
 	 place-image
+	 place-image/align
 	 put-pinhole
 	 circle
 	 star
@@ -25,6 +27,7 @@
 	 isosceles-triangle
 	 ellipse
 	 line
+	 add-line
 	 overlay
 	 overlay/xy
 	 overlay/align
@@ -38,9 +41,12 @@
 	 rotate
 	 scale
 	 scale/xy
+	 crop
+	 frame
 	 flip-horizontal
 	 flip-vertical
 	 text
+	 text/font
 	 video-url
 	 image-url
 	 image-width

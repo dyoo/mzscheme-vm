@@ -60,22 +60,30 @@
                "Helvetica" 'modern 'italic 'normal #f)
 (text/font "Goodbye" 48 "indigo"
                "Helvetica" 'modern 'normal 'normal #f)
-  
-"underline is NOT YET IMPLEMENTED" 
-(text/font "not really a link" 36 "blue"
-              "Courier" 'roman 'normal 'normal #t)
 
+"test underline-height calculation"
+(text/font "test this!" 80 "purple"
+              "Helvetica" 'roman 'normal 'normal #t)
+			  
+(text/font "low-hanging glyphs" 36 "blue"
+              "Times" 'roman 'normal 'bold #t)  
+
+(text/font "teeny-tiny text" 8 "black"
+              "Times" 'roman 'normal 'bold #t)  
+
+(text/font "not really a link" 36 "blue"
+              "Courier" 'roman 'italic 'normal #t)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; IMAGE-URL & VIDEO-URL
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (image-url "http://racket-lang.org/logo.png")
 (open-image-url "http://racket-lang.org/logo.png")
 
-(video-url "http://www.youtube.com/demo/google_main.mp4")
-(overlay (circle 20 "solid" "red")
-	(video-url "http://www.youtube.com/demo/google_main.mp4"))
-(rotate 45
-	(video-url "http://www.youtube.com/demo/google_main.mp4"))
+;(video-url "http://www.youtube.com/demo/google_main.mp4")
+;(overlay (circle 20 "solid" "red")
+;	(video-url "http://www.youtube.com/demo/google_main.mp4"))
+;(rotate 45
+;	(video-url "http://www.youtube.com/demo/google_main.mp4"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; OVERLAY
@@ -237,7 +245,39 @@
                  (ellipse 50 20 "solid" "olivedrab")
                  (ellipse 30 20 "solid" "darkolivegreen")
                  (ellipse 10 20 "solid" "darkgreen"))
-				 				 
+				
+								 
+												 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; PLACE-IMAGE/ALIGN
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+"a circle in the center, top-left and bomttom-right of the scene"
+(place-image/align (circle 16 "solid" "yellow")
+                       32 32 "center" "center"
+                       (rectangle 64 64 "solid" "goldenrod"))
+(place-image/align (circle 16 "solid" "yellow")
+                       32 32 "left" "top"
+                       (rectangle 64 64 "solid" "goldenrod"))
+(place-image/align (circle 16 "solid" "yellow")
+                       32 32 "right" "bottom"
+                       (rectangle 64 64 "solid" "goldenrod"))  
+			   
+"from the DrRacket documentation"
+(beside (place-image/align (circle 8 "solid" "tomato")
+				0 0 "center" "center"
+				(rectangle 32 32 "outline" "black"))
+		(place-image/align (circle 8 "solid" "tomato")
+						8 8 "center" "center"
+						(rectangle 32 32 "outline" "black"))
+		(place-image/align (circle 8 "solid" "tomato")
+						16 16 "center" "center"
+						(rectangle 32 32 "outline" "black"))
+		(place-image/align (circle 8 "solid" "tomato")
+						24 24 "center" "center"
+						(rectangle 32 32 "outline" "black"))
+		(place-image/align (circle 8 "solid" "tomato")
+						32 32 "center" "center"
+						(rectangle 32 32 "outline" "black"))) 				 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; ISOSCELES-TRIANGLE
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -356,7 +396,40 @@
      (beside (crop 40 0 40 40 (circle 40 "solid" "lightcoral"))
              (crop 0 0 40 40 (circle 40 "solid" "palevioletred"))))
 
-			
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; LINE, ADD-LINE & SCENE+LINE
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+"Three tests for line"
+(line 30 30 "black")
+  
+(line -30 20 "red")
+  
+(line 30 -20 "red")
+
+"Three tests for add-line"
+(add-line (ellipse 40 40 "outline" "maroon")
+              0 40 40 0 "maroon")
+  
+(add-line (rectangle 40 40 "solid" "gray")
+              -10 50 50 -10 "maroon")
+  
+(add-line
+      (rectangle 100 100 "solid" "darkolivegreen")
+      25 25 75 75
+      "goldenrod")
+	  
+"Three tests for lines+scene: should be identical to above, but cropped around base image"
+(scene+line (ellipse 40 40 "outline" "maroon")
+                0 40 40 0 "maroon")
+  
+(scene+line (rectangle 40 40 "solid" "gray")
+                -10 50 50 -10 "maroon")
+  
+(scene+line
+     (rectangle 100 100 "solid" "darkolivegreen")
+     25 25 100 100
+      "goldenrod")
+	  
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; FLIP-VERTICAL & FLIP-HORIZONTAL
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

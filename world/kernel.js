@@ -169,7 +169,30 @@ var scheduleTimerTick = function(window, config) {
 	config.lookup('tickDelay'));
 }
 
+// given two images and an X/Y placement, calculate absolute offsets
+var calculateOffset = function(img1, img2, placeX, placeY){
+	var pin1X = img1.pinholeX;
+	var pin1Y = img1.pinholeY;
+	var pin2X = img2.pinholeX;
+	var pin2Y = img2.pinholeY;
+	
+	// keep absolute X and Y values
+	// convert relative X,Y to absolute amounts
+	if		(placeX == "left"  ) var X = (pin1X>pin2X)? img2.getWidth()-(pin1X+pin2X) : img1.getWidth()-(pin1X+pin2X);
+	else if (placeX == "right" ) var X = (pin1X>pin2X)? img1.getWidth()-(pin1X+pin2X) : img2.getWidth()-(pin1X+pin2X);
+	else if (placeX == "beside") var X = pin1X+pin2X;
+	else if (placeX == "middle" || 
+			 placeX == "center") var X = 0;
+	else						 var X = placeX;
+	if		(placeY == "top"   ) var Y = (pin1Y>pin2Y)? img2.getHeight()-(pin1Y+pin2Y) : img1.getHeight()-(pin1Y+pin2Y);
+	else if (placeY == "bottom") var Y = (pin1Y>pin2Y)? img1.getHeight()-(pin1Y+pin2Y) : img2.getHeight()-(pin1Y+pin2Y);
+	else if (placeY == "above" ) var Y = pin1Y+pin2Y;
+	else if (placeY == "middle" || 
+			 placeY == "center") var Y = 0;
+	else						 var Y = placeY;
 
+	return {x: X, y: Y};
+}
 
 
 // Base class for all images.
@@ -465,6 +488,7 @@ var VideoImage = function(src, rawVideo) {
 		this.video.poster	= "http://www.wescheme.org/images/broken.png";
 		this.video.autoplay	= true;
 		this.video.autobuffer=true;
+		this.video.controls = true;
 		this.video.play();
     } else {
 		// fixme: we may want to do something blocking here for
@@ -481,6 +505,7 @@ var VideoImage = function(src, rawVideo) {
 									this.video.poster	= "http://www.wescheme.org/images/broken.png";
 									this.video.autoplay	= true;
 									this.video.autobuffer=true;
+									this.video.controls = true;
 									this.video.play();
 									});
 		this.video.addEventListener('error', function(e) {
@@ -492,25 +517,18 @@ var VideoImage = function(src, rawVideo) {
 VideoImage.prototype = heir(BaseImage.prototype);
 
 
-var videoCache = {};
-VideoImage.makeInstance = function(path, rawImage) {
+videos = {};
+VideoImage.makeInstance = function(path, rawVideo) {
     if (! (path in VideoImage)) {
-		videoCache[path] = new VideoImage(path, rawImage);
+		videos[path] = {obj: new VideoImage(path, rawVideo), ctx: null};
     } 
-    return videoCache[path];
-};
-
-VideoImage.installInstance = function(path, rawImage) {
-    videoCache[path] = new VideoImage(path, rawImage);
-};
-
-VideoImage.installBrokenImage = function(path) {
-    videoCache[path] = new TextImage("Unable to load " + path, 10, colorDb.get("red"),
-									 "normal", "Optimer","","",false);
+    return videos[path].obj;
 };
 
 VideoImage.prototype.render = function(ctx, x, y) {
     ctx.drawImage(this.video, x, y);
+	videos[this.src].ctx = ctx;
+	setInterval('videos["'+this.src+'"].obj.render(videos["'+this.src+'"].ctx,'+x+','+y+');', 800);
 };
 
 
@@ -523,11 +541,12 @@ VideoImage.prototype.getHeight = function() {
     return this.height;
 };
 
-// Override toDomNode: we don't need a full-fledged canvas here.
+/*
+ // Override toDomNode: we don't need a full-fledged canvas here.
 VideoImage.prototype.toDomNode = function(cache) {
     return this.video.cloneNode(true);
 };
-
+*/
 VideoImage.prototype.isEqual = function(other, aUnionFind) {
     return (other instanceof VideoImage &&
 			this.pinholeX == other.pinholeX &&
@@ -541,29 +560,13 @@ VideoImage.prototype.isEqual = function(other, aUnionFind) {
 
 // OverlayImage: image image -> image
 // Creates an image that overlays img1 on top of the
-// other image.  X and Y are absolute deltas off the
-// first image's pinhole, OR relative places.
+// other image. 
 var OverlayImage = function(img1, img2, X, Y) {
-	var pin1X = img1.pinholeX;
-	var pin1Y = img1.pinholeY;
-	var pin2X = img2.pinholeX;
-	var pin2Y = img2.pinholeY;
+	// convert places ("middle", "top", etc) into numbers
+	var offset = calculateOffset(img1, img2, X, Y);
 	
-	// keep absolute X and Y values
-	// convert relative X,Y to absolute amounts
-	if		(X == "left"  )	var moveX = (pin1X>pin2X)? img2.getWidth()-(pin1X+pin2X) : img1.getWidth()-(pin1X+pin2X);
-	else if (X == "right" )	var moveX = (pin1X>pin2X)? img1.getWidth()-(pin1X+pin2X) : img2.getWidth()-(pin1X+pin2X);
-	else if (X == "beside") var moveX = pin1X+pin2X;
-	else if (X == "middle" || X == "center") var moveX = 0;
-	else					var moveX = X;
-	if		(Y == "top"   )	var moveY = (pin1Y>pin2Y)? img2.getHeight()-(pin1Y+pin2Y) : img1.getHeight()-(pin1Y+pin2Y);
-	else if (Y == "bottom")	var moveY = (pin1Y>pin2Y)? img1.getHeight()-(pin1Y+pin2Y) : img2.getHeight()-(pin1Y+pin2Y);
-	else if (Y == "above" )	var moveY = pin1Y+pin2Y;
-	else if (Y == "middle" || Y == "center") var moveY = 0;
-	else					var moveY = Y;
-
-	var deltaX	= pin1X - pin2X + moveX;
-	var deltaY	= pin1Y - pin2Y + moveY;
+	var deltaX	= img1.pinholeX - img2.pinholeX + offset.x;
+	var deltaY	= img1.pinholeY - img2.pinholeY + offset.y;
 
 	var left	= Math.min(0, deltaX);
 	var top		= Math.min(0, deltaY);
@@ -1149,6 +1152,15 @@ TextImage.prototype.render = function(ctx, x, y) {
     ctx.textBaseline= 'top';
     ctx.fillStyle	= colorString(this.color);
     ctx.fillText(this.msg, x, y);
+	if(this.underline){
+		ctx.beginPath();
+		ctx.moveTo(x, y+this.size);
+		// we use this.size, as it is more accurate for line-height than this.height
+	    ctx.lineTo(x+this.width, y+this.size);
+		ctx.closePath();
+		ctx.strokeStyle = colorString(this.color);
+		ctx.stroke();
+	}
     ctx.restore();
 };
 
@@ -1540,7 +1552,7 @@ EllipseImage.prototype.isEqual = function(other, aUnionFind) {
 
 //////////////////////////////////////////////////////////////////////
 //Line
-var LineImage = function(x, y, color) {
+var LineImage = function(x, y, color, normalPinhole) {
     if (x >= 0) {
 	if (y >= 0) {
 	    BaseImage.call(this, 0, 0);
@@ -1554,13 +1566,18 @@ var LineImage = function(x, y, color) {
 	    BaseImage.call(this, -x, -y);
 	}
     }
-
-
+	
     this.x = x;
     this.y = y;
     this.color = color;
     this.width = Math.abs(x) + 1;
     this.height = Math.abs(y) + 1;
+	
+	// put the pinhle in the center of the image
+	if(normalPinhole){
+		this.pinholeX = this.width/2;
+		this.pinholeY = this.height/2;
+	}
 }
 
 LineImage.prototype = heir(BaseImage.prototype);
@@ -1919,8 +1936,8 @@ world.Kernel.isoscelesTriangleImage = function(side, angle, style, color) {
 world.Kernel.ellipseImage = function(width, height, style, color) {
     return new EllipseImage(width, height, style, color);
 };
-world.Kernel.lineImage = function(x, y, color) {
-    return new LineImage(x, y, color);
+world.Kernel.lineImage = function(x, y, color, normalPinhole) {
+    return new LineImage(x, y, color, normalPinhole);
 };
 world.Kernel.overlayImage = function(img1, img2, X, Y) {
     return new OverlayImage(img1, img2, X, Y);
