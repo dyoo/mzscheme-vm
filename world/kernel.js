@@ -526,27 +526,29 @@ VideoImage.prototype.isEqual = function(other, aUnionFind) {
 // Creates an image that overlays img1 on top of the
 // other image. 
 var OverlayImage = function(img1, img2, placeX, placeY) {
-	// convert places ("middle", "top", etc) into numbers
 	// calculate centers using width/height, so we are scene/image agnostic
 	var c1x = img1.getWidth()/2;
 	var c1y = img1.getHeight()/2; 
 	var c2x = img2.getWidth()/2;
 	var c2y = img2.getHeight()/2;
-	
+
 	// keep absolute X and Y values
 	// convert relative X,Y to absolute amounts
-	if		(placeX == "left"  ) var X = (c1x>c2x)? img2.getWidth()-(c1x+c2x) : img1.getWidth()-(c1x+c2x);
-	else if (placeX == "right" ) var X = (c1x>c2x)? img1.getWidth()-(c1x+c2x) : img2.getWidth()-(c1x+c2x);
-	else if (placeX == "beside") var X = c1x+c2x;
+	// we also handle "beside" and "above"
+	if		(placeX == "left"  )  var X = (c1x>c2x)? img2.getWidth()-(c1x+c2x) : img1.getWidth()-(c1x+c2x);
+	else if (placeX == "right" )  var X = (c1x>c2x)? img1.getWidth()-(c1x+c2x) : img2.getWidth()-(c1x+c2x);
+	else if (placeX == "beside")  var X = c1x+c2x;
 	else if (placeX == "middle" || 
-			 placeX == "center") var X = 0;
-	else						 var X = placeX;
-	if		(placeY == "top"   ) var Y = (c1y>c2y)? img2.getHeight()-(c1y+c2y) : img1.getHeight()-(c1y+c2y);
-	else if (placeY == "bottom") var Y = (c1y>c2y)? img1.getHeight()-(c1y+c2y) : img2.getHeight()-(c1y+c2y);
-	else if (placeY == "above" ) var Y = c1y+c2y;
+			 placeX == "center")  var X = 0;
+	else						  var X = placeX;
+	
+	if		(placeY == "top"   )  var Y = (c1y>c2y)? img2.getHeight()-(c1y+c2y) : img1.getHeight()-(c1y+c2y);
+	else if (placeY == "bottom")  var Y = (c1y>c2y)? img1.getHeight()-(c1y+c2y) : img2.getHeight()-(c1y+c2y);
+	else if (placeY == "above" )  var Y = c1y+c2y;
+	else if (placeY == "baseline") var Y= img1.getBaseline()-img2.getBaseline();
 	else if (placeY == "middle" || 
-			 placeY == "center") var Y = 0;
-	else						 var Y = placeY;
+			 placeY == "center")  var Y = 0;
+	else						  var Y = placeY;
 	
 	// correct offsets when dealing with Scenes instead of images
 	if(isScene(img1)){

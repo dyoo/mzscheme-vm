@@ -217,7 +217,10 @@
                   (ellipse 20 50 "solid" "darkorchid")
                   (ellipse 20 30 "solid" "purple")
                   (ellipse 20 10 "solid" "indigo"))
-				  		 
+
+(beside/align "baseline"
+                  (text "ijy" 18 "black")
+                  (text "ijy" 24 "black"))				  		 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; ABOVE & ABOVE/ALIGN
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
