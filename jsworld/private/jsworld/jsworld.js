@@ -123,16 +123,16 @@ var jsworld = {};
 	
 	var changeWorldHelp2 = function() {
 	    changingWorld = false;
-		helpers.forEachK(worldListeners,
-				 function(listener, k2) { 
-				     listener(world, originalWorld, k2);
-				 },
-				 function(e) { 
-				     world = originalWorld;
-				     throw e; },
-				 function() {
-				     k();
-				 });
+	    helpers.forEachK(worldListeners,
+			     function(listener, k2) { 
+				 listener(world, originalWorld, k2);
+			     },
+			     function(e) { 
+				 world = originalWorld;
+				 throw e; },
+			     function() {
+				 k();
+			     });
 	};
 
 	try {

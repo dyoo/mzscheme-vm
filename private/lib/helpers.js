@@ -61,24 +61,25 @@ var helpers = {};
 	// forEachK: CPS( array CPS(array -> void) (error -> void) -> void )
 	// Iterates through an array and applies f to each element using CPS
 	// If an error is thrown, it catches the error and calls f_error on it
-	var forEachK = function(a, f, f_error, k) {
-		var forEachHelp = function(i) {
-			if( i >= a.length ) {
-				if (k) {
-					return k();
-				} else {
-					return;
-				}
-			}
+    var forEachK = function(a, f, f_error, k) {
+	var forEachHelp = function(i) {
+	    if( i >= a.length ) {
+		if (k) {
+		    k();
+		    return;
+		} else {
+		    return;
+		}
+	    }
 
-			try {
-				return f(a[i], function() { return forEachHelp(i+1); });
-			} catch (e) {
-				f_error(e);
-			}
-		};
-		return forEachHelp(0);
+	    try {
+		f(a[i], function() { forEachHelp(i+1); return; });
+	    } catch (e) {
+		f_error(e);
+	    }
 	};
+	forEachHelp(0);
+    };
 
 
 	// reportError: (or exception string) -> void
