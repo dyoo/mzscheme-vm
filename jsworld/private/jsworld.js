@@ -389,12 +389,7 @@
 	var shutdownListeners = [];
 
 
-	//console.log('in high level big-bang');
-	errorReporter = onFail;
-
-	setCaller(theCaller);
-	setRestarter(theRestarter);
-	setTerminator(function(w) {
+	var theTerminator = function(w) {
 	    //console.trace();
 	    //console.log("shutting down");
 	    detachEvent(toplevelNode, 'click', absorber);
@@ -403,7 +398,14 @@
 		unsetTerminator();
 		restarter(w);
 	    });
-	});
+	};
+
+	//console.log('in high level big-bang');
+	errorReporter = onFail;
+
+// 	setCaller(theCaller);
+// 	setRestarter(theRestarter);
+// 	setTerminator(theTerminator);
 
 	var attribs = types.EMPTY;
 	
@@ -589,8 +591,17 @@
 			 //console.log("the low level jsbigbang is calling the terminator");
 			 terminator(w);
 		     },
+		     function(k) {
+			 // Before the big bang starts up, set these
+			 // globals.
+			 setCaller(theCaller);
+			 setRestarter(theRestarter);
+			 setTerminator(theTerminator);
+			 k();
+		     },
 		     function(activationRecord) {
-			 console.log("back here");
+			 // After initialization, start the user configs.
+			 console.log("back with an activation record");
 			 activationRecord.isRunning = false;
 			 startUserConfigs(function() {
 			     activationRecord.isRunning = true;
