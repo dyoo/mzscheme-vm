@@ -7,10 +7,10 @@
 (define (tock w)
   (printf "tock!\n")
   (js-big-bang (+ w 1)
-               (on-tick tock 0.1)
+               (on-tick tock 1 #;0.1)
   	       (stop-when (lambda (w2) (> w2 10)))))
 
 
 
-(check-expect (js-big-bang 0 (on-tick tock 0.1))
+(check-expect (tock 0)
 	      10)

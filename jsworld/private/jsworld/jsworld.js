@@ -72,7 +72,7 @@ var jsworld = {};
 
 
     // If we're in the middle of a change_world, delay.
-    var DELAY_BEFORE_RETRY = 10;
+    var DELAY_BEFORE_RETRY = 0;
 
 
     // change_world: CPS( CPS(world -> world) -> void )
@@ -811,10 +811,15 @@ var jsworld = {};
 	    for(var i = 0 ; i < handlers.length; i++) {
 		if (handlers[i] instanceof StopWhenHandler) {
 		    stopWhen = handlers[i];
-		} else {
+		}
+	    }
+
+	    for(var i = 0 ; i < handlers.length; i++) {
+		if (! (handlers[i] instanceof StopWhenHandler)) {
 		    handlers[i].onRegister(top);
 		}
 	    }
+
 	    var watchForTermination = function(w, oldW, k2) {
 		stopWhen.test(w,
 			      function(stop) {
@@ -839,6 +844,7 @@ var jsworld = {};
 	    activationRecord.isRunning = true;
 	    change_world(
 		function(w, k2) { 
+		    console.log("initializing world to " + init_world);
 		    k2(init_world); 
 		},
 		function() {
