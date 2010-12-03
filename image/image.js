@@ -393,27 +393,43 @@ EXPORTS['circle'] =
 
 EXPORTS['star'] =
     new PrimProc('star',
-		 5,
-		 false, false,
-		 function(aPoints, anOuter, anInner, aStyle, aColor) {
-			check(aPoints, function(x) { return isNatural(x) && jsnums.greaterThanOrEqual(x, 3); },
-			      "star", "positive integer greater than or equal to 3", 1, arguments);
-			check(anOuter, function(x) { return isReal(x) && jsnums.greaterThan(x, 0); },
-			      "star", "positive number", 2, arguments);
-			check(anInner, function(x) { return isReal(x) && jsnums.greaterThan(x, 0); },
-			      "star", "positive number", 2, arguments);
-			check(aStyle, isStyle, "star", "style", 4, arguments);
-			check(aColor, isColor, "star", "color", 5, arguments);
+		 0,
+		 true, false,
+		 function(arguments) {
+				if(arguments.length == 5){			// implementation to match htdp/image
+				check(arguments[0], function(x) { return isNatural(x) && jsnums.greaterThanOrEqual(x, 3); },
+					  "star", "positive integer greater than or equal to 3", 1, arguments);
+				check(arguments[1], function(x) { return isReal(x) && jsnums.greaterThan(x, 0); },
+					  "star", "positive number", 2, arguments);
+				check(arguments[2], function(x) { return isReal(x) && jsnums.greaterThan(x, 0); },
+					  "star", "positive number", 2, arguments);
+				check(arguments[3], isStyle, "star", "style", 4, arguments);
+				check(arguments[4], isColor, "star", "color", 5, arguments);
 
-			if (colorDb.get(aColor)) {
-				aColor = colorDb.get(aColor);
-			}
-			return world.Kernel.radialStarImage(jsnums.toFixnum(aPoints),
-						      jsnums.toFixnum(anOuter),
-						      jsnums.toFixnum(anInner),
-						      aStyle.toString(),
-						      aColor);
-		 });
+				if (colorDb.get(arguments[4])) {
+					arguments[4] = colorDb.get(arguments[4]);
+				}
+				return world.Kernel.radialStarImage(jsnums.toFixnum(arguments[0]),
+								  jsnums.toFixnum(arguments[1]),
+								  jsnums.toFixnum(arguments[2]),
+								  arguments[3].toString(),
+								  arguments[4]);
+				 
+			} else if(arguments.length == 3){		// implementation to match 2htdp/image
+				 check(arguments[0],	isNonNegativeReal,  "star", "non-negative number", 1, arguments);
+				 check(arguments[1],	isStyle,	"star", "style", 4, arguments);
+				 check(arguments[2],	isColor,	"star", "color", 5, arguments);
+				 
+				 if (colorDb.get(arguments[2])) {
+					arguments[2] = colorDb.get(arguments[2]);
+				 }
+				 return world.Kernel.polygonImage(jsnums.toFixnum(arguments[0]), 
+												  jsnums.toFixnum(5), 
+												  jsnums.toFixnum(2), 
+												  arguments[1].toString(), 
+												  arguments[2]);
+			 }
+			});
 
 
 EXPORTS['radial-star'] =
@@ -421,8 +437,8 @@ new PrimProc('radial-star',
 			 5,
 			 false, false,
 			 function(aPoints, anOuter, anInner, aStyle, aColor) {
-			 check(aPoints, function(x) { return isNatural(x) && jsnums.greaterThanOrEqual(x, 3); },
-									"radial-star", "positive integer greater than or equal to 3", 1, arguments);
+			 check(aPoints, function(x) { return isNatural(x) && jsnums.greaterThanOrEqual(x, 2); },
+									"radial-star", "positive integer greater than or equal to 2", 1, arguments);
 			 check(anOuter, function(x) { return isReal(x) && jsnums.greaterThan(x, 0); },
 									"radial-star", "positive number", 2, arguments);
 			 check(anInner, function(x) { return isReal(x) && jsnums.greaterThan(x, 0); },

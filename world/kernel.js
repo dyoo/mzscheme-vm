@@ -178,7 +178,6 @@ var calculateOffset = function(img1, img2, placeX, placeY){
 	var c2x = img2.getWidth()/2;
 	var c2y = img2.getHeight()/2;
 	
-	
 	// keep absolute X and Y values
 	// convert relative X,Y to absolute amounts
 	if		(placeX == "left"  ) var X = (c1x>c2x)? img2.getWidth()-(c1x+c2x) : img1.getWidth()-(c1x+c2x);
@@ -922,6 +921,7 @@ var colorString = function(aColor) {
 
 
 
+//////////////////////////////////////////////////////////////////////
 var RectangleImage = function(width, height, style, color) {
     BaseImage.call(this, width/2, height/2);
     this.width = width;
@@ -1138,23 +1138,23 @@ var TextImage = function(msg, size, color, face, family, style, weight, underlin
     this.color	= color;
 	this.face	= face;
 	this.family = family;
-	// Racket's "slant" maps to CSS's "oblique", which is implemented as "italic" on most browsers
+	// Racket's "slant" -> CSS's "oblique"
+	// Racket's "light" -> CSS's "lighter"
 	this.style	= (style == "slant")? "oblique" : style;
-	// Racket's "light" maps to CSS's "lighter"
 	this.weight	= (weight == "light")? "lighter" : weight;
 	this.underline	= underline;
 	// example: "bold italic 20px 'Times', sans-serif". 
 	// Default weight is "normal", face is "Optimer"
-    this.font = this.weight + " " + this.style + " " + this.size + "px '"+ this.face + "' " + this.family;
+    this.font	= this.weight + " " + this.style + " " + this.size + "px '"+ this.face + "' " + this.family;
     
-    var canvas = world.Kernel.makeCanvas(0, 0);
-    var ctx = canvas.getContext("2d");
-    ctx.font = this.font;
-    var metrics = ctx.measureText(msg);
+    var canvas	= world.Kernel.makeCanvas(0, 0);
+    var ctx		= canvas.getContext("2d");
+    ctx.font	= this.font;
+    var metrics	= ctx.measureText(msg);
 
-    this.width = metrics.width;
+    this.width	= metrics.width;
     // KLUDGE: I don't know how to get at the height.
-    this.height = ctx.measureText("m").width + 20;
+    this.height	= ctx.measureText("m").width + 20;
 
 }
 
@@ -1170,7 +1170,7 @@ TextImage.prototype.render = function(ctx, x, y) {
 	if(this.underline){
 		ctx.beginPath();
 		ctx.moveTo(x, y+this.size);
-		// we use this.size, as it is more accurate for line-height than this.height
+		// we use this.size, as it is more accurate for underlining than this.height
 	    ctx.lineTo(x+this.width, y+this.size);
 		ctx.closePath();
 		ctx.strokeStyle = colorString(this.color);
@@ -1205,55 +1205,6 @@ TextImage.prototype.isEqual = function(other, aUnionFind) {
 
 
 //////////////////////////////////////////////////////////////////////
-
-var CircleImage = function(radius, style, color) {
-    BaseImage.call(this, radius, radius);
-    this.radius = radius;
-    this.style = style;
-    this.color = color;
-}
-CircleImage.prototype = heir(BaseImage.prototype);
-
-CircleImage.prototype.render = function(ctx, x, y) {
-    ctx.save();
-    ctx.beginPath();
-    ctx.arc(x + this.radius,
-	    y + this.radius,
-	    this.radius, 0, 2*Math.PI, false);
-    ctx.closePath();
-    if (this.style.toString().toLowerCase() == "outline") {
-	ctx.strokeStyle = colorString(this.color);
-	ctx.stroke();
-    } else {
-	ctx.fillStyle = colorString(this.color);
-	ctx.fill();
-    }
-
-    ctx.restore();
-};
-
-CircleImage.prototype.getWidth = function() {
-    return this.radius * 2;
-};
-
-CircleImage.prototype.getHeight = function() {
-    return this.radius * 2;
-};
-
-CircleImage.prototype.isEqual = function(other, aUnionFind) {
-    return (other instanceof CircleImage &&
-	    this.pinholeX == other.pinholeX &&
-	    this.pinholeY == other.pinholeY &&
-	    this.radius == other.radius &&
-	    this.style == other.style &&
-	    types.isEqual(this.color, other.color, aUnionFind));
-};
-
-
-
-//////////////////////////////////////////////////////////////////////
-
-
 // RadialStarImage: fixnum fixnum fixnum color -> image
 var RadialStarImage = function(points, outer, inner, style, color) {
     BaseImage.call(this,
@@ -1293,7 +1244,6 @@ RadialStarImage.prototype.render = function(ctx, x, y) {
 	ctx.fillStyle = colorString(this.color);
 	ctx.fill();
     }
-
     ctx.restore();
 };
 
@@ -1922,7 +1872,7 @@ world.Kernel.sceneImage = function(width, height, children, withBorder) {
     return new SceneImage(width, height, children, withBorder);
 };
 world.Kernel.circleImage = function(radius, style, color) {
-    return new CircleImage(radius, style, color);
+    return new EllipseImage(2*radius, 2*radius, style, color);
 };
 world.Kernel.radialStarImage = function(points, outer, inner, style, color) {
     return new RadialStarImage(points, outer, inner, style, color);
@@ -1984,7 +1934,6 @@ world.Kernel.videoImage = function(path, rawVideo) {
 
 
 world.Kernel.isSceneImage = function(x) { return x instanceof SceneImage; };
-world.Kernel.isCircleImage = function(x) { return x instanceof CircleImage; };
 world.Kernel.isRadialStarImage = function(x) { return x instanceof RadialStarImage; };
 world.Kernel.isRectangleImage = function(x) { return x instanceof RectangleImage; };
 world.Kernel.isPolygonImage = function(x) { return x instanceof PolygonImage; };

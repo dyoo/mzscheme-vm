@@ -287,11 +287,23 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; STAR, RADIAL-STAR & STAR-POLYGON
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-"radial stars from the DrRacket documentation"
+"old star implementation"
+
+(star 5  8  4 "solid"   "darkslategray")
+(star 5 30 15 "outline" "black")
+(star 5 20 10 "solid"   "red")
+
+"new star implementation"
+(star 8 "solid"    "darkslategray")
+(star 30 "outline" "black")
+(star 20 "solid"   "red")
+
+"radial star"
 (radial-star 8 8 64 "solid" "darkslategray")
 (radial-star 32 30 40 "outline" "black")
 (radial-star 5 20 40 "solid" "red")
 
+"star-polygon"
 (star-polygon 40 5 2 "solid" "seagreen")
 (star-polygon 40 7 3 "outline" "darkred")
 (star-polygon 20 10 3 "solid" "cornflowerblue")
