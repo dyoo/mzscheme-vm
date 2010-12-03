@@ -392,19 +392,6 @@
 	//console.log('in high level big-bang');
 	errorReporter = onFail;
 
-	setCaller(theCaller);
-	setRestarter(theRestarter);
-	setTerminator(function(w) {
-	    //console.trace();
-	    //console.log("shutting down");
-	    detachEvent(toplevelNode, 'click', absorber);
-	    shutdownUserConfigs(function() {
-		unsetCaller();
-		unsetTerminator();
-		restarter(w);
-	    });
-	});
-
 	var attribs = types.EMPTY;
 	
 	// Ensure that the toplevelNode can be focused by mouse or keyboard
@@ -588,6 +575,21 @@
 		     function(w) { 
 			 //console.log("the low level jsbigbang is calling the terminator");
 			 terminator(w);
+		     },
+		     function(k) {
+			 setCaller(theCaller);
+			 setRestarter(theRestarter);
+			 setTerminator(function(w) {
+			     //console.trace();
+			     //console.log("shutting down");
+			     detachEvent(toplevelNode, 'click', absorber);
+			     shutdownUserConfigs(function() {
+				 unsetCaller();
+				 unsetTerminator();
+				 restarter(w);
+			     });
+			 });
+			 k();
 		     },
 		     function(activationRecord) {
 			 activationRecord.isRunning = false;
