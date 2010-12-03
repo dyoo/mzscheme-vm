@@ -1062,31 +1062,28 @@ PolygonImage.prototype.isEqual = function(other, aUnionFind) {
 
 
 //////////////////////////////////////////////////////////////////////
-var TextImage = function(msg, size, color, face, family, style, weight, underline) {
-    BaseImage.call(this, 0, 0);
+var TextImage = function(msg, size, color, face, family, style, weight, underline) {	
     this.msg	= msg;
     this.size	= size;
     this.color	= color;
 	this.face	= face;
 	this.family = family;
-	// Racket's "slant" -> CSS's "oblique"
-	// Racket's "light" -> CSS's "lighter"
-	this.style	= (style == "slant")? "oblique" : style;
-	this.weight	= (weight == "light")? "lighter" : weight;
+	this.style	= (style == "slant")? "oblique" : style;  // Racket's "slant" -> CSS's "oblique"
+	this.weight	= (weight== "light")? "lighter" : weight; // Racket's "light" -> CSS's "lighter"
 	this.underline	= underline;
 	// example: "bold italic 20px 'Times', sans-serif". 
 	// Default weight is "normal", face is "Optimer"
     this.font	= this.weight + " " + this.style + " " + this.size + "px '"+ this.face + "' " + this.family;
-    
+
     var canvas	= world.Kernel.makeCanvas(0, 0);
     var ctx		= canvas.getContext("2d");
     ctx.font	= this.font;
     var metrics	= ctx.measureText(msg);
-
+	
     this.width	= metrics.width;
-    // KLUDGE: I don't know how to get at the height.
-    this.height	= ctx.measureText("m").width + 20;
-
+    this.height	= ctx.measureText("m").width + 20;    // KLUDGE: I don't know how to get at the height.
+    BaseImage.call(this, Math.round(this.width/2), 0);// weird pinhole settings needed for "baseline" alignment
+	
 }
 
 TextImage.prototype = heir(BaseImage.prototype);
