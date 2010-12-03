@@ -681,6 +681,7 @@
     // shutdownWorld: -> void
     // Shut down all world computations.
     Jsworld.shutdownWorld = function() {
+	console.trace();
 	_js.shutdown();
     };
 

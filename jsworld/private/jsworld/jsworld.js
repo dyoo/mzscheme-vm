@@ -752,17 +752,13 @@ var jsworld = {};
 
     BigBangRecord.prototype.restart = function(newWorld) {
 	var that = this;
-	setTimeout(
-	    function() {
-		big_bang(that.top,
-			 newWorld,
-			 that.handlerCreators,
-			 that.attribs,
-			 that.k,
-			 that.beforeInitialization,
-			 that.afterInitialization);
-	    },
-	    0);
+	big_bang(that.top,
+		 newWorld,
+		 that.handlerCreators,
+		 that.attribs,
+		 that.k,
+		 that.beforeInitialization,
+		 that.afterInitialization);
     }
     
     BigBangRecord.prototype.pause = function() {
@@ -824,16 +820,18 @@ var jsworld = {};
 		stopWhen.test(w,
 			      function(stop) {
 				  if (stop) {
-				      console.log("termination");
 				      var currentRecord = runningBigBangs.pop();
 				      if (currentRecord) { currentRecord.pause(); }
 				      if (runningBigBangs.length > 0) {
 					  var restartingBigBang = runningBigBangs.pop();
 					  restartingBigBang.restart(w);
+				      } else {
+					  k(w);
 				      }
-				      k(w);
 				  }
-				  else { k2(); }
+				  else {
+				      k2(); 
+				  }
 			      });
 	    };
 	    add_world_listener(watchForTermination);
@@ -845,7 +843,6 @@ var jsworld = {};
 	    activationRecord.isRunning = true;
 	    change_world(
 		function(w, k2) { 
-		    console.log("initializing world to " + init_world);
 		    k2(init_world); 
 		},
 		function() {
@@ -873,7 +870,6 @@ var jsworld = {};
 		    function() { 
 			ticker.watchId = undefined;
 			var startTime = (new Date()).valueOf();
-			console.log("tick");
 			change_world(tick, 
 				     function() { 
 					 var endTime = (new Date()).valueOf();
