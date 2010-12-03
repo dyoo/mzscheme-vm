@@ -72,7 +72,11 @@ var helpers = {};
 			}
 
 			try {
-				return f(a[i], function() { return forEachHelp(i+1); });
+			    return f(a[i], function() { 
+				setTimeout(
+				    function() { 
+					forEachHelp(i+1); },
+				    0)});
 			} catch (e) {
 				f_error(e);
 			}
