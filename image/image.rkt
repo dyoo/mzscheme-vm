@@ -4,8 +4,7 @@
 
 (require-js "image.js")
 
-(provide image?
-	 image=?
+(provide 
 	 make-color
 	 color-red
 	 color-green
@@ -51,5 +50,15 @@
 	 text/font
 	 video-url
 	 image-url
+	 image?
+	 image=?
 	 image-width
-	 image-height)
+	 image-height
+	 image-baseline
+	 mode?
+	 image-color?
+	 x-place?
+	 y-place?
+	 angle?
+	 side-count?
+	 step-count?)

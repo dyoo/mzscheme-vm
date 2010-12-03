@@ -502,3 +502,75 @@
 "flip the first one vertically"			    
 (above (flip-vertical (square 20 "solid" (make-color  50  50 255)))
              (square 34 "solid" (make-color 150 150 255)))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; IMAGE PROPERTIES
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+"(image-width (ellipse 30 40 'solid' 'orange'))"
+(image-width (ellipse 30 40 "solid" "orange"))
+
+"(image-width (circle 30 'solid' 'orange'))"
+(image-width (circle 30 "solid" "orange"))
+
+"(image-width (beside (circle 20 'solid' 'orange') (circle 20 'solid' 'purple')))"
+(image-width (beside (circle 20 "solid" "orange") (circle 20 "solid" "purple")))
+						 
+"(image-height (overlay (circle 20 'solid' 'orange') (circle 30 'solid' 'purple')))"
+(image-height (overlay (circle 20 "solid" "orange") (circle 30 "solid" "purple")))
+
+"(image-height (rectangle 10 0 'solid' 'purple'))"
+(image-height (rectangle 10 0 "solid" "purple"))
+
+"(image-baseline (text 'Hello' 24 'black'))"
+(image-baseline (text "Hello" 24 "black"))
+
+"(image-baseline (text/font 'Goodbye' 48 'indigo' 'Helvetica' 'modern 'normal 'normal #f))"
+(image-baseline (text/font "Goodbye" 48 "indigo" "Helvetica" 'modern 'normal 'normal #f))
+
+
+"(image-height (text/font 'Goodbye' 48 'indigo' 'Helvetica' 'modern 'normal 'normal #f))"
+(image-height (text/font "Goodbye" 48 "indigo" "Helvetica" 'modern 'normal 'normal #f))
+						
+"(image-baseline (rectangle 100 100 'solid' 'black'))"
+(image-baseline (rectangle 100 100 "solid" "black"))
+
+"(image-height (rectangle 100 100 'solid' 'black'))"
+(image-height (rectangle 100 100 "solid" "black"))
+
+
+"(mode? 'outline')"
+(mode? "outline")
+
+"(mode? 'checkered')"
+(mode? "checkered")
+
+"(image-color? 'pink')"
+(image-color? "pink")
+
+"(image-color? 'puke')"
+(image-color? "puke")
+
+"(y-place? 'middle')"
+(y-place? "middle")
+
+"(x-place? 'up-top')"
+(x-place? "up-top")
+
+"(angle? 290)"
+(angle? 290)
+
+"(angle? -290)"
+(angle? -290)
+
+"(side-count? 20)"
+(side-count? 20)
+
+"(side-count? 2)"
+(side-count? 2)
+
+"(step-count? 2)"
+(step-count? 2)
+
+"(step-count? 0)"
+(step-count? 0)

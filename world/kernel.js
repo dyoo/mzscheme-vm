@@ -169,41 +169,6 @@ var scheduleTimerTick = function(window, config) {
 	config.lookup('tickDelay'));
 }
 
-// given two images and an X/Y placement, calculate absolute offsets for their pinholes
-var calculateOffset = function(img1, img2, placeX, placeY){
-	
-	// calculate centers using width/height, so we are scene/image agnostic
-	var c1x = img1.getWidth()/2;
-	var c1y = img1.getHeight()/2; 
-	var c2x = img2.getWidth()/2;
-	var c2y = img2.getHeight()/2;
-	
-	// keep absolute X and Y values
-	// convert relative X,Y to absolute amounts
-	if		(placeX == "left"  ) var X = (c1x>c2x)? img2.getWidth()-(c1x+c2x) : img1.getWidth()-(c1x+c2x);
-	else if (placeX == "right" ) var X = (c1x>c2x)? img1.getWidth()-(c1x+c2x) : img2.getWidth()-(c1x+c2x);
-	else if (placeX == "beside") var X = c1x+c2x;
-	else if (placeX == "middle" || 
-			 placeX == "center") var X = 0;
-	else						 var X = placeX;
-	if		(placeY == "top"   ) var Y = (c1y>c2y)? img2.getHeight()-(c1y+c2y) : img1.getHeight()-(c1y+c2y);
-	else if (placeY == "bottom") var Y = (c1y>c2y)? img1.getHeight()-(c1y+c2y) : img2.getHeight()-(c1y+c2y);
-	else if (placeY == "above" ) var Y = c1y+c2y;
-	else if (placeY == "middle" || 
-			 placeY == "center") var Y = 0;
-	else						 var Y = placeY;
-
-	// correct offsets when dealing with Scenes instead of images
-	if(isScene(img1)){
-		X = X + c1x; Y = Y + c1x;
-	}
-	if(isScene(img2)){
-		X = X - c2x; Y = Y - c2x;
-	}
-	return {x: X, y: Y};
-}
-
-
 // Base class for all images.
 var BaseImage = function(pinholeX, pinholeY) {
     this.pinholeX = pinholeX;
@@ -227,7 +192,15 @@ BaseImage.prototype.updatePinhole = function(x, y) {
     return aCopy;
 };
 
-
+BaseImage.prototype.getHeight = function(){
+	return this.height;
+}
+BaseImage.prototype.getWidth = function(){
+	return this.width;
+}
+BaseImage.prototype.getBaseline = function(){
+	return this.height;
+}
 
 // render: context fixnum fixnum: -> void
 // Render the image, where the upper-left corner of the image is drawn at
@@ -361,14 +334,6 @@ SceneImage.prototype.render = function(ctx, x, y) {
 	ctx.strokeStyle = 'black';
 	ctx.strokeRect(x, y, this.width, this.height);
     }
-};
-
-SceneImage.prototype.getWidth = function() {
-    return this.width;
-};
-
-SceneImage.prototype.getHeight = function() {
-    return this.height;
 };
 
 SceneImage.prototype.isEqual = function(other, aUnionFind) {
@@ -540,16 +505,6 @@ VideoImage.prototype.render = function(ctx, x, y) {
 	setInterval('videos["'+this.src+'"].obj.render(videos["'+this.src+'"].ctx,'+x+','+y+');', 800);
 };
 
-
-VideoImage.prototype.getWidth = function() {
-    return this.width;
-};
-
-
-VideoImage.prototype.getHeight = function() {
-    return this.height;
-};
-
 /*
  // Override toDomNode: we don't need a full-fledged canvas here.
 VideoImage.prototype.toDomNode = function(cache) {
@@ -567,15 +522,42 @@ VideoImage.prototype.isEqual = function(other, aUnionFind) {
 //////////////////////////////////////////////////////////////////////
 
 
-// OverlayImage: image image -> image
+// OverlayImage: image image placeX placeY -> image
 // Creates an image that overlays img1 on top of the
 // other image. 
-var OverlayImage = function(img1, img2, X, Y) {
+var OverlayImage = function(img1, img2, placeX, placeY) {
 	// convert places ("middle", "top", etc) into numbers
-	var offset = calculateOffset(img1, img2, X, Y);
+	// calculate centers using width/height, so we are scene/image agnostic
+	var c1x = img1.getWidth()/2;
+	var c1y = img1.getHeight()/2; 
+	var c2x = img2.getWidth()/2;
+	var c2y = img2.getHeight()/2;
 	
-	var deltaX	= img1.pinholeX - img2.pinholeX + offset.x;
-	var deltaY	= img1.pinholeY - img2.pinholeY + offset.y;
+	// keep absolute X and Y values
+	// convert relative X,Y to absolute amounts
+	if		(placeX == "left"  ) var X = (c1x>c2x)? img2.getWidth()-(c1x+c2x) : img1.getWidth()-(c1x+c2x);
+	else if (placeX == "right" ) var X = (c1x>c2x)? img1.getWidth()-(c1x+c2x) : img2.getWidth()-(c1x+c2x);
+	else if (placeX == "beside") var X = c1x+c2x;
+	else if (placeX == "middle" || 
+			 placeX == "center") var X = 0;
+	else						 var X = placeX;
+	if		(placeY == "top"   ) var Y = (c1y>c2y)? img2.getHeight()-(c1y+c2y) : img1.getHeight()-(c1y+c2y);
+	else if (placeY == "bottom") var Y = (c1y>c2y)? img1.getHeight()-(c1y+c2y) : img2.getHeight()-(c1y+c2y);
+	else if (placeY == "above" ) var Y = c1y+c2y;
+	else if (placeY == "middle" || 
+			 placeY == "center") var Y = 0;
+	else						 var Y = placeY;
+	
+	// correct offsets when dealing with Scenes instead of images
+	if(isScene(img1)){
+		X = X + c1x; Y = Y + c1x;
+	}
+	if(isScene(img2)){
+		X = X - c2x; Y = Y - c2x;
+	}
+	
+	var deltaX	= img1.pinholeX - img2.pinholeX + X;
+	var deltaY	= img1.pinholeY - img2.pinholeY + Y;
 
 	var left	= Math.min(0, deltaX);
 	var top		= Math.min(0, deltaY);
@@ -603,15 +585,6 @@ OverlayImage.prototype.render = function(ctx, x, y) {
     this.img2.render(ctx, x + this.img2Dx, y + this.img2Dy);
     this.img1.render(ctx, x + this.img1Dx, y + this.img1Dy);
 	ctx.restore();
-};
-
-
-OverlayImage.prototype.getWidth = function() {
-    return this.width;
-};
-
-OverlayImage.prototype.getHeight = function() {
-    return this.height;
 };
 
 OverlayImage.prototype.isEqual = function(other, aUnionFind) {
@@ -690,15 +663,6 @@ RotateImage.prototype.render = function(ctx, x, y) {
 	ctx.restore();
 };
 
-
-RotateImage.prototype.getWidth = function() {
-    return this.width;
-};
-
-RotateImage.prototype.getHeight = function() {
-    return this.height;
-};
-
 RotateImage.prototype.isEqual = function(other, aUnionFind) {
     return ( other instanceof RotateImage &&
 			this.pinholeX == other.pinholeX &&
@@ -742,14 +706,6 @@ ScaleImage.prototype.render = function(ctx, x, y) {
 };
 
 
-ScaleImage.prototype.getWidth = function() {
-    return this.width;
-};
-
-ScaleImage.prototype.getHeight = function() {
-    return this.height;
-};
-
 ScaleImage.prototype.isEqual = function(other, aUnionFind) {
     return ( other instanceof ScaleImage &&
 	     this.pinholeX == other.pinholeX &&
@@ -786,15 +742,6 @@ CropImage.prototype.render = function(ctx, x, y) {
     ctx.translate(-this.x, -this.y);
 	this.img.render(ctx, x, y);
     ctx.restore();
-};
-
-
-CropImage.prototype.getWidth = function() {
-    return this.width;
-};
-
-CropImage.prototype.getHeight = function() {
-    return this.height;
 };
 
 CropImage.prototype.isEqual = function(other, aUnionFind) {
@@ -836,15 +783,6 @@ FrameImage.prototype.render = function(ctx, x, y) {
 	ctx.strokeRect(x, y, this.width, this.height);
 	ctx.closePath();
     ctx.restore();
-};
-
-
-FrameImage.prototype.getWidth = function() {
-    return this.width;
-};
-
-FrameImage.prototype.getHeight = function() {
-    return this.height;
 };
 
 FrameImage.prototype.isEqual = function(other, aUnionFind) {
@@ -1069,7 +1007,7 @@ var PolygonImage = function(length, count, step, style, color) {
 		if(this.aVertices[i].y > yMax) yMax = this.aVertices[i].y+1;
 	}
 	
-    this.width	= Math.round(xMax-xMin);
+    this.width	= Math.floor(xMax-xMin);
     this.height	= Math.floor(yMax-yMin);
     this.length	= length;
     this.count	= count;
@@ -1107,15 +1045,6 @@ PolygonImage.prototype.render = function(ctx, x, y) {
 		ctx.fill();
     }
 	ctx.restore();
-};
-
-PolygonImage.prototype.getWidth = function() {
-    return this.width;
-};
-
-
-PolygonImage.prototype.getHeight = function() {
-    return this.height;
 };
 
 PolygonImage.prototype.isEqual = function(other, aUnionFind) {
@@ -1179,13 +1108,8 @@ TextImage.prototype.render = function(ctx, x, y) {
     ctx.restore();
 };
 
-TextImage.prototype.getWidth = function() {
-    return this.width;
-};
-
-
-TextImage.prototype.getHeight = function() {
-    return this.height;
+TextImage.prototype.getBaseline = function() {
+    return this.size;
 };
 
 TextImage.prototype.isEqual = function(other, aUnionFind) {
@@ -1210,13 +1134,14 @@ var RadialStarImage = function(points, outer, inner, style, color) {
     BaseImage.call(this,
 		   Math.max(outer, inner),
 		   Math.max(outer, inner));
-    this.points = points;
-    this.outer = outer;
-    this.inner = inner;
-    this.style = style;
-    this.color = color;
-
-    this.radius = Math.max(this.inner, this.outer);
+    this.points	= points;
+    this.outer	= outer;
+    this.inner	= inner;
+    this.style	= style;
+    this.color	= color;
+    this.radius	= Math.max(this.inner, this.outer);
+	this.width	= this.radius*2;
+	this.height	= this.radius*2;
 };
 
 RadialStarImage.prototype = heir(BaseImage.prototype);
@@ -1247,17 +1172,6 @@ RadialStarImage.prototype.render = function(ctx, x, y) {
     ctx.restore();
 };
 
-// getWidth: -> fixnum
-RadialStarImage.prototype.getWidth = function() {
-    return this.radius * 2;
-};
-
-
-// getHeight: -> fixnum
-RadialStarImage.prototype.getHeight = function() {
-    return this.radius * 2;
-};
-
 RadialStarImage.prototype.isEqual = function(other, aUnionFind) {
     return (other instanceof RadialStarImage &&
 	    this.pinholeX == other.pinholeX &&
@@ -1268,7 +1182,6 @@ RadialStarImage.prototype.isEqual = function(other, aUnionFind) {
 	    this.style == other.style &&
 	    types.isEqual(this.color, other.color, aUnionFind));
 };
-
 
 
 
@@ -1304,16 +1217,6 @@ TriangleImage.prototype.render = function(ctx, x, y) {
 	ctx.fill();
     }
     ctx.restore();
-};
-
-
-
-TriangleImage.prototype.getWidth = function() {
-    return this.width;
-};
-
-TriangleImage.prototype.getHeight = function() {
-    return this.height;
 };
 
 TriangleImage.prototype.isEqual = function(other, aUnionFind) {
@@ -1361,16 +1264,6 @@ RightTriangleImage.prototype.render = function(ctx, x, y) {
 		ctx.fill();
     }
     ctx.restore();
-};
-
-
-
-RightTriangleImage.prototype.getWidth = function() {
-    return this.width;
-};
-
-RightTriangleImage.prototype.getHeight = function() {
-    return this.height;
 };
 
 RightTriangleImage.prototype.isEqual = function(other, aUnionFind) {
@@ -1430,16 +1323,6 @@ IsoscelesTriangleImage.prototype.render = function(ctx, x, y) {
     ctx.restore();
 };
 
-
-
-IsoscelesTriangleImage.prototype.getWidth = function() {
-    return this.width;
-};
-
-IsoscelesTriangleImage.prototype.getHeight = function() {
-    return this.height;
-};
-
 IsoscelesTriangleImage.prototype.isEqual = function(other, aUnionFind) {
     return (other instanceof TriangleImage &&
 			this.pinholeX == other.pinholeX &&
@@ -1494,14 +1377,6 @@ EllipseImage.prototype.render = function(ctx, aX, aY) {
 
 
     ctx.restore();
-};
-
-EllipseImage.prototype.getWidth = function() {
-    return this.width;
-};
-
-EllipseImage.prototype.getHeight = function() {
-    return this.height;
 };
 
 EllipseImage.prototype.isEqual = function(other, aUnionFind) {
@@ -1575,15 +1450,6 @@ LineImage.prototype.render = function(ctx, xstart, ystart) {
     ctx.restore();
 };
 
-
-LineImage.prototype.getWidth = function() {
-    return this.width;
-};
-
-
-LineImage.prototype.getHeight = function() {
-    return this.height;
-};
 
 LineImage.prototype.isEqual = function(other, aUnionFind) {
     return (other instanceof LineImage &&

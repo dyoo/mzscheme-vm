@@ -33,6 +33,13 @@ var isAngle = function(x) {
 	return isReal(x) && jsnums.greaterThanOrEqual(x, 0) && jsnums.lessThan(x, 360);
 };
 
+var isSideCount = function(x) {
+	return isInteger(x) && jsnums.greaterThanOrEqual(x, 3);
+};
+var isStepCount = function(x) {
+	return isInteger(x) && jsnums.greaterThanOrEqual(x, 1);
+};
+
 var isSymbol = types.isSymbol;
 var isChar = types.isChar;
 var isString = types.isString;
@@ -105,7 +112,7 @@ var isFontWeight = function(x){
 	|| !x;		// false is also acceptable
 };
 var colorDb = world.Kernel.colorDb;
-var isStyle = function(x) {
+var isMode = function(x) {
 	return ((isString(x) || isSymbol(x)) &&
 		(x.toString().toLowerCase() == "solid" ||
 		 x.toString().toLowerCase() == "outline"));
@@ -380,7 +387,7 @@ EXPORTS['circle'] =
 		 false, false,
 		 function(aRadius, aStyle, aColor) {
 			check(aRadius, isNonNegativeReal, "circle", "non-negative number", 1, arguments);
-			check(aStyle, isStyle, "circle", "style", 2, arguments);
+			check(aStyle, isMode, "circle", "style", 2, arguments);
 			check(aColor, isColor, "circle", "color", 3, arguments);
 
 
@@ -397,13 +404,12 @@ EXPORTS['star'] =
 		 true, false,
 		 function(arguments) {
 				if(arguments.length == 5){			// implementation to match htdp/image
-				check(arguments[0], function(x) { return isNatural(x) && jsnums.greaterThanOrEqual(x, 3); },
-					  "star", "positive integer greater than or equal to 3", 1, arguments);
+				check(arguments[0], isSideCount, "star", "positive integer greater than or equal to 3", 1, arguments);
 				check(arguments[1], function(x) { return isReal(x) && jsnums.greaterThan(x, 0); },
 					  "star", "positive number", 2, arguments);
 				check(arguments[2], function(x) { return isReal(x) && jsnums.greaterThan(x, 0); },
 					  "star", "positive number", 2, arguments);
-				check(arguments[3], isStyle, "star", "style", 4, arguments);
+				check(arguments[3], isMode, "star", "style", 4, arguments);
 				check(arguments[4], isColor, "star", "color", 5, arguments);
 
 				if (colorDb.get(arguments[4])) {
@@ -417,7 +423,7 @@ EXPORTS['star'] =
 				 
 			} else if(arguments.length == 3){		// implementation to match 2htdp/image
 				 check(arguments[0],	isNonNegativeReal,  "star", "non-negative number", 1, arguments);
-				 check(arguments[1],	isStyle,	"star", "style", 4, arguments);
+				 check(arguments[1],	isMode,	"star", "style", 4, arguments);
 				 check(arguments[2],	isColor,	"star", "color", 5, arguments);
 				 
 				 if (colorDb.get(arguments[2])) {
@@ -443,7 +449,7 @@ new PrimProc('radial-star',
 									"radial-star", "positive number", 2, arguments);
 			 check(anInner, function(x) { return isReal(x) && jsnums.greaterThan(x, 0); },
 									"radial-star", "positive number", 2, arguments);
-			 check(aStyle, isStyle, "radial-star", "style", 4, arguments);
+			 check(aStyle, isMode, "radial-star", "style", 4, arguments);
 			 check(aColor, isColor, "radial-star", "color", 5, arguments);
 			 
 			 if (colorDb.get(aColor)) {
@@ -464,7 +470,7 @@ EXPORTS['nw:rectangle'] =
 		 function(w, h, s, c) {
 			check(w, isNonNegativeReal, "nw:rectangle", "non-negative number", 1, arguments);
 			check(h, isNonNegativeReal, "nw:rectangle", "non-negative number", 2, arguments);
-			check(s, isStyle, "nw:rectangle", "style", 3, arguments);
+			check(s, isMode, "nw:rectangle", "style", 3, arguments);
 			check(c, isColor, "nw:rectangle", "color", 4, arguments);
 
 			if (colorDb.get(c)) {
@@ -484,7 +490,7 @@ EXPORTS['rectangle'] =
 		 function(w, h, s, c) {
 			check(w, isNonNegativeReal, "rectangle", "non-negative number", 1, arguments);
 			check(h, isNonNegativeReal, "rectangle", "non-negative number", 2, arguments);
-			check(s, isStyle, "rectangle", "style", 3, arguments);
+			check(s, isMode, "rectangle", "style", 3, arguments);
 			check(c, isColor, "rectangle", "color", 4, arguments);
 
 			if (colorDb.get(c)) {
@@ -500,10 +506,9 @@ new PrimProc('regular-polygon',
 			 4,
 			 false, false,
 			 function(length, count, s, c) {
-			 check(length,	isNonNegativeReal, "regular-polygon", "non-negative number", 1, arguments);
-			 check(count,	function(x) { return isNatural(x) && jsnums.greaterThanOrEqual(x, 3); },
-				   "regular-polygon", "positive integer greater than or equal to 3", 2, arguments);
-			 check(s,		isStyle, "regular-polygon", "style", 3, arguments);
+			 check(length,	isNonNegativeReal,	"regular-polygon", "non-negative number", 1, arguments);
+			 check(count,	isSideCount,		"regular-polygon", "positive integer greater than or equal to 3", 2, arguments);
+			 check(s,		isMode, "regular-polygon", "style", 3, arguments);
 			 check(c,		isColor, "regular-polygon", "color", 4, arguments);
 			 
 			 if (colorDb.get(c)) {
@@ -521,16 +526,14 @@ new PrimProc('star-polygon',
 			 5,
 			 false, false,
 			 function(length, count, step, s, c) {
-			 check(length,	isNonNegativeReal, "star-polygon", "non-negative number", 1, arguments);
-			 check(count,	function(x) { return isNatural(x) && jsnums.greaterThanOrEqual(x, 3); },
-										"star-polygon", "positive integer greater than or equal to 3", 2, arguments);
-			 check(step,	function(x) { return isNatural(x) && jsnums.greaterThanOrEqual(x, 1); },
-										"star-polygon", "positive integer greater than or equal to 3", 3, arguments);
-			 check(s,		isStyle,	"star-polygon", "style", 4, arguments);
-			 check(c,		isColor,	"star-polygon", "color", 5, arguments);
+			 check(length,	isNonNegativeReal,	"star-polygon", "non-negative number", 1, arguments);
+			 check(count,	isSideCount,		"star-polygon", "positive integer greater than or equal to 3", 2, arguments);
+			 check(step,	isStepCount,		"star-polygon", "positive integer greater than or equal to 1", 3, arguments);
+			 check(s,		isMode,				"star-polygon", "style", 4, arguments);
+			 check(c,		isColor,			"star-polygon", "color", 5, arguments);
 			 
 			 if (colorDb.get(c)) {
-			 c = colorDb.get(c);
+				c = colorDb.get(c);
 			 }
 			 return world.Kernel.polygonImage(jsnums.toFixnum(length), 
 											  jsnums.toFixnum(count), 
@@ -546,7 +549,7 @@ new PrimProc('rhombus',
 			 function(l, a, s, c) {
 			 check(l, isNonNegativeReal, "rhombus", "non-negative number", 1, arguments);
 			 check(a, isNonNegativeReal, "rhombus", "non-negative number", 2, arguments);
-			 check(s, isStyle, "rhombus", "style", 3, arguments);
+			 check(s, isMode, "rhombus", "style", 3, arguments);
 			 check(c, isColor, "rhombus", "color", 4, arguments);
 			 
 			 if (colorDb.get(c)) {
@@ -561,7 +564,7 @@ new PrimProc('square',
 			 false, false,
 			 function(l, s, c) {
 			 check(l, isNonNegativeReal, "square", "non-negative number", 1, arguments);
-			 check(s, isStyle, "square", "style", 3, arguments);
+			 check(s, isMode, "square", "style", 3, arguments);
 			 check(c, isColor, "square", "color", 4, arguments);
 			 
 			 if (colorDb.get(c)) {
@@ -576,7 +579,7 @@ EXPORTS['triangle'] =
 		 false, false,
 		 function(r, s, c) {
 			check(r, isNonNegativeReal, "triangle", "non-negative number", 1, arguments);
-			check(s, isStyle, "triangle", "style", 2, arguments);
+			check(s, isMode, "triangle", "style", 2, arguments);
 			check(c, isColor, "triangle", "color", 3, arguments);
 			if (colorDb.get(c)) {
 				c = colorDb.get(c);
@@ -592,7 +595,7 @@ new PrimProc('right-triangle',
 			 function(side1, side2, s, c) {
 			 check(side1, isNonNegativeReal, "right-triangle", "non-negative number", 1, arguments);
 			 check(side2, isNonNegativeReal, "right-triangle", "non-negative number", 2, arguments);
-			 check(s, isStyle, "right-triangle", "style", 3, arguments);
+			 check(s, isMode, "right-triangle", "style", 3, arguments);
 			 check(c, isColor, "right-triangle", "color", 4, arguments);
 			 if (colorDb.get(c)) {
 			 c = colorDb.get(c);
@@ -608,7 +611,7 @@ new PrimProc('isosceles-triangle',
 			 function(side, angle, s, c) {
 			 check(side, isNonNegativeReal, "isosceles-triangle", "non-negative number", 1, arguments);
 			 check(angle, isAngle, "isosceles-triangle", "finite real number between 0 and 360", 2, arguments);
-			 check(s, isStyle, "isosceles-triangle", "style", 3, arguments);
+			 check(s, isMode, "isosceles-triangle", "style", 3, arguments);
 			 check(c, isColor, "isosceles-triangle", "color", 4, arguments);
 			 if (colorDb.get(c)) {
 			 c = colorDb.get(c);
@@ -624,7 +627,7 @@ EXPORTS['ellipse'] =
 		 function(w, h, s, c) {
 			check(w, isNonNegativeReal, "ellipse", "non-negative number", 1, arguments);
 			check(h, isNonNegativeReal, "ellipse", "non-negative number", 2, arguments);
-			check(s, isStyle, "ellipse", "string", 3, arguments);
+			check(s, isMode, "ellipse", "string", 3, arguments);
 			check(c, isColor, "ellipse", "color", 4, arguments);
 			
 			if (colorDb.get(c)) {
@@ -1081,4 +1084,19 @@ EXPORTS['image-height'] =
 		 });
 
 
+EXPORTS['image-baseline'] =
+new PrimProc('image-baseline',
+			 1,
+			 false, false,
+			 function(img) {
+			 check(img, isImage, 'image-baseline', 'image', 1);
+			 return img.getBaseline();
+			 });
 
+EXPORTS['mode?']		= new PrimProc('mode?', 1, false, false, isMode);
+EXPORTS['image-color?'] = new PrimProc('image-color?', 1, false, false, isColor);
+EXPORTS['x-place?']		= new PrimProc('x-place?', 1, false, false, isPlaceX);
+EXPORTS['y-place?']		= new PrimProc('y-place?', 1, false, false, isPlaceY);
+EXPORTS['angle?']		= new PrimProc('angle?', 1, false, false, isAngle);
+EXPORTS['side-count?']	= new PrimProc('side-count?', 1, false, false, isSideCount);
+EXPORTS['step-count?']	= new PrimProc('step-count?', 1, false, false, isStepCount);
