@@ -291,6 +291,7 @@ var isScene = function(x) {
     return ((x != undefined) && (x != null) && (x instanceof SceneImage));
 };
 
+//////////////////////////////////////////////////////////////////////
 // SceneImage: primitive-number primitive-number (listof image) -> Scene
 var SceneImage = function(width, height, children, withBorder) {
     BaseImage.call(this, 0, 0);
@@ -365,8 +366,7 @@ SceneImage.prototype.isEqual = function(other, aUnionFind) {
 
 
 //////////////////////////////////////////////////////////////////////
-
-
+// FileImage: string node -> Image
 var FileImage = function(src, rawImage) {
     BaseImage.call(this, 0, 0);
     var self = this;
@@ -446,8 +446,7 @@ FileImage.prototype.isEqual = function(other, aUnionFind) {
 };
 
 //////////////////////////////////////////////////////////////////////
-
-
+// VideoImage: String Node -> Video
 var VideoImage = function(src, rawVideo) {
     BaseImage.call(this, 0, 0);
     var self = this;
@@ -520,8 +519,6 @@ VideoImage.prototype.isEqual = function(other, aUnionFind) {
 
 
 //////////////////////////////////////////////////////////////////////
-
-
 // OverlayImage: image image placeX placeY -> image
 // Creates an image that overlays img1 on top of the
 // other image. 
@@ -605,8 +602,6 @@ OverlayImage.prototype.isEqual = function(other, aUnionFind) {
 
 
 //////////////////////////////////////////////////////////////////////
-
-
 // rotate: angle image -> image
 // Rotates image by angle degrees in a counter-clockwise direction.
 // based on http://stackoverflow.com/questions/3276467/adjusting-div-width-and-height-after-rotated
@@ -678,8 +673,6 @@ RotateImage.prototype.isEqual = function(other, aUnionFind) {
 };
 
 //////////////////////////////////////////////////////////////////////
-
-
 // ScaleImage: factor factor image -> image
 // Scale an image
 var ScaleImage = function(xFactor, yFactor, img) {
@@ -720,7 +713,6 @@ ScaleImage.prototype.isEqual = function(other, aUnionFind) {
 };
 
 //////////////////////////////////////////////////////////////////////
-
 // CropImage: startX startY width height image -> image
 // Crop an image
 var CropImage = function(x, y, width, height, img) {
@@ -758,8 +750,6 @@ CropImage.prototype.isEqual = function(other, aUnionFind) {
 };
 
 //////////////////////////////////////////////////////////////////////
-
-
 // FrameImage: factor factor image -> image
 // Stick a frame around the image
 var FrameImage = function(img) {
@@ -795,7 +785,6 @@ FrameImage.prototype.isEqual = function(other, aUnionFind) {
 };
 
 //////////////////////////////////////////////////////////////////////
-
 // FlipImage: image string -> image
 // Flip an image either horizontally or vertically
 var FlipImage = function(img, direction) {
@@ -862,6 +851,7 @@ var colorString = function(aColor) {
 
 
 //////////////////////////////////////////////////////////////////////
+// RectangleImage: Number Number Mode Color -> Image
 var RectangleImage = function(width, height, style, color) {
     BaseImage.call(this, width/2, height/2);
     this.width = width;
@@ -913,7 +903,7 @@ RectangleImage.prototype.isEqual = function(other, aUnionFind) {
 
 
 //////////////////////////////////////////////////////////////////////
-
+// RhombusImage: Number Number Mode Color -> Image
 var RhombusImage = function(side, angle, style, color) {
 	// sin(angle/2-in-radians) * side = half of base
     this.width = Math.sin(angle/2 * Math.PI / 180) * side * 2;
@@ -969,7 +959,12 @@ RhombusImage.prototype.isEqual = function(other, aUnionFind) {
 };
 
 //////////////////////////////////////////////////////////////////////
-
+// PolygonImage: Number Count Step Mode Color -> Image
+//
+// See http://www.algebra.com/algebra/homework/Polygons/Inscribed-and-circumscribed-polygons.lesson
+// the polygon is inscribed in a circle, whose radius is length/2sin(pi/count)
+// another circle is inscribed in the polygon, whose radius is length/2tan(pi/count)
+// rotate a 3/4 quarter turn plus half the angle length to keep bottom base level
 var PolygonImage = function(length, count, step, style, color) {
 	this.aVertices = [];
 	var xMax = 0;
@@ -977,10 +972,6 @@ var PolygonImage = function(length, count, step, style, color) {
 	var xMin = 0;
 	var yMin = 0;
 	
-	// See http://www.algebra.com/algebra/homework/Polygons/Inscribed-and-circumscribed-polygons.lesson
-	// the polygon is inscribed in a circle, whose radius is length/2sin(pi/count)
-	// another circle is inscribed in the polygon, whose radius is length/2tan(pi/count)
-	// rotate a 3/4 quarter turn plus half the angle length to keep bottom base level
 	this.outerRadius = Math.floor(length/(2*Math.sin(Math.PI/count)));
 	this.innerRadius = Math.floor(length/(2*Math.tan(Math.PI/count)));
 	var adjust = (3*Math.PI/2)+Math.PI/count;
@@ -1021,10 +1012,10 @@ var PolygonImage = function(length, count, step, style, color) {
 PolygonImage.prototype = heir(BaseImage.prototype);
 
 
+// shift all vertices by an offset to put the center of the polygon at the 
+// center of the canvas. Even-sided polygons highest points are in line with
+// the innerRadius. Odd-sides polygons highest vertex is on the outerRadius
 PolygonImage.prototype.render = function(ctx, x, y) {
-	// shift all vertices by an offset to put the center of the polygon at the 
-	// center of the canvas. Even-sides polygons highest points are in line with
-	// the innerRadius. Odd-sides polygons highest vertex is on the outerRadius
 	var xOffset = x+Math.round(this.width/2);
 	var yOffset = y+((this.count % 2)? this.outerRadius : this.innerRadius);
 	
@@ -1062,6 +1053,7 @@ PolygonImage.prototype.isEqual = function(other, aUnionFind) {
 
 
 //////////////////////////////////////////////////////////////////////
+// TextImage: String Number Color String String String String any/c -> Image
 var TextImage = function(msg, size, color, face, family, style, weight, underline) {	
     this.msg	= msg;
     this.size	= size;
@@ -1185,8 +1177,7 @@ StarImage.prototype.isEqual = function(other, aUnionFind) {
 
 
 /////////////////////////////////////////////////////////////////////
-//Isosceles-Triangle
-///////
+//TriangleImage: Number Number Mode Color -> Image
 var TriangleImage = function(side, angle, style, color) {
 	// sin(angle/2-in-radians) * side = half of base
     this.width = Math.sin(angle/2 * Math.PI / 180) * side * 2;
@@ -1240,9 +1231,8 @@ TriangleImage.prototype.isEqual = function(other, aUnionFind) {
 			types.isEqual(this.color, other.color, aUnionFind));
 };
 
-//////////////////////////////////////////////////////////////////////
-//Right-Triangle
-///////
+/////////////////////////////////////////////////////////////////////
+//RightTriangleImage: Number Number Mode Color -> Image
 var RightTriangleImage = function(side1, side2, style, color) {
     this.width = side1;
     this.height = side2;
@@ -1288,7 +1278,7 @@ RightTriangleImage.prototype.isEqual = function(other, aUnionFind) {
 };
 
 //////////////////////////////////////////////////////////////////////
-//Ellipse 
+//Ellipse : Number Number Mode Color -> Image
 var EllipseImage = function(width, height, style, color) {
     BaseImage.call(this, Math.floor(width/2), Math.floor(height/2));
     this.width = width;
@@ -1343,7 +1333,7 @@ EllipseImage.prototype.isEqual = function(other, aUnionFind) {
 
 
 //////////////////////////////////////////////////////////////////////
-//Line
+//Line: Number Number Color Boolean -> Image
 var LineImage = function(x, y, color, normalPinhole) {
     if (x >= 0) {
 	if (y >= 0) {
