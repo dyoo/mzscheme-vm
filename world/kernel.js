@@ -788,7 +788,7 @@ FrameImage.prototype.render = function(ctx, x, y) {
 };
 
 FrameImage.prototype.isEqual = function(other, aUnionFind) {
-    return ( other instanceof ScaleImage &&
+    return ( other instanceof FrameImage &&
 			this.pinholeX == other.pinholeX &&
 			this.pinholeY == other.pinholeY &&
 			types.isEqual(this.img, other.img, aUnionFind) );
@@ -959,7 +959,7 @@ RhombusImage.prototype.getHeight = function() {
 };
 
 RhombusImage.prototype.isEqual = function(other, aUnionFind) {
-    return (other instanceof RectangleImage &&
+    return (other instanceof RhombusImage &&
 			this.pinholeX == other.pinholeX &&
 			this.pinholeY == other.pinholeY &&
 			this.side == other.side &&
@@ -1050,7 +1050,7 @@ PolygonImage.prototype.render = function(ctx, x, y) {
 };
 
 PolygonImage.prototype.isEqual = function(other, aUnionFind) {
-    return (other instanceof RectangleImage &&
+    return (other instanceof PolygonImage &&
 			this.pinholeX == other.pinholeX &&
 			this.pinholeY == other.pinholeY &&
 			this.length == other.length &&
@@ -1131,8 +1131,8 @@ TextImage.prototype.isEqual = function(other, aUnionFind) {
 
 
 //////////////////////////////////////////////////////////////////////
-// RadialStarImage: fixnum fixnum fixnum color -> image
-var RadialStarImage = function(points, outer, inner, style, color) {
+// StarImage: fixnum fixnum fixnum color -> image
+var StarImage = function(points, outer, inner, style, color) {
     BaseImage.call(this,
 		   Math.max(outer, inner),
 		   Math.max(outer, inner));
@@ -1146,7 +1146,7 @@ var RadialStarImage = function(points, outer, inner, style, color) {
 	this.height	= this.radius*2;
 };
 
-RadialStarImage.prototype = heir(BaseImage.prototype);
+StarImage.prototype = heir(BaseImage.prototype);
 
 var oneDegreeAsRadian = Math.PI / 180;
 
@@ -1154,7 +1154,7 @@ var oneDegreeAsRadian = Math.PI / 180;
 // Draws a star on the given context.
 // Most of this code here adapted from the Canvas tutorial at:
 // http://developer.apple.com/safari/articles/makinggraphicswithcanvas.html
-RadialStarImage.prototype.render = function(ctx, x, y) {
+StarImage.prototype.render = function(ctx, x, y) {
     ctx.save();
     ctx.beginPath();
     for( var pt = 0; pt < (this.points * 2) + 1; pt++ ) {
@@ -1174,8 +1174,8 @@ RadialStarImage.prototype.render = function(ctx, x, y) {
     ctx.restore();
 };
 
-RadialStarImage.prototype.isEqual = function(other, aUnionFind) {
-    return (other instanceof RadialStarImage &&
+StarImage.prototype.isEqual = function(other, aUnionFind) {
+    return (other instanceof StarImage &&
 	    this.pinholeX == other.pinholeX &&
 	    this.pinholeY == other.pinholeY &&
 	    this.points == other.points &&
@@ -1187,15 +1187,18 @@ RadialStarImage.prototype.isEqual = function(other, aUnionFind) {
 
 
 
-//////////////////////////////////////////////////////////////////////
-//Triangle
+/////////////////////////////////////////////////////////////////////
+//Isosceles-Triangle
 ///////
-var TriangleImage = function(side, style, color) {
-    this.width = side;
-    this.height = Math.ceil(side * Math.sqrt(3) / 2);
-
+var TriangleImage = function(side, angle, style, color) {
+	// sin(angle/2-in-radians) * side = half of base
+    this.width = Math.sin(angle/2 * Math.PI / 180) * side * 2;
+	// cos(angle/2-in-radians) * side = height of altitude
+    this.height = Math.floor(Math.abs(Math.cos(angle/2 * Math.PI / 180)) * side);
+	
     BaseImage.call(this, Math.floor(this.width/2), Math.floor(this.height/2));
     this.side = side;
+    this.angle = angle;
     this.style = style;
     this.color = color;
 }
@@ -1203,33 +1206,42 @@ TriangleImage.prototype = heir(BaseImage.prototype);
 
 
 TriangleImage.prototype.render = function(ctx, x, y) {
+    var width = this.getWidth();
+    var height = this.getHeight();
     ctx.save();
     ctx.beginPath();
-    ctx.moveTo(x + this.side/2, y);
-    ctx.lineTo(x + this.getWidth(), y + this.getHeight());
-    ctx.lineTo(x, y + this.getHeight());
+	// if angle < 180 start at the top of the canvas, otherwise start at the bottom
+	if(this.angle < 180){
+		ctx.moveTo(width/2, 0);
+		ctx.lineTo(0, height);
+		ctx.lineTo(width, height);		
+	} else {
+		ctx.moveTo(width/2, height);
+		ctx.lineTo(0, 0);
+		ctx.lineTo(width, 0);				
+	}
     ctx.closePath();
-
+	
     if (this.style.toString().toLowerCase() == "outline") {
-	ctx.strokeStyle = colorString(this.color);
-	ctx.stroke();
+		ctx.strokeStyle = colorString(this.color);
+		ctx.stroke();
     }
     else {
-	ctx.fillStyle = colorString(this.color);
-	ctx.fill();
+		ctx.fillStyle = colorString(this.color);
+		ctx.fill();
     }
     ctx.restore();
 };
 
 TriangleImage.prototype.isEqual = function(other, aUnionFind) {
     return (other instanceof TriangleImage &&
-	    this.pinholeX == other.pinholeX &&
-	    this.pinholeY == other.pinholeY &&
-	    this.side == other.side &&
-	    this.style == other.style &&
-	    types.isEqual(this.color, other.color, aUnionFind));
+			this.pinholeX == other.pinholeX &&
+			this.pinholeY == other.pinholeY &&
+			this.side == other.side &&
+			this.angle == other.angle &&
+			this.style == other.style &&
+			types.isEqual(this.color, other.color, aUnionFind));
 };
-
 
 //////////////////////////////////////////////////////////////////////
 //Right-Triangle
@@ -1269,7 +1281,7 @@ RightTriangleImage.prototype.render = function(ctx, x, y) {
 };
 
 RightTriangleImage.prototype.isEqual = function(other, aUnionFind) {
-    return (other instanceof TriangleImage &&
+    return (other instanceof RightTriangleImage &&
 			this.pinholeX == other.pinholeX &&
 			this.pinholeY == other.pinholeY &&
 			this.side1 == other.side1 &&
@@ -1277,65 +1289,6 @@ RightTriangleImage.prototype.isEqual = function(other, aUnionFind) {
 			this.style == other.style &&
 			types.isEqual(this.color, other.color, aUnionFind));
 };
-
-
-/////////////////////////////////////////////////////////////////////
-//Isosceles-Triangle
-///////
-var IsoscelesTriangleImage = function(side, angle, style, color) {
-	// sin(angle/2-in-radians) * side = half of base
-    this.width = Math.sin(angle/2 * Math.PI / 180) * side * 2;
-	// cos(angle/2-in-radians) * side = height of altitude
-    this.height = Math.abs(Math.cos(angle/2 * Math.PI / 180)) * side;
-	
-    BaseImage.call(this, Math.floor(this.width/2), Math.floor(this.height/2));
-    this.side = side;
-    this.angle = angle;
-    this.style = style;
-    this.color = color;
-}
-IsoscelesTriangleImage.prototype = heir(BaseImage.prototype);
-
-
-IsoscelesTriangleImage.prototype.render = function(ctx, x, y) {
-    var width = this.getWidth();
-    var height = this.getHeight();
-    ctx.save();
-    ctx.beginPath();
-	// if angle < 180 start at the top of the canvas, otherwise start at the bottom
-	if(this.angle < 180){
-		ctx.moveTo(width/2, 0);
-		ctx.lineTo(0, height);
-		ctx.lineTo(width, height);		
-	} else {
-		ctx.moveTo(width/2, height);
-		ctx.lineTo(0, 0);
-		ctx.lineTo(width, 0);				
-	}
-    ctx.closePath();
-	
-    if (this.style.toString().toLowerCase() == "outline") {
-		ctx.strokeStyle = colorString(this.color);
-		ctx.stroke();
-    }
-    else {
-		ctx.fillStyle = colorString(this.color);
-		ctx.fill();
-    }
-    ctx.restore();
-};
-
-IsoscelesTriangleImage.prototype.isEqual = function(other, aUnionFind) {
-    return (other instanceof TriangleImage &&
-			this.pinholeX == other.pinholeX &&
-			this.pinholeY == other.pinholeY &&
-			this.side == other.side &&
-			this.angle == other.angle &&
-			this.style == other.style &&
-			types.isEqual(this.color, other.color, aUnionFind));
-};
-
-
 
 //////////////////////////////////////////////////////////////////////
 //Ellipse 
@@ -1742,8 +1695,8 @@ world.Kernel.sceneImage = function(width, height, children, withBorder) {
 world.Kernel.circleImage = function(radius, style, color) {
     return new EllipseImage(2*radius, 2*radius, style, color);
 };
-world.Kernel.radialStarImage = function(points, outer, inner, style, color) {
-    return new RadialStarImage(points, outer, inner, style, color);
+world.Kernel.starImage = function(points, outer, inner, style, color) {
+    return new StarImage(points, outer, inner, style, color);
 };
 world.Kernel.rectangleImage = function(width, height, style, color) {
     return new RectangleImage(width, height, style, color);
@@ -1757,14 +1710,11 @@ world.Kernel.polygonImage = function(length, count, step, style, color) {
 world.Kernel.squareImage = function(length, style, color) {
     return new RectangleImage(length, length, style, color);
 };
-world.Kernel.triangleImage = function(side, style, color) {
-    return new TriangleImage(side, style, color);
-};
 world.Kernel.rightTriangleImage = function(side1, side2, style, color) {
     return new RightTriangleImage(side1, side2, style, color);
 };
-world.Kernel.isoscelesTriangleImage = function(side, angle, style, color) {
-    return new IsoscelesTriangleImage(side, angle, style, color);
+world.Kernel.triangleImage = function(side, angle, style, color) {
+    return new TriangleImage(side, angle, style, color);
 };
 world.Kernel.ellipseImage = function(width, height, style, color) {
     return new EllipseImage(width, height, style, color);
@@ -1801,26 +1751,25 @@ world.Kernel.videoImage = function(path, rawVideo) {
 };
 
 
-world.Kernel.isSceneImage = function(x) { return x instanceof SceneImage; };
-world.Kernel.isRadialStarImage = function(x) { return x instanceof RadialStarImage; };
-world.Kernel.isRectangleImage = function(x) { return x instanceof RectangleImage; };
+world.Kernel.isSceneImage	= function(x) { return x instanceof SceneImage; };
+world.Kernel.isStarImage	= function(x) { return x instanceof StarImage; };
+world.Kernel.isRectangleImage=function(x) { return x instanceof RectangleImage; };
 world.Kernel.isPolygonImage = function(x) { return x instanceof PolygonImage; };
 world.Kernel.isRhombusImage = function(x) { return x instanceof RhombusImage; };
-world.Kernel.isSquareImage = function(x) { return x instanceof SquareImage; };
-world.Kernel.isTriangleImage = function(x) { return x instanceof TriangleImage; };
+world.Kernel.isSquareImage	= function(x) { return x instanceof SquareImage; };
+world.Kernel.isTriangleImage= function(x) { return x instanceof TriangleImage; };
 world.Kernel.isRightTriangleImage = function(x) { return x instanceof RightTriangleImage; };
-world.Kernel.isIsoscelesTriangleImage = function(x) { return x instanceof IsoscelesTriangleImage; };
 world.Kernel.isEllipseImage = function(x) { return x instanceof EllipseImage; };
-world.Kernel.isLineImage = function(x) { return x instanceof LineImage; };
+world.Kernel.isLineImage	= function(x) { return x instanceof LineImage; };
 world.Kernel.isOverlayImage = function(x) { return x instanceof OverlayImage; };
-world.Kernel.isRotateImage = function(x) { return x instanceof RotateImage; };
-world.Kernel.isScaleImage = function(x) { return x instanceof ScaleImage; };
-world.Kernel.isCropImage = function(x) { return x instanceof CropImage; };
-world.Kernel.isFrameImage = function(x) { return x instanceof FrameImage; };
-world.Kernel.isFlipImage = function(x) { return x instanceof FlipImage; };
-world.Kernel.isTextImage = function(x) { return x instanceof TextImage; };
-world.Kernel.isFileImage = function(x) { return x instanceof FileImage; };
-world.Kernel.isFileVideo = function(x) { return x instanceof FileVideo; };
+world.Kernel.isRotateImage	= function(x) { return x instanceof RotateImage; };
+world.Kernel.isScaleImage	= function(x) { return x instanceof ScaleImage; };
+world.Kernel.isCropImage	= function(x) { return x instanceof CropImage; };
+world.Kernel.isFrameImage	= function(x) { return x instanceof FrameImage; };
+world.Kernel.isFlipImage	= function(x) { return x instanceof FlipImage; };
+world.Kernel.isTextImage	= function(x) { return x instanceof TextImage; };
+world.Kernel.isFileImage	= function(x) { return x instanceof FileImage; };
+world.Kernel.isFileVideo	= function(x) { return x instanceof FileVideo; };
 
 
 

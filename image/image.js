@@ -128,9 +128,10 @@ var isPlaceX = function(x) {
 
 var isPlaceY = function(x) {
 	return ((isString(x) || isSymbol(x)) &&
-			(x.toString().toLowerCase() == "top"	||
-			 x.toString().toLowerCase() == "bottom" ||
-			 x.toString().toLowerCase() == "center" ||
+			(x.toString().toLowerCase() == "top"	  ||
+			 x.toString().toLowerCase() == "bottom"   ||
+			 x.toString().toLowerCase() == "baseline" ||
+			 x.toString().toLowerCase() == "center"   ||
 			 x.toString().toLowerCase() == "middle"));
 };
 
@@ -415,11 +416,11 @@ EXPORTS['star'] =
 				if (colorDb.get(arguments[4])) {
 					arguments[4] = colorDb.get(arguments[4]);
 				}
-				return world.Kernel.radialStarImage(jsnums.toFixnum(arguments[0]),
-								  jsnums.toFixnum(arguments[1]),
-								  jsnums.toFixnum(arguments[2]),
-								  arguments[3].toString(),
-								  arguments[4]);
+				return world.Kernel.starImage(jsnums.toFixnum(arguments[0]),
+											  jsnums.toFixnum(arguments[1]),
+											  jsnums.toFixnum(arguments[2]),
+											  arguments[3].toString(),
+											  arguments[4]);
 				 
 			} else if(arguments.length == 3){		// implementation to match 2htdp/image
 				 check(arguments[0],	isNonNegativeReal,  "star", "non-negative number", 1, arguments);
@@ -455,11 +456,11 @@ new PrimProc('radial-star',
 			 if (colorDb.get(aColor)) {
 			 aColor = colorDb.get(aColor);
 			 }
-			 return world.Kernel.radialStarImage(jsnums.toFixnum(aPoints),
-												 jsnums.toFixnum(anOuter),
-												 jsnums.toFixnum(anInner),
-												 aStyle.toString(),
-												 aColor);
+			 return world.Kernel.starImage(jsnums.toFixnum(aPoints),
+										   jsnums.toFixnum(anOuter),
+										   jsnums.toFixnum(anInner),
+										   aStyle.toString(),
+										   aColor);
 			 });
 
 
@@ -577,14 +578,14 @@ EXPORTS['triangle'] =
     new PrimProc('triangle',
 		 3,
 		 false, false,
-		 function(r, s, c) {
-			check(r, isNonNegativeReal, "triangle", "non-negative number", 1, arguments);
-			check(s, isMode, "triangle", "style", 2, arguments);
+		 function(s, m, c) {
+			check(s, isNonNegativeReal, "triangle", "non-negative number", 1, arguments);
+			check(m, isMode, "triangle", "style", 2, arguments);
 			check(c, isColor, "triangle", "color", 3, arguments);
 			if (colorDb.get(c)) {
 				c = colorDb.get(c);
 			}
-		     return world.Kernel.triangleImage(jsnums.toFixnum(r), s.toString(), c);
+		     return world.Kernel.triangleImage(jsnums.toFixnum(s), 60, s.toString(), c);
 		 });
 
 
@@ -616,7 +617,7 @@ new PrimProc('isosceles-triangle',
 			 if (colorDb.get(c)) {
 			 c = colorDb.get(c);
 			 }
-		     return world.Kernel.isoscelesTriangleImage(jsnums.toFixnum(side), jsnums.toFixnum(angle), s.toString(), c);
+		     return world.Kernel.triangleImage(jsnums.toFixnum(side), jsnums.toFixnum(angle), s.toString(), c);
 			 });
 
 

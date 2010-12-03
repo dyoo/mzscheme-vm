@@ -218,6 +218,7 @@
                   (ellipse 20 30 "solid" "purple")
                   (ellipse 20 10 "solid" "indigo"))
 
+"align these text images on their baselines"
 (beside/align "baseline"
                   (text "ijy" 18 "black")
                   (text "ijy" 24 "black"))				  		 
@@ -279,8 +280,18 @@
 						(rectangle 32 32 "outline" "black"))) 	
 									 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; ISOSCELES-TRIANGLE
+;; TRIANGLE, RIGHT TRIANGLE & ISOSCELES-TRIANGLE
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+"Three right triangles of various sizes and fills"
+(triangle 36 "solid" "darkslategray")
+(triangle  4 "solid" "purple")
+(triangle 30 "solid" "cornflowerblue")
+
+"Three right triangles of various sizes and fills"
+(right-triangle 36 48 "solid" "darkslategray")
+(right-triangle  4 60 "solid" "purple")
+(right-triangle 30 40 "solid" "cornflowerblue")
+
 "Three isosceles triangles of various sizes and fills"
 
 (isosceles-triangle 60 30 "solid" "aquamarine")
@@ -312,13 +323,6 @@
 (star-polygon 20 10 3 "solid" "cornflowerblue")
 "should look like a pentagon"
 (star-polygon 20 5 1 "solid" "darkblue")
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; RIGHT-TRIANGLE
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-"Three right triangles of various sizes and fills"
-(right-triangle 36 48 "solid" "black")
-(right-triangle 4 60 "solid" "purple")
-(right-triangle 30 40 "outline" "red")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; SQUARE
