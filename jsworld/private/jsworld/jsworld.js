@@ -750,12 +750,12 @@ var jsworld = {};
 	this.afterInitialization = afterInitialization;
     }
 
-    BigBangRecord.prototype.restart = function() {
+    BigBangRecord.prototype.restart = function(newWorld) {
 	var that = this;
 	setTimeout(
 	    function() {
 		big_bang(that.top,
-			 that.world,
+			 newWorld,
 			 that.handlerCreators,
 			 that.attribs,
 			 that.k,
@@ -824,11 +824,12 @@ var jsworld = {};
 		stopWhen.test(w,
 			      function(stop) {
 				  if (stop) {
+				      console.log("termination");
 				      var currentRecord = runningBigBangs.pop();
 				      if (currentRecord) { currentRecord.pause(); }
 				      if (runningBigBangs.length > 0) {
 					  var restartingBigBang = runningBigBangs.pop();
-					  restartingBigBang.restart();
+					  restartingBigBang.restart(w);
 				      }
 				      k(w);
 				  }
