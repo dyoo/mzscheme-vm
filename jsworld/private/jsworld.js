@@ -590,6 +590,7 @@
 			 terminator(w);
 		     },
 		     function(activationRecord) {
+			 console.log("back here");
 			 activationRecord.isRunning = false;
 			 startUserConfigs(function() {
 			     activationRecord.isRunning = true;

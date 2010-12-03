@@ -68,6 +68,10 @@ var jsworld = {};
 	}
 	eventDetachers = [];
 	changingWorld = false;
+
+	console.log("changingworld is ");
+	console.log(changingWorld);
+
     }
 
 
@@ -78,12 +82,17 @@ var jsworld = {};
     // change_world: CPS( CPS(world -> world) -> void )
     // Adjust the world, and notify all listeners.
     var change_world = function(updater, k) {
+	console.log("in change_world");
+	console.log("changingworld is ");
+	console.log(changingWorld);
 
 	if(runningBigBangs.length === 0) {
+	    console.log("no big bangs are running");
 	    k();
 	    return;
 	}
 	if(! (runningBigBangs[runningBigBangs.length-1].isRunning)) {
+	    console.log("the current big bang is not running");
 	    k();
 	    return;
 	}
@@ -92,6 +101,7 @@ var jsworld = {};
 	// the world already.  If so, put on the queue
 	// and exit quickly.
 	if (changingWorld) {
+	    console.log("we were right in the middle of changing the world");
 	    setTimeout(
 		function() {
 		    change_world(updater, k)}, 
@@ -99,11 +109,16 @@ var jsworld = {};
 	    return;
 	}
 
-
+	console.log("setting changingWorld = true");
 	changingWorld = true;
+
+	console.log("changingworld is ");
+	console.log(changingWorld);
+
 	var originalWorld = world;
 
 	var changeWorldHelp = function() {
+	    console.log("got a new world to update to");
 		if (world instanceof WrappedWorldWithEffects) {
 			var effects = world.getEffects();
 			helpers.forEachK(effects,
@@ -112,6 +127,9 @@ var jsworld = {};
 				 },
 				 function (e) { 
 				     changingWorld = false;
+				     console.log("changingworld is ");
+				     console.log(changingWorld);
+
 				     throw e; 
 				 },
 				 function() {
@@ -124,26 +142,37 @@ var jsworld = {};
 	};
 	
 	var changeWorldHelp2 = function() {
+	    console.log("notifying listeners of world change");
 		helpers.forEachK(worldListeners,
 				 function(listener, k2) { 
 				     listener(world, originalWorld, k2);
 				 },
 				 function(e) { 
 				     changingWorld = false;
+				     console.log("changingworld is ");
+				     console.log(changingWorld);
+
 				     world = originalWorld;
 				     throw e; },
 				 function() {
+				     console.log("finished notification");
 				     changingWorld = false;
+
+				     console.log("changingworld is ");
+				     console.log(changingWorld);
 				     k();
 				 });
 	};
 
 	try {
-		updater(world, function(newWorld) {
-				world = newWorld;
-				changeWorldHelp();
-			});
+	    console.log("trying to call the updater");
+	    updater(world, function(newWorld) {
+		world = newWorld;
+		changeWorldHelp();
+	    });
 	} catch(e) {
+	    console.log("something bad happened");
+	    console.log(e);
 	    changingWorld = false;
 	    world = originalWorld;
 
@@ -738,18 +767,30 @@ var jsworld = {};
 
     //////////////////////////////////////////////////////////////////////
 
-    function BigBangRecord(top, world, handlerCreators, handlers, attribs) {    
+    function BigBangRecord(top, world, handlerCreators, handlers, attribs,
+			   k, afterInitialization) {    
 	this.isRunning = false;
 	this.top = top;
 	this.world = world;
 	this.handlers = handlers;
 	this.handlerCreators = handlerCreators;
 	this.attribs = attribs;
+	this.k = k;
+	this.afterInitialization = afterInitialization;
     }
 
     BigBangRecord.prototype.restart = function() {
-	this.isRunning = true;
-	big_bang(this.top, this.world, this.handlerCreators, this.attribs);
+	setTimeout(
+	    function() {
+		console.log("restarting the big bang");
+		big_bang(this.top,
+			 this.world,
+			 this.handlerCreators,
+			 this.attribs,
+			 this.k,
+			 this.afterInitialization);
+	    },
+	    0);
     }
     
     BigBangRecord.prototype.pause = function() {
@@ -770,18 +811,21 @@ var jsworld = {};
 		      k,
 		      afterInitialization) {
 	// clear_running_state();
-
+	console.log("big_bang");
 	// Construct a fresh set of the handlers.
 	var handlers = map(handlerCreators, function(x) { return x();} );
 	if (runningBigBangs.length > 0) { 
+	    console.log("pausing a big bang");
 	    runningBigBangs[runningBigBangs.length - 1].pause();
+	    changingWorld = false;
 	}
+	console.log("here, after pause");
 
 	// Create an activation record for this big-bang.
 	var activationRecord = 
-	    new BigBangRecord(top, init_world, handlerCreators, handlers, attribs);
+	    new BigBangRecord(top, init_world, handlerCreators, handlers, attribs, k, afterInitialization);
 	runningBigBangs.push(activationRecord);
-	function keepRecordUpToDate(w, oldW, k2) {
+	var keepRecordUpToDate = function(w, oldW, k2) {
 	    activationRecord.world = w;
 	    k2();
 	}
@@ -792,6 +836,7 @@ var jsworld = {};
 	// Monitor for termination and register the other handlers.
 	var stopWhen = new StopWhenHandler(function(w, k2) { k2(false); },
 					   function(w, k2) { k2(w); });
+	console.log("registering handlers");
 	for(var i = 0 ; i < handlers.length; i++) {
 	    if (handlers[i] instanceof StopWhenHandler) {
 		stopWhen = handlers[i];
@@ -799,28 +844,23 @@ var jsworld = {};
 		handlers[i].onRegister(top);
 	    }
 	}
-	function watchForTermination(w, oldW, k2) {
+	var watchForTermination = function(w, oldW, k2) {
 	    stopWhen.test(w,
 		function(stop) {
 		    if (stop) {
-			Jsworld.shutdown();
-		        k(w);
-	/*
-			stopWhen.receiver(world,
-			    function() {		    
-				var currentRecord = runningBigBangs.pop();
-				if (currentRecord) { currentRecord.pause(); }
-				if (runningBigBangs.length > 0) {
-				    var restartingBigBang = runningBigBangs.pop();
-				    restartingBigBang.restart();
-				}
-				k();
-			    });
-	*/
+			var currentRecord = runningBigBangs.pop();
+			if (currentRecord) { currentRecord.pause(); }
+			if (runningBigBangs.length > 0) {
+			    console.log('restarting old big bang');
+			    var restartingBigBang = runningBigBangs.pop();
+			    restartingBigBang.restart();
+			}
+			k(w);
 		    }
 		    else { k2(); }
 		});
 	};
+	console.log("adding watch for termination");
 	add_world_listener(watchForTermination);
 
 
@@ -828,10 +868,16 @@ var jsworld = {};
 	copy_attribs(top, attribs);
 
 	activationRecord.isRunning = true;
-	change_world(function(w, k2) { k2(init_world); },
-		     function() {
-			 afterInitialization(activationRecord);
-		     });
+	console.log("calling change_world");
+	change_world(
+	    function(w, k2) { 
+		console.log("calling change world");
+		k2(init_world); 
+	    },
+	    function() {
+		console.log("finishing initialization");
+		afterInitialization(activationRecord);
+	    });
     }
 
     Jsworld.big_bang = big_bang;
