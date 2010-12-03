@@ -872,6 +872,7 @@ var jsworld = {};
 		    function() { 
 			ticker.watchId = undefined;
 			var startTime = (new Date()).valueOf();
+			console.log("tick");
 			change_world(tick, 
 				     function() { 
 					 var endTime = (new Date()).valueOf();
