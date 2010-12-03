@@ -1,11 +1,16 @@
 #lang s-exp "../../lang/wescheme.rkt"
 
+
+;; This program does deep big bangs; we expect to see
+;; ten levels of tocks.
+
 (define (tock w)
   (printf "tock!\n")
-  (js-big-bang w
-              (on-tick add1 1)
-              (stop-when (lambda (w2) (= w2 (+ w 5))))))
+  (js-big-bang (+ w 1)
+               (on-tick tock 0.1)
+  	       (stop-when (lambda (w2) (> w2 10)))))
 
 
-(check-expect (js-big-bang 0 (on-tick tock 5))
-	      5)
+
+(check-expect (js-big-bang 0 (on-tick tock 0.1))
+	      10)

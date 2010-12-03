@@ -68,10 +68,6 @@ var jsworld = {};
 	}
 	eventDetachers = [];
 	changingWorld = false;
-
-	console.log("changingworld is ");
-	console.log(changingWorld);
-
     }
 
 
@@ -82,17 +78,11 @@ var jsworld = {};
     // change_world: CPS( CPS(world -> world) -> void )
     // Adjust the world, and notify all listeners.
     var change_world = function(updater, k) {
-	console.log("in change_world");
-	console.log("changingworld is ");
-	console.log(changingWorld);
-
 	if(runningBigBangs.length === 0) {
-	    console.log("no big bangs are running");
 	    k();
 	    return;
 	}
 	if(! (runningBigBangs[runningBigBangs.length-1].isRunning)) {
-	    console.log("the current big bang is not running");
 	    k();
 	    return;
 	}
@@ -101,7 +91,6 @@ var jsworld = {};
 	// the world already.  If so, put on the queue
 	// and exit quickly.
 	if (changingWorld) {
-	    console.log("we were right in the middle of changing the world");
 	    setTimeout(
 		function() {
 		    change_world(updater, k)}, 
@@ -109,16 +98,10 @@ var jsworld = {};
 	    return;
 	}
 
-	console.log("setting changingWorld = true");
 	changingWorld = true;
-
-	console.log("changingworld is ");
-	console.log(changingWorld);
-
 	var originalWorld = world;
 
 	var changeWorldHelp = function() {
-	    console.log("got a new world to update to");
 		if (world instanceof WrappedWorldWithEffects) {
 			var effects = world.getEffects();
 			helpers.forEachK(effects,
@@ -127,9 +110,6 @@ var jsworld = {};
 				 },
 				 function (e) { 
 				     changingWorld = false;
-				     console.log("changingworld is ");
-				     console.log(changingWorld);
-
 				     throw e; 
 				 },
 				 function() {
@@ -143,7 +123,6 @@ var jsworld = {};
 	
 	var changeWorldHelp2 = function() {
 	    changingWorld = false;
-	    console.log("notifying listeners of world change");
 		helpers.forEachK(worldListeners,
 				 function(listener, k2) { 
 				     listener(world, originalWorld, k2);
@@ -157,14 +136,11 @@ var jsworld = {};
 	};
 
 	try {
-	    console.log("trying to call the updater");
 	    updater(world, function(newWorld) {
 		world = newWorld;
 		changeWorldHelp();
 	    });
 	} catch(e) {
-	    console.log("something bad happened");
-	    console.log(e);
 	    changingWorld = false;
 	    world = originalWorld;
 
@@ -778,7 +754,6 @@ var jsworld = {};
 	var that = this;
 	setTimeout(
 	    function() {
-		console.log("restarting the big bang");
 		big_bang(that.top,
 			 that.world,
 			 that.handlerCreators,
@@ -804,22 +779,18 @@ var jsworld = {};
 
     // Notes: big_bang maintains a stack of activation records; it should be possible
     // to call big_bang re-entrantly.
-    function big_bang(top, init_world, handlerCreators, attribs,
-		      k,
-		      beforeInitialization,
-		      afterInitialization) {
-
+    var big_bang = function(top, init_world, handlerCreators, attribs,
+			    k,
+			    beforeInitialization,
+			    afterInitialization) {
 	beforeInitialization(function() {
 	    // clear_running_state();
-	    console.log("big_bang");
 	    // Construct a fresh set of the handlers.
 	    var handlers = map(handlerCreators, function(x) { return x();} );
 	    if (runningBigBangs.length > 0) { 
-		console.log("pausing a big bang");
 		runningBigBangs[runningBigBangs.length - 1].pause();
 		changingWorld = false;
 	    }
-	    console.log("here, after pause");
 
 	    // Create an activation record for this big-bang.
 	    var activationRecord = 
@@ -837,7 +808,6 @@ var jsworld = {};
 	    // Monitor for termination and register the other handlers.
 	    var stopWhen = new StopWhenHandler(function(w, k2) { k2(false); },
 					       function(w, k2) { k2(w); });
-	    console.log("registering handlers");
 	    for(var i = 0 ; i < handlers.length; i++) {
 		if (handlers[i] instanceof StopWhenHandler) {
 		    stopWhen = handlers[i];
@@ -846,15 +816,12 @@ var jsworld = {};
 		}
 	    }
 	    var watchForTermination = function(w, oldW, k2) {
-		console.log("checking for termination");
 		stopWhen.test(w,
 			      function(stop) {
-				  console.log("termination? " + stop);
 				  if (stop) {
 				      var currentRecord = runningBigBangs.pop();
 				      if (currentRecord) { currentRecord.pause(); }
 				      if (runningBigBangs.length > 0) {
-					  console.log('restarting old big bang');
 					  var restartingBigBang = runningBigBangs.pop();
 					  restartingBigBang.restart();
 				      }
@@ -863,7 +830,6 @@ var jsworld = {};
 				  else { k2(); }
 			      });
 	    };
-	    console.log("adding watch for termination");
 	    add_world_listener(watchForTermination);
 
 
@@ -871,19 +837,15 @@ var jsworld = {};
 	    copy_attribs(top, attribs);
 
 	    activationRecord.isRunning = true;
-	    console.log("calling change_world");
-	    console.log("world is: " + init_world);
 	    change_world(
 		function(w, k2) { 
-		    console.log("calling change world");
 		    k2(init_world); 
 		},
 		function() {
-		    console.log("finishing initialization");
 		    afterInitialization(activationRecord);
 		});
 	});
-    }
+    };
 
     Jsworld.big_bang = big_bang;
 

@@ -601,7 +601,6 @@
 		     },
 		     function(activationRecord) {
 			 // After initialization, start the user configs.
-			 console.log("back with an activation record");
 			 activationRecord.isRunning = false;
 			 startUserConfigs(function() {
 			     activationRecord.isRunning = true;
