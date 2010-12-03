@@ -863,42 +863,49 @@ var jsworld = {};
 
 
     // on_tick: number CPS(world -> world) -> handler
-    function on_tick(delay, tick) {
+    var on_tick = function(delay, tick) {
 	return function() {
-	    var scheduleTick, ticker;
+	    var scheduleTick, ticker, watchId;
 
 
 	    (new Date()).valueOf()
 
 	    scheduleTick = function(t) {
-		ticker.watchId = setTimeout(
-		    function() { 
-			ticker.watchId = undefined;
-			var startTime = (new Date()).valueOf();
-			change_world(tick, 
-				     function() { 
-					 var endTime = (new Date()).valueOf();
-					 scheduleTick(Math.max(delay - (endTime - startTime),
-							       0)); 
-				     }); 
-		    },
-		    t);
+		if (ticker.running) {
+		    watchId = setTimeout(
+			function() { 
+			    ticker.watchId = undefined;
+			    var startTime = (new Date()).valueOf();
+			    change_world(tick, 
+					 function() { 
+					     var endTime = (new Date()).valueOf();
+					     scheduleTick(Math.max(delay - (endTime - startTime),
+								   0)); 
+					 }); 
+			},
+			t);
+		}
 	    };
 	    
 	    ticker = {
-		watchId: -1,
+		running: false,
+
 		onRegister: function (top) { 
+		    ticker.running = true;
 		    scheduleTick(delay);
 		},
 
 		onUnregister: function (top) {
-		    if (ticker.watchId)
-			clearTimeout(ticker.watchId);
+		    ticker.running = false;
+		    if (watchId) {
+			clearTimeout(watchId);
+			watchId = undefined;
+		    }
 		}
 	    };
 	    return ticker;
 	};
-    }
+    };
     Jsworld.on_tick = on_tick;
 
 
