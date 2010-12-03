@@ -776,10 +776,8 @@ var jsworld = {};
 		      beforeInitialization,
 		      afterInitialization) {
 
-
 	beforeInitialization(
 	    function() {
-		// clear_running_state();
 
 		// Construct a fresh set of the handlers.
 		var handlers = map(handlerCreators, function(x) { return x();} );
@@ -791,6 +789,10 @@ var jsworld = {};
 		var activationRecord = 
 		    new BigBangRecord(top, init_world, handlerCreators, handlers, attribs, k, beforeInitialization, afterInitialization);
 		runningBigBangs.push(activationRecord);
+
+
+		clear_running_state();
+		
 		function keepRecordUpToDate(w, oldW, k2) {
 		    activationRecord.world = w;
 		    k2();
