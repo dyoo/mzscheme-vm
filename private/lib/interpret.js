@@ -335,8 +335,10 @@ var call = function(aState, operator, operands,
 // Produces a function that consumes X, and produces
 // a wrapped version of the function; the wrapper sees
 // if we're in the middle of an evaluation before running.
+//
+// Guaranteed to do at least one queueCallback to clear the stack.
 var guardEntryOnStateRunning = function(aState, f) {
-    var guardedFunction = function(x) {
+    var checkCondition = function(x) {
 	if (aState.running) {
 	    queueCallback(
 		function() {
@@ -346,10 +348,16 @@ var guardEntryOnStateRunning = function(aState, f) {
 	    f(x);
 	}
     }
+    var guardedFunction = function(x) {
+	queueCallback(function() {
+	    checkCondition(x);
+	});
+    }
     return guardedFunction;
 };
 
 
+// makeOnCall: state -> (racket-function (arrayof X) (X -> void) (X -> void) Y -> void)
 var makeOnCall = function(state) {
     return function(operator, operands, onSuccess, onFail, callSite) {
 	call(state, operator, operands, onSuccess, onFail, callSite);

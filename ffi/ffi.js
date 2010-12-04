@@ -474,20 +474,11 @@ EXPORTS['js-call'] =
 			    var jsCallReturn = fun.val.apply(thisArg, args);
 			    if ( jsCallReturn === undefined ) {
 //				console.trace();
-				setTimeout(
-				    function() {
 //					console.log("here");
 					success(types.VOID);
-				    },
-				    0);
-			    }
-			    else {
-				setTimeout(
-				    function() {
-					success(wrapJsValue(
-					    jsCallReturn))
-				    },
-				    0);
+			    } else {
+				success(wrapJsValue(
+				    jsCallReturn))
 			    }
 			} catch(e) {
 //			    console.log("Failure");
