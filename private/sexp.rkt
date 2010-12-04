@@ -6,7 +6,10 @@
          "jsexp.rkt")
 
 (provide/contract [jsexp->js (jsexp? . -> . string?)]
-                  [sexp->js (any/c . -> . string?)])
+                  [print-jsexp->js (jsexp? output-port? . -> . any)]
+
+                  [sexp->js (any/c . -> . string?)]
+                  [print-sexp->js (any/c output-port? . -> . any)])
 
 
 (define LIST-CONSTRUCTOR "types.list")
@@ -41,149 +44,178 @@
 
 ;; jsexp->js: jsexp -> string
 (define (jsexp->js a-jsexp)
+  (let ([str-buf (open-output-string)])
+    (print-jsexp->js a-jsexp str-buf)
+    (get-output-string str-buf)))
+
+;; -jsexp->js: jsexp output-port -> void
+(define (print-jsexp->js a-jsexp out)
   (match a-jsexp
     [(struct ht (name pairs))
-     (string-append "{"
-                    (string-join (map key-value->js 
-                                      (cons `($ ,(make-lit (symbol->string name)))
-                                            pairs))
-                                 " ,")
-                    "\n"
-                    "}")]
+     (display "{" out)
+     (for-each-print/comma key-value->js
+                           (cons `($ ,(make-lit (symbol->string name)))
+                                            pairs)
+                           out)
+     (display "}" out)]
     [(struct vec (items))
-     (string-append "[" 
-                    (string-join (map jsexp->js items) " ,")
-                    "\n"
-                    "]")]
+     (display "[" out)
+     (for-each-print/comma print-jsexp->js items out)
+     (display "]" out)]
     [(struct int (v))
-     (number->string v)]
+     (display (number->string v) out)]
     [(struct lit (v))
-     (sexp->js v)]))
+     (print-sexp->js v out)]))
   
+;; for-each-print/comma: (X output-port -> void) (listof X) -> void
+(define (for-each-print/comma f items out)
+  (let ([last-index (sub1 (length items))])
+    (for ([item items]
+          [index (in-naturals)])
+      (f item out)
+      (unless (= index last-index)
+        (display "," out)))))
 
-;; key-value->js: (list symbol jsval) -> string
-(define (key-value->js a-key-value)
+
+;; key-value->js: (list symbol jsval) output-port -> void
+(define (key-value->js a-key-value out)
   (let ([key (first a-key-value)]
         [value (second a-key-value)])
-    (string-append (sexp->js (symbol->string key))
-                   ":"
-                   (jsexp->js value))))
-
-      
+    (print-sexp->js (symbol->string key) out)
+    (display ":" out)
+    (print-jsexp->js value out)))
 
 
 ;; sexp->js: any -> string
 (define (sexp->js expr)
+  (let ([str-buf (open-output-string)])
+    (print-sexp->js expr str-buf)
+    (get-output-string str-buf)))
+
+      
+
+;; print-sexp->js: any output-port -> void
+(define (print-sexp->js expr out)
   (cond
     [(void? expr)
+     (display VOID out)
      VOID]
-    
+
     ;; Empty
     [(empty? expr)
-     EMPTY]
+     (display EMPTY out)]
     
     ;; Nonempty lists
     [(list? expr)
-     (let ([translations (sexps->js expr)])
-       (string-append LIST-CONSTRUCTOR "(["
-                      (string-join translations ",")
-                      "])"))]
+     (display LIST-CONSTRUCTOR out)
+     (display "([" out)
+     (for-each-print/comma print-sexp->js expr out)
+     (display "])" out)]
 
     ;; Dotted pairs
     [(pair? expr)
-     (string-append PAIR-CONSTRUCTOR "("
-                    (sexp->js (car expr))
-                    ","
-                    (sexp->js (cdr expr))
-                    ")")]
+     (display PAIR-CONSTRUCTOR out)
+     (display "(" out)
+     (print-sexp->js (car expr) out)
+     (display "," out)
+     (print-sexp->js (cdr expr) out)
+     (display ")" out)]
     
     ;; Vectors
     [(vector? expr)
-     (let ([translations (sexps->js (vector->list expr))])
-       (string-append VECTOR-CONSTRUCTOR "(["
-                      (string-join translations ",")
-                          "])"))]
+     (display VECTOR-CONSTRUCTOR out)
+     (display "([" out)
+     (for-each-print/comma print-sexp->js (vector->list expr) out)
+     (display "])" out)]
     
     ;; Symbols
     [(symbol? expr)
-     (string-append SYMBOL-CONSTRUCTOR "("
-                    (string->js (symbol->string expr))
-                    ")")]
+     (display SYMBOL-CONSTRUCTOR out)
+     (display "(" out)
+     (display (string->js (symbol->string expr)) out)
+     (display ")" out)]
 
     ;; Keywords
     [(keyword? expr)
-     (string-append KEYWORD-CONSTRUCTOR "("
-                    (string->js (keyword->string expr))
-                    ")")]
+     (display KEYWORD-CONSTRUCTOR out)
+     (display "(" out)
+     (display (string->js (keyword->string expr)) out)
+     (display ")" out)]
     
     ;; Numbers
     [(number? expr)
-     (number->js expr)]
+     (display (number->js expr) out)]
    
     ;; Strings
     [(string? expr)
-     (string->js expr)]
+     (display (string->js expr) out)]
     
     ;; Bytes
     [(bytes? expr)
-     (string-append BYTES-CONSTRUCTOR "(["
-                    (string-join (map number->string (bytes->list expr)) ",")
-                    "])")]
+     (display BYTES-CONSTRUCTOR out)
+     (display "([" out)
+     (for-each-print/comma (lambda (n out)
+                             (display (number->string n) out))
+                           (bytes->list expr)
+                           out)
+     (display "])" out)]
 
     ;; Characters
     [(char? expr)
-     (character->js expr)]
+     (display (character->js expr) out)]
     
     ;; Booleans
     [(boolean? expr)
-     (boolean->js expr)]
+     (display (boolean->js expr) out)]
  
     ;; Paths
     [(path? expr)
-     (string-append PATH-CONSTRUCTOR "(" 
-                    (string->js (path->string expr))
-                    ")")]
+     (display PATH-CONSTRUCTOR out)
+     (display "(" out)
+     (display (string->js (path->string expr)) out)
+     (display ")" out)]
 
     ;; Boxes
     [(box? expr)
-     (string-append BOX-CONSTRUCTOR "("
-                    (sexp->js (unbox expr))
-                    ")")]
+     (display BOX-CONSTRUCTOR out)
+     (display "(" out)
+     (print-sexp->js (unbox expr) out)
+     (display ")" out)]
     
     ;; Regexps
     [(regexp? expr)
-     (string-append REGEXP-CONSTRUCTOR "("
-                    (sexp->js (object-name expr))
-                    ")")]
+     (display REGEXP-CONSTRUCTOR out)
+     (display "(" out)
+     (print-sexp->js (object-name expr) out)
+     (display ")" out)]
 
     ;; Byte regexps
     [(byte-regexp? expr)
-     (string-append BYTE-REGEXP-CONSTRUCTOR "("
-                    (sexp->js (object-name expr))
-                    ")")]
+     (display BYTE-REGEXP-CONSTRUCTOR out)
+     (display "(" out)
+     (print-sexp->js (object-name expr) out)
+     (display ")" out)]
+
     ;; hashes
     [(hash-eq? expr)
-     (string-append HASHEQ-CONSTRUCTOR "("
-                    (sexp->js (hash-map expr (lambda (k v)
-                                               (cons k v))))
-                    ")")]
+     (display HASHEQ-CONSTRUCTOR out)
+     (display "(" out)
+     (print-sexp->js (hash-map expr (lambda (k v)
+                                               (cons k v)))
+                     out)
+     (display ")" out)]
     [(hash? expr)
-     (string-append HASH-CONSTRUCTOR "("
-                    (sexp->js (hash-map expr (lambda (k v)
-                                               (cons k v))))
-                    ")")]
+     (display HASH-CONSTRUCTOR out)
+     (display "(" out)
+     (print-sexp->js (hash-map expr (lambda (k v)
+                                (cons k v)))
+                     out)
+     (display ")" out)]
 
     [else
      (error 'sexp->js (format "Can't translate ~s" expr))]))
 
 
-;; sexps->js: (listof expr) -> (listof string)
-;; Produces the quotation of a list of expressions.
-(define (sexps->js exprs)
-  (foldl (lambda (an-expr acc)
-           (cons (sexp->js an-expr) acc))
-         empty
-         (reverse exprs)))
 
 
 ;; boolean->js: boolean -> string

@@ -22,4 +22,8 @@
 
 ;(profile-thunk build-all-tests)
 
-(time (compile-moby-modules (normalize-path all-tests)))
+
+(define (build-all-modules)
+  (void (compile-moby-modules (normalize-path all-tests))))
+
+(profile-thunk build-all-modules)
