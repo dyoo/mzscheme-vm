@@ -310,6 +310,8 @@ var captureCurrentContinuationMarks = function(state) {
 
 var STACK_KEY = types.symbol("moby-stack-record-continuation-mark-key");
 
+
+// The core of a contination-mark-set->context.
 var getStackTraceFromContinuationMarks = function(contMarkSet) {
     var results = [];
     var stackTrace = contMarkSet.ref(STACK_KEY);
@@ -321,12 +323,14 @@ var getStackTraceFromContinuationMarks = function(contMarkSet) {
     for (var i = stackTrace.length - 1; 
 	 i >= 0; i--) {
 	var callRecord = stackTrace[i];
-	var id = callRecord.ref(0);
-	var offset = callRecord.ref(1);
-	var line = callRecord.ref(2);
-	var column = callRecord.ref(3);
-	var span = callRecord.ref(4);
-	var newHash = {'id': id, 
+	var procName = callRecord.ref(0);
+	var id = callRecord.ref(1);
+	var offset = callRecord.ref(2);
+	var line = callRecord.ref(3);
+	var column = callRecord.ref(4);
+	var span = callRecord.ref(5);
+	var newHash = {'procName' : procName,
+		       'id': id, 
 		       'offset': offset,
 		       'line': line, 
 		       'column': column,
