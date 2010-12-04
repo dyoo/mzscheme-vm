@@ -85,6 +85,11 @@ var helpers = {};
 	};
 
 
+    var queueCallback = function(f) {
+	setTimeout(f, 0);
+    };
+
+
 	// reportError: (or exception string) -> void
 	// Reports an error to the user, either at the console
 	// if the console exists, or as alerts otherwise.
@@ -582,6 +587,9 @@ var helpers = {};
         helpers.makeLowLevelEqHash = makeLowLevelEqHash;
 
         helpers.heir = heir;
+
+
+    helpers.queueCallback = queueCallback;
 
     helpers.startProfile = startProfile;
     helpers.endProfile = endProfile;

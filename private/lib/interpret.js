@@ -6,6 +6,13 @@ var interpret = {};
 
 (function() {
 
+
+
+var queueCallback = helpers.queueCallback;
+
+
+
+
 // load: compilationTop state? -> state
 // Load up the bytecode into a state, ready for evaluation.  If
 // an old state is given, then reuses it.
@@ -188,14 +195,13 @@ var run = function(aState, callSite) {
 	    // so that no one else can come in.
 	    aState.running = true;
 
-	    // SUBTLE: this needs to be a setTimeout
+	    // SUBTLE: this needs to be a queueCallback
 	    // to help clear out any potential stack
 	    // from previous callers.
-	    setTimeout(
+	    queueCallback(
 		function() { 
 		    aState.running = false;
-		    run(aState, callSite); },
-		0);
+		    run(aState, callSite); });
 	    return;
 	} else {
 	    onSuccess(aState.v);
@@ -291,10 +297,9 @@ var call = function(aState, operator, operands,
 		    onSuccess, onFail, callSite) {
     var stateValues;
     if ( aState.running ) {
-	setTimeout(function() { 
+	queueCallback(function() { 
 	    call(aState, operator, operands, 
-		 onSuccess, onFail, callSite); }, 
-		   1);
+		 onSuccess, onFail, callSite);});
 	return;
     }
     
@@ -333,11 +338,10 @@ var call = function(aState, operator, operands,
 var guardEntryOnStateRunning = function(aState, f) {
     var guardedFunction = function(x) {
 	if (aState.running) {
-	    setTimeout(
+	    queueCallback(
 		function() {
 		    guardedFunction(x);
-		},
-		1)
+		});
 	} else {
 	    f(x);
 	}
