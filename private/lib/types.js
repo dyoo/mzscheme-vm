@@ -647,18 +647,7 @@ Empty.prototype.reverse = function() {
     return this;
 };
 
-Empty.prototype.first = function() {
-    helpers.raise(types.incompleteExn(
-	types.exnFailContract,
-	"first can't be applied on empty.",
-	[]));
-};
-Empty.prototype.rest = function() {
-    helpers.raise(types.incompleteExn(
-	types.exnFailContract,
-	"rest can't be applied on empty.",
-	[]));
-};
+
 Empty.prototype.isEmpty = function() {
     return true;
 };
