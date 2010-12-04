@@ -185,8 +185,8 @@
 //				     function() { deepUnwrapJsValues(types.renderEffectDomNode(x), k); });
 //	    }
 	    else if ( types.isPair(x) ) {
-		deepUnwrapJsValues(x.first(), function(first) {
-			deepUnwrapJsValues(x.rest(), function(rest) {
+		deepUnwrapJsValues(x.first, function(first) {
+			deepUnwrapJsValues(x.rest, function(rest) {
 				k( types.cons(first, rest) );
 			});
 		});
@@ -307,8 +307,8 @@
 	}
 
 	if (types.isPair(x)) {
-	    var firstElt = x.first();
-	    var restElts = x.rest();
+	    var firstElt = x.first;
+	    var restElts = x.rest;
 
 	    if (! isNode(firstElt)) {
 		fail("on-draw: expected a dom-element, but received ~s instead, the first element within ~s", [firstElt, top]);
@@ -320,8 +320,8 @@
 
 	    var i = 2;
 	    while( !restElts.isEmpty() ) {
-		checkWellFormedDomTree(restElts.first(), x, i);
-		restElts = restElts.rest();
+		checkWellFormedDomTree(restElts.first, x, i);
+		restElts = restElts.rest;
 		i++;
 	    }
 	} else {

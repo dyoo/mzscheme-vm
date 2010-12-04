@@ -673,17 +673,17 @@ Empty.prototype.append = function(b){
     return b;
 };
     
-Cons = function(f, r) {
-    this.f = f;
-    this.r = r;
+Cons = function(first, rest) {
+    this.first = first;
+    this.rest = rest;
 };
 
 Cons.prototype.reverse = function() {
     var lst = this;
     var ret = Empty.EMPTY;
     while (!lst.isEmpty()){
-	ret = Cons.makeInstance(lst.first(), ret);
-	lst = lst.rest();
+	ret = Cons.makeInstance(lst.first, ret);
+	lst = lst.rest;
     }
     return ret;
 };
@@ -698,18 +698,10 @@ Cons.prototype.isEqual = function(other, aUnionFind) {
     if (! (other instanceof Cons)) {
 	return Logic.FALSE;
     }
-    return (isEqual(this.first(), other.first(), aUnionFind) &&
-	    isEqual(this.rest(), other.rest(), aUnionFind));
+    return (isEqual(this.first, other.first, aUnionFind) &&
+	    isEqual(this.rest, other.rest, aUnionFind));
 };
-    
-Cons.prototype.first = function() {
-    return this.f;
-};
-    
-Cons.prototype.rest = function() {
-    return this.r;
-};
-    
+
 Cons.prototype.isEmpty = function() {
     return false;
 };
@@ -721,8 +713,8 @@ Cons.prototype.append = function(b){
     var ret = b;
     var lst = this.reverse();
     while ( !lst.isEmpty() ) {
-	ret = Cons.makeInstance(lst.first(), ret);
-	lst = lst.rest();
+	ret = Cons.makeInstance(lst.first, ret);
+	lst = lst.rest;
     }
 	
     return ret;
@@ -734,8 +726,8 @@ Cons.prototype.toWrittenString = function(cache) {
     var texts = [];
     var p = this;
     while ( p instanceof Cons ) {
-	texts.push(toWrittenString(p.first(), cache));
-	p = p.rest();
+	texts.push(toWrittenString(p.first, cache));
+	p = p.rest;
 	if (typeof(p) === 'object' && cache.containsKey(p)) {
 	    break;
 	}
@@ -752,8 +744,8 @@ Cons.prototype.toWrittenString = function(cache) {
 //	}
 //	if (p.isEmpty())
 //	    break;
-//	texts.push(toWrittenString(p.first(), cache));
-//	p = p.rest();
+//	texts.push(toWrittenString(p.first, cache));
+//	p = p.rest;
 //    }
     return "(" + texts.join(" ") + ")";
 };
@@ -765,8 +757,8 @@ Cons.prototype.toDisplayedString = function(cache) {
     var texts = [];
     var p = this;
     while ( p instanceof Cons ) {
-	texts.push(toDisplayedString(p.first(), cache));
-	p = p.rest();
+	texts.push(toDisplayedString(p.first, cache));
+	p = p.rest;
 	if (typeof(p) === 'object' && cache.containsKey(p)) {
 	    break;
 	}
@@ -783,8 +775,8 @@ Cons.prototype.toDisplayedString = function(cache) {
 //	}
 //	if (p.isEmpty()) 
 //	    break;
-//	texts.push(toDisplayedString(p.first(), cache));
-//	p = p.rest();
+//	texts.push(toDisplayedString(p.first, cache));
+//	p = p.rest;
 //    }
     return "(" + texts.join(" ") + ")";
 };
@@ -797,8 +789,8 @@ Cons.prototype.toDomNode = function(cache) {
     node.appendChild(document.createTextNode("("));
     var p = this;
     while ( p instanceof Cons ) {
-	appendChild(node, toDomNode(p.first(), cache));
-	p = p.rest();
+	appendChild(node, toDomNode(p.first, cache));
+	p = p.rest;
 	if ( p !== Empty.EMPTY ) {
 	    appendChild(node, document.createTextNode(" "));
 	}
@@ -821,8 +813,8 @@ Cons.prototype.toDomNode = function(cache) {
 //	}
 //	if (p.isEmpty())
 //	    break;
-//	appendChild(node, toDomNode(p.first(), cache));
-//	p = p.rest();
+//	appendChild(node, toDomNode(p.first, cache));
+//	p = p.rest;
 //	if (! p.isEmpty()) {
 //	    appendChild(node, document.createTextNode(" "));
 //	}
@@ -1867,23 +1859,23 @@ ContMarkRecordControl.prototype.update = function(key, val) {
     var l = this.listOfPairs;
     var acc;
     while (l !== types.EMPTY) {
-	if (l.first().first() === key) {
+	if (l.first.first === key) {
 	    // slow path: walk the list and replace with the
 	    // new key/value pair.
 	    l = this.listOfPairs;
 	    acc = types.EMPTY;
 	    while (l !== types.EMPTY) {
-		if (l.first().first() === key) {
+		if (l.first.first === key) {
 		    acc = types.cons(types.cons(key, val), 
 				     acc);
 		} else {
-		    acc = types.cons(l.first(), acc);
+		    acc = types.cons(l.first, acc);
 		}
-		l = l.rest();
+		l = l.rest;
 	    }
 	    return new ContMarkRecordControl(acc);
 	}
-	l = l.rest();
+	l = l.rest;
     }
     // fast path: just return a new record with the element tacked at the
     // front of the original list.
@@ -2146,8 +2138,8 @@ var makeString = function(s) {
 var makeHashEq = function(lst) {
 	var newHash = new EqHashTable();
 	while ( !lst.isEmpty() ) {
-		newHash.hash.put(lst.first().first(), lst.first().rest());
-		lst = lst.rest();
+		newHash.hash.put(lst.first.first, lst.first.rest);
+		lst = lst.rest;
 	}
 	return newHash;
 }
@@ -2156,8 +2148,8 @@ var makeHashEq = function(lst) {
 var makeHashEqual = function(lst) {
 	var newHash = new EqualHashTable();
 	while ( !lst.isEmpty() ) {
-		newHash.hash.put(lst.first().first(), lst.first().rest());
-		lst = lst.rest();
+		newHash.hash.put(lst.first.first, lst.first.rest);
+		lst = lst.rest;
 	}
 	return newHash;
 }
@@ -2186,10 +2178,10 @@ var readerGraph = function(x, objectHash, n) {
     }
 
     if (types.isPair(x)) {
-	var consPair = types.cons(x.first(), x.rest());
+	var consPair = types.cons(x.first, x.rest);
 	objectHash.put(x, consPair);
-	consPair.f = readerGraph(x.first(), objectHash, n+1);
-	consPair.r = readerGraph(x.rest(), objectHash, n+1);
+	consPair.f = readerGraph(x.first, objectHash, n+1);
+	consPair.r = readerGraph(x.rest, objectHash, n+1);
 	return consPair;
     }
 

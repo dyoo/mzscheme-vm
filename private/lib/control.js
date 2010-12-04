@@ -506,9 +506,9 @@ var invokeJavascriptModuleAndRestart = function(aState, resolvedModuleName,
 	    after();
 	} else {
 	    invokeModuleAndRestart(aState,
-				   modules.first()+'',
+				   modules.first+'',
 				   function() {
-				       invokeAllRequiredModules(modules.rest(), after);
+				       invokeAllRequiredModules(modules.rest, after);
 				   },
 				   onFail);
 	}
@@ -1484,7 +1484,7 @@ CaseLamControl.prototype.invoke = function(state) {
 	state.v = new types.CaseLambdaValue(this.name, []);
     } else {
 	state.cstack.push(new CaseLambdaComputeControl(this.name, 
-						       types.list(clauses).rest(),
+						       types.list(clauses).rest,
 						       types.list([])));
 	state.cstack.push(clauses[0]);
     }
@@ -1504,17 +1504,17 @@ CaseLambdaComputeControl.prototype.invoke = function(state) {
 	var clauseList = (types.cons(nextEvaluatedLam, this.evaluatedLams)).reverse();
 	var clauses = [];
 	while (!clauseList.isEmpty()) {
-	    clauses.push(clauseList.first());
-	    clauseList = clauseList.rest();
+	    clauses.push(clauseList.first);
+	    clauseList = clauseList.rest;
 	}
 	state.v = new types.CaseLambdaValue(this.name, clauses);
     } else {
 	state.cstack.push(new CaseLambdaComputeControl(
 	    this.name,
-	    this.lamsToEvaluate.rest(),
+	    this.lamsToEvaluate.rest,
 	    types.cons(nextEvaluatedLam,
 		       this.evaluatedLams)));
-	state.cstack.push(this.lamsToEvaluate.first());
+	state.cstack.push(this.lamsToEvaluate.first);
     }
 };
 

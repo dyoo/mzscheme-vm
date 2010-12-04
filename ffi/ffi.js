@@ -151,7 +151,7 @@ EXPORTS['isWrappedSchemeValue'] = isWrappedSchemeValue;
 
 
 var isAssocList = function(x) {
-    return types.isPair(x) && types.isPair(x.rest()) && types.isEmpty(x.rest().rest());
+    return types.isPair(x) && types.isPair(x.rest) && types.isEmpty(x.rest.rest);
 };
 
 
@@ -514,15 +514,15 @@ EXPORTS['js-make-hash'] =
 						1,
 						false, false,
 						function(bindings) {
-						    helpers.checkListOf(bindings, function(x) { return isAssocList(x) && types.isString(x.first()); },
+						    helpers.checkListOf(bindings, function(x) { return isAssocList(x) && types.isString(x.first); },
 									'js-make-hash', '(listof string X)', 1);
 
 						    var ret = {};
 						    while ( !bindings.isEmpty() ) {
-			  				var key = bindings.first().first().toString();
-							var val = bindings.first().rest().first();
+			  				var key = bindings.first.first.toString();
+							var val = bindings.first.rest.first;
 							ret[key] = (isJsValue(val) ? val.val : val);
-							bindings = bindings.rest();
+							bindings = bindings.rest;
 						    }
 						    return new JsValue('hash', ret);
 						}) ]);

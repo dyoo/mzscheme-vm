@@ -295,10 +295,10 @@ var captureCurrentContinuationMarks = function(state) {
 	if ( types.isContMarkRecordControl(state.cstack[i]) ) {
 	    var listOfPairs = state.cstack[i].listOfPairs;
 	    while (listOfPairs !== types.EMPTY) {
-		var nextPair = listOfPairs.first();
-		dict.put(nextPair.first(), dict.get(nextPair.first()) || []);
-		dict.get(nextPair.first()).push(nextPair.rest());
-		listOfPairs = listOfPairs.rest();
+		var nextPair = listOfPairs.first;
+		dict.put(nextPair.first, dict.get(nextPair.first) || []);
+		dict.get(nextPair.first).push(nextPair.rest);
+		listOfPairs = listOfPairs.rest;
 	    }
 	}
     }

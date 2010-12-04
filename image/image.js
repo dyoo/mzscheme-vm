@@ -83,7 +83,7 @@ var isStyle = function(x) {
 };
 
 var isAssocList = function(x) {
-	return isPair(x) && isPair(x.rest()) && isEmpty(x.rest().rest());
+	return isPair(x) && isPair(x.rest) && isEmpty(x.rest.rest);
 };
 
 
