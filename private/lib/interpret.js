@@ -187,6 +187,10 @@ var run = function(aState, callSite) {
 	    // Temporarily flag aState.running = true
 	    // so that no one else can come in.
 	    aState.running = true;
+
+	    // SUBTLE: this needs to be a setTimeout
+	    // to help clear out any potential stack
+	    // from previous callers.
 	    setTimeout(
 		function() { 
 		    aState.running = false;
@@ -210,22 +214,19 @@ var doExceptionHandling = function(e, stateValues, aState, onFail, callSite) {
 	stateValues = aState.save();
 	aState.clearForEval({preserveBreak: true});
 	
-	aState.onSuccess = function(v, callSite) {
-	    // SUBTLE: this needs to be a setTimeout
-	    // to help clear out any potential stack
-	    // from previous callers.
-	    setTimeout(
-		function() {
-		    aState.restore(stateValues);
-		    aState.v = v;
-		    run(aState, callSite);
-		}, 
-		0);
-	};
-	aState.onFail = function(e2) {
-	    aState.restore(stateValues);
-	    onFail( completeError(aState, e2) );
-	};
+	aState.onSuccess = guardEntryOnStateRunning(
+	    aState,
+	    function(v) {
+		aState.restore(stateValues);
+		aState.v = v;
+		run(aState);
+	    });
+	aState.onFail = guardEntryOnStateRunning(
+	    aState, 
+	    function(e2) {
+		aState.restore(stateValues);
+		onFail( completeError(aState, e2) );
+	    });
 	onCall = makeOnCall(aState);
 	e.onPause(onCall, aState.onSuccess, aState.onFail);
     } else {
@@ -309,15 +310,39 @@ var call = function(aState, operator, operands,
 			    return new control.ConstantControl(op)},
 			operands)));
 
-    aState.onSuccess = function(v) {
-	aState.restore(stateValues);
-	onSuccess(v);
-    };
-    aState.onFail = function(e) {
-	aState.restore(stateValues);
-	onFail(e);
-    };
+    aState.onSuccess = guardEntryOnStateRunning(
+	aState,
+	function(v) {
+	    aState.restore(stateValues);
+	    onSuccess(v);
+	});
+    aState.onFail = guardEntryOnStateRunning(
+	aState,
+	function(e) {
+	    aState.restore(stateValues);
+	    onFail(e);
+	});
     run(aState, callSite);
+};
+
+
+// guardEntryOnStateRunning: state (X -> void) -> void
+// Produces a function that consumes X, and produces
+// a wrapped version of the function; the wrapper sees
+// if we're in the middle of an evaluation before running.
+var guardEntryOnStateRunning = function(aState, f) {
+    var guardedFunction = function(x) {
+	if (aState.running) {
+	    setTimeout(
+		function() {
+		    guardedFunction(x);
+		},
+		1)
+	} else {
+	    f(x);
+	}
+    }
+    return guardedFunction;
 };
 
 
