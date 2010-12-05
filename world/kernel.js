@@ -461,7 +461,7 @@ var VideoImage = function(src, rawVideo) {
 		this.video.poster	= "http://www.wescheme.org/images/broken.png";
 		this.video.autoplay	= true;
 		this.video.autobuffer=true;
-		this.video.controls = true;
+		this.video.loop		= true;
 		this.video.play();
     } else {
 		// fixme: we may want to do something blocking here for
@@ -478,7 +478,7 @@ var VideoImage = function(src, rawVideo) {
 									this.video.poster	= "http://www.wescheme.org/images/broken.png";
 									this.video.autoplay	= true;
 									this.video.autobuffer=true;
-									this.video.controls = true;
+									this.video.loop		= true;
 									this.video.play();
 									});
 		this.video.addEventListener('error', function(e) {
@@ -493,23 +493,15 @@ VideoImage.prototype = heir(BaseImage.prototype);
 videos = {};
 VideoImage.makeInstance = function(path, rawVideo) {
     if (! (path in VideoImage)) {
-		videos[path] = {obj: new VideoImage(path, rawVideo), ctx: null};
+		videos[path] = new VideoImage(path, rawVideo);
     } 
-    return videos[path].obj;
+    return videos[path];
 };
 
 VideoImage.prototype.render = function(ctx, x, y) {
     ctx.drawImage(this.video, x, y);
-	videos[this.src].ctx = ctx;
-	setInterval('videos["'+this.src+'"].obj.render(videos["'+this.src+'"].ctx,'+x+','+y+');', 800);
 };
 
-/*
- // Override toDomNode: we don't need a full-fledged canvas here.
-VideoImage.prototype.toDomNode = function(cache) {
-    return this.video.cloneNode(true);
-};
-*/
 VideoImage.prototype.isEqual = function(other, aUnionFind) {
     return (other instanceof VideoImage &&
 			this.pinholeX == other.pinholeX &&
