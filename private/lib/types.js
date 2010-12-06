@@ -1426,7 +1426,7 @@ var numberToDomNode = function(n) {
 	    return node;
 	} else if (jsnums.isRational(n)) {
 	    return rationalToDomNode(n);
-	} else if (jsnums.isComplex(n)) {
+	} else if (isComplex(n)) {
 	    node = document.createElement("span");
 	    node.appendChild(document.createTextNode(n.toString()));
 	    return node;
