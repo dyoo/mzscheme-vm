@@ -37,7 +37,8 @@ var control = {};
 
     var PrimProc = types.PrimProc;
     var isFunction = types.isFunction;
-
+    var isInternalCall= types.isInternalCall;
+    var isInternalPause = types.isInternalPause;
 
 
 //////////////////////////////////////////////////////////////////////
@@ -941,14 +942,14 @@ var callProcedure = function(aState, procValue, n, operandValues) {
 
 
 var processPrimitiveResult = function(state, result, procValue) {
-    if ( types.isInternalCall(result) ) {
+    if (isInternalCall(result)) {
 	state.cstack.push(new InternalCallRestartControl
 			  (result.k, procValue));
 	callProcedure(state,
 		      result.operator, 
 		      result.operands.length, 
 		      result.operands);
-    } else if ( types.isInternalPause(result) ) {
+    } else if (isInternalPause(result)) {
 	throw new PauseException(result.onPause);
     } else {
 	if (! procValue.usesState) {
