@@ -283,7 +283,7 @@ var helpers = {};
 
 	var schemeListToArray = function(lst) {
 		var result = [];
-		while ( !lst.isEmpty() ) {
+		while (lst !== types.EMPTY) {
 			result.push(lst.first);
 			lst = lst.rest;
 		}
@@ -298,7 +298,7 @@ var helpers = {};
 			return [];
 		} else if (types.isPair(thing)) {
 			var result = [];
-			while (!thing.isEmpty()) {
+			while (thing !== types.EMPTY) {
 				result.push(deepListToArray(thing.first));
 				thing = thing.rest;
 			}
@@ -315,7 +315,7 @@ var helpers = {};
 		}
 
 		var ret = [];
-		while ( !x.isEmpty() ) {
+		while (x !== types.EMPTY) {
 			ret = ret.concat( flattenSchemeListToArray(x.first) );
 			x = x.rest;
 		}
@@ -326,7 +326,7 @@ var helpers = {};
 	// assocListToHash: (listof (list X Y)) -> (hashof X Y)
 	var assocListToHash = function(lst) {
 		var result = {};
-		while ( !lst.isEmpty() ) {
+		while (lst !== types.EMPTY) {
 			var key = lst.first.first;
 			var val = lst.first.rest.first;
 			result[key] = val;

@@ -648,9 +648,6 @@ Empty.prototype.reverse = function() {
 };
 
 
-Empty.prototype.isEmpty = function() {
-    return true;
-};
 Empty.prototype.toWrittenString = function(cache) { return "empty"; };
 Empty.prototype.toDisplayedString = function(cache) { return "empty"; };
 Empty.prototype.toString = function(cache) { return "()"; };
@@ -670,7 +667,7 @@ Cons = function(first, rest) {
 Cons.prototype.reverse = function() {
     var lst = this;
     var ret = Empty.EMPTY;
-    while (!lst.isEmpty()){
+    while (lst !== Empty.EMPTY){
 	ret = Cons.makeInstance(lst.first, ret);
 	lst = lst.rest;
     }
@@ -691,9 +688,6 @@ Cons.prototype.isEqual = function(other, aUnionFind) {
 	    isEqual(this.rest, other.rest, aUnionFind));
 };
 
-Cons.prototype.isEmpty = function() {
-    return false;
-};
     
 // Cons.append: (listof X) -> (listof X)
 Cons.prototype.append = function(b){
@@ -701,7 +695,7 @@ Cons.prototype.append = function(b){
 	return this;
     var ret = b;
     var lst = this.reverse();
-    while ( !lst.isEmpty() ) {
+    while (lst !== Empty.EMPTY) {
 	ret = Cons.makeInstance(lst.first, ret);
 	lst = lst.rest;
     }
@@ -725,17 +719,6 @@ Cons.prototype.toWrittenString = function(cache) {
 	texts.push('.');
 	texts.push(toWrittenString(p, cache));
     }
-//    while (true) {
-//	if ((!(p instanceof Cons)) && (!(p instanceof Empty))) {
-//	    texts.push(".");
-//	    texts.push(toWrittenString(p, cache));
-//	    break;
-//	}
-//	if (p.isEmpty())
-//	    break;
-//	texts.push(toWrittenString(p.first, cache));
-//	p = p.rest;
-//    }
     return "(" + texts.join(" ") + ")";
 };
 
@@ -760,17 +743,6 @@ Cons.prototype.toDisplayedString = function(cache) {
 	texts.push('.');
 	texts.push(toDisplayedString(p, cache));
     }
-//    while (true) {
-//	if ((!(p instanceof Cons)) && (!(p instanceof Empty))) {
-//	    texts.push(".");
-//	    texts.push(toDisplayedString(p, cache));
-//	    break;
-//	}
-//	if (p.isEmpty()) 
-//	    break;
-//	texts.push(toDisplayedString(p.first, cache));
-//	p = p.rest;
-//    }
     return "(" + texts.join(" ") + ")";
 };
 
@@ -796,22 +768,6 @@ Cons.prototype.toDomNode = function(cache) {
 	appendChild(node, document.createTextNode(" "));
 	appendChild(node, toDomNode(p, cache));
     }
-//    while (true) {
-//	if ((!(p instanceof Cons)) && (!(p instanceof Empty))) {
-//	    appendChild(node, document.createTextNode(" "));
-//	    appendChild(node, document.createTextNode("."));
-//	    appendChild(node, document.createTextNode(" "));
-//	    appendChild(node, toDomNode(p, cache));
-//	    break;
-//	}
-//	if (p.isEmpty())
-//	    break;
-//	appendChild(node, toDomNode(p.first, cache));
-//	p = p.rest;
-//	if (! p.isEmpty()) {
-//	    appendChild(node, document.createTextNode(" "));
-//	}
-//    }
     node.appendChild(document.createTextNode(")"));
     return node;
 };
@@ -2161,7 +2117,7 @@ var makeString = function(s) {
 
 var makeHashEq = function(lst) {
 	var newHash = new EqHashTable();
-	while ( !lst.isEmpty() ) {
+	while (lst !== Empty.EMPTY) {
 		newHash.hash.put(lst.first.first, lst.first.rest);
 		lst = lst.rest;
 	}
@@ -2171,7 +2127,7 @@ var makeHashEq = function(lst) {
 
 var makeHashEqual = function(lst) {
 	var newHash = new EqualHashTable();
-	while ( !lst.isEmpty() ) {
+	while (lst !== Empty.EMPTY) {
 		newHash.hash.put(lst.first.first, lst.first.rest);
 		lst = lst.rest;
 	}

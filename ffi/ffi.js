@@ -518,7 +518,7 @@ EXPORTS['js-make-hash'] =
 									'js-make-hash', '(listof string X)', 1);
 
 						    var ret = {};
-						    while ( !bindings.isEmpty() ) {
+						    while (bindings !== types.EMPTY) {
 			  				var key = bindings.first.first.toString();
 							var val = bindings.first.rest.first;
 							ret[key] = (isJsValue(val) ? val.val : val);

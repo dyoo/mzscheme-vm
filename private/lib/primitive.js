@@ -159,7 +159,7 @@ var procArityContains = helpers.procArityContains;
 var length = function(lst) {
 	checkList(lst, 'length', 1, [lst]);
 	var ret = 0;
-	for (; !lst.isEmpty(); lst = lst.rest) {
+	for (; lst !== types.EMPTY; lst = lst.rest) {
 		ret = ret+1;
 	}
 	return ret;
@@ -181,7 +181,7 @@ var append = function(initArgs) {
 }
 
 var foldHelp = function(f, acc, args) {
-	if ( args[0].isEmpty() ) {
+	if (args[0] === types.EMPTY) {
 		return acc;
 	}
 
@@ -205,7 +205,7 @@ var quicksort = function(functionName) {
 	
 		var quicksortHelp = function(k) {
 			return function(lst) {
-				if ( lst.isEmpty() ) {
+				if (lst === types.EMPTY) {
 					return k(types.EMPTY);
 				}
 		
@@ -676,30 +676,30 @@ PRIMITIVES['for-each'] =
 		 2, 
 		 true, false,
 		 function(f, firstArg, arglists) {
-		 	var allArgs = [f, firstArg].concat(arglists);
-		 	arglists.unshift(firstArg);
-			check(f, isFunction, 'for-each', 'procedure', 1, allArgs);
-			arrayEach(arglists, function(lst, i) {checkList(lst, 'for-each', i+2, allArgs);});
-			checkAllSameLength(arglists, 'for-each', allArgs);
-		        check(f, procArityContains(arglists.length), 'for-each', 'procedure (arity ' + arglists.length + ')', 1, allArgs);
+		     var allArgs = [f, firstArg].concat(arglists);
+		     arglists.unshift(firstArg);
+		     check(f, isFunction, 'for-each', 'procedure', 1, allArgs);
+		     arrayEach(arglists, function(lst, i) {checkList(lst, 'for-each', i+2, allArgs);});
+		     checkAllSameLength(arglists, 'for-each', allArgs);
+		     check(f, procArityContains(arglists.length), 'for-each', 'procedure (arity ' + arglists.length + ')', 1, allArgs);
 
-			var forEachHelp = function(args) {
-				if (args[0].isEmpty()) {
-					return types.VOID;
-				}
+		     var forEachHelp = function(args) {
+			 if (args[0] === types.EMPTY) {
+			     return types.VOID;
+			 }
 
-				var argsFirst = [];
-				var argsRest = [];
-				for (var i = 0; i < args.length; i++) {
-					argsFirst.push(args[i].first);
-					argsRest.push(args[i].rest);
-				}
+			 var argsFirst = [];
+			 var argsRest = [];
+			 for (var i = 0; i < args.length; i++) {
+			     argsFirst.push(args[i].first);
+			     argsRest.push(args[i].rest);
+			 }
 
-				return CALL(f, argsFirst,
-					function(result) { return forEachHelp(argsRest); });
-			}
+			 return CALL(f, argsFirst,
+				     function(result) { return forEachHelp(argsRest); });
+		     }
 
-			return forEachHelp(arglists);
+		     return forEachHelp(arglists);
 		 });
 
 
@@ -1069,7 +1069,7 @@ PRIMITIVES['compose'] =
 			var funList = types.list(procs).reverse();
 			
 			var composeHelp = function(x, fList) {
-				if ( fList.isEmpty() ) {
+				if (fList === types.EMPTY) {
 					return x;
 				}
 
@@ -1997,7 +1997,7 @@ PRIMITIVES['xml->s-exp'] =
 					while (child != null) {
 						var nextResult = parse(child);
 						if (isString(nextResult) && 
-						    !result.isEmpty() &&
+						    result !== types.EMPTY &&
 						    isString(result.first)) {
 							result = types.cons(result.first + nextResult,
 									    result.rest);
@@ -2348,7 +2348,7 @@ PRIMITIVES['rest'] =
 		 1,
 		 false, false,
 		 function(lst) {
-		 	check(lst, function(x) { return isList(x) && !isEmpty(x); },
+		 	check(lst, function(x) { return isList(x) && x !== types.EMPTY; },
 			      'rest', 'non-empty list', 1);
 			return lst.rest;
 		 });
@@ -2358,7 +2358,7 @@ PRIMITIVES['first'] =
 		 1,
 		 false, false,
 		 function(lst) {
-		 	check(lst, function(x) { return isList(x) && !isEmpty(x); },
+		 	check(lst, function(x) { return isList(x) && x !== types.EMPTY; },
 			      'first', 'non-empty list', 1);
 			return lst.first;
 		 });
@@ -2538,7 +2538,7 @@ PRIMITIVES['list-tail'] =
 							   msg,
 							   []) );
 			    }
-				if (lst.isEmpty()) {
+				if (lst === types.EMPTY) {
 					var msg = ('list-tail: index ' + n +
 						   ' is too large for list: ' +
 						   types.toWrittenString(origList));
@@ -2581,7 +2581,7 @@ PRIMITIVES['map'] =
 		        check(f, procArityContains(arglists.length), 'map', 'procedure (arity ' + arglists.length + ')', 1, allArgs);
 
 			var mapHelp = function(f, args, acc) {
-				if (args[0].isEmpty()) {
+				if (args[0] === types.EMPTY) {
 				    return acc.reverse();
 				}
 				
@@ -2617,7 +2617,7 @@ PRIMITIVES['andmap'] =
 		        check(f, procArityContains(arglists.length), 'andmap', 'procedure (arity ' + arglists.length + ')', 1, allArgs);
   
 			var andmapHelp = function(f, args) {
-				if ( args[0].isEmpty() ) {
+				if ( args[0] === types.EMPTY) {
 					return true;
 				}
 
@@ -2630,7 +2630,7 @@ PRIMITIVES['andmap'] =
 
 				return CALL(f, argsFirst,
 					    function(result) {
-						if (argsRest[0].isEmpty()) {
+						if (argsRest[0] === types.EMPTY) {
 						    return result;
 						}
 						return onSingleResult(result,
@@ -2658,7 +2658,7 @@ PRIMITIVES['ormap'] =
 		        check(f, procArityContains(arglists.length), 'ormap', 'procedure (arity ' + arglists.length + ')', 1, allArgs);
 
 			var ormapHelp = function(f, args) {
-				if ( args[0].isEmpty() ) {
+				if ( args[0] === types.EMPTY) {
 					return false;
 				}
 
@@ -2671,7 +2671,7 @@ PRIMITIVES['ormap'] =
 
 				return CALL(f, argsFirst,
 					    function(result) {
-						if (argsRest[0].isEmpty()) {
+						if (argsRest[0] === types.EMPTY) {
 						    return result;
 						}
 						return onSingleResult(
@@ -2698,7 +2698,7 @@ PRIMITIVES['memq'] =
 							   msg,
 						    []) );
 		     }
-			while ( !lst.isEmpty() ) {
+			while (lst !== types.EMPTY) {
 
 				if ( isEq(item, lst.first) ) {
 					return lst;
@@ -2729,7 +2729,7 @@ PRIMITIVES['memv'] =
 							   msg,
 							   []) );
 			    }
-			while ( !lst.isEmpty() ) {
+			while (lst !== types.EMPTY) {
 				if ( isEqv(item, lst.first) ) {
 					return lst;
 				}
@@ -2760,7 +2760,7 @@ PRIMITIVES['member'] =
 						    msg,
 						    []) );
 		     }
-		 	while ( !lst.isEmpty() ) {
+		 	while (lst !== types.EMPTY) {
 		 		if ( isEqual(item, lst.first) ) {
 		 			return lst;
 		 		}
@@ -2787,7 +2787,7 @@ PRIMITIVES['memf'] =
 			checkList(initList, 'memf', 2, arguments);
 
 			var memfHelp = function(lst) {
-				if ( lst.isEmpty() ) {
+				if ( lst === types.EMPTY) {
 					return false;
 				}
 
@@ -2817,7 +2817,7 @@ PRIMITIVES['assq'] =
 						    msg,
 						    []) );
 		     }
-			while ( !lst.isEmpty() ) {
+			while (lst !== types.EMPTY) {
 			    if (! isPair(lst.first)) {
 				var msg = ('assq: non-pair found in list: ' +
 					   types.toWrittenString(lst.first) +' in  ' +
@@ -2857,7 +2857,7 @@ PRIMITIVES['assv'] =
 						    msg,
 						    []) );
 		     }
-		     while ( !lst.isEmpty() ) {
+		     while (lst !== types.EMPTY) {
 			 if (! isPair(lst.first)) {
 			     var msg = ('assv: non-pair found in list: ' +
 					types.toWrittenString(lst.first) +' in  ' +
@@ -2896,7 +2896,7 @@ PRIMITIVES['assoc'] =
 						    msg,
 						    []) );
 		     }
-			while ( !lst.isEmpty() ) {
+			while (lst !== types.EMPTY) {
 			    if (! isPair(lst.first)) {
 				var msg = ('assoc: non-pair found in list: ' +
 					   types.toWrittenString(lst.first) +' in  ' +
@@ -2930,7 +2930,7 @@ PRIMITIVES['remove'] =
 		 	checkList(lst, 'remove', 2, arguments);
 		 	var originalLst = lst;
 		 	var result = types.EMPTY;
-		 	while ( !lst.isEmpty() ) {
+		 	while (lst !== types.EMPTY) {
 		 		if ( isEqual(item, lst.first) ) {
 		 			return append([result.reverse(), lst.rest]);
 		 		} else {
@@ -2951,7 +2951,7 @@ PRIMITIVES['filter'] =
 			checkList(lst, 'filter', 2);
 
 			var filterHelp = function(f, lst, acc) {
-				if ( lst.isEmpty() ) {
+				if (lst === types.EMPTY) {
 					return acc.reverse();
 				}
 
@@ -3017,7 +3017,7 @@ PRIMITIVES['argmax'] =
 			check(initList, isPair, 'argmax', 'non-empty list', 2, args);
 
 			var argmaxHelp = function(lst, curMaxVal, curMaxElt) {
-				if ( lst.isEmpty() ) {
+				if (lst === types.EMPTY) {
 					return curMaxElt;
 				}
 
@@ -3051,7 +3051,7 @@ PRIMITIVES['argmin'] =
 			check(initList, isPair, 'argmin', 'non-empty list', 2, args);
 
 			var argminHelp = function(lst, curMaxVal, curMaxElt) {
-				if ( lst.isEmpty() ) {
+				if (lst === types.EMPTY) {
 					return curMaxElt;
 				}
 
@@ -3579,7 +3579,7 @@ PRIMITIVES['list->string'] =
 		 	checkListOf(lst, isChar, 'list->string', 'char', 1);
 
 			var ret = [];
-			while( !lst.isEmpty() ) {
+			while(lst !== types.EMPTY) {
 				ret.push(lst.first.val);
 				lst = lst.rest;
 			}
@@ -3693,7 +3693,7 @@ PRIMITIVES['implode'] =
 		 	checkListOf(lst, function(x) { return isString(x) && x.length == 1; },
 				    'implode', 'list of 1-letter strings', 1);
 			var ret = [];
-			while ( !lst.isEmpty() ) {
+			while (lst !== types.EMPTY) {
 				ret.push( lst.first.toString() );
 				lst = lst.rest;
 			}
@@ -4104,7 +4104,7 @@ PRIMITIVES['list->bytes'] =
 		 	checkListOf(lst, isByte, 'list->bytes', 'byte', 1);
 
 			var ret = [];
-			while ( !lst.isEmpty() ) {
+			while (lst !== types.EMPTY) {
 				ret.push(lst.first);
 				lst = lst.rest;
 			}

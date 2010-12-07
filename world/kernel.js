@@ -1080,7 +1080,7 @@ LineImage.prototype.isEqual = function(other, aUnionFind) {
      @param aCompEffect a compound effect is either a scheme list of
      compound effects or a single primitive effect */
 world.Kernel.applyEffect = function(aCompEffect) {
-    if ( types.isEmpty(aCompEffect) ) {
+    if (aCompEffect === types.EMPTY) {
     	// Do Nothing
     } else if ( types.isPair(aCompEffect) ) {
     	var results = world.Kernel.applyEffect(aCompEffect.first);

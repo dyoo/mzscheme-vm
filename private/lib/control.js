@@ -502,7 +502,7 @@ var invokeJavascriptModuleAndRestart = function(aState, resolvedModuleName,
 						moduleRecord,
 						onSuccess, onFail) {    
     var invokeAllRequiredModules = function(modules, after) {
-	if (modules.isEmpty()) {
+	if (modules === types.EMPTY) {
 	    after();
 	} else {
 	    invokeModuleAndRestart(aState,
@@ -1500,10 +1500,10 @@ var CaseLambdaComputeControl = function(name, lamsToEvaluate, evaluatedLams) {
 
 CaseLambdaComputeControl.prototype.invoke = function(state) {
     var nextEvaluatedLam = state.v;
-    if (this.lamsToEvaluate.isEmpty()) {
+    if (this.lamsToEvaluate === types.EMPTY) {
 	var clauseList = (types.cons(nextEvaluatedLam, this.evaluatedLams)).reverse();
 	var clauses = [];
-	while (!clauseList.isEmpty()) {
+	while (clauseList !== types.EMPTY) {
 	    clauses.push(clauseList.first);
 	    clauseList = clauseList.rest;
 	}

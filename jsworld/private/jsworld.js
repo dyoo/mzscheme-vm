@@ -314,12 +314,12 @@
 		fail("on-draw: expected a dom-element, but received ~s instead, the first element within ~s", [firstElt, top]);
 	    }
 
-	    if (firstElt.nodeType == Node.TEXT_NODE && !restElts.isEmpty() ) {
+	    if (firstElt.nodeType == Node.TEXT_NODE && restElts !== types.EMPTY) {
 		fail("on-draw: the text node ~s must not have children.  It has ~s", [firstElt, restElts]);
 	    }
 
 	    var i = 2;
-	    while( !restElts.isEmpty() ) {
+	    while(restElts !== types.EMPTY) {
 		checkWellFormedDomTree(restElts.first, x, i);
 		restElts = restElts.rest;
 		i++;

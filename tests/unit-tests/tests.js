@@ -221,7 +221,7 @@ var testPrimF = function(funName, f, baseArgs, expectedValue, transform) {
 
 var listToStringArray = function(lst) {
 	var ret = [];
-	while ( !lst.isEmpty() ) {
+	while (lst !== types.EMPTY) {
 		ret.push( lst.first.toString() );
 		lst = lst.rest;
 	}
@@ -2643,7 +2643,7 @@ runTest('make-hash',
 		state.cstack.push(makeApplication(makePrimval('make-hash'), []));
 		var res = run(state);
 		assert.ok(types.isHash(res));
-		assert.ok(res.hash.isEmpty());
+	        assert.ok(res.hash.isEmpty());
 
 
 		state.cstack.push(makeApplication(makePrimval('make-hash'),
@@ -2652,7 +2652,7 @@ runTest('make-hash',
 									      types.pair(5, 6)]))]));
 		var res2 = run(state);
 		assert.ok(types.isHash(res2));
-		assert.ok( !res2.hash.isEmpty() );
+	        assert.ok(!res2.hash.isEmpty());
 		assert.ok(res2.hash.containsKey(1));
 		assert.ok(res2.hash.containsKey(3));
 		assert.ok(res2.hash.containsKey(5));
@@ -2675,7 +2675,7 @@ runTest('make-hasheq',
 		state.cstack.push(makeApplication(makePrimval('make-hasheq'), []));
 		var res = run(state);
 		assert.ok(types.isHash(res));
-		assert.ok(res.hash.isEmpty());
+	        assert.ok(res.hash.isEmpty());
 
 
 		state.cstack.push(makeApplication(makePrimval('make-hasheq'),
@@ -2684,7 +2684,7 @@ runTest('make-hasheq',
 									      types.pair(5, 6)]))]));
 		var res2 = run(state);
 		assert.ok(types.isHash(res2));
-		assert.ok( !res2.hash.isEmpty() );
+	        assert.ok(!res2.hash.isEmpty());
 		assert.ok(res2.hash.containsKey(1));
 		assert.ok(res2.hash.containsKey(3));
 		assert.ok(res2.hash.containsKey(5));
