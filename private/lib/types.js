@@ -739,7 +739,11 @@ Cons.prototype.toWrittenString = function(cache) {
     return "(" + texts.join(" ") + ")";
 };
 
-Cons.prototype.toString = Cons.prototype.toWrittenString;
+
+Cons.prototype.toString = function() {
+    return toWrittenString(this);
+};
+
 
 Cons.prototype.toDisplayedString = function(cache) {
     cache.put(this, true);
