@@ -2476,33 +2476,37 @@ PRIMITIVES['list-ref'] =
 		 2,
 		 false, false,
 		 function(origList, num) {
-		 	check(num, isNatural, 'list-ref', 'non-negative exact integer', 2, arguments);
+		     check(num, isNatural, 'list-ref', 'non-negative exact integer', 2, arguments);
 
-			var lst = origList;
-			var n = jsnums.toFixnum(num);
-		 	for (var i = 0; i < n; i++) {
-			    // According to the documentation of list-ref, we don't actually
-			    // check the whole thing as a list.  We rather do it as we walk
-			    // along the cons chain.
-			    if (! isPair(lst) && lst !== types.EMPTY) {
-				var msg = ('list-ref: index ' + n +
-					   ' is too large for list (not a proper list): ' +
-					   types.toWrittenString(origList));
-				raise( types.incompleteExn(types.exnFailContract,
-							   msg,
-							   []) );
-			    }
-		 		if (lst.isEmpty()) {
-					var msg = ('list-ref: index ' + n +
-						   ' is too large for list: ' +
-						   types.toWrittenString(origList));
-					raise( types.incompleteExn(types.exnFailContract, msg, []) );
-		 		}
-	  			lst = lst.rest;
-		 	}
+		     var lst = origList;
+		     var n = jsnums.toFixnum(num);
+		     for (var i = 0; i < n; i++) {
+			 // According to the documentation of list-ref, we don't actually
+			 // check the whole thing as a list.  We rather do it as we walk
+			 // along the cons chain.
+		 	 if (lst === types.EMPTY) {
+			     var msg = ('list-ref: index ' + n +
+					' is too large for list: ' +
+					types.toWrittenString(origList));
+			     //console.log(origList);
+			     raise( types.incompleteExn(types.exnFailContract,
+							msg, []) );
+		 	 }
+
+			 if (! isPair(lst)) {
+
+			     var msg = ('list-ref: index ' + n +
+					' is too large for list (not a proper list): ' +
+					types.toWrittenString(origList));
+			     raise( types.incompleteExn(types.exnFailContract,
+							msg,
+							[]) );
+			 }
+	  		 lst = lst.rest;
+		     }
 
 
-		     if (! isPair(lst) && lst !== types.EMPTY) {
+		     if (! isPair(lst)) {
 			 var msg = ('list-ref: index ' + n +
 				    ' is too large for list (not a proper list): ' +
 				    types.toWrittenString(origList));
@@ -2510,7 +2514,7 @@ PRIMITIVES['list-ref'] =
 						    msg,
 						    []) );
 		     }
-		 	return lst.first;
+		     return lst.first;
 		 });
 
 PRIMITIVES['list-tail'] =
