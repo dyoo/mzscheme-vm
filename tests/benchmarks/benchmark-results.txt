@@ -1,3 +1,8 @@
+Running under Ubuntu 10.04, Intel Core i7 cpu, 8 cores, 1.60Ghz,
+2.9GiB memory
+----------------------------------------------------------------------
+
+
 2010/12/7:
 
 "earley benchmark"
