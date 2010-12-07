@@ -1,0 +1,24 @@
+<html>
+<head>
+<script>
+var tak = function(x, y, z) {
+    if (! (y < x)) {    
+	return z;
+    }
+    return tak(tak(x-1, y, z),
+	       tak(y-1, z, x),
+	       tak(z-1, x, y));
+}
+
+var startTime = new Date();
+for(var i = 0; i < 10; i++) {
+    tak(18, 12, 6);
+}
+alert(new Date() - startTime);
+
+
+</script>
+</head>
+<body>
+</body>
+</html>
