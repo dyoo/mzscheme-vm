@@ -448,12 +448,34 @@ var jsImg = function(src, attribList) {
 };
 
 
+var jsElt = function(name, attribList) {
+    check(src, isString, "js-elt", "string", 1);
+
+    var attribs = convertAttribList(attribList);
+    var node = jsworld.MobyJsworld.elt(String(src), attribs);
+
+    node.toWrittenString = function(cache) { return "(js-elt ...)"; }
+    node.toDisplayedString = node.toWrittenString;
+    node.toDomNode = function(cache) { return node; }
+    return wrapJsValue(node);
+};
+
 
 EXPORTS['js-img'] =
     new CasePrimitive('js-img',
 	[new PrimProc('js-img', 1, false, false, 
 		      function(src) { return jsImg(src, types.EMPTY); }),
 	 new PrimProc('js-img', 2, false, false, jsImg)]);
+
+
+
+EXPORTS['js-elt'] =
+    new CasePrimitive('js-elt',
+	[new PrimProc('js-elt', 1, false, false, 
+		      function(src) { return jsElt(src, types.EMPTY); }),
+	 new PrimProc('js-elt', 2, false, false, jsImg)]);
+
+
 
 
 

@@ -1357,6 +1357,13 @@ var jsworld = {};
     Jsworld.img = img;
 
 
+    var elt = function(name, attribs) {
+	var n = document.createElement(elt);
+	return addFocusTracking(copy_attribs(n, attribs));
+    };
+    Jsworld.elt = elt;
+
+
 
     function raw_node(node, attribs) {
 	return addFocusTracking(copy_attribs(node, attribs));
