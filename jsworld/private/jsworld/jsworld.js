@@ -1387,7 +1387,7 @@ var jsworld = {};
 
 
     var elt = function(name, attribs) {
-	var n = document.createElement(elt);
+	var n = document.createElement(name);
 	return addFocusTracking(copy_attribs(n, attribs));
     };
     Jsworld.elt = elt;

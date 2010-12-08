@@ -32,7 +32,7 @@
 	 js-img
 	 js-text
 	 js-select
-
+	 js-elt
 
 	 empty-page
 	 place-on-page

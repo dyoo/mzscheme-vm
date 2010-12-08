@@ -142,4 +142,13 @@
 (void (world-with-effects '() 3))
 
 
+(void
+ (big-bang 0
+	   (stop-when (lambda (w) true))
+	   (to-draw-page (lambda (w) 
+			   (list (js-elt "h1")
+				 (list (js-text "this is a header")))))))
+
+
+
 "jsworld.rkt end"

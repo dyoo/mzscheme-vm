@@ -449,10 +449,10 @@ var jsImg = function(src, attribList) {
 
 
 var jsElt = function(name, attribList) {
-    check(src, isString, "js-elt", "string", 1);
+    check(name, isString, "js-elt", "string", 1);
 
     var attribs = convertAttribList(attribList);
-    var node = jsworld.MobyJsworld.elt(String(src), attribs);
+    var node = jsworld.MobyJsworld.elt(String(name), attribs);
 
     node.toWrittenString = function(cache) { return "(js-elt ...)"; }
     node.toDisplayedString = node.toWrittenString;
