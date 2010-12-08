@@ -71,10 +71,10 @@ var convertAttribList = function(attribList) {
     var nextElt;
     var key, val;
     while (!types.isEmpty(attribList)) {
-	nextElt = attribList.first();
+	nextElt = attribList.first;
 
-	key = nextElt.first();
-	val = nextElt.rest().first();
+	key = nextElt.first;
+	val = nextElt.rest.first;
 
 	key = String(key);
 
@@ -102,7 +102,7 @@ var convertAttribList = function(attribList) {
 	// ensure each element in the hash are primitive strings
 	newList = types.cons(types.list([key, val]),
 			     newList);
-	attribList = attribList.rest();
+	attribList = attribList.rest;
     }
     return helpers.assocListToHash(newList);
 }
@@ -812,7 +812,7 @@ var checkList = function(x, functionName, position, args) {
 var length = function(lst) {
     checkList(lst, 'length', 1, [lst]);
     var ret = 0;
-    for (; !isEmpty(lst); lst = lst.rest()) {
+    for (; !isEmpty(lst); lst = lst.rest) {
 	ret = ret+1;
     }
     return ret;
@@ -956,7 +956,7 @@ var isStyle = function(x) {
 
 
 var isAssocList = function(x) {
-	return isPair(x) && isPair(x.rest()) && isEmpty(x.rest().rest());
+	return isPair(x) && isPair(x.rest) && isEmpty(x.rest.rest);
 };
 
 

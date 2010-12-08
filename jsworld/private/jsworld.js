@@ -185,8 +185,8 @@
 //				     function() { deepUnwrapJsValues(types.renderEffectDomNode(x), k); });
 //	    }
 	    else if ( types.isPair(x) ) {
-		deepUnwrapJsValues(x.first(), function(first) {
-			deepUnwrapJsValues(x.rest(), function(rest) {
+		deepUnwrapJsValues(x.first, function(first) {
+			deepUnwrapJsValues(x.rest, function(rest) {
 				k( types.cons(first, rest) );
 			});
 		});
@@ -307,21 +307,21 @@
 	}
 
 	if (types.isPair(x)) {
-	    var firstElt = x.first();
-	    var restElts = x.rest();
+	    var firstElt = x.first;
+	    var restElts = x.rest;
 
 	    if (! isNode(firstElt)) {
 		fail("on-draw: expected a dom-element, but received ~s instead, the first element within ~s", [firstElt, top]);
 	    }
 
-	    if (firstElt.nodeType == Node.TEXT_NODE && !restElts.isEmpty() ) {
+	    if (firstElt.nodeType == Node.TEXT_NODE && restElts !== types.EMPTY) {
 		fail("on-draw: the text node ~s must not have children.  It has ~s", [firstElt, restElts]);
 	    }
 
 	    var i = 2;
-	    while( !restElts.isEmpty() ) {
-		checkWellFormedDomTree(restElts.first(), x, i);
-		restElts = restElts.rest();
+	    while(restElts !== types.EMPTY) {
+		checkWellFormedDomTree(restElts.first, x, i);
+		restElts = restElts.rest;
 		i++;
 	    }
 	} else {
@@ -391,19 +391,6 @@
 
 	//console.log('in high level big-bang');
 	errorReporter = onFail;
-
-	setCaller(theCaller);
-	setRestarter(theRestarter);
-	setTerminator(function(w) {
-	    //console.trace();
-	    //console.log("shutting down");
-	    detachEvent(toplevelNode, 'click', absorber);
-	    shutdownUserConfigs(function() {
-		unsetCaller();
-		unsetTerminator();
-		restarter(w);
-	    });
-	});
 
 	var attribs = types.EMPTY;
 	
@@ -588,6 +575,21 @@
 		     function(w) { 
 			 //console.log("the low level jsbigbang is calling the terminator");
 			 terminator(w);
+		     },
+		     function(k) {
+			 setCaller(theCaller);
+			 setRestarter(theRestarter);
+			 setTerminator(function(w) {
+			     //console.trace();
+			     //console.log("shutting down");
+			     detachEvent(toplevelNode, 'click', absorber);
+			     shutdownUserConfigs(function() {
+				 unsetCaller();
+				 unsetTerminator();
+				 restarter(w);
+			     });
+			 });
+			 k();
 		     },
 		     function(activationRecord) {
 			 activationRecord.isRunning = false;

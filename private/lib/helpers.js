@@ -72,13 +72,22 @@ var helpers = {};
 			}
 
 			try {
-				return f(a[i], function() { return forEachHelp(i+1); });
+			    return f(a[i], function() { 
+				setTimeout(
+				    function() { 
+					forEachHelp(i+1); },
+				    0)});
 			} catch (e) {
 				f_error(e);
 			}
 		};
 		return forEachHelp(0);
 	};
+
+
+    var queueCallback = function(f) {
+	setTimeout(f, 0);
+    };
 
 
 	// reportError: (or exception string) -> void
@@ -192,13 +201,14 @@ var helpers = {};
 	var isList = function(x) {
 	    var seenPairs = makeLowLevelEqHash();
 	    while (true) {
-		if (seenPairs.containsKey(x)) {
+		if (x === types.EMPTY) {
 		    return true;
-		} else if (x === types.EMPTY) {
-		    return true;
-		} else if (types.isPair(x)) {
+		} 
+		if (types.isPair(x)) {
+		    if (seenPairs.containsKey(x))
+			return true;
 		    seenPairs.put(x, true);
-		    x = x.rest();
+		    x = x.rest;
 		} else {
 		    return false;
 		}
@@ -208,14 +218,15 @@ var helpers = {};
 	var isListOf = function(x, f) {
 	    var seenPairs = makeLowLevelEqHash();
 	    while (true) {
-		if (seenPairs.containsKey(x)) {
-		    return true;
-		} else if (x === types.EMPTY) {
+		if (x === types.EMPTY) {
 		    return true;
 		} else if (types.isPair(x)) {
-		    seenPairs.put(x, true);
-		    if (f(x.first())) {
-			x = x.rest();
+		    if (f(x.first)) {
+			if (seenPairs.containsKey(x)) {
+			    return true;
+			}
+			seenPairs.put(x, true);
+			x = x.rest;
 		    } else {
 			return false;
 		    }
@@ -272,9 +283,9 @@ var helpers = {};
 
 	var schemeListToArray = function(lst) {
 		var result = [];
-		while ( !lst.isEmpty() ) {
-			result.push(lst.first());
-			lst = lst.rest();
+		while (lst !== types.EMPTY) {
+			result.push(lst.first);
+			lst = lst.rest;
 		}
 		return result;
 	}
@@ -287,9 +298,9 @@ var helpers = {};
 			return [];
 		} else if (types.isPair(thing)) {
 			var result = [];
-			while (!thing.isEmpty()) {
-				result.push(deepListToArray(thing.first()));
-				thing = thing.rest();
+			while (thing !== types.EMPTY) {
+				result.push(deepListToArray(thing.first));
+				thing = thing.rest;
 			}
 			return result;
 		} else {
@@ -304,9 +315,9 @@ var helpers = {};
 		}
 
 		var ret = [];
-		while ( !x.isEmpty() ) {
-			ret = ret.concat( flattenSchemeListToArray(x.first()) );
-			x = x.rest();
+		while (x !== types.EMPTY) {
+			ret = ret.concat( flattenSchemeListToArray(x.first) );
+			x = x.rest;
 		}
 		return ret;
 	};
@@ -315,11 +326,11 @@ var helpers = {};
 	// assocListToHash: (listof (list X Y)) -> (hashof X Y)
 	var assocListToHash = function(lst) {
 		var result = {};
-		while ( !lst.isEmpty() ) {
-			var key = lst.first().first();
-			var val = lst.first().rest().first();
+		while (lst !== types.EMPTY) {
+			var key = lst.first.first;
+			var val = lst.first.rest.first;
 			result[key] = val;
-			lst = lst.rest();
+			lst = lst.rest;
 		}
 		return result;
 	};
@@ -578,6 +589,9 @@ var helpers = {};
         helpers.makeLowLevelEqHash = makeLowLevelEqHash;
 
         helpers.heir = heir;
+
+
+    helpers.queueCallback = queueCallback;
 
     helpers.startProfile = startProfile;
     helpers.endProfile = endProfile;

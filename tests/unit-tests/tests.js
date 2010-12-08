@@ -221,9 +221,9 @@ var testPrimF = function(funName, f, baseArgs, expectedValue, transform) {
 
 var listToStringArray = function(lst) {
 	var ret = [];
-	while ( !lst.isEmpty() ) {
-		ret.push( lst.first().toString() );
-		lst = lst.rest();
+	while (lst !== types.EMPTY) {
+		ret.push( lst.first.toString() );
+		lst = lst.rest;
 	}
 	return ret;
 }
@@ -1170,11 +1170,11 @@ runTest("with-cont-mark",
 	    }
 	    assert.equal(state.cstack.length, 2);
 	    assert.ok( types.isContMarkRecordControl(state.cstack[0]) );
-	    assert.equal(state.cstack[0].listOfPairs.first().first(),
+	    assert.equal(state.cstack[0].listOfPairs.first.first,
 			 types.symbol('x'));
-	    assert.equal(state.cstack[0].listOfPairs.first().rest(), 
+	    assert.equal(state.cstack[0].listOfPairs.first.rest, 
 			 "42")
-	    assert.equal(state.cstack[0].listOfPairs.rest(),
+	    assert.equal(state.cstack[0].listOfPairs.rest,
 			 types.EMPTY);
 	    var result = run(state);
 	    assert.equal(result, "peep");
@@ -2347,10 +2347,10 @@ runTest('remove',
 									      types.string('c'),
 									      types.string('a')]))]));
 		var res = run(state);
-		assert.deepEqual(res.first().toString(), 'b');
-		assert.deepEqual(res.rest().first().toString(), 'c');
-		assert.deepEqual(res.rest().rest().first().toString(), 'a');
-		assert.deepEqual(res.rest().rest().rest(), types.EMPTY);
+		assert.deepEqual(res.first.toString(), 'b');
+		assert.deepEqual(res.rest.first.toString(), 'c');
+		assert.deepEqual(res.rest.rest.first.toString(), 'a');
+		assert.deepEqual(res.rest.rest.rest, types.EMPTY);
 	});
 
 
@@ -2643,7 +2643,7 @@ runTest('make-hash',
 		state.cstack.push(makeApplication(makePrimval('make-hash'), []));
 		var res = run(state);
 		assert.ok(types.isHash(res));
-		assert.ok(res.hash.isEmpty());
+	        assert.ok(res.hash.isEmpty());
 
 
 		state.cstack.push(makeApplication(makePrimval('make-hash'),
@@ -2652,7 +2652,7 @@ runTest('make-hash',
 									      types.pair(5, 6)]))]));
 		var res2 = run(state);
 		assert.ok(types.isHash(res2));
-		assert.ok( !res2.hash.isEmpty() );
+	        assert.ok(!res2.hash.isEmpty());
 		assert.ok(res2.hash.containsKey(1));
 		assert.ok(res2.hash.containsKey(3));
 		assert.ok(res2.hash.containsKey(5));
@@ -2675,7 +2675,7 @@ runTest('make-hasheq',
 		state.cstack.push(makeApplication(makePrimval('make-hasheq'), []));
 		var res = run(state);
 		assert.ok(types.isHash(res));
-		assert.ok(res.hash.isEmpty());
+	        assert.ok(res.hash.isEmpty());
 
 
 		state.cstack.push(makeApplication(makePrimval('make-hasheq'),
@@ -2684,7 +2684,7 @@ runTest('make-hasheq',
 									      types.pair(5, 6)]))]));
 		var res2 = run(state);
 		assert.ok(types.isHash(res2));
-		assert.ok( !res2.hash.isEmpty() );
+	        assert.ok(!res2.hash.isEmpty());
 		assert.ok(res2.hash.containsKey(1));
 		assert.ok(res2.hash.containsKey(3));
 		assert.ok(res2.hash.containsKey(5));

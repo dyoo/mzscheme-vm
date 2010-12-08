@@ -44,6 +44,9 @@
   (resolve-module-path 'racket/private/modbeg #f))
 
 
+(define compilation-top-cache (make-parameter (make-hash)))
+
+
 (provide/contract [compile-moby-modules
                    (path? . -> . (listof module-record?))])
 
@@ -52,29 +55,30 @@
 ;; Given the path of a scheme program, run it through the compiler
 ;; and generate the javascript module modules.
 (define (compile-moby-modules main-module-path)
-  (let*-values ([(a-path) (normalize-path main-module-path)])    
-    (let loop ([to-visit (list a-path)]
-               [module-records empty]
-               [visited-paths empty])
-      (cond
-        [(empty? to-visit)
-         module-records]
-        [(ormap (lambda (p)
-                  (same-path? p (first to-visit)))
-                visited-paths)
-         (loop (rest to-visit)
-               module-records
-               visited-paths)]
-        [else
-         (let* ([record (compile-moby-module 
-                         (first to-visit) 
-                         (normalize-path main-module-path))]
-                [neighbors (filter-already-visited-modules+hardcodeds
-                            (module-neighbors (first to-visit))
-                            visited-paths)])
-           (loop (append neighbors (rest to-visit))
-                 (cons record module-records)
-                 (cons (module-record-path record) visited-paths)))]))))
+  (parameterize ([compilation-top-cache (make-hash)])
+    (let*-values ([(a-path) (normalize-path main-module-path)])    
+      (let loop ([to-visit (list a-path)]
+                 [module-records empty]
+                 [visited-paths empty])
+        (cond
+          [(empty? to-visit)
+           module-records]
+          [(ormap (lambda (p)
+                    (same-path? p (first to-visit)))
+                  visited-paths)
+           (loop (rest to-visit)
+                 module-records
+                 visited-paths)]
+          [else
+           (let* ([record (compile-moby-module 
+                           (first to-visit) 
+                           (normalize-path main-module-path))]
+                  [neighbors (filter-already-visited-modules+hardcodeds
+                              (module-neighbors (first to-visit))
+                              visited-paths)])
+             (loop (append neighbors (rest to-visit))
+                   (cons record module-records)
+                   (cons (module-record-path record) visited-paths)))])))))
 
 
 
@@ -209,15 +213,29 @@
 
 (define ns (make-base-empty-namespace))
 
-;; lookup&parse: path -> compilation-top
-(define (lookup&parse a-path)
-  (let ([op (open-output-bytes)])
-    (write (parameterize ([current-namespace ns])
-             (get-module-code a-path))
-           op)
-    (translate-compilation-top
-     (internal:zo-parse (open-input-bytes (get-output-bytes op))))))
+;; memoize/parameter: (parameterof (hashof X Y)) (X -> Y) ->  (X -> Y)
+;; Produces a memoized wrapping of f that checks to see if
+;; we've seen this input already.
+(define (memoize/parameter ht-param f)
+  (lambda (x)
+    (hash-ref (ht-param) x 
+              (lambda ()
+                (let ([result
+                       (f x)])
+                  (hash-set! (ht-param) x result)
+                  result)))))
 
+;; lookup&parse: path -> compilation-top
+(define lookup&parse
+  (memoize/parameter
+   compilation-top-cache
+   (lambda (a-path)
+     (let ([op (open-output-bytes)])
+       (write (parameterize ([current-namespace ns])
+                (get-module-code a-path))
+              op)
+       (translate-compilation-top
+        (internal:zo-parse (open-input-bytes (get-output-bytes op))))))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

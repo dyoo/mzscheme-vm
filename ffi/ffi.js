@@ -151,7 +151,7 @@ EXPORTS['isWrappedSchemeValue'] = isWrappedSchemeValue;
 
 
 var isAssocList = function(x) {
-    return types.isPair(x) && types.isPair(x.rest()) && types.isEmpty(x.rest().rest());
+    return types.isPair(x) && types.isPair(x.rest) && types.isEmpty(x.rest.rest);
 };
 
 
@@ -474,20 +474,11 @@ EXPORTS['js-call'] =
 			    var jsCallReturn = fun.val.apply(thisArg, args);
 			    if ( jsCallReturn === undefined ) {
 //				console.trace();
-				setTimeout(
-				    function() {
 //					console.log("here");
 					success(types.VOID);
-				    },
-				    0);
-			    }
-			    else {
-				setTimeout(
-				    function() {
-					success(wrapJsValue(
-					    jsCallReturn))
-				    },
-				    0);
+			    } else {
+				success(wrapJsValue(
+				    jsCallReturn))
 			    }
 			} catch(e) {
 //			    console.log("Failure");
@@ -523,15 +514,15 @@ EXPORTS['js-make-hash'] =
 						1,
 						false, false,
 						function(bindings) {
-						    helpers.checkListOf(bindings, function(x) { return isAssocList(x) && types.isString(x.first()); },
+						    helpers.checkListOf(bindings, function(x) { return isAssocList(x) && types.isString(x.first); },
 									'js-make-hash', '(listof string X)', 1);
 
 						    var ret = {};
-						    while ( !bindings.isEmpty() ) {
-			  				var key = bindings.first().first().toString();
-							var val = bindings.first().rest().first();
+						    while (bindings !== types.EMPTY) {
+			  				var key = bindings.first.first.toString();
+							var val = bindings.first.rest.first;
 							ret[key] = (isJsValue(val) ? val.val : val);
-							bindings = bindings.rest();
+							bindings = bindings.rest;
 						    }
 						    return new JsValue('hash', ret);
 						}) ]);

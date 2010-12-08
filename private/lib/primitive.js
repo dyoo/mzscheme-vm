@@ -25,9 +25,6 @@ var PAUSE = types.internalPause;
 
 
 
-
-
-
 var PRIMITIVES = {};
 
 var PrimProc = types.PrimProc;
@@ -162,7 +159,7 @@ var procArityContains = helpers.procArityContains;
 var length = function(lst) {
 	checkList(lst, 'length', 1, [lst]);
 	var ret = 0;
-	for (; !lst.isEmpty(); lst = lst.rest()) {
+	for (; lst !== types.EMPTY; lst = lst.rest) {
 		ret = ret+1;
 	}
 	return ret;
@@ -184,15 +181,15 @@ var append = function(initArgs) {
 }
 
 var foldHelp = function(f, acc, args) {
-	if ( args[0].isEmpty() ) {
+	if (args[0] === types.EMPTY) {
 		return acc;
 	}
 
 	var fArgs = [];
 	var argsRest = [];
 	for (var i = 0; i < args.length; i++) {
-		fArgs.push(args[i].first());
-		argsRest.push(args[i].rest());
+		fArgs.push(args[i].first);
+		argsRest.push(args[i].rest);
 	}
 	fArgs.push(acc);
 	return CALL(f, fArgs,
@@ -208,25 +205,25 @@ var quicksort = function(functionName) {
 	
 		var quicksortHelp = function(k) {
 			return function(lst) {
-				if ( lst.isEmpty() ) {
+				if (lst === types.EMPTY) {
 					return k(types.EMPTY);
 				}
 		
 				var compYes = new PrimProc('compYes', 1, false, false,
-						function(x) { return CALL(comp, [x, lst.first()], id); });
+						function(x) { return CALL(comp, [x, lst.first], id); });
 				var compNo = new PrimProc('compNo', 1, false, false,
-						function(x) { return CALL(comp, [x, lst.first()],
+						function(x) { return CALL(comp, [x, lst.first],
 									  function(res) { return !res; });
 						});
 
 				return CALL(PRIMITIVES['filter'],
-					    [compYes, lst.rest()],
+					    [compYes, lst.rest],
 					    quicksortHelp(function(sorted1) {
 						return CALL(PRIMITIVES['filter'],
-							    [compNo, lst.rest()],
+							    [compNo, lst.rest],
 							    quicksortHelp(function(sorted2) {
 								return k( append([sorted1,
-										  types.list([lst.first()]),
+										  types.list([lst.first]),
 										  sorted2]) );
 							    }));
 					    }));
@@ -461,7 +458,7 @@ var isEqv = function(x, y) {
 
 
 var isAssocList = function(x) {
-	return isPair(x) && isPair(x.rest()) && isEmpty(x.rest().rest());
+	return isPair(x) && isPair(x.rest) && isEmpty(x.rest.rest);
 };
 
 
@@ -679,30 +676,30 @@ PRIMITIVES['for-each'] =
 		 2, 
 		 true, false,
 		 function(f, firstArg, arglists) {
-		 	var allArgs = [f, firstArg].concat(arglists);
-		 	arglists.unshift(firstArg);
-			check(f, isFunction, 'for-each', 'procedure', 1, allArgs);
-			arrayEach(arglists, function(lst, i) {checkList(lst, 'for-each', i+2, allArgs);});
-			checkAllSameLength(arglists, 'for-each', allArgs);
-		        check(f, procArityContains(arglists.length), 'for-each', 'procedure (arity ' + arglists.length + ')', 1, allArgs);
+		     var allArgs = [f, firstArg].concat(arglists);
+		     arglists.unshift(firstArg);
+		     check(f, isFunction, 'for-each', 'procedure', 1, allArgs);
+		     arrayEach(arglists, function(lst, i) {checkList(lst, 'for-each', i+2, allArgs);});
+		     checkAllSameLength(arglists, 'for-each', allArgs);
+		     check(f, procArityContains(arglists.length), 'for-each', 'procedure (arity ' + arglists.length + ')', 1, allArgs);
 
-			var forEachHelp = function(args) {
-				if (args[0].isEmpty()) {
-					return types.VOID;
-				}
+		     var forEachHelp = function(args) {
+			 if (args[0] === types.EMPTY) {
+			     return types.VOID;
+			 }
 
-				var argsFirst = [];
-				var argsRest = [];
-				for (var i = 0; i < args.length; i++) {
-					argsFirst.push(args[i].first());
-					argsRest.push(args[i].rest());
-				}
+			 var argsFirst = [];
+			 var argsRest = [];
+			 for (var i = 0; i < args.length; i++) {
+			     argsFirst.push(args[i].first);
+			     argsRest.push(args[i].rest);
+			 }
 
-				return CALL(f, argsFirst,
-					function(result) { return forEachHelp(argsRest); });
-			}
+			 return CALL(f, argsFirst,
+				     function(result) { return forEachHelp(argsRest); });
+		     }
 
-			return forEachHelp(arglists);
+		     return forEachHelp(arglists);
 		 });
 
 
@@ -1072,17 +1069,17 @@ PRIMITIVES['compose'] =
 			var funList = types.list(procs).reverse();
 			
 			var composeHelp = function(x, fList) {
-				if ( fList.isEmpty() ) {
+				if (fList === types.EMPTY) {
 					return x;
 				}
 
 				return CALL(new PrimProc('', 1, false, false,
 						         function(args) {
-							     return callWithValues(fList.first(), args);
+							     return callWithValues(fList.first, args);
 							 }),
 					    [x],
 					    function(result) {
-						return composeHelp(result, fList.rest());
+						return composeHelp(result, fList.rest);
 					    });
 			}
 			return new PrimProc('', 0, true, false,
@@ -2000,10 +1997,10 @@ PRIMITIVES['xml->s-exp'] =
 					while (child != null) {
 						var nextResult = parse(child);
 						if (isString(nextResult) && 
-						    !result.isEmpty() &&
-						    isString(result.first())) {
-							result = types.cons(result.first() + nextResult,
-									    result.rest());
+						    result !== types.EMPTY &&
+						    isString(result.first)) {
+							result = types.cons(result.first + nextResult,
+									    result.rest);
 						} else {
 							result = types.cons(nextResult, result);
 						}
@@ -2184,7 +2181,7 @@ PRIMITIVES['car'] =
 		 false, false,
 		 function(lst) {
 		 	check(lst, isPair, 'car', 'pair', 1);
-			return lst.first();
+			return lst.first;
 		 });
 
 PRIMITIVES['cdr'] =
@@ -2193,7 +2190,7 @@ PRIMITIVES['cdr'] =
 		 false, false,
 		 function (lst) {
 			check(lst, isPair, 'cdr', 'pair', 1);
-			return lst.rest();
+			return lst.rest;
 		 });
 
 PRIMITIVES['caar'] =
@@ -2201,9 +2198,9 @@ PRIMITIVES['caar'] =
 		 1,
 		 false, false,
 		 function(lst) {
-		 	check(lst, function(x) { return (isPair(x) && isPair(x.first())); },
+		 	check(lst, function(x) { return (isPair(x) && isPair(x.first)); },
 			      'caar', 'caarable value', 1);
-		 	return lst.first().first();
+		 	return lst.first.first;
 		 });
 
 PRIMITIVES['cadr'] =
@@ -2211,9 +2208,9 @@ PRIMITIVES['cadr'] =
 		 1,
 		 false, false,
 		 function(lst) {
-		 	check(lst, function(x) { return isPair(x) && isPair(x.rest()); },
+		 	check(lst, function(x) { return isPair(x) && isPair(x.rest); },
 			      'cadr', 'cadrable value', 1);
-			return lst.rest().first();
+			return lst.rest.first;
 		 });
 
 PRIMITIVES['cdar'] =
@@ -2221,9 +2218,9 @@ PRIMITIVES['cdar'] =
 		 1,
 		 false, false,
 		 function(lst) {
-		 	check(lst, function(x) { return isPair(x) && isPair(x.first()); },
+		 	check(lst, function(x) { return isPair(x) && isPair(x.first); },
 			      'cdar', 'cdarable value', 1);
-		 	return lst.first().rest();
+		 	return lst.first.rest;
 		 });
 
 PRIMITIVES['cddr'] =
@@ -2231,9 +2228,9 @@ PRIMITIVES['cddr'] =
 		 1,
 		 false, false,
 		 function(lst) {
-		 	check(lst, function(x) { return isPair(x) && isPair(x.rest()); },
+		 	check(lst, function(x) { return isPair(x) && isPair(x.rest); },
 			      'cddr', 'cddrable value', 1);
-		 	return lst.rest().rest();
+		 	return lst.rest.rest;
 		 });
 
 PRIMITIVES['caaar'] =
@@ -2242,10 +2239,10 @@ PRIMITIVES['caaar'] =
 		 false, false,
 		 function(lst) {
 		 	check(lst, function(x) { return ( isPair(x) &&
-							  isPair(x.first()) &&
-							  isPair(x.first().first()) ); },
+							  isPair(x.first) &&
+							  isPair(x.first.first) ); },
 			      'caaar', 'caaarable value', 1);
-		 	return lst.first().first().first();
+		 	return lst.first.first.first;
 		 });
 
 PRIMITIVES['caadr'] =
@@ -2254,10 +2251,10 @@ PRIMITIVES['caadr'] =
 		 false, false,
 		 function(lst) {
 		 	check(lst, function(x) { return ( isPair(x) &&
-							  isPair(x.rest()) &&
-							  isPair(x.rest().first()) ); },
+							  isPair(x.rest) &&
+							  isPair(x.rest.first) ); },
 			      'caadr', 'caadrable value', 1);
-		 	return lst.rest().first().first();
+		 	return lst.rest.first.first;
 		 });
 
 PRIMITIVES['cadar'] =
@@ -2266,10 +2263,10 @@ PRIMITIVES['cadar'] =
 		 false, false,
 		 function(lst) {
 		 	check(lst, function(x) { return ( isPair(x) &&
-							  isPair(x.first()) &&
-							  isPair(x.first().rest()) ); },
+							  isPair(x.first) &&
+							  isPair(x.first.rest) ); },
 			      'cadar', 'cadarable value', 1);
-		 	return lst.first().rest().first();
+		 	return lst.first.rest.first;
 		 });
 
 PRIMITIVES['cdaar'] =
@@ -2278,10 +2275,10 @@ PRIMITIVES['cdaar'] =
 		 false, false,
 		 function(lst) {
 		 	check(lst, function(x) { return ( isPair(x) &&
-							  isPair(x.first()) &&
-							  isPair(x.first().first()) ); },
+							  isPair(x.first) &&
+							  isPair(x.first.first) ); },
 			      'cdaar', 'cdaarable value', 1);
-		 	return lst.first().first().rest();
+		 	return lst.first.first.rest;
 		 });
 
 PRIMITIVES['cdadr'] =
@@ -2290,10 +2287,10 @@ PRIMITIVES['cdadr'] =
 		 false, false,
 		 function(lst) {
 		 	check(lst, function(x) { return ( isPair(x) &&
-							  isPair(x.rest()) &&
-							  isPair(x.rest().first()) ); },
+							  isPair(x.rest) &&
+							  isPair(x.rest.first) ); },
 			      'cdadr', 'cdadrable value', 1);
-		 	return lst.rest().first().rest();
+		 	return lst.rest.first.rest;
 		 });
 
 PRIMITIVES['cddar'] =
@@ -2302,10 +2299,10 @@ PRIMITIVES['cddar'] =
 		 false, false,
 		 function(lst) {
 		 	check(lst, function(x) { return ( isPair(x) &&
-							  isPair(x.first()) &&
-							  isPair(x.first().rest()) ); },
+							  isPair(x.first) &&
+							  isPair(x.first.rest) ); },
 			      'cddar', 'cddarable value', 1);
-		 	return lst.first().rest().rest();
+		 	return lst.first.rest.rest;
 		 });
 
 PRIMITIVES['caddr'] =
@@ -2314,10 +2311,10 @@ PRIMITIVES['caddr'] =
 		 false, false,
 		 function(lst) {
 		 	check(lst, function(x) { return ( isPair(x) &&
-							  isPair(x.rest()) &&
-							  isPair(x.rest().rest()) ); },
+							  isPair(x.rest) &&
+							  isPair(x.rest.rest) ); },
 			      'caddr', 'caddrable value', 1);
-		 	return lst.rest().rest().first();
+		 	return lst.rest.rest.first;
 		 });
 
 PRIMITIVES['cdddr'] =
@@ -2326,10 +2323,10 @@ PRIMITIVES['cdddr'] =
 		 false, false,
 		 function(lst) {
 		 	check(lst, function(x) { return ( isPair(x) &&
-							  isPair(x.rest()) &&
-							  isPair(x.rest().rest()) ); },
+							  isPair(x.rest) &&
+							  isPair(x.rest.rest) ); },
 			      'cdddr', 'cdddrable value', 1);
-		 	return lst.rest().rest().rest();
+		 	return lst.rest.rest.rest;
 		 });
 
 PRIMITIVES['cadddr'] =
@@ -2338,11 +2335,11 @@ PRIMITIVES['cadddr'] =
 		 false, false,
 		 function(lst) {
 		 	check(lst, function(x) { return ( isPair(x) &&
-							  isPair(x.rest()) &&
-							  isPair(x.rest().rest()) &&
-				       			  isPair(x.rest().rest().rest()) ); },
+							  isPair(x.rest) &&
+							  isPair(x.rest.rest) &&
+				       			  isPair(x.rest.rest.rest) ); },
 			      'cadddr', 'cadddrable value', 1);
-		 	return lst.rest().rest().rest().first();
+		 	return lst.rest.rest.rest.first;
 		 });
 
 
@@ -2351,9 +2348,9 @@ PRIMITIVES['rest'] =
 		 1,
 		 false, false,
 		 function(lst) {
-		 	check(lst, function(x) { return isList(x) && !isEmpty(x); },
+		 	check(lst, function(x) { return isList(x) && x !== types.EMPTY; },
 			      'rest', 'non-empty list', 1);
-			return lst.rest();
+			return lst.rest;
 		 });
 
 PRIMITIVES['first'] =
@@ -2361,9 +2358,9 @@ PRIMITIVES['first'] =
 		 1,
 		 false, false,
 		 function(lst) {
-		 	check(lst, function(x) { return isList(x) && !isEmpty(x); },
+		 	check(lst, function(x) { return isList(x) && x !== types.EMPTY; },
 			      'first', 'non-empty list', 1);
-			return lst.first();
+			return lst.first;
 		 });
 
 PRIMITIVES['second'] =
@@ -2372,7 +2369,7 @@ PRIMITIVES['second'] =
 		 false, false,
 		 function(lst) {
 			checkListOfLength(lst, 2, 'second', 1);
-			return lst.rest().first();
+			return lst.rest.first;
 		 });
 
 PRIMITIVES['third'] =
@@ -2381,7 +2378,7 @@ PRIMITIVES['third'] =
 		 false, false,
 		 function(lst) {
 		 	checkListOfLength(lst, 3, 'third', 1);
-			return lst.rest().rest().first();
+			return lst.rest.rest.first;
 		 });
 
 PRIMITIVES['fourth'] =
@@ -2390,7 +2387,7 @@ PRIMITIVES['fourth'] =
 		 false, false,
 		 function(lst) {
 		 	checkListOfLength(lst, 4, 'fourth', 1);
-			return lst.rest().rest().rest().first();
+			return lst.rest.rest.rest.first;
 		 });
 
 PRIMITIVES['fifth'] =
@@ -2399,7 +2396,7 @@ PRIMITIVES['fifth'] =
 		 false, false,
 		 function(lst) {
 		 	checkListOfLength(lst, 5, 'fifth', 1);
-		 	return lst.rest().rest().rest().rest().first();
+		 	return lst.rest.rest.rest.rest.first;
 		 });
 
 PRIMITIVES['sixth'] =
@@ -2408,7 +2405,7 @@ PRIMITIVES['sixth'] =
 		 false, false,
 		 function(lst) {
 		 	checkListOfLength(lst, 6, 'sixth', 1);
-		 	return lst.rest().rest().rest().rest().rest().first();
+		 	return lst.rest.rest.rest.rest.rest.first;
 		 });
 
 PRIMITIVES['seventh'] =
@@ -2418,7 +2415,7 @@ PRIMITIVES['seventh'] =
 		 false, false,
 		 function(lst) {
 		 	checkListOfLength(lst, 7, 'seventh', 1);
-		 	return lst.rest().rest().rest().rest().rest().rest().first();
+		 	return lst.rest.rest.rest.rest.rest.rest.first;
 		 });
 
 PRIMITIVES['eighth'] =
@@ -2427,7 +2424,7 @@ PRIMITIVES['eighth'] =
 		 false, false,
 		 function(lst) {
 		 	checkListOfLength(lst, 8, 'eighth', 1);
-		 	return lst.rest().rest().rest().rest().rest().rest().rest().first();
+		 	return lst.rest.rest.rest.rest.rest.rest.rest.first;
 		 });
 
 
@@ -2479,33 +2476,37 @@ PRIMITIVES['list-ref'] =
 		 2,
 		 false, false,
 		 function(origList, num) {
-		 	check(num, isNatural, 'list-ref', 'non-negative exact integer', 2, arguments);
+		     check(num, isNatural, 'list-ref', 'non-negative exact integer', 2, arguments);
 
-			var lst = origList;
-			var n = jsnums.toFixnum(num);
-		 	for (var i = 0; i < n; i++) {
-			    // According to the documentation of list-ref, we don't actually
-			    // check the whole thing as a list.  We rather do it as we walk
-			    // along the cons chain.
-			    if (! isPair(lst) && lst !== types.EMPTY) {
-				var msg = ('list-ref: index ' + n +
-					   ' is too large for list (not a proper list): ' +
-					   types.toWrittenString(origList));
-				raise( types.incompleteExn(types.exnFailContract,
-							   msg,
-							   []) );
-			    }
-		 		if (lst.isEmpty()) {
-					var msg = ('list-ref: index ' + n +
-						   ' is too large for list: ' +
-						   types.toWrittenString(origList));
-					raise( types.incompleteExn(types.exnFailContract, msg, []) );
-		 		}
-	  			lst = lst.rest();
-		 	}
+		     var lst = origList;
+		     var n = jsnums.toFixnum(num);
+		     for (var i = 0; i < n; i++) {
+			 // According to the documentation of list-ref, we don't actually
+			 // check the whole thing as a list.  We rather do it as we walk
+			 // along the cons chain.
+		 	 if (lst === types.EMPTY) {
+			     var msg = ('list-ref: index ' + n +
+					' is too large for list: ' +
+					types.toWrittenString(origList));
+			     //console.log(origList);
+			     raise( types.incompleteExn(types.exnFailContract,
+							msg, []) );
+		 	 }
+
+			 if (! isPair(lst)) {
+
+			     var msg = ('list-ref: index ' + n +
+					' is too large for list (not a proper list): ' +
+					types.toWrittenString(origList));
+			     raise( types.incompleteExn(types.exnFailContract,
+							msg,
+							[]) );
+			 }
+	  		 lst = lst.rest;
+		     }
 
 
-		     if (! isPair(lst) && lst !== types.EMPTY) {
+		     if (! isPair(lst)) {
 			 var msg = ('list-ref: index ' + n +
 				    ' is too large for list (not a proper list): ' +
 				    types.toWrittenString(origList));
@@ -2513,7 +2514,7 @@ PRIMITIVES['list-ref'] =
 						    msg,
 						    []) );
 		     }
-		 	return lst.first();
+		     return lst.first;
 		 });
 
 PRIMITIVES['list-tail'] =
@@ -2537,13 +2538,13 @@ PRIMITIVES['list-tail'] =
 							   msg,
 							   []) );
 			    }
-				if (lst.isEmpty()) {
+				if (lst === types.EMPTY) {
 					var msg = ('list-tail: index ' + n +
 						   ' is too large for list: ' +
 						   types.toWrittenString(origList));
 					raise( types.incompleteExn(types.exnFailContract, msg, []) );
 				}
-				lst = lst.rest();
+				lst = lst.rest;
 			}
 			return lst;
 		 });
@@ -2580,15 +2581,15 @@ PRIMITIVES['map'] =
 		        check(f, procArityContains(arglists.length), 'map', 'procedure (arity ' + arglists.length + ')', 1, allArgs);
 
 			var mapHelp = function(f, args, acc) {
-				if (args[0].isEmpty()) {
+				if (args[0] === types.EMPTY) {
 				    return acc.reverse();
 				}
 				
 				var argsFirst = [];
 				var argsRest = [];
 				for (var i = 0; i < args.length; i++) {
-					argsFirst.push(args[i].first());
-					argsRest.push(args[i].rest());
+					argsFirst.push(args[i].first);
+					argsRest.push(args[i].rest);
 				}
 				var result = CALL(f, argsFirst,
 					function(result) {
@@ -2616,20 +2617,20 @@ PRIMITIVES['andmap'] =
 		        check(f, procArityContains(arglists.length), 'andmap', 'procedure (arity ' + arglists.length + ')', 1, allArgs);
   
 			var andmapHelp = function(f, args) {
-				if ( args[0].isEmpty() ) {
+				if ( args[0] === types.EMPTY) {
 					return true;
 				}
 
 				var argsFirst = [];
 				var argsRest = [];
 				for (var i = 0; i < args.length; i++) {
-					argsFirst.push(args[i].first());
-					argsRest.push(args[i].rest());
+					argsFirst.push(args[i].first);
+					argsRest.push(args[i].rest);
 				}
 
 				return CALL(f, argsFirst,
 					    function(result) {
-						if (argsRest[0].isEmpty()) {
+						if (argsRest[0] === types.EMPTY) {
 						    return result;
 						}
 						return onSingleResult(result,
@@ -2657,20 +2658,20 @@ PRIMITIVES['ormap'] =
 		        check(f, procArityContains(arglists.length), 'ormap', 'procedure (arity ' + arglists.length + ')', 1, allArgs);
 
 			var ormapHelp = function(f, args) {
-				if ( args[0].isEmpty() ) {
+				if ( args[0] === types.EMPTY) {
 					return false;
 				}
 
 				var argsFirst = [];
 				var argsRest = [];
 				for (var i = 0; i < args.length; i++) {
-					argsFirst.push(args[i].first());
-					argsRest.push(args[i].rest());
+					argsFirst.push(args[i].first);
+					argsRest.push(args[i].rest);
 				}
 
 				return CALL(f, argsFirst,
 					    function(result) {
-						if (argsRest[0].isEmpty()) {
+						if (argsRest[0] === types.EMPTY) {
 						    return result;
 						}
 						return onSingleResult(
@@ -2697,12 +2698,12 @@ PRIMITIVES['memq'] =
 							   msg,
 						    []) );
 		     }
-			while ( !lst.isEmpty() ) {
+			while (lst !== types.EMPTY) {
 
-				if ( isEq(item, lst.first()) ) {
+				if ( isEq(item, lst.first) ) {
 					return lst;
 				}
-				lst = lst.rest();
+				lst = lst.rest;
 			    if (! isPair(lst) && lst !== types.EMPTY) {
 				var msg = ('memq: not a proper list: ' +
 					   types.toWrittenString(origList));
@@ -2728,11 +2729,11 @@ PRIMITIVES['memv'] =
 							   msg,
 							   []) );
 			    }
-			while ( !lst.isEmpty() ) {
-				if ( isEqv(item, lst.first()) ) {
+			while (lst !== types.EMPTY) {
+				if ( isEqv(item, lst.first) ) {
 					return lst;
 				}
-				lst = lst.rest();
+				lst = lst.rest;
 			    if (! isPair(lst) && lst !== types.EMPTY) {
 				var msg = ('memv: not a proper list: ' +
 					   types.toWrittenString(origList));
@@ -2759,11 +2760,11 @@ PRIMITIVES['member'] =
 						    msg,
 						    []) );
 		     }
-		 	while ( !lst.isEmpty() ) {
-		 		if ( isEqual(item, lst.first()) ) {
+		 	while (lst !== types.EMPTY) {
+		 		if ( isEqual(item, lst.first) ) {
 		 			return lst;
 		 		}
-		 		lst = lst.rest();
+		 		lst = lst.rest;
 
 			    if (! isPair(lst) && lst !== types.EMPTY) {
 				var msg = ('member: not a proper list: ' +
@@ -2786,16 +2787,16 @@ PRIMITIVES['memf'] =
 			checkList(initList, 'memf', 2, arguments);
 
 			var memfHelp = function(lst) {
-				if ( lst.isEmpty() ) {
+				if ( lst === types.EMPTY) {
 					return false;
 				}
 
-				return CALL(f, [lst.first()],
+				return CALL(f, [lst.first],
 					function(result) {
 						if (result) {
 							return lst;
 						}
-						return memfHelp(lst.rest());
+						return memfHelp(lst.rest);
 					});
 			}
 			return memfHelp(initList);
@@ -2816,19 +2817,19 @@ PRIMITIVES['assq'] =
 						    msg,
 						    []) );
 		     }
-			while ( !lst.isEmpty() ) {
-			    if (! isPair(lst.first())) {
+			while (lst !== types.EMPTY) {
+			    if (! isPair(lst.first)) {
 				var msg = ('assq: non-pair found in list: ' +
-					   types.toWrittenString(lst.first()) +' in  ' +
+					   types.toWrittenString(lst.first) +' in  ' +
 					   types.toWrittenString(origList));
 				raise( types.incompleteExn(types.exnFailContract,
 							   msg,
 							   []) );
 			    }
-				if ( isEq(item, lst.first().first()) ) {
-					return lst.first();
+				if ( isEq(item, lst.first.first) ) {
+					return lst.first;
 				}
-				lst = lst.rest();
+				lst = lst.rest;
 
 			    if (! isPair(lst) && lst !== types.EMPTY) {
 				var msg = ('assq: not a proper list: ' +
@@ -2856,19 +2857,19 @@ PRIMITIVES['assv'] =
 						    msg,
 						    []) );
 		     }
-		     while ( !lst.isEmpty() ) {
-			 if (! isPair(lst.first())) {
+		     while (lst !== types.EMPTY) {
+			 if (! isPair(lst.first)) {
 			     var msg = ('assv: non-pair found in list: ' +
-					types.toWrittenString(lst.first()) +' in  ' +
+					types.toWrittenString(lst.first) +' in  ' +
 					types.toWrittenString(origList));
 			     raise( types.incompleteExn(types.exnFailContract,
 							msg,
 							[]) );
 			 }
-				if ( isEqv(item, lst.first().first()) ) {
-					return lst.first();
+				if ( isEqv(item, lst.first.first) ) {
+					return lst.first;
 				}
-				lst = lst.rest();
+				lst = lst.rest;
 			 if (! isPair(lst) && lst !== types.EMPTY) {
 			     var msg = ('assv: not a proper list: ' +
 					types.toWrittenString(origList));
@@ -2895,19 +2896,19 @@ PRIMITIVES['assoc'] =
 						    msg,
 						    []) );
 		     }
-			while ( !lst.isEmpty() ) {
-			    if (! isPair(lst.first())) {
+			while (lst !== types.EMPTY) {
+			    if (! isPair(lst.first)) {
 				var msg = ('assoc: non-pair found in list: ' +
-					   types.toWrittenString(lst.first()) +' in  ' +
+					   types.toWrittenString(lst.first) +' in  ' +
 					   types.toWrittenString(origList));
 				raise( types.incompleteExn(types.exnFailContract,
 							   msg,
 							   []) );
 			    }
-				if ( isEqual(item, lst.first().first()) ) {
-					return lst.first();
+				if ( isEqual(item, lst.first.first) ) {
+					return lst.first;
 				}
-				lst = lst.rest();
+				lst = lst.rest;
 
 			    if (! isPair(lst) && lst !== types.EMPTY) {
 				var msg = ('assoc: not a proper list: ' +
@@ -2929,12 +2930,12 @@ PRIMITIVES['remove'] =
 		 	checkList(lst, 'remove', 2, arguments);
 		 	var originalLst = lst;
 		 	var result = types.EMPTY;
-		 	while ( !lst.isEmpty() ) {
-		 		if ( isEqual(item, lst.first()) ) {
-		 			return append([result.reverse(), lst.rest()]);
+		 	while (lst !== types.EMPTY) {
+		 		if ( isEqual(item, lst.first) ) {
+		 			return append([result.reverse(), lst.rest]);
 		 		} else {
-		 			result = types.cons(lst.first(), result);
-		 			lst = lst.rest();
+		 			result = types.cons(lst.first, result);
+		 			lst = lst.rest;
 		 		}
 		 	}
 		 	return originalLst;
@@ -2950,18 +2951,18 @@ PRIMITIVES['filter'] =
 			checkList(lst, 'filter', 2);
 
 			var filterHelp = function(f, lst, acc) {
-				if ( lst.isEmpty() ) {
+				if (lst === types.EMPTY) {
 					return acc.reverse();
 				}
 
-				return CALL(f, [lst.first()],
+				return CALL(f, [lst.first],
 					function(result) {
 						if (result) {
-							return filterHelp(f, lst.rest(),
-								types.cons(lst.first(), acc));
+							return filterHelp(f, lst.rest,
+								types.cons(lst.first, acc));
 						}
 						else {
-							return filterHelp(f, lst.rest(), acc);
+							return filterHelp(f, lst.rest, acc);
 						}
 					});
 			}
@@ -3016,26 +3017,26 @@ PRIMITIVES['argmax'] =
 			check(initList, isPair, 'argmax', 'non-empty list', 2, args);
 
 			var argmaxHelp = function(lst, curMaxVal, curMaxElt) {
-				if ( lst.isEmpty() ) {
+				if (lst === types.EMPTY) {
 					return curMaxElt;
 				}
 
-				return CALL(f, [lst.first()],
+				return CALL(f, [lst.first],
 					function(result) {
 						check(result, isReal, 'argmax',
 						      'procedure that returns real numbers', 1, args);
 						if (jsnums.greaterThan(result, curMaxVal)) {
-							return argmaxHelp(lst.rest(), result, lst.first());
+							return argmaxHelp(lst.rest, result, lst.first);
 						}
 						else {
-							return argmaxHelp(lst.rest(), curMaxVal, curMaxElt);
+							return argmaxHelp(lst.rest, curMaxVal, curMaxElt);
 						}
 					});
 			}
-			return CALL(f, [initList.first()],
+			return CALL(f, [initList.first],
 				function(result) {
 					check(result, isReal, 'argmax', 'procedure that returns real numbers', 1, args);
-					return argmaxHelp(initList.rest(), result, initList.first());
+					return argmaxHelp(initList.rest, result, initList.first);
 				});
 		 });
 
@@ -3050,26 +3051,26 @@ PRIMITIVES['argmin'] =
 			check(initList, isPair, 'argmin', 'non-empty list', 2, args);
 
 			var argminHelp = function(lst, curMaxVal, curMaxElt) {
-				if ( lst.isEmpty() ) {
+				if (lst === types.EMPTY) {
 					return curMaxElt;
 				}
 
-				return CALL(f, [lst.first()],
+				return CALL(f, [lst.first],
 					function(result) {
 						check(result, isReal, 'argmin',
 						      'procedure that returns real numbers', 1, args);
 						if (jsnums.lessThan(result, curMaxVal)) {
-							return argminHelp(lst.rest(), result, lst.first());
+							return argminHelp(lst.rest, result, lst.first);
 						}
 						else {
-							return argminHelp(lst.rest(), curMaxVal, curMaxElt);
+							return argminHelp(lst.rest, curMaxVal, curMaxElt);
 						}
 					});
 			}
-			return CALL(f, [initList.first()],
+			return CALL(f, [initList.first],
 				function(result) {
 					check(result, isReal, 'argmin', 'procedure that returns real numbers', 1, args);
-					return argminHelp(initList.rest(), result, initList.first());
+					return argminHelp(initList.rest, result, initList.first);
 				});
 		 });
 
@@ -3578,9 +3579,9 @@ PRIMITIVES['list->string'] =
 		 	checkListOf(lst, isChar, 'list->string', 'char', 1);
 
 			var ret = [];
-			while( !lst.isEmpty() ) {
-				ret.push(lst.first().val);
-				lst = lst.rest();
+			while(lst !== types.EMPTY) {
+				ret.push(lst.first.val);
+				lst = lst.rest;
 			}
 			return types.string(ret);
 		 });
@@ -3692,9 +3693,9 @@ PRIMITIVES['implode'] =
 		 	checkListOf(lst, function(x) { return isString(x) && x.length == 1; },
 				    'implode', 'list of 1-letter strings', 1);
 			var ret = [];
-			while ( !lst.isEmpty() ) {
-				ret.push( lst.first().toString() );
-				lst = lst.rest();
+			while (lst !== types.EMPTY) {
+				ret.push( lst.first.toString() );
+				lst = lst.rest;
 			}
 			return types.string(ret);
 		 });
@@ -4103,9 +4104,9 @@ PRIMITIVES['list->bytes'] =
 		 	checkListOf(lst, isByte, 'list->bytes', 'byte', 1);
 
 			var ret = [];
-			while ( !lst.isEmpty() ) {
-				ret.push(lst.first());
-				lst = lst.rest();
+			while (lst !== types.EMPTY) {
+				ret.push(lst.first);
+				lst = lst.rest;
 			}
 			return types.bytes(ret, true);
 		 });

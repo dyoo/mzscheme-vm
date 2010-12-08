@@ -1,0 +1,29 @@
+2010/12/7: Running under Ubuntu 10.04, Intel Core i7 cpu, 8 cores,
+1.60Ghz, 2.9GiB memory, under Google Chrome 8.0.552.215
+
+
+"earley benchmark"
+time: 171272.0
+58786
+"(tak-benchmark)"
+
+Warning: Using old-style run-benchmark
+
+--------------------------------------------------------
+Tak
+time: 12630.0
+"(nboyer-benchmark 0)"
+
+--------------------------------------------------------
+nboyer0
+95024 rewrites
+time: 20423.0
+"(nboyer-benchmark 4)"
+
+--------------------------------------------------------
+nboyer4
+16445406 rewrites
+time: 2250374.0
+"sboyer"
+
+######################################################################

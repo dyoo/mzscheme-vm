@@ -15,8 +15,18 @@
 (define-syntax (-#%app stx)
   (syntax-case stx ()
     [(_ operator operands ...)
-     (with-syntax ([key 'moby-stack-record-continuation-mark-key]
-                   [pos (vector (format "~s" (syntax-source stx))
+     (with-syntax ([key 
+                    ;; Note: this should really be the
+                    ;; scheme_stack_dump_key
+                    ;; from racket/src/racket/eval.c, but
+                    ;; I can't find the parameter in
+                    ;; #%paramz for it.
+                    'moby-stack-record-continuation-mark-key]
+                   [pos (vector (if (symbol? 
+                                     (syntax-e #'operator))
+                                    '#'operator
+                                    #f)
+                                (format "~s" (syntax-source stx))
                                 (syntax-position stx)
                                 (syntax-line stx)
                                 (syntax-column stx)

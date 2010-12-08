@@ -6,6 +6,13 @@ var interpret = {};
 
 (function() {
 
+
+
+var queueCallback = helpers.queueCallback;
+
+
+
+
 // load: compilationTop state? -> state
 // Load up the bytecode into a state, ready for evaluation.  If
 // an old state is given, then reuses it.
@@ -187,11 +194,14 @@ var run = function(aState, callSite) {
 	    // Temporarily flag aState.running = true
 	    // so that no one else can come in.
 	    aState.running = true;
-	    setTimeout(
+
+	    // SUBTLE: this needs to be a queueCallback
+	    // to help clear out any potential stack
+	    // from previous callers.
+	    queueCallback(
 		function() { 
 		    aState.running = false;
-		    run(aState, callSite); },
-		0);
+		    run(aState, callSite); });
 	    return;
 	} else {
 	    onSuccess(aState.v);
@@ -210,22 +220,19 @@ var doExceptionHandling = function(e, stateValues, aState, onFail, callSite) {
 	stateValues = aState.save();
 	aState.clearForEval({preserveBreak: true});
 	
-	aState.onSuccess = function(v, callSite) {
-	    // SUBTLE: this needs to be a setTimeout
-	    // to help clear out any potential stack
-	    // from previous callers.
-	    setTimeout(
-		function() {
-		    aState.restore(stateValues);
-		    aState.v = v;
-		    run(aState, callSite);
-		}, 
-		0);
-	};
-	aState.onFail = function(e2) {
-	    aState.restore(stateValues);
-	    onFail( completeError(aState, e2) );
-	};
+	aState.onSuccess = guardEntryOnStateRunning(
+	    aState,
+	    function(v) {
+		aState.restore(stateValues);
+		aState.v = v;
+		run(aState);
+	    });
+	aState.onFail = guardEntryOnStateRunning(
+	    aState, 
+	    function(e2) {
+		aState.restore(stateValues);
+		onFail( completeError(aState, e2) );
+	    });
 	onCall = makeOnCall(aState);
 	e.onPause(onCall, aState.onSuccess, aState.onFail);
     } else {
@@ -290,10 +297,9 @@ var call = function(aState, operator, operands,
 		    onSuccess, onFail, callSite) {
     var stateValues;
     if ( aState.running ) {
-	setTimeout(function() { 
+	queueCallback(function() { 
 	    call(aState, operator, operands, 
-		 onSuccess, onFail, callSite); }, 
-		   1);
+		 onSuccess, onFail, callSite);});
 	return;
     }
     
@@ -309,18 +315,49 @@ var call = function(aState, operator, operands,
 			    return new control.ConstantControl(op)},
 			operands)));
 
-    aState.onSuccess = function(v) {
-	aState.restore(stateValues);
-	onSuccess(v);
-    };
-    aState.onFail = function(e) {
-	aState.restore(stateValues);
-	onFail(e);
-    };
+    aState.onSuccess = guardEntryOnStateRunning(
+	aState,
+	function(v) {
+	    aState.restore(stateValues);
+	    onSuccess(v);
+	});
+    aState.onFail = guardEntryOnStateRunning(
+	aState,
+	function(e) {
+	    aState.restore(stateValues);
+	    onFail(e);
+	});
     run(aState, callSite);
 };
 
 
+// guardEntryOnStateRunning: state (X -> void) -> void
+// Produces a function that consumes X, and produces
+// a wrapped version of the function; the wrapper sees
+// if we're in the middle of an evaluation before running.
+//
+// Guaranteed to do at least one queueCallback to clear the stack.
+var guardEntryOnStateRunning = function(aState, f) {
+    var checkCondition = function(x) {
+	if (aState.running) {
+	    queueCallback(
+		function() {
+		    guardedFunction(x);
+		});
+	} else {
+	    f(x);
+	}
+    }
+    var guardedFunction = function(x) {
+	queueCallback(function() {
+	    checkCondition(x);
+	});
+    }
+    return guardedFunction;
+};
+
+
+// makeOnCall: state -> (racket-function (arrayof X) (X -> void) (X -> void) Y -> void)
 var makeOnCall = function(state) {
     return function(operator, operands, onSuccess, onFail, callSite) {
 	call(state, operator, operands, onSuccess, onFail, callSite);

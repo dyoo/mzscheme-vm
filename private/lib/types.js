@@ -647,21 +647,7 @@ Empty.prototype.reverse = function() {
     return this;
 };
 
-Empty.prototype.first = function() {
-    helpers.raise(types.incompleteExn(
-	types.exnFailContract,
-	"first can't be applied on empty.",
-	[]));
-};
-Empty.prototype.rest = function() {
-    helpers.raise(types.incompleteExn(
-	types.exnFailContract,
-	"rest can't be applied on empty.",
-	[]));
-};
-Empty.prototype.isEmpty = function() {
-    return true;
-};
+
 Empty.prototype.toWrittenString = function(cache) { return "empty"; };
 Empty.prototype.toDisplayedString = function(cache) { return "empty"; };
 Empty.prototype.toString = function(cache) { return "()"; };
@@ -673,17 +659,17 @@ Empty.prototype.append = function(b){
     return b;
 };
     
-Cons = function(f, r) {
-    this.f = f;
-    this.r = r;
+Cons = function(first, rest) {
+    this.first = first;
+    this.rest = rest;
 };
 
 Cons.prototype.reverse = function() {
     var lst = this;
     var ret = Empty.EMPTY;
-    while (!lst.isEmpty()){
-	ret = Cons.makeInstance(lst.first(), ret);
-	lst = lst.rest();
+    while (lst !== Empty.EMPTY){
+	ret = Cons.makeInstance(lst.first, ret);
+	lst = lst.rest;
     }
     return ret;
 };
@@ -698,21 +684,10 @@ Cons.prototype.isEqual = function(other, aUnionFind) {
     if (! (other instanceof Cons)) {
 	return Logic.FALSE;
     }
-    return (isEqual(this.first(), other.first(), aUnionFind) &&
-	    isEqual(this.rest(), other.rest(), aUnionFind));
+    return (isEqual(this.first, other.first, aUnionFind) &&
+	    isEqual(this.rest, other.rest, aUnionFind));
 };
-    
-Cons.prototype.first = function() {
-    return this.f;
-};
-    
-Cons.prototype.rest = function() {
-    return this.r;
-};
-    
-Cons.prototype.isEmpty = function() {
-    return false;
-};
+
     
 // Cons.append: (listof X) -> (listof X)
 Cons.prototype.append = function(b){
@@ -720,9 +695,9 @@ Cons.prototype.append = function(b){
 	return this;
     var ret = b;
     var lst = this.reverse();
-    while ( !lst.isEmpty() ) {
-	ret = Cons.makeInstance(lst.first(), ret);
-	lst = lst.rest();
+    while (lst !== Empty.EMPTY) {
+	ret = Cons.makeInstance(lst.first, ret);
+	lst = lst.rest;
     }
 	
     return ret;
@@ -734,8 +709,8 @@ Cons.prototype.toWrittenString = function(cache) {
     var texts = [];
     var p = this;
     while ( p instanceof Cons ) {
-	texts.push(toWrittenString(p.first(), cache));
-	p = p.rest();
+	texts.push(toWrittenString(p.first, cache));
+	p = p.rest;
 	if (typeof(p) === 'object' && cache.containsKey(p)) {
 	    break;
 	}
@@ -744,29 +719,22 @@ Cons.prototype.toWrittenString = function(cache) {
 	texts.push('.');
 	texts.push(toWrittenString(p, cache));
     }
-//    while (true) {
-//	if ((!(p instanceof Cons)) && (!(p instanceof Empty))) {
-//	    texts.push(".");
-//	    texts.push(toWrittenString(p, cache));
-//	    break;
-//	}
-//	if (p.isEmpty())
-//	    break;
-//	texts.push(toWrittenString(p.first(), cache));
-//	p = p.rest();
-//    }
     return "(" + texts.join(" ") + ")";
 };
 
-Cons.prototype.toString = Cons.prototype.toWrittenString;
+
+Cons.prototype.toString = function() {
+    return toWrittenString(this);
+};
+
 
 Cons.prototype.toDisplayedString = function(cache) {
     cache.put(this, true);
     var texts = [];
     var p = this;
     while ( p instanceof Cons ) {
-	texts.push(toDisplayedString(p.first(), cache));
-	p = p.rest();
+	texts.push(toDisplayedString(p.first, cache));
+	p = p.rest;
 	if (typeof(p) === 'object' && cache.containsKey(p)) {
 	    break;
 	}
@@ -775,17 +743,6 @@ Cons.prototype.toDisplayedString = function(cache) {
 	texts.push('.');
 	texts.push(toDisplayedString(p, cache));
     }
-//    while (true) {
-//	if ((!(p instanceof Cons)) && (!(p instanceof Empty))) {
-//	    texts.push(".");
-//	    texts.push(toDisplayedString(p, cache));
-//	    break;
-//	}
-//	if (p.isEmpty()) 
-//	    break;
-//	texts.push(toDisplayedString(p.first(), cache));
-//	p = p.rest();
-//    }
     return "(" + texts.join(" ") + ")";
 };
 
@@ -797,8 +754,8 @@ Cons.prototype.toDomNode = function(cache) {
     node.appendChild(document.createTextNode("("));
     var p = this;
     while ( p instanceof Cons ) {
-	appendChild(node, toDomNode(p.first(), cache));
-	p = p.rest();
+	appendChild(node, toDomNode(p.first, cache));
+	p = p.rest;
 	if ( p !== Empty.EMPTY ) {
 	    appendChild(node, document.createTextNode(" "));
 	}
@@ -811,22 +768,6 @@ Cons.prototype.toDomNode = function(cache) {
 	appendChild(node, document.createTextNode(" "));
 	appendChild(node, toDomNode(p, cache));
     }
-//    while (true) {
-//	if ((!(p instanceof Cons)) && (!(p instanceof Empty))) {
-//	    appendChild(node, document.createTextNode(" "));
-//	    appendChild(node, document.createTextNode("."));
-//	    appendChild(node, document.createTextNode(" "));
-//	    appendChild(node, toDomNode(p, cache));
-//	    break;
-//	}
-//	if (p.isEmpty())
-//	    break;
-//	appendChild(node, toDomNode(p.first(), cache));
-//	p = p.rest();
-//	if (! p.isEmpty()) {
-//	    appendChild(node, document.createTextNode(" "));
-//	}
-//    }
     node.appendChild(document.createTextNode(")"));
     return node;
 };
@@ -1445,7 +1386,7 @@ var numberToDomNode = function(n) {
 	    return node;
 	} else if (jsnums.isRational(n)) {
 	    return rationalToDomNode(n);
-	} else if (jsnums.isComplex(n)) {
+	} else if (isComplex(n)) {
 	    node = document.createElement("span");
 	    node.appendChild(document.createTextNode(n.toString()));
 	    return node;
@@ -1461,19 +1402,50 @@ var numberToDomNode = function(n) {
     }
 };
 
+
 // rationalToDomNode: rational -> dom-node
+// Creates a dom node that has two modes: repeated-decimal mode,
+// and fractional mode.
 var rationalToDomNode = function(n) {
-    var node = document.createElement("span");
+    var repeatingDecimalNode = document.createElement("span");
     var chunks = jsnums.toRepeatingDecimal(jsnums.numerator(n),
 					   jsnums.denominator(n));
-    node.appendChild(document.createTextNode(chunks[0] + '.'))
-    node.appendChild(document.createTextNode(chunks[1]));
-    var overlineSpan = document.createElement("span");
-    overlineSpan.style.textDecoration = 'overline';
-    overlineSpan.appendChild(document.createTextNode(chunks[2]));
-    node.appendChild(overlineSpan);
-    return node;
-}
+    repeatingDecimalNode.appendChild(document.createTextNode(chunks[0] + '.'))
+    repeatingDecimalNode.appendChild(document.createTextNode(chunks[1]));
+    if (chunks[2] !== '0') {
+	var overlineSpan = document.createElement("span");
+	overlineSpan.style.textDecoration = 'overline';
+	overlineSpan.appendChild(document.createTextNode(chunks[2]));
+	repeatingDecimalNode.appendChild(overlineSpan);
+    }
+
+
+    var fractionalNode = document.createElement("span");
+    var numeratorNode = document.createElement("sup");
+    numeratorNode.appendChild(document.createTextNode(String(jsnums.numerator(n))));
+    var denominatorNode = document.createElement("sub");
+    denominatorNode.appendChild(document.createTextNode(String(jsnums.denominator(n))));
+    fractionalNode.appendChild(numeratorNode);
+    fractionalNode.appendChild(document.createTextNode("/"));
+    fractionalNode.appendChild(denominatorNode);
+
+    
+    var numberNode = document.createElement("span");
+    numberNode.appendChild(repeatingDecimalNode);
+    numberNode.appendChild(fractionalNode);
+    fractionalNode.style['display'] = 'none';
+
+    var showingRepeating = true;
+
+    numberNode.onclick = function(e) {
+	showingRepeating = !showingRepeating;
+	repeatingDecimalNode.style['display'] = 
+	    (showingRepeating ? 'inline' : 'none')
+	fractionalNode.style['display'] = 
+	    (!showingRepeating ? 'inline' : 'none')
+    };
+    return numberNode;
+};
 
 
 
@@ -1867,23 +1839,23 @@ ContMarkRecordControl.prototype.update = function(key, val) {
     var l = this.listOfPairs;
     var acc;
     while (l !== types.EMPTY) {
-	if (l.first().first() === key) {
+	if (l.first.first === key) {
 	    // slow path: walk the list and replace with the
 	    // new key/value pair.
 	    l = this.listOfPairs;
 	    acc = types.EMPTY;
 	    while (l !== types.EMPTY) {
-		if (l.first().first() === key) {
+		if (l.first.first === key) {
 		    acc = types.cons(types.cons(key, val), 
 				     acc);
 		} else {
-		    acc = types.cons(l.first(), acc);
+		    acc = types.cons(l.first, acc);
 		}
-		l = l.rest();
+		l = l.rest;
 	    }
 	    return new ContMarkRecordControl(acc);
 	}
-	l = l.rest();
+	l = l.rest;
     }
     // fast path: just return a new record with the element tacked at the
     // front of the original list.
@@ -2145,9 +2117,9 @@ var makeString = function(s) {
 
 var makeHashEq = function(lst) {
 	var newHash = new EqHashTable();
-	while ( !lst.isEmpty() ) {
-		newHash.hash.put(lst.first().first(), lst.first().rest());
-		lst = lst.rest();
+	while (lst !== Empty.EMPTY) {
+		newHash.hash.put(lst.first.first, lst.first.rest);
+		lst = lst.rest;
 	}
 	return newHash;
 }
@@ -2155,9 +2127,9 @@ var makeHashEq = function(lst) {
 
 var makeHashEqual = function(lst) {
 	var newHash = new EqualHashTable();
-	while ( !lst.isEmpty() ) {
-		newHash.hash.put(lst.first().first(), lst.first().rest());
-		lst = lst.rest();
+	while (lst !== Empty.EMPTY) {
+		newHash.hash.put(lst.first.first, lst.first.rest);
+		lst = lst.rest;
 	}
 	return newHash;
 }
@@ -2186,10 +2158,10 @@ var readerGraph = function(x, objectHash, n) {
     }
 
     if (types.isPair(x)) {
-	var consPair = types.cons(x.first(), x.rest());
+	var consPair = types.cons(x.first, x.rest);
 	objectHash.put(x, consPair);
-	consPair.f = readerGraph(x.first(), objectHash, n+1);
-	consPair.r = readerGraph(x.rest(), objectHash, n+1);
+	consPair.first = readerGraph(x.first, objectHash, n+1);
+	consPair.rest = readerGraph(x.rest, objectHash, n+1);
 	return consPair;
     }
 

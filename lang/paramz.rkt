@@ -1,7 +1,11 @@
 #lang racket/base
 
 (require '#%paramz)
-(provide exception-handler-key)
+
+;; Reuse the same exception-handler-key.
+(provide exception-handler-key
+         
+         parameterization-key)
 
 
 

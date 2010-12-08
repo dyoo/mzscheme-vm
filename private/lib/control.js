@@ -37,7 +37,8 @@ var control = {};
 
     var PrimProc = types.PrimProc;
     var isFunction = types.isFunction;
-
+    var isInternalCall= types.isInternalCall;
+    var isInternalPause = types.isInternalPause;
 
 
 //////////////////////////////////////////////////////////////////////
@@ -502,13 +503,13 @@ var invokeJavascriptModuleAndRestart = function(aState, resolvedModuleName,
 						moduleRecord,
 						onSuccess, onFail) {    
     var invokeAllRequiredModules = function(modules, after) {
-	if (modules.isEmpty()) {
+	if (modules === types.EMPTY) {
 	    after();
 	} else {
 	    invokeModuleAndRestart(aState,
-				   modules.first()+'',
+				   modules.first+'',
 				   function() {
-				       invokeAllRequiredModules(modules.rest(), after);
+				       invokeAllRequiredModules(modules.rest, after);
 				   },
 				   onFail);
 	}
@@ -941,14 +942,14 @@ var callProcedure = function(aState, procValue, n, operandValues) {
 
 
 var processPrimitiveResult = function(state, result, procValue) {
-    if ( types.isInternalCall(result) ) {
+    if (isInternalCall(result)) {
 	state.cstack.push(new InternalCallRestartControl
 			  (result.k, procValue));
 	callProcedure(state,
 		      result.operator, 
 		      result.operands.length, 
 		      result.operands);
-    } else if ( types.isInternalPause(result) ) {
+    } else if (isInternalPause(result)) {
 	throw new PauseException(result.onPause);
     } else {
 	if (! procValue.usesState) {
@@ -1484,7 +1485,7 @@ CaseLamControl.prototype.invoke = function(state) {
 	state.v = new types.CaseLambdaValue(this.name, []);
     } else {
 	state.cstack.push(new CaseLambdaComputeControl(this.name, 
-						       types.list(clauses).rest(),
+						       types.list(clauses).rest,
 						       types.list([])));
 	state.cstack.push(clauses[0]);
     }
@@ -1500,21 +1501,21 @@ var CaseLambdaComputeControl = function(name, lamsToEvaluate, evaluatedLams) {
 
 CaseLambdaComputeControl.prototype.invoke = function(state) {
     var nextEvaluatedLam = state.v;
-    if (this.lamsToEvaluate.isEmpty()) {
+    if (this.lamsToEvaluate === types.EMPTY) {
 	var clauseList = (types.cons(nextEvaluatedLam, this.evaluatedLams)).reverse();
 	var clauses = [];
-	while (!clauseList.isEmpty()) {
-	    clauses.push(clauseList.first());
-	    clauseList = clauseList.rest();
+	while (clauseList !== types.EMPTY) {
+	    clauses.push(clauseList.first);
+	    clauseList = clauseList.rest;
 	}
 	state.v = new types.CaseLambdaValue(this.name, clauses);
     } else {
 	state.cstack.push(new CaseLambdaComputeControl(
 	    this.name,
-	    this.lamsToEvaluate.rest(),
+	    this.lamsToEvaluate.rest,
 	    types.cons(nextEvaluatedLam,
 		       this.evaluatedLams)));
-	state.cstack.push(this.lamsToEvaluate.first());
+	state.cstack.push(this.lamsToEvaluate.first);
     }
 };
 

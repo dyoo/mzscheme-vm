@@ -738,18 +738,23 @@ var jsworld = {};
 
     //////////////////////////////////////////////////////////////////////
 
-    function BigBangRecord(top, world, handlerCreators, handlers, attribs) {    
+    function BigBangRecord(top, world, handlerCreators, handlers, attribs,
+			   k, beforeInitialization, afterInitialization) {    
 	this.isRunning = false;
 	this.top = top;
 	this.world = world;
 	this.handlers = handlers;
 	this.handlerCreators = handlerCreators;
 	this.attribs = attribs;
+	this.k = k;
+	this.beforeInitialization = beforeInitialization;
+	this.afterInitialization = afterInitialization;
     }
 
-    BigBangRecord.prototype.restart = function() {
+    BigBangRecord.prototype.restart = function(w) {
 	this.isRunning = true;
-	big_bang(this.top, this.world, this.handlerCreators, this.attribs);
+	big_bang(this.top, w, this.handlerCreators, this.attribs,
+		 this.k, this.beforeInitialization, this.afterInitialization);
     }
     
     BigBangRecord.prototype.pause = function() {
@@ -768,44 +773,60 @@ var jsworld = {};
     // to call big_bang re-entrantly.
     function big_bang(top, init_world, handlerCreators, attribs,
 		      k,
+		      beforeInitialization,
 		      afterInitialization) {
-	// clear_running_state();
 
-	// Construct a fresh set of the handlers.
-	var handlers = map(handlerCreators, function(x) { return x();} );
-	if (runningBigBangs.length > 0) { 
-	    runningBigBangs[runningBigBangs.length - 1].pause();
-	}
+	beforeInitialization(
+	    function() {
 
-	// Create an activation record for this big-bang.
-	var activationRecord = 
-	    new BigBangRecord(top, init_world, handlerCreators, handlers, attribs);
-	runningBigBangs.push(activationRecord);
-	function keepRecordUpToDate(w, oldW, k2) {
-	    activationRecord.world = w;
-	    k2();
-	}
-	add_world_listener(keepRecordUpToDate);
+		// Construct a fresh set of the handlers.
+		var handlers = map(handlerCreators, function(x) { return x();} );
+		if (runningBigBangs.length > 0) { 
+		    runningBigBangs[runningBigBangs.length - 1].pause();
+		}
+
+		// Create an activation record for this big-bang.
+		var activationRecord = 
+		    new BigBangRecord(top, init_world, handlerCreators, handlers, attribs, k, beforeInitialization, afterInitialization);
+		runningBigBangs.push(activationRecord);
 
 
+		clear_running_state();
+		
+		function keepRecordUpToDate(w, oldW, k2) {
+		    activationRecord.world = w;
+		    k2();
+		}
+		add_world_listener(keepRecordUpToDate);
 
-	// Monitor for termination and register the other handlers.
-	var stopWhen = new StopWhenHandler(function(w, k2) { k2(false); },
-					   function(w, k2) { k2(w); });
-	for(var i = 0 ; i < handlers.length; i++) {
-	    if (handlers[i] instanceof StopWhenHandler) {
-		stopWhen = handlers[i];
-	    } else {
-		handlers[i].onRegister(top);
-	    }
-	}
-	function watchForTermination(w, oldW, k2) {
-	    stopWhen.test(w,
-		function(stop) {
-		    if (stop) {
-			Jsworld.shutdown();
-		        k(w);
-	/*
+
+
+		// Monitor for termination and register the other handlers.
+		var stopWhen = new StopWhenHandler(function(w, k2) { k2(false); },
+						   function(w, k2) { k2(w); });
+		for(var i = 0 ; i < handlers.length; i++) {
+		    if (handlers[i] instanceof StopWhenHandler) {
+			stopWhen = handlers[i];
+		    } else {
+			handlers[i].onRegister(top);
+		    }
+		}
+		function watchForTermination(w, oldW, k2) {
+		    stopWhen.test(w,
+				  function(stop) {
+				      if (stop) {
+					  var currentRecord = runningBigBangs.pop();
+					  if (currentRecord) { currentRecord.pause(); }
+					  clear_running_state();
+
+					  //Jsworld.shutdown();
+					  if (runningBigBangs.length > 0) {
+					      var restartingBigBang = runningBigBangs.pop();
+					      restartingBigBang.restart(w);
+					  } else {
+					      k(w);
+					  }
+					  /*
 			stopWhen.receiver(world,
 			    function() {		    
 				var currentRecord = runningBigBangs.pop();
@@ -817,21 +838,22 @@ var jsworld = {};
 				k();
 			    });
 	*/
-		    }
-		    else { k2(); }
-		});
-	};
-	add_world_listener(watchForTermination);
+				      }
+				      else { k2(); }
+				  });
+		};
+		add_world_listener(watchForTermination);
 
 
-	// Finally, begin the big-bang.
-	copy_attribs(top, attribs);
+		// Finally, begin the big-bang.
+		copy_attribs(top, attribs);
 
-	activationRecord.isRunning = true;
-	change_world(function(w, k2) { k2(init_world); },
-		     function() {
-			 afterInitialization(activationRecord);
-		     });
+		activationRecord.isRunning = true;
+		change_world(function(w, k2) { k2(init_world); },
+			     function() {
+				 afterInitialization(activationRecord);
+			     });
+	    });
     }
 
     Jsworld.big_bang = big_bang;
@@ -841,42 +863,49 @@ var jsworld = {};
 
 
     // on_tick: number CPS(world -> world) -> handler
-    function on_tick(delay, tick) {
+    var on_tick = function(delay, tick) {
 	return function() {
-	    var scheduleTick, ticker;
+	    var scheduleTick, ticker, watchId;
 
 
 	    (new Date()).valueOf()
 
 	    scheduleTick = function(t) {
-		ticker.watchId = setTimeout(
-		    function() { 
-			ticker.watchId = undefined;
-			var startTime = (new Date()).valueOf();
-			change_world(tick, 
-				     function() { 
-					 var endTime = (new Date()).valueOf();
-					 scheduleTick(Math.max(delay - (endTime - startTime),
-							       0)); 
-				     }); 
-		    },
-		    t);
+		if (ticker.running) {
+		    watchId = setTimeout(
+			function() { 
+			    ticker.watchId = undefined;
+			    var startTime = (new Date()).valueOf();
+			    change_world(tick, 
+					 function() { 
+					     var endTime = (new Date()).valueOf();
+					     scheduleTick(Math.max(delay - (endTime - startTime),
+								   0)); 
+					 }); 
+			},
+			t);
+		}
 	    };
 	    
 	    ticker = {
-		watchId: -1,
+		running: false,
+
 		onRegister: function (top) { 
+		    ticker.running = true;
 		    scheduleTick(delay);
 		},
 
 		onUnregister: function (top) {
-		    if (ticker.watchId)
-			clearTimeout(ticker.watchId);
+		    ticker.running = false;
+		    if (watchId) {
+			clearTimeout(watchId);
+			watchId = undefined;
+		    }
 		}
 	    };
 	    return ticker;
 	};
-    }
+    };
     Jsworld.on_tick = on_tick;
 
 

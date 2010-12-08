@@ -1,10 +1,15 @@
 #lang s-exp "../../lang/base.rkt"
 
-(require "nboyer.rkt"
+(require "common/earley.rkt"
+	 "nboyer.rkt"
 	 "sboyer.rkt"
 	 "tak.rkt"
 	 "nfa.rkt"
 	 "graphs.rkt")
+
+"earley benchmark"
+(earley-benchmark)
+
 
 "(tak-benchmark)"
 (tak-benchmark)
