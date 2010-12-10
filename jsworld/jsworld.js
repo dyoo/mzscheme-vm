@@ -473,7 +473,7 @@ EXPORTS['js-elt'] =
     new CasePrimitive('js-elt',
 	[new PrimProc('js-elt', 1, false, false, 
 		      function(src) { return jsElt(src, types.EMPTY); }),
-	 new PrimProc('js-elt', 2, false, false, jsImg)]);
+	 new PrimProc('js-elt', 2, false, false, jsElt)]);
 
 
 
