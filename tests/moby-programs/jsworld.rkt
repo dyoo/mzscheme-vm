@@ -149,14 +149,5 @@
 			   (list (js-elt "h1")
 				 (list (js-text "this is a header")))))))
 
-(void
- (big-bang 0
-	   (stop-when (lambda (w) true))
-	   (to-draw-page (lambda (w) 
-			   (list (js-elt "video" '(("src" "http://people.opera.com/patrickl/articles/introduction-html5-video/videos/turkish.ogv") ("controls" true))))))))
-				 
-
-
-
 
 "jsworld.rkt end"
