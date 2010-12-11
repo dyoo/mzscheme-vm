@@ -1137,12 +1137,12 @@ TextImage.prototype.isEqual = function(other, aUnionFind) {
 	    this.pinholeY == other.pinholeY &&
 	    this.msg	== other.msg &&
 	    this.size	== other.size &&
-		this.face	== other.face &&
-		this.family == other.size &&
-		this.style	== other.size &&
-		this.weight == other.size &&
-		this.underline == other.size &&
-		types.isEqual(this.color, other.color, aUnionFind) &&
+	    this.face	== other.face &&
+	    this.family == other.family &&
+	    this.style	== other.style &&
+	    this.weight == other.weight &&
+	    this.underline == other.underline &&
+	    types.isEqual(this.color, other.color, aUnionFind) &&
 	    this.font == other.font);
 };
 
