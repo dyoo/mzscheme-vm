@@ -566,7 +566,7 @@ EXPORTS['image->color-list'] =
 		 1,
 		 false, false,
 		 function(img) {
-		     check(img, isImage, 'image-height', 'image', 1);
+		     check(img, isImage, 'image->color-list', 'image', 1);
 		     var width = img.getWidth(),
                          height = img.getHeight(),
 		         canvas = world.Kernel.makeCanvas(width, height),
@@ -591,11 +591,32 @@ EXPORTS['image->color-list'] =
 		 });
 
 
-// EXPORTS['color-list->image'] = 
-//     new PrimProc('color-list->image',
-// 		 1,
-// 		 false, false,
-// 		 function(colors) {
-// 		     checkListOf(colors, isImage, 'image-height', 'image', 1);
-// 		     return types.VOID;
-// 		 });
+EXPORTS['color-list->image'] = 
+    new PrimProc('color-list->image',
+		 5,
+		 false, false,
+		 function(listOfColors, width, height, pinholeX, pinholeY) {
+		     checkListOf(listOfColors, isColor, 'color-list->image', 'image', 1);
+		     check(width, isNatural, 'color-list->image', 'natural', 2);
+		     check(height, isNatural, 'color-list->image', 'natural', 3);
+		     check(pinholeX, isNatural, 'color-list->image', 'natural', 4);
+		     check(pinholeY, isNatural, 'color-list->image', 'natural', 5);
+		     var canvas = world.Kernel.makeCanvas(jsnums.toFixnum(width),
+							  jsnums.toFixnum(height)),
+		         ctx = canvas.getContext("2d"),
+   		         imageData = ctx.createImageData(jsnums.toFixnum(width),
+							 jsnums.toFixnum(height)),
+		         data = imageData.data,
+		         aColor, i = 0;
+		     while (listOfColors !== types.EMPTY) {
+			 aColor = listOfColors.first;
+			 data[i] = jsnums.toFixnum(types.colorRed(aColor));
+			 data[i+1] = jsnums.toFixnum(types.colorGreen(aColor));
+			 data[i+2] = jsnums.toFixnum(types.colorBlue(aColor));
+			 data[i+3] = 255; // alpha?
+
+			 i += 4;
+			 listOfColors = listOfColors.rest;
+		     };
+		     return world.Kernel.imageDataImage(imageData);
+		 });

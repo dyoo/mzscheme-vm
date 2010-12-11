@@ -752,6 +752,40 @@ TextImage.prototype.isEqual = function(other, aUnionFind) {
 	    this.font == other.font);
 };
 
+//////////////////////////////////////////////////////////////////////
+
+
+var ImageDataImage = function(imageData) {
+    BaseImage.call(this, 0, 0);
+    this.imageData = imageData;
+    this.width = imageData.width;
+    this.height = imageData.height;
+};
+
+ImageDataImage.prototype = heir(BaseImage.prototype);
+
+ImageDataImage.prototype.render = function(ctx, x, y) {
+    ctx.putImageData(this.imageData, x, y);
+};
+
+ImageDataImage.prototype.getWidth = function() {
+    return this.width;
+};
+
+
+ImageDataImage.prototype.getHeight = function() {
+    return this.height;
+};
+
+ImageDataImage.prototype.isEqual = function(other, aUnionFind) {
+    return (other instanceof ImageDataImage &&
+	    this.pinholeX == other.pinholeX &&
+	    this.pinholeY == other.pinholeY);
+    // FIXME
+};
+
+
+
 
 //////////////////////////////////////////////////////////////////////
 
@@ -1371,6 +1405,9 @@ world.Kernel.scaleImage = function(xFactor, yFactor, img) {
 };
 world.Kernel.textImage = function(msg, size, color) {
     return new TextImage(msg, size, color);
+};
+world.Kernel.imageDataImage = function(imageData) {
+    return new ImageDataImage(imageData);
 };
 world.Kernel.fileImage = function(path, rawImage) {
     return FileImage.makeInstance(path, rawImage);

@@ -31,4 +31,5 @@
 	 image-width
 	 image-height
 
-	 image->color-list)
+	 image->color-list
+	 color-list->image)
