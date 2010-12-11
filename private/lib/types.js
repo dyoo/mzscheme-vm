@@ -1409,10 +1409,14 @@ var numberToDomNode = function(n) {
 var rationalToDomNode = function(n) {
     var repeatingDecimalNode = document.createElement("span");
     var chunks = jsnums.toRepeatingDecimal(jsnums.numerator(n),
-					   jsnums.denominator(n));
+					   jsnums.denominator(n),
+					   { limit: 25 });
     repeatingDecimalNode.appendChild(document.createTextNode(chunks[0] + '.'))
     repeatingDecimalNode.appendChild(document.createTextNode(chunks[1]));
-    if (chunks[2] !== '0') {
+    if (chunks[2] === '...') {
+	repeatingDecimalNode.appendChild(
+	    document.createTextNode(chunks[2]));
+    } else if (chunks[2] !== '0') {
 	var overlineSpan = document.createElement("span");
 	overlineSpan.style.textDecoration = 'overline';
 	overlineSpan.appendChild(document.createTextNode(chunks[2]));
