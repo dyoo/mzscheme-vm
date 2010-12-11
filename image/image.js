@@ -545,8 +545,8 @@ EXPORTS['image-width'] =
 		 1,
 		 false, false,
 		 function(img) {
-		 	check(img, isImage, 'image-width', 'image', 1);
-			return img.getWidth();
+		     check(img, isImage, 'image-width', 'image', 1);
+		     return img.getWidth();
 		 });
 
 
@@ -555,9 +555,47 @@ EXPORTS['image-height'] =
 		 1,
 		 false, false,
 		 function(img) {
-		 	check(img, isImage, 'image-height', 'image', 1);
-			return img.getHeight();
+		     check(img, isImage, 'image-height', 'image', 1);
+		     return img.getHeight();
 		 });
 
 
 
+EXPORTS['image->color-list'] = 
+   new PrimProc('image->color-list',
+		 1,
+		 false, false,
+		 function(img) {
+		     check(img, isImage, 'image-height', 'image', 1);
+		     var width = img.getWidth(),
+                         height = img.getHeight(),
+		         canvas = world.Kernel.makeCanvas(width, height),
+		         ctx = canvas.getContext("2d"),
+                         imageData,
+                         data,
+                         i,
+		         r, g, b, a;
+		     img.render(ctx, 0, 0);
+		     imageData = ctx.getImageData(0, 0, width, height);
+		     data = imageData.data;
+		     var colors = [];
+		     for (i = 0 ; i < data.length; i += 4) {
+			 r = data[i];
+			 g = data[i+1];
+			 b = data[i+2];
+			 a = data[i+3];
+			 // FIXME: what to do about the alpha component?
+			 colors.push(types.color(r, g, b));
+		     }
+		     return types.list(colors);
+		 });
+
+
+// EXPORTS['color-list->image'] = 
+//     new PrimProc('color-list->image',
+// 		 1,
+// 		 false, false,
+// 		 function(colors) {
+// 		     checkListOf(colors, isImage, 'image-height', 'image', 1);
+// 		     return types.VOID;
+// 		 });

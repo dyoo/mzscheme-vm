@@ -29,4 +29,6 @@
 	 text
 	 image-url
 	 image-width
-	 image-height)
+	 image-height
+
+	 image->color-list)

@@ -69,3 +69,9 @@
 	     0 0
 	     (rectangle 10 20 'solid 'blue))
 
+
+
+
+(let ([circle-color-list (image->color-list (circle 20 'solid 'green))])
+  ;; fixme: add tests for number of colors
+  (void))
