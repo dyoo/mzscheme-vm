@@ -45,7 +45,7 @@
 	 "cycles.rkt"
 	 "list.rkt"
 	 "vararity.rkt"
-         "check-error.rkt"
+	 "check-error.rkt"
 	 "vector.rkt"
 	 "struct.rkt"
 	 "arity.rkt"
@@ -55,7 +55,7 @@
 	 "seconds.rkt"
 	 "random.rkt"
 	 "identity.rkt"
-         "raise.rkt"
+	 "raise.rkt"
 	 "exn.rkt"
 	 "misc.rkt"
 	 "jsworld.rkt"
@@ -63,8 +63,10 @@
          "rotate.rkt"
 	 "more-jsworld.ss"
 	 "nested-big-bang.rkt"
-	 "movie.rkt"
-)
+	 "movie.rkt")
+
+
+
 
 
 (printf "all-tests completed\n")
