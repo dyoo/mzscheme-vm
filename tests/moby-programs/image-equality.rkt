@@ -77,6 +77,7 @@
 (check-fail-contract (lambda () (star 20 10 60 "outline" 'not-a-color)))
 (check-fail-contract (lambda () (star 20 10 60 "green" 'outline)))
 (check-fail-contract (lambda () (star 10 60 "green" 'outline 20)))
+
 (check-fail-contract (lambda () (star)))
 (check-fail-contract (lambda () (star 10)))
 (check-fail-contract (lambda () (star 10 60)))

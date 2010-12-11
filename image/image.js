@@ -16,6 +16,7 @@ world.Kernel = STATE.invokedModules["mzscheme-vm/world/kernel"].lookup("kernel")
 
 
 var PrimProc = types.PrimProc;
+var CasePrimitive = types.CasePrimitive;
 var isNumber = jsnums.isSchemeNumber;
 var isReal = jsnums.isReal;
 var isRational = jsnums.isRational;
@@ -392,43 +393,52 @@ EXPORTS['circle'] =
 
 
 EXPORTS['star'] =
-    new PrimProc('star',
-		 0,
-		 true, false,
-		 function(arguments) {
-				if(arguments.length == 5){			// implementation to match htdp/image
-				check(arguments[0], isSideCount, "star", "positive integer greater than or equal to 3", 1, arguments);
-				check(arguments[1], function(x) { return isReal(x) && jsnums.greaterThan(x, 0); },
-					  "star", "positive number", 2, arguments);
-				check(arguments[2], function(x) { return isReal(x) && jsnums.greaterThan(x, 0); },
-					  "star", "positive number", 2, arguments);
-				check(arguments[3], isMode, "star", "style", 4, arguments);
-				check(arguments[4], isColor, "star", "color", 5, arguments);
+    new CasePrimitive(
+	'star',
+	// implementation to match htdp/image
+	[new PrimProc('star',
+		      5,
+		      false, false,		      
+		      function(n, outer, inner, m, c) {
+			  check(n, isSideCount, "star", 
+				"positive integer greater than or equal to 3", 
+				1, arguments);
+			  check(outer, isNonNegativeReal, "star", 
+				"positive number", 
+				2, arguments);
+			  check(inner, 
+				isNonNegativeReal, "star",
+				"positive number", 3, arguments);
+			  check(m, isMode, "star", "style", 4, arguments);
+			  check(c, isColor, "star", "color", 5, arguments);
+			  if (colorDb.get(c)) {
+			      c = colorDb.get(c);
+			  }
+			  return world.Kernel.starImage(jsnums.toFixnum(n),
+							jsnums.toFixnum(outer),
+							jsnums.toFixnum(inner),
+							m.toString(),
+							c);
+		      }),
+	 // implementation to match 2htdp/image
+	 new PrimProc('star', 
+		      3,
+		      false, false,
+		      function(sideLength, mode, color) {
+			  check(sideLength, isNonNegativeReal,
+				"star", "non-negative number", 1, arguments);
+			  check(mode, isMode, "star", "style", 2, arguments);
+			  check(color, isColor, "star", "color", 3, arguments);
+			  if (colorDb.get(color)) {
+			      color = colorDb.get(color);
+			  }
+			  return world.Kernel.polygonImage(jsnums.toFixnum(sideLength), 
+							   jsnums.toFixnum(5), 
+							   jsnums.toFixnum(2), 
+							   mode.toString(), 
+							   color);
+		      })]);
 
-				if (colorDb.get(arguments[4])) {
-					arguments[4] = colorDb.get(arguments[4]);
-				}
-				return world.Kernel.starImage(jsnums.toFixnum(arguments[0]),
-											  jsnums.toFixnum(arguments[1]),
-											  jsnums.toFixnum(arguments[2]),
-											  arguments[3].toString(),
-											  arguments[4]);
-				 
-			} else if(arguments.length == 3){		// implementation to match 2htdp/image
-				 check(arguments[0],	isNonNegativeReal,  "star", "non-negative number", 1, arguments);
-				 check(arguments[1],	isMode,	"star", "style", 4, arguments);
-				 check(arguments[2],	isColor,	"star", "color", 5, arguments);
-				 
-				 if (colorDb.get(arguments[2])) {
-					arguments[2] = colorDb.get(arguments[2]);
-				 }
-				 return world.Kernel.polygonImage(jsnums.toFixnum(arguments[0]), 
-												  jsnums.toFixnum(5), 
-												  jsnums.toFixnum(2), 
-												  arguments[1].toString(), 
-												  arguments[2]);
-			 }
-			});
 
 
 EXPORTS['radial-star'] =
