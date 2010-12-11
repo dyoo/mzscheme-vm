@@ -587,7 +587,10 @@ EXPORTS['triangle'] =
 			if (colorDb.get(c)) {
 				c = colorDb.get(c);
 			}
-		     return world.Kernel.triangleImage(jsnums.toFixnum(s), 60, s.toString(), c);
+		     return world.Kernel.triangleImage(jsnums.toFixnum(s), 
+						       60, 
+						       m.toString(),
+						       c);
 		 });
 
 
