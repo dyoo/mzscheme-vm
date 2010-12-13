@@ -359,6 +359,12 @@
 (rhombus 100 200 "solid" "orange")
 (rhombus 80 330 "outline" "seagreen")
 
+"rhombuses beside each other"
+(beside (rhombus 40 45 "solid" "magenta")
+	(rhombus 100 200 "solid" "orange")
+	(rhombus 80 330 "outline" "seagreen"))
+
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; REGULAR-POLYGON
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -484,6 +490,13 @@
 (right-triangle 30 40 "solid" "red")
 (flip-horizontal (right-triangle 30 40 "solid" "blue"))
 (flip-vertical (right-triangle 30 40 "solid" "green"))
+
+"those three triangles beside each other"
+(beside (right-triangle 30 40 "solid" "red")
+	(flip-horizontal (right-triangle 30 40 "solid" "blue"))
+	(flip-vertical (right-triangle 30 40 "solid" "green")))
+
+
 
 "one image flipped vertically, and one flipped horizontally"
 (flip-vertical (image-url "http://racket-lang.org/logo.png"))
