@@ -298,6 +298,14 @@
 (triangle  4 "solid" "purple")
 (triangle 30 "solid" "cornflowerblue")
 
+"Triangles side by side"
+(beside (triangle 36 "solid" "darkslategray")
+        (triangle 30 "solid" "cornflowerblue"))
+
+"Triangles above."
+(above (triangle 36 "solid" "darkslategray")
+       (triangle 30 "solid" "cornflowerblue"))
+
 "Three right triangles of various sizes and fills"
 (right-triangle 36 48 "solid" "darkslategray")
 (right-triangle  4 60 "solid" "purple")
