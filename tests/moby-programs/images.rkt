@@ -185,7 +185,7 @@
 
 ;; color list
 "the following should be a blue circle, but by using color-list->image"
-(let ([circle-color-list (image->color-list (circle 20 'solid 'green))])
+(let ([circle-color-list (image->color-list (circle 20 'solid 'blue))])
   ;; fixme: add tests for number of colors
   (color-list->image circle-color-list 40 40 0 0))
 
