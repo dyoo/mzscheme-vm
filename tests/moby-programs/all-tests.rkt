@@ -62,6 +62,7 @@
 	 "location.rkt"
          "rotate.rkt"
 	 "more-jsworld.ss"
+	 "sierpinski.rkt"
 	 "nested-big-bang.rkt"
 	 "movie.rkt")
 
