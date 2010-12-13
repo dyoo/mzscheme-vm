@@ -23,7 +23,6 @@
 (let ((input (with-input-from-file "input.txt" read)))
   (time
    (let loop ((n 15000) (v 0))
-     (printf "~a\n" n)
      (if (zero? n)
          v
          (loop (- n 1) (tak 18 12 (if input 6 0)))))))
