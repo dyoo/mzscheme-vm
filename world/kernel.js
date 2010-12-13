@@ -1228,13 +1228,13 @@ TriangleImage.prototype.render = function(ctx, x, y) {
     ctx.beginPath();
 	// if angle < 180 start at the top of the canvas, otherwise start at the bottom
 	if(this.angle < 180){
-		ctx.moveTo(width/2, 0);
-		ctx.lineTo(0, height);
-		ctx.lineTo(width, height);		
+		ctx.moveTo(x+width/2, y);
+		ctx.lineTo(x, y+height);
+		ctx.lineTo(x+width, y+height);		
 	} else {
-		ctx.moveTo(width/2, height);
-		ctx.lineTo(0, 0);
-		ctx.lineTo(width, 0);				
+		ctx.moveTo(x+width/2, y+height);
+		ctx.lineTo(x, y);
+		ctx.lineTo(x+width, y);				
 	}
     ctx.closePath();
 	
