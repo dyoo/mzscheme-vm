@@ -292,7 +292,7 @@ State.prototype.setToplevelNodeHook = function(hook) {
 var captureCurrentContinuationMarks = function(state) {
     var dict = types.makeLowLevelEqHash();
     for (var i = state.cstack.length - 1; i >= 0; i--) {
-	if ( types.isContMarkRecordControl(state.cstack[i]) ) {
+	if (state.cstack[i] instanceof control.ContMarkRecordControl) {
 	    var listOfPairs = state.cstack[i].listOfPairs;
 	    while (listOfPairs !== types.EMPTY) {
 		var nextPair = listOfPairs.first;

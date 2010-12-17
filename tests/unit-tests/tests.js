@@ -1169,7 +1169,7 @@ runTest("with-cont-mark",
 		step(state);
 	    }
 	    assert.equal(state.cstack.length, 2);
-	    assert.ok( types.isContMarkRecordControl(state.cstack[0]) );
+	    assert.ok(state.cstack[0] instanceof control.ContMarkRecordControl);
 	    assert.equal(state.cstack[0].listOfPairs.first.first,
 			 types.symbol('x'));
 	    assert.equal(state.cstack[0].listOfPairs.first.rest, 

@@ -901,7 +901,7 @@ var callProcedure = function(aState, procValue, n, operandValues) {
 	    aState.cstack.push(procValue.body);
 
 	} else if (aState.cstack.length >= 2 &&
-		   types.isContMarkRecordControl(aState.cstack[aState.cstack.length - 1]) &&
+		   aState.cstack[aState.cstack.length - 1] instanceof ContMarkRecordControl &&
 		   aState.cstack[aState.cstack.length - 2] instanceof PopnControl) {
 	    // Other tail call optimzation: if there's a continuation mark frame...
 	    aState.cstack[aState.cstack.length - 2].invoke(aState);
@@ -1212,11 +1212,11 @@ WithContMarkVal.prototype.invoke = function(aState) {
     var cstack = aState.cstack;
     // Check to see if there's an existing ContMarkRecordControl
     if (cstack.length !== 0 && 
-	( types.isContMarkRecordControl(cstack[cstack.length - 1]) )) {
+	(cstack[cstack.length - 1] instanceof ContMarkRecordControl)) {
 	cstack.push(cstack.pop().update
 		    (this.key, evaluatedVal));
     } else {
-	cstack.push(types.contMarkRecordControl(
+	cstack.push(new ContMarkRecordControl(
 	    types.cons(types.cons(this.key, evaluatedVal),
 		       types.EMPTY)));
     }
@@ -1595,6 +1595,50 @@ var findPromptIndexInControlStack = function(aState, promptTag) {
 
 
 //////////////////////////////////////////////////////////////////////
+
+// Continuation Marks
+
+var ContMarkRecordControl = function(listOfPairs) {
+    this.listOfPairs = listOfPairs || types.EMPTY;
+};
+
+ContMarkRecordControl.prototype.invoke = function(state) {
+    // No-op: the record will simply pop off the control stack.
+};
+
+ContMarkRecordControl.prototype.update = function(key, val) {
+    var l = this.listOfPairs;
+    var acc;
+    while (l !== types.EMPTY) {
+	if (l.first.first === key) {
+	    // slow path: walk the list and replace with the
+	    // new key/value pair.
+	    l = this.listOfPairs;
+	    acc = types.EMPTY;
+	    while (l !== types.EMPTY) {
+		if (l.first.first === key) {
+		    acc = types.cons(types.cons(key, val), 
+				     acc);
+		} else {
+		    acc = types.cons(l.first, acc);
+		}
+		l = l.rest;
+	    }
+	    return new ContMarkRecordControl(acc);
+	}
+	l = l.rest;
+    }
+    // fast path: just return a new record with the element tacked at the
+    // front of the original list.
+    return new ContMarkRecordControl(types.cons(types.cons(key, val),
+						this.listOfPairs));
+};
+
+
+
+
+
+//////////////////////////////////////////////////////////////////////
 control.processPrefix = processPrefix;
 
 control.ConstantControl = ConstantControl;
@@ -1622,6 +1666,7 @@ control.CaseLamControl = CaseLamControl;
 control.LetRecControl = LetRecControl;
 control.CallControl = CallControl;
 control.RequireControl = RequireControl;
+control.ContMarkRecordControl = ContMarkRecordControl;
 
 
 control.PromptControl = PromptControl;
