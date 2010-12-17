@@ -44,14 +44,22 @@ var control = {};
 //////////////////////////////////////////////////////////////////////
 
 
+
+var labelCounter = 0;
+var makeLabel = function(l) {
+    return l + (labelCounter++);
+}
+
+
+
 //////////////////////////////////////////////////////////////////////
-// INTERNAL
 // Set
 // Setting stack values.
 
 var SetControl = function(depth) {
     this.depth = depth;
 };
+
 SetControl.prototype.invoke = function(aState) {
 //    debug("SET " + this.depth);
     if (aState.vstack.length - 1 - (this.depth || 0) < 0) {
@@ -62,33 +70,33 @@ SetControl.prototype.invoke = function(aState) {
 };
 
 
-//////////////////////////////////////////////////////////////////////
-// INTERNAL
-// Push a value into the nth position on the stack
 
+//////////////////////////////////////////////////////////////////////
+// Push a value into the nth position on the stack
 var PushnControl = function(n) {
     this.n = n;
 };
-PushnControl.prototype.invoke = function(state) {
-    state.pushn(this.n);
+PushnControl.prototype.invoke = function(aState) {
+    aState.pushn(this.n);
 };
 
 
-// INTERNAL
+
 var SwapControl = function(depth) {
     this.depth = depth;
 };
 
-SwapControl.prototype.invoke = function(state) {
-//    debug("SWAP " + this.depth);
-    if (state.vstack.length - 1 - (this.depth || 0) < 0) {
+SwapControl.prototype.invoke = function(aState) {
+    if (aState.vstack.length - 1 - (this.depth || 0) < 0) {
 	throw types.internalError("vstack not long enough",
 				  state.captureCurrentContinuationMarks(aState));
     }
-    var tmp = state.vstack[state.vstack.length - 1 - (this.depth || 0)];
-    state.vstack[state.vstack.length - 1 - (this.depth || 0)] = state.v;
-    state.v = tmp;
+    var tmp = aState.vstack[aState.vstack.length - 1 - (this.depth || 0)];
+    aState.vstack[aState.vstack.length - 1 - (this.depth || 0)] = aState.v;
+    aState.v = tmp;
 };
+
+
 
 
 
@@ -98,10 +106,9 @@ var PopnControl = function(n) {
     this.n = n;
 };
 
-PopnControl.prototype.invoke = function(state) {
-    state.popn(this.n);
+PopnControl.prototype.invoke = function(aState) {
+    aState.popn(this.n);
 };
-
 
 
 
