@@ -914,10 +914,10 @@ RhombusImage.prototype.render = function(ctx, x, y) {
     ctx.save();
     ctx.beginPath();
 	// if angle < 180 start at the top of the canvas, otherwise start at the bottom
-	ctx.moveTo(this.getWidth()/2, 0);
-	ctx.lineTo(this.getWidth(), this.getHeight()/2);
-	ctx.lineTo(this.getWidth()/2, this.getHeight());
-	ctx.lineTo(0, this.getHeight()/2);
+	ctx.moveTo(x+this.getWidth()/2, y);
+	ctx.lineTo(x+this.getWidth(), y+this.getHeight()/2);
+	ctx.lineTo(x+this.getWidth()/2, y+this.getHeight());
+	ctx.lineTo(x, y+this.getHeight()/2);
     ctx.closePath();
 	
     if (this.style.toString().toLowerCase() == "outline") {
@@ -1228,13 +1228,13 @@ TriangleImage.prototype.render = function(ctx, x, y) {
     ctx.beginPath();
 	// if angle < 180 start at the top of the canvas, otherwise start at the bottom
 	if(this.angle < 180){
-		ctx.moveTo(width/2, 0);
-		ctx.lineTo(0, height);
-		ctx.lineTo(width, height);		
+		ctx.moveTo(x+width/2, y);
+		ctx.lineTo(x, y+height);
+		ctx.lineTo(x+width, y+height);		
 	} else {
-		ctx.moveTo(width/2, height);
-		ctx.lineTo(0, 0);
-		ctx.lineTo(width, 0);				
+		ctx.moveTo(x+width/2, y+height);
+		ctx.lineTo(x, y);
+		ctx.lineTo(x+width, y);				
 	}
     ctx.closePath();
 	
@@ -1279,9 +1279,9 @@ RightTriangleImage.prototype.render = function(ctx, x, y) {
     var height = this.getHeight();
     ctx.save();
     ctx.beginPath();
-    ctx.moveTo(0, this.side2);
-    ctx.lineTo(this.side1, this.side2);
-    ctx.lineTo(0, 0);
+    ctx.moveTo(x, y+this.side2);
+    ctx.lineTo(x+this.side1, y+this.side2);
+    ctx.lineTo(x, y);
     ctx.closePath();
 	
     if (this.style.toString().toLowerCase() == "outline") {

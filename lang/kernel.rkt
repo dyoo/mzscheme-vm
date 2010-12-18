@@ -23,7 +23,7 @@
 
 
 ;; definitions
-(define-syntax (-define stx)
+#;(define-syntax (-define stx)
   ;; FIXME: restrict define since we don't yet support keywords
   (syntax-case stx ()
     [(_ x ...)
@@ -78,7 +78,8 @@
                               #'an-impl-name]))
                          (syntax->list #'(name-or-name-pair ...)))])
        (syntax/loc stx
-         (begin (begin (define (provided-name . args) 
+         (begin (begin #;(provide (rename-out (impl-name provided-name)))
+                       (define (provided-name . args) 
                          (racket:apply impl-name args))
                        (provide provided-name))
                 ...)))]))
@@ -93,7 +94,7 @@
                      (#%app #%app)
                      (#%top-interaction #%top-interaction)
                      (#%top #%top)
-                     (-define define)
+                     (define define)
                      (define-values define-values)
                      (let-values let-values)
                      (let*-values let*-values)

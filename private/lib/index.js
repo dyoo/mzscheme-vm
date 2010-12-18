@@ -9,7 +9,6 @@ var state = require('./state');
 exports.State = state.State;
 exports.Prefix = interpret.Prefix;
 exports.VariableReference = types.VariableReference;
-exports.ContMarkRecordControl = interpret.ContMarkRecordControl;
 exports.load = interpret.load;
 exports.step = interpret.step;
 exports.run = interpret.run;

@@ -185,7 +185,7 @@
 
 ;; color list
 "the following should be a blue circle, but by using color-list->image"
-(let ([circle-color-list (image->color-list (circle 20 'solid 'green))])
+(let ([circle-color-list (image->color-list (circle 20 'solid 'blue))])
   ;; fixme: add tests for number of colors
   (color-list->image circle-color-list 40 40 0 0))
 
@@ -298,6 +298,14 @@
 (triangle  4 "solid" "purple")
 (triangle 30 "solid" "cornflowerblue")
 
+"Triangles side by side"
+(beside (triangle 36 "solid" "darkslategray")
+        (triangle 30 "solid" "cornflowerblue"))
+
+"Triangles above."
+(above (triangle 36 "solid" "darkslategray")
+       (triangle 30 "solid" "cornflowerblue"))
+
 "Three right triangles of various sizes and fills"
 (right-triangle 36 48 "solid" "darkslategray")
 (right-triangle  4 60 "solid" "purple")
@@ -350,6 +358,12 @@
 (rhombus 40 45 "solid" "magenta")
 (rhombus 100 200 "solid" "orange")
 (rhombus 80 330 "outline" "seagreen")
+
+"rhombuses beside each other"
+(beside (rhombus 40 45 "solid" "magenta")
+	(rhombus 100 200 "solid" "orange")
+	(rhombus 80 330 "outline" "seagreen"))
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; REGULAR-POLYGON
@@ -476,6 +490,13 @@
 (right-triangle 30 40 "solid" "red")
 (flip-horizontal (right-triangle 30 40 "solid" "blue"))
 (flip-vertical (right-triangle 30 40 "solid" "green"))
+
+"those three triangles beside each other"
+(beside (right-triangle 30 40 "solid" "red")
+	(flip-horizontal (right-triangle 30 40 "solid" "blue"))
+	(flip-vertical (right-triangle 30 40 "solid" "green")))
+
+
 
 "one image flipped vertically, and one flipped horizontally"
 (flip-vertical (image-url "http://racket-lang.org/logo.png"))

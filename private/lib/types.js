@@ -1828,46 +1828,6 @@ VariableReference.prototype.set = function(v) {
     this.prefix.set(this.pos, v);
 }
 
-//////////////////////////////////////////////////////////////////////
-
-// Continuation Marks
-
-var ContMarkRecordControl = function(listOfPairs) {
-    this.listOfPairs = listOfPairs || types.EMPTY;
-};
-
-ContMarkRecordControl.prototype.invoke = function(state) {
-    // No-op: the record will simply pop off the control stack.
-};
-
-ContMarkRecordControl.prototype.update = function(key, val) {
-    var l = this.listOfPairs;
-    var acc;
-    while (l !== types.EMPTY) {
-	if (l.first.first === key) {
-	    // slow path: walk the list and replace with the
-	    // new key/value pair.
-	    l = this.listOfPairs;
-	    acc = types.EMPTY;
-	    while (l !== types.EMPTY) {
-		if (l.first.first === key) {
-		    acc = types.cons(types.cons(key, val), 
-				     acc);
-		} else {
-		    acc = types.cons(l.first, acc);
-		}
-		l = l.rest;
-	    }
-	    return new ContMarkRecordControl(acc);
-	}
-	l = l.rest;
-    }
-    // fast path: just return a new record with the element tacked at the
-    // front of the original list.
-    return new ContMarkRecordControl(types.cons(types.cons(key, val),
-						this.listOfPairs));
-};
-
 
 
 var ContinuationMarkSet = function(dict) {
@@ -2335,8 +2295,6 @@ types.isInternalCall = function(x) { return (x instanceof INTERNAL_CALL); };
 types.internalPause = function(onPause) { return new INTERNAL_PAUSE(onPause) };
 types.isInternalPause = function(x) { return (x instanceof INTERNAL_PAUSE); };
 
-types.contMarkRecordControl = function(dict) { return new ContMarkRecordControl(dict); };
-types.isContMarkRecordControl = function(x) { return x instanceof ContMarkRecordControl; };
 types.continuationMarkSet = function(dict) { return new ContinuationMarkSet(dict); };
 types.isContinuationMarkSet = function(x) { return x instanceof ContinuationMarkSet; };
 types.isContinuationPromptTag = function(x) { return x instanceof ContinuationPromptTag; };

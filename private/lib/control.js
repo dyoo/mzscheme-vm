@@ -44,14 +44,22 @@ var control = {};
 //////////////////////////////////////////////////////////////////////
 
 
+
+var labelCounter = 0;
+var makeLabel = function(l) {
+    return l + (labelCounter++);
+}
+
+
+
 //////////////////////////////////////////////////////////////////////
-// INTERNAL
 // Set
 // Setting stack values.
 
 var SetControl = function(depth) {
     this.depth = depth;
 };
+
 SetControl.prototype.invoke = function(aState) {
 //    debug("SET " + this.depth);
     if (aState.vstack.length - 1 - (this.depth || 0) < 0) {
@@ -62,33 +70,33 @@ SetControl.prototype.invoke = function(aState) {
 };
 
 
-//////////////////////////////////////////////////////////////////////
-// INTERNAL
-// Push a value into the nth position on the stack
 
+//////////////////////////////////////////////////////////////////////
+// Push a value into the nth position on the stack
 var PushnControl = function(n) {
     this.n = n;
 };
-PushnControl.prototype.invoke = function(state) {
-    state.pushn(this.n);
+PushnControl.prototype.invoke = function(aState) {
+    aState.pushn(this.n);
 };
 
 
-// INTERNAL
+
 var SwapControl = function(depth) {
     this.depth = depth;
 };
 
-SwapControl.prototype.invoke = function(state) {
-//    debug("SWAP " + this.depth);
-    if (state.vstack.length - 1 - (this.depth || 0) < 0) {
+SwapControl.prototype.invoke = function(aState) {
+    if (aState.vstack.length - 1 - (this.depth || 0) < 0) {
 	throw types.internalError("vstack not long enough",
 				  state.captureCurrentContinuationMarks(aState));
     }
-    var tmp = state.vstack[state.vstack.length - 1 - (this.depth || 0)];
-    state.vstack[state.vstack.length - 1 - (this.depth || 0)] = state.v;
-    state.v = tmp;
+    var tmp = aState.vstack[aState.vstack.length - 1 - (this.depth || 0)];
+    aState.vstack[aState.vstack.length - 1 - (this.depth || 0)] = aState.v;
+    aState.v = tmp;
 };
+
+
 
 
 
@@ -98,10 +106,9 @@ var PopnControl = function(n) {
     this.n = n;
 };
 
-PopnControl.prototype.invoke = function(state) {
-    state.popn(this.n);
+PopnControl.prototype.invoke = function(aState) {
+    aState.popn(this.n);
 };
-
 
 
 
@@ -901,7 +908,7 @@ var callProcedure = function(aState, procValue, n, operandValues) {
 	    aState.cstack.push(procValue.body);
 
 	} else if (aState.cstack.length >= 2 &&
-		   types.isContMarkRecordControl(aState.cstack[aState.cstack.length - 1]) &&
+		   aState.cstack[aState.cstack.length - 1] instanceof ContMarkRecordControl &&
 		   aState.cstack[aState.cstack.length - 2] instanceof PopnControl) {
 	    // Other tail call optimzation: if there's a continuation mark frame...
 	    aState.cstack[aState.cstack.length - 2].invoke(aState);
@@ -1212,11 +1219,11 @@ WithContMarkVal.prototype.invoke = function(aState) {
     var cstack = aState.cstack;
     // Check to see if there's an existing ContMarkRecordControl
     if (cstack.length !== 0 && 
-	( types.isContMarkRecordControl(cstack[cstack.length - 1]) )) {
+	(cstack[cstack.length - 1] instanceof ContMarkRecordControl)) {
 	cstack.push(cstack.pop().update
 		    (this.key, evaluatedVal));
     } else {
-	cstack.push(types.contMarkRecordControl(
+	cstack.push(new ContMarkRecordControl(
 	    types.cons(types.cons(this.key, evaluatedVal),
 		       types.EMPTY)));
     }
@@ -1595,6 +1602,50 @@ var findPromptIndexInControlStack = function(aState, promptTag) {
 
 
 //////////////////////////////////////////////////////////////////////
+
+// Continuation Marks
+
+var ContMarkRecordControl = function(listOfPairs) {
+    this.listOfPairs = listOfPairs || types.EMPTY;
+};
+
+ContMarkRecordControl.prototype.invoke = function(state) {
+    // No-op: the record will simply pop off the control stack.
+};
+
+ContMarkRecordControl.prototype.update = function(key, val) {
+    var l = this.listOfPairs;
+    var acc;
+    while (l !== types.EMPTY) {
+	if (l.first.first === key) {
+	    // slow path: walk the list and replace with the
+	    // new key/value pair.
+	    l = this.listOfPairs;
+	    acc = types.EMPTY;
+	    while (l !== types.EMPTY) {
+		if (l.first.first === key) {
+		    acc = types.cons(types.cons(key, val), 
+				     acc);
+		} else {
+		    acc = types.cons(l.first, acc);
+		}
+		l = l.rest;
+	    }
+	    return new ContMarkRecordControl(acc);
+	}
+	l = l.rest;
+    }
+    // fast path: just return a new record with the element tacked at the
+    // front of the original list.
+    return new ContMarkRecordControl(types.cons(types.cons(key, val),
+						this.listOfPairs));
+};
+
+
+
+
+
+//////////////////////////////////////////////////////////////////////
 control.processPrefix = processPrefix;
 
 control.ConstantControl = ConstantControl;
@@ -1622,6 +1673,7 @@ control.CaseLamControl = CaseLamControl;
 control.LetRecControl = LetRecControl;
 control.CallControl = CallControl;
 control.RequireControl = RequireControl;
+control.ContMarkRecordControl = ContMarkRecordControl;
 
 
 control.PromptControl = PromptControl;
