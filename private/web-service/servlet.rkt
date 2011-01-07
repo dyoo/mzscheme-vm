@@ -38,7 +38,6 @@
 (define (parse-compilation-request request)
   (define (lookup name)
     (extract-binding/single name (request-bindings request)))
-  
   (let ([name
          (lookup 'name)]
         [text
@@ -92,24 +91,17 @@
 
 ;; handle-json-exception-response: exn -> response
 (define (handle-jsonp-exception-response request exn)
-  (case (compiler-version request)
-    [(0)
-     (let-values ([(response output-port) (make-port-response #:mime-type #"text/plain")])
-       (let ([payload
-              (format "~a(~a);\n" (extract-binding/single 'on-error (request-bindings request))
-                      (sexp->js (exn-message exn)))])
-         (fprintf output-port "~a" payload)
+  (let-values ([(response output-port) 
+                (make-port-response #:mime-type #"text/plain")])
+    (let ([payload
+           (format "~a(~a);\n" 
+                   (extract-binding/single 
+                    'on-error (request-bindings request))
+                   (sexp->js (exn-message exn)))])
+      (fprintf output-port "~a" payload)
          (close-output-port output-port)
-         response))]
-    [(1)
-     (let-values ([(response output-port) (make-port-response #:mime-type #"text/plain")])
-       (let ([payload
-              (format "~a(~a);\n" (extract-binding/single 'on-error (request-bindings request))
-                      #;(jsexpr->json (exn->json-structured-output exn)))])
-         (fprintf output-port "~a" payload)
-         (close-output-port output-port)
-         response))]))
-     
+      response)))
+
 
 
 ;; exn->structured-output: exception -> jsexpr
@@ -176,7 +168,8 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; non jsonp stuff: use with xmlhttprequest
 (define (handle-regular-response request program-name program-input-port)
-  (let-values  ([(response output-port) (make-port-response #:mime-type #"text/plain")])
+  (let-values  ([(response output-port) 
+                 (make-port-response #:mime-type #"text/plain")])
     (display "(" output-port)
     #;(compile/port program-input-port output-port #:name program-name)
     (display ")" output-port)
@@ -186,22 +179,12 @@
 
 ;; handle-exception-response: exn -> response
 (define (handle-exception-response request exn)
-  (case (compiler-version request)
-    [(0)
-     (make-response/full 500 
-                         #"Internal Server Error"
-                         (current-seconds)
-                         #"application/octet-stream"
-                         (list)
-                         (list (string->bytes/utf-8 (exn-message exn))))]
-    [(1)
-     (make-response/full 500 
-                         #"Internal Server Error"
-                         (current-seconds)
-                         #"application/octet-stream"
-                         (list)
-                         (list (string->bytes/utf-8 
-                                #;(jsexpr->json (exn->json-structured-output exn)))))]))
+  (make-response/full 500 
+                      #"Internal Server Error"
+                      (current-seconds)
+                      #"application/octet-stream"
+                      (list)
+                      (list (string->bytes/utf-8 (exn-message exn)))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
