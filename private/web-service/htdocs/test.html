@@ -6,14 +6,19 @@
     </script>
 
     <script>
-      var rpc = new easyXDM.Rpc({remote: "provider.html"},
-      {
-      local: {compile : function(version, name, lang, text) {}},
-      remote: { compile : {}}});
+    var rpc = new easyXDM.Rpc(
+	{ remote: "provider.html" },
+	{
+	    local: {compile : function(version, name, lang, text) {}},
+	    remote: { compile : {}}});
 
       rpc.compile('1', 'my program',  'wescheme', '(printf "Hello world!\n")',
                   function(response) {
-                       alert(response);
+                       console.log("I see a good response");
+                       console.log(response);
+                  },
+                  function(error) {
+                       alert(error.message);
                   });
 </script>
 <body>
