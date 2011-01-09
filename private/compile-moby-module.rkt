@@ -7,6 +7,7 @@
          "module-record.rkt"
          "collect-unimplemented-primvals.rkt"
          "path-helpers.rkt"
+         "get-interaction-bytecode.rkt"
          (prefix-in permissions: "../permissions/query.rkt")
          (prefix-in js-impl: "../lang/js-impl/query.rkt")
          (prefix-in js-conditional: "../lang/js-conditional/query.rkt")
@@ -51,7 +52,7 @@
                    (path? . -> . (listof module-record?))]
 
                   [compile-module
-                   (path? . -> . module-record?)])
+                   (path? path? . -> . module-record?)])
 
 
 ;; compile-module-modules: path -> (listof module-record)
@@ -93,7 +94,7 @@
          '()]
         [else
          (let* ([translated-compilation-top
-                 (lookup&parse a-path)]
+                 (lookup&parse-module a-path)]
                 [neighbors 
                  (get-module-phase-0-requires
                   translated-compilation-top a-path)])
@@ -128,7 +129,7 @@
 
 ;; compile-js-conditional-module: path path -> module-record
 (define (compile-js-conditional-module a-path main-module-path)
-  (let* ([translated-compilation-top (lookup&parse a-path)]
+  (let* ([translated-compilation-top (lookup&parse-module a-path)]
          [exports (collect-provided-names translated-compilation-top)])
     (make-js-module-record (munge-resolved-module-path-to-symbol a-path main-module-path)
                            a-path
@@ -141,7 +142,7 @@
 ;; compile-plain-racket-module: path main-module-path -> module-record
 (define (compile-plain-racket-module a-path main-module-path)
   (let* ([translated-compilation-top
-          (lookup&parse a-path)]
+          (lookup&parse-module a-path)]
          [translated-jsexp
           (translate-top 
            (rewrite-module-locations/compilation-top translated-compilation-top
@@ -165,6 +166,26 @@
                                      (module-neighbors a-path)))
                         permissions
                         unimplemented-primvals)))
+
+
+;; compile-interaction: path input-port -> interaction-record
+(define (compile-interaction lang inp)
+  (let* ([stx (read-syntax #f inp)]
+         [bytecode-bytes (get-interaction-bytecode stx
+                                                   #:language-module lang)]
+         [translated-compilation-top
+          (translate-compilation-top 
+           (internal:zo-parse 
+            (open-input-bytes bytecode-bytes)))]
+         [translated-jsexp
+          (translate-top
+           translated-compilation-top)]
+         [translated-program
+          (jsexp->js translated-jsexp)])
+    (make-interaction-record translated-program)))
+
+
+
 
 ;; negate: (X -> boolean) -> (X -> boolean)
 ;; Negates a predicate.
@@ -243,7 +264,7 @@
                   result)))))
 
 ;; lookup&parse: path -> compilation-top
-(define lookup&parse
+(define lookup&parse-module
   (memoize/parameter
    compilation-top-cache
    (lambda (a-path)

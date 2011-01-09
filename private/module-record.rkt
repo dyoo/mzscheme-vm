@@ -14,7 +14,7 @@
 
 
 ;; An interaction-record is a compiled interaction.
-(define-struct interaction-record (lang impl))
+(define-struct interaction-record (impl) #:transparent)
 
 
 
@@ -34,7 +34,6 @@
                                            (permissions (listof string?))
                                            (unimplemented-primval-references (listof symbol?))]]
  
- [struct interaction-record [(lang symbol?)
-                             (impl string?)]])
+ [struct interaction-record [(impl string?)]])
 
 
