@@ -3,6 +3,8 @@
 (require web-server/servlet
          web-server/servlet-env
          racket/runtime-path
+         racket/match
+         racket/bool
          "port-response.rkt"
          "json.rkt")
 
@@ -12,7 +14,7 @@
 ;;
 ;; Parameters
 ;;
-;;    version  (one-of v1)
+;;    version  (one-of "1")
 ;;    name
 ;;    text
 ;;    lang  [optional]
@@ -39,28 +41,59 @@
 
 ;; parse-compilation-request: request -> compilation-request
 (define (parse-compilation-request request)
+  ;; lookup: string -> (or string #f)
   (define (lookup name)
-    (extract-binding/single name (request-bindings request)))
+    (cond [(exists-binding? name (request-bindings request))
+           (extract-binding/single name (request-bindings request))]
+          [else
+           #f]))
   (let ([version (lookup 'version)]
         [name (lookup 'name)]
         [lang (lookup 'lang)]
         [text (lookup 'text)])
+    ;; TODO: check validity of the compilation request.
     (make-compilation-request version name lang text)))
+
 
 
 ;; handle-regular-response: compilation-request -> response
 ;; Returns a response that contains JSON for the compiled program.
 (define (handle-regular-response a-compilation-request)
-  (let-values  ([(response output-port) 
-                 (make-port-response #:mime-type #"text/plain")])
-    (write-json (make-hash `(("type" . "something")
-                             ("compiled-program" . "something else")))
-                output-port)
-    ;(display "(" output-port)
-    ;#;(compile/port program-input-port output-port #:name program-name)
-    ;(display ")" output-port)
-    (close-output-port output-port)
-    response))
+  (cond
+    [(string=? (compilation-request-version a-compilation-request)
+               "1")
+     (compile-1 a-compilation-request)]
+    [else
+     (error 'compiler "Unknown version ~e" 
+            (compilation-request-version a-compilation-request))]))
+
+
+(define (compile-1 a-compilation-request)
+  
+  (match a-compilation-request
+    [(struct compilation-request (version name lang text))
+     (let-values  ([(response output-port) 
+                    (make-port-response #:mime-type #"text/plain")])
+       ;;;
+       ;; compile-interaction: -> void
+       (define (compile-interaction)
+         (write-json (make-hash `(("type" . "interaction")
+                                  ("code" . "something else")))
+                     output-port))
+       
+       ;; compile-moodule: -> void
+       (define (compile-module)
+         (write-json (make-hash `(("type" . "module")
+                                  ("code" . "something else")))
+                     output-port))
+       ;;;;
+       
+       (cond [(false? lang)
+              (compile-module)]
+             [else
+              (compile-interaction)])
+       (close-output-port output-port)
+       response)]))
 
 
 

@@ -31,10 +31,16 @@ var installProvider = function() {
 			    }
 			}
 		    };
-		    request.send(encodeHash({ version: version,
-					      name: name,
-					      lang: lang,
-					      text: text }));
+		    if (lang) {
+			request.send(encodeHash({ version: version,
+						  name: name,
+						  lang: lang,
+						  text: text }));
+		    } else {
+			request.send(encodeHash({ version: version,
+						  name: name,
+						  text: text }));
+		    }
 		}
 	    },
 	    remote: {}

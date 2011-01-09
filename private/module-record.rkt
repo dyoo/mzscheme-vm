@@ -11,6 +11,13 @@
 ;; its definitions.
 (define-struct (js-module-record module-record) () #:transparent)
 
+
+
+;; An interaction-record is a compiled interaction.
+(define-struct interaction-record (lang impl))
+
+
+
 (provide/contract 
  [struct module-record [(name symbol?)
                         (path path?)
@@ -25,6 +32,9 @@
                                            (provides (listof symbol?))
                                            (requires (listof symbol?))
                                            (permissions (listof string?))
-                                           (unimplemented-primval-references (listof symbol?))]])
+                                           (unimplemented-primval-references (listof symbol?))]]
+ 
+ [struct interaction-record [(lang symbol?)
+                             (impl string?)]])
 
 

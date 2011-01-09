@@ -48,7 +48,10 @@
 
 
 (provide/contract [compile-moby-modules
-                   (path? . -> . (listof module-record?))])
+                   (path? . -> . (listof module-record?))]
+
+                  [compile-module
+                   (path? . -> . module-record?)])
 
 
 ;; compile-module-modules: path -> (listof module-record)
@@ -64,13 +67,13 @@
           [(empty? to-visit)
            module-records]
           [(ormap (lambda (p)
-                    (same-path? p (first to-visit)))
+                    (same-module-record-path? p (first to-visit)))
                   visited-paths)
            (loop (rest to-visit)
                  module-records
                  visited-paths)]
           [else
-           (let* ([record (compile-moby-module 
+           (let* ([record (compile-module 
                            (first to-visit) 
                            (normalize-path main-module-path))]
                   [neighbors (filter-already-visited-modules+hardcodeds
@@ -79,6 +82,7 @@
              (loop (append neighbors (rest to-visit))
                    (cons record module-records)
                    (cons (module-record-path record) visited-paths)))])))))
+
 
 
 
@@ -96,58 +100,71 @@
            neighbors)]))
 
 
-;; compile-moby-module: path path -> module-record
-(define (compile-moby-module a-path main-module-path)
+;; compile-module: path path -> module-record
+(define (compile-module a-path main-module-path)
   (cond
     [(looks-like-js-implemented-module? a-path)
      =>
      (lambda (a-js-impl-record)
-       (make-js-module-record (munge-resolved-module-path-to-symbol a-path main-module-path)
-                              a-path
-                              (apply string-append (js-impl:js-module-impls a-js-impl-record))
-                              (js-impl:js-module-exports a-js-impl-record)
-                              (map (lambda (a-path) 
-                                     (munge-resolved-module-path-to-symbol a-path main-module-path)) 
-                                   (filter (negate known-hardcoded-module-path?) 
-                                           (module-neighbors a-path)))
-                              '()
-                              '()))]
+       (compile-js-implementation a-path main-module-path a-js-impl-record))]
     [(looks-like-js-conditional-module? a-path)
-     (let* ([translated-compilation-top (lookup&parse a-path)]
-            [exports (collect-provided-names translated-compilation-top)])
-       (make-js-module-record (munge-resolved-module-path-to-symbol a-path main-module-path)
-                              a-path
-                              (js-conditional:query `(file ,(path->string a-path)))
-                              exports
-                              (list)
-                              (list)
-                              (list)))]
+     (compile-js-conditional-module a-path main-module-path)]
     [else
-     (let* ([translated-compilation-top
-             (lookup&parse a-path)]
-            [translated-jsexp
-             (translate-top 
-              (rewrite-module-locations/compilation-top translated-compilation-top
-                                                        a-path
-                                                        main-module-path))]
-            [translated-program
-             (jsexp->js translated-jsexp)]
-            [unimplemented-primvals
-             (collect-unimplemented-primvals translated-jsexp)]
-            [permissions
-             (permissions:query `(file ,(path->string a-path)))]
-            [provides
-             (collect-provided-names translated-compilation-top)])
-       (make-module-record (munge-resolved-module-path-to-symbol a-path main-module-path)
+     (compile-plain-racket-module a-path main-module-path)]))
+
+;; compile-js-implementation: path path -> module-record
+(define (compile-js-implementation a-path main-module-path a-js-impl-record)
+  (make-js-module-record 
+   (munge-resolved-module-path-to-symbol a-path main-module-path)
+   a-path
+   (apply string-append (js-impl:js-module-impls a-js-impl-record))
+   (js-impl:js-module-exports a-js-impl-record)
+   (map (lambda (a-path) 
+          (munge-resolved-module-path-to-symbol a-path main-module-path)) 
+        (filter (negate known-hardcoded-module-path?) 
+                (module-neighbors a-path)))
+   '()
+   '()))
+
+;; compile-js-conditional-module: path path -> module-record
+(define (compile-js-conditional-module a-path main-module-path)
+  (let* ([translated-compilation-top (lookup&parse a-path)]
+         [exports (collect-provided-names translated-compilation-top)])
+    (make-js-module-record (munge-resolved-module-path-to-symbol a-path main-module-path)
                            a-path
-                           translated-program 
-                           provides
-                           (map (lambda (a-path) 
-                                  (munge-resolved-module-path-to-symbol a-path main-module-path)) 
-                                (filter (negate known-hardcoded-module-path?)
-                                        (module-neighbors a-path)))
-                           permissions
-                           unimplemented-primvals))]))
+                           (js-conditional:query `(file ,(path->string a-path)))
+                           exports
+                           (list)
+                           (list)
+                           (list))))
+
+;; compile-plain-racket-module: path main-module-path -> module-record
+(define (compile-plain-racket-module a-path main-module-path)
+  (let* ([translated-compilation-top
+          (lookup&parse a-path)]
+         [translated-jsexp
+          (translate-top 
+           (rewrite-module-locations/compilation-top translated-compilation-top
+                                                     a-path
+                                                     main-module-path))]
+         [translated-program
+          (jsexp->js translated-jsexp)]
+         [unimplemented-primvals
+          (collect-unimplemented-primvals translated-jsexp)]
+         [permissions
+          (permissions:query `(file ,(path->string a-path)))]
+         [provides
+          (collect-provided-names translated-compilation-top)])
+    (make-module-record (munge-resolved-module-path-to-symbol a-path main-module-path)
+                        a-path
+                        translated-program 
+                        provides
+                        (map (lambda (a-path) 
+                               (munge-resolved-module-path-to-symbol a-path main-module-path)) 
+                             (filter (negate known-hardcoded-module-path?)
+                                     (module-neighbors a-path)))
+                        permissions
+                        unimplemented-primvals)))
 
 ;; negate: (X -> boolean) -> (X -> boolean)
 ;; Negates a predicate.
@@ -171,7 +188,7 @@
   (let ([result
          (filter (lambda (p1)
                    (cond
-                     [(findf (lambda (p2) (same-path? p1 p2)) visited-paths)
+                     [(findf (lambda (p2) (same-module-record-path? p1 p2)) visited-paths)
                       #f]
                      [(known-hardcoded-module-path? p1)
                       #f]
@@ -194,17 +211,17 @@
                hardcoded-js-impl-path
                hardcoded-js-conditional-path)])
     (ormap (lambda (h)
-             (same-path? p h))
+             (same-module-record-path? p h))
            hardcoded-modules)))
 
 
-  
+
 
 
 
 ;; same-path?: path path -> boolean
 ;; Produces true if both paths are pointing to the same file.
-(define (same-path? p1 p2)
+(define (same-module-record-path? p1 p2)
   (= (file-or-directory-identity p1)
      (file-or-directory-identity p2)))
 
@@ -372,8 +389,8 @@ letter, digit, -, +, or _.
      a-toplevel]
     [(module-variable? a-toplevel)
      (rewrite-module-locations/module-variable a-toplevel self-path main-module-path)]))
-  
-          
+
+
 (define (rewrite-module-locations/module-variable a-module-variable self-path main-module-path)
   (match a-module-variable
     [(struct module-variable (modidx sym pos phase))
@@ -390,32 +407,32 @@ letter, digit, -, +, or _.
       [(symbol? resolved-path)
        a-modidx]
       
-      [(same-path? resolved-path hardcoded-moby-kernel-path)
+      [(same-module-record-path? resolved-path hardcoded-moby-kernel-path)
        ;; rewrite to a (possibly fictional) collection named moby/moby-lang
        ;; The runtime will recognize this collection.
        (module-path-index-join 'moby/kernel
                                (module-path-index-join #f #f))]
-      [(same-path? resolved-path hardcoded-moby-paramz-path)
+      [(same-module-record-path? resolved-path hardcoded-moby-paramz-path)
        ;; rewrite to a (possibly fictional) collection named moby/paramz
        ;; The runtime will recognize this collection.
        (module-path-index-join 'moby/paramz
                                (module-path-index-join #f #f))]
-
-      [(same-path? resolved-path hardcoded-js-impl-path)
+      
+      [(same-module-record-path? resolved-path hardcoded-js-impl-path)
        ;; rewrite to a (possibly fictional) collection named moby/js-impl
        ;; The runtime will recognize this collection.
        (module-path-index-join 'moby/js-impl
                                (module-path-index-join #f #f))]
-      [(same-path? resolved-path hardcoded-js-conditional-path)
+      [(same-module-record-path? resolved-path hardcoded-js-conditional-path)
        (module-path-index-join 'moby/js-conditional
                                (module-path-index-join #f #f))]
       
       ;; KLUDGE!!! We should NOT be reusing the private implementation of module
       ;; begin.  I have to fix this as soon as I have time and priority.
-      [(same-path? resolved-path racket-private-modbeg-path)
+      [(same-module-record-path? resolved-path racket-private-modbeg-path)
        (module-path-index-join 'moby/kernel
                                (module-path-index-join #f #f))]
-                   
+      
       [else
        (let* ([renamed-path-symbol 
                (munge-resolved-module-path-to-symbol resolved-path main-module-path)])
@@ -463,7 +480,7 @@ letter, digit, -, +, or _.
                     src-phase 
                     protected? 
                     insp)]))
-                                          
+
 
 
 
