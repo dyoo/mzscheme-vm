@@ -20,6 +20,11 @@
              (encode-module-record r))))
 
 
+(define (encode-interaction-record r)
+  (format "{ type: 'interaction', bytecode : ~a }"
+          (interaction-record-impl r)))
+
+
 ;; encode-module-record: module-record path -> string
 (define (encode-module-record r)
   (when (not (empty? (module-record-unimplemented-primval-references r)))
@@ -29,14 +34,14 @@
              (module-record-unimplemented-primval-references r))))
   (cond
     [(js-module-record? r)
-     (format "{ name: ~s, provides : ~a, requires: ~a, jsImplementation : (function(STATE, EXPORTS){ (function() { ~a })() }), permissions: ~a }"
+     (format "{ type: 'js-module-record', name: ~s, provides : ~a, requires: ~a, jsImplementation : (function(STATE, EXPORTS){ (function() { ~a })() }), permissions: ~a }"
              (symbol->string (module-record-name r))
              (jsexpr->json  (map symbol->string (module-record-provides r)))
              (jsexpr->json  (map symbol->string (module-record-requires r)))
              (module-record-impl r)
              (jsexpr->json (module-record-permissions r)))]
     [else
-     (format "{ name: ~s, provides : ~a, requires: ~a, bytecode : ~a, permissions: ~a }"
+     (format "{ type: 'module-record', name: ~s, provides : ~a, requires: ~a, bytecode : ~a, permissions: ~a }"
              (symbol->string (module-record-name r))
              (jsexpr->json  (map symbol->string (module-record-provides r)))
              (jsexpr->json  (map symbol->string (module-record-requires r)))
@@ -47,4 +52,6 @@
  [write-module-records
   (((listof module-record?) output-port?) (#:assign-into string?) . ->* . any)]
  [encode-module-record
-  (module-record? . -> . string?)])
+  (module-record? . -> . string?)]
+ [encode-interaction-record
+  (interaction-record? . -> . string?)])

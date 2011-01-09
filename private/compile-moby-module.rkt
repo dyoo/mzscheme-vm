@@ -52,7 +52,9 @@
                    (path? . -> . (listof module-record?))]
 
                   [compile-module
-                   (path? path? . -> . module-record?)])
+                   (path? path? . -> . module-record?)]
+                  [compile-interaction
+                   (module-path? any/c . -> . interaction-record?)])
 
 
 ;; compile-module-modules: path -> (listof module-record)
@@ -169,9 +171,8 @@
 
 
 ;; compile-interaction: path input-port -> interaction-record
-(define (compile-interaction lang inp)
-  (let* ([stx (read-syntax #f inp)]
-         [bytecode-bytes (get-interaction-bytecode stx
+(define (compile-interaction lang stx)
+  (let* ([bytecode-bytes (get-interaction-bytecode stx
                                                    #:language-module lang)]
          [translated-compilation-top
           (translate-compilation-top 

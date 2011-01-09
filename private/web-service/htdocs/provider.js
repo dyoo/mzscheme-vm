@@ -25,6 +25,8 @@ var installProvider = function() {
 		    request.onreadystatechange = function() {
 			if (request.readyState === 4) {
 			    if (request.status === 200) {
+				console.log("response text is", request.responseText)
+
 				onSuccess(JSON.parse(request.responseText));
 			    } else {
 				onError(request.responseText);

@@ -5,6 +5,8 @@
          racket/runtime-path
          racket/match
          racket/bool
+         "../write-module-records.rkt"
+         "../compile-moby-module.rkt"
          "port-response.rkt"
          "json.rkt")
 
@@ -76,22 +78,26 @@
                     (make-port-response #:mime-type #"text/plain")])
        ;;;
        ;; compile-interaction: -> void
-       (define (compile-interaction)
-         (write-json (make-hash `(("type" . "interaction")
-                                  ("code" . "something else")))
-                     output-port))
+       (define (for-interaction)
+         (let* ([stx
+                 (read-syntax name (open-input-string text))]
+                [interaction-record (compile-interaction 
+                                     'racket ;; fixme: choose the right language!
+                                     stx)]
+                [code (encode-interaction-record interaction-record)])
+           (fprintf output-port 
+                    "{\"type\":\"interaction\", \"code\":~s}"
+                    code)))
        
-       ;; compile-moodule: -> void
-       (define (compile-module)
-         (write-json (make-hash `(("type" . "module")
-                                  ("code" . "something else")))
-                     output-port))
+       ;; compile-module: -> void
+       (define (for-module)
+         (fprintf output-port "({\"type\":\"module\", \"code\":'???'})"))
        ;;;;
        
        (cond [(false? lang)
-              (compile-module)]
+              (for-module)]
              [else
-              (compile-interaction)])
+              (for-interaction)])
        (close-output-port output-port)
        response)]))
 
