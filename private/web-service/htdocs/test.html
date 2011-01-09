@@ -12,17 +12,25 @@
 	    local: {compile : function(version, name, lang, text) {}},
 	    remote: { compile : {}}});
 
-      rpc.compile('1',
-                  'my program',
-                  'wescheme',
-                  '(printf "Hello world!\n")',
-                  function(response) {
-                       console.log(response);
-                  },
-                  function(error) {
-                       alert(error.message);
-                  });
+
+    var doCompilation = function() {
+        rpc.compile('1',
+                    'my program',
+                    'wescheme',
+                    document.getElementById("textarea").value,
+                    function(response) {
+                         console.log(response.code);
+                    },
+                    function(error) {
+                         alert(error.message);
+                    });
+
+    };
 </script>
 <body>
+<textarea id="textarea">
+(printf "Hello world!\n")
+</textarea>
+<input type="button" value="compile" onclick="doCompilation()">
 </body>
 </html>
