@@ -52,7 +52,7 @@
                    (path? . -> . (listof module-record?))]
 
                   [compile-module
-                   (path? path? . -> . module-record?)]
+                   (path? path? compilation-top? . -> . module-record?)]
                   [compile-interaction
                    (module-path? any/c . -> . interaction-record?)])
 
@@ -96,7 +96,7 @@
          '()]
         [else
          (let* ([translated-compilation-top
-                 (parse-module/path a-path)]
+                 (get-module-bytecode/path a-path)]
                 [neighbors 
                  (get-module-phase-0-requires
                   translated-compilation-top a-path)])
@@ -113,7 +113,8 @@
     [(looks-like-js-conditional-module? a-path)
      (compile-js-conditional-module a-path main-module-path)]
     [else
-     (compile-plain-racket-module a-path main-module-path)]))
+     (compile-plain-racket-module a-path main-module-path 
+                                  (get-module-bytecode/path a-path))]))
 
 ;; compile-js-implementation: path path -> module-record
 (define (compile-js-implementation a-path main-module-path a-js-impl-record)
@@ -131,7 +132,7 @@
 
 ;; compile-js-conditional-module: path path -> module-record
 (define (compile-js-conditional-module a-path main-module-path)
-  (let* ([translated-compilation-top (parse-module/path a-path)]
+  (let* ([translated-compilation-top (get-module-bytecode/path a-path)]
          [exports (collect-provided-names translated-compilation-top)])
     (make-js-module-record (munge-resolved-module-path-to-symbol a-path main-module-path)
                            a-path
@@ -141,10 +142,10 @@
                            (list)
                            (list))))
 
-;; compile-plain-racket-module: path main-module-path -> module-record
-(define (compile-plain-racket-module a-path main-module-path)
-  (let* ([translated-compilation-top
-          (parse-module/path a-path)]
+;; compile-plain-racket-module: (or path #f) main-module-path input-port -> module-record
+(define (compile-plain-racket-module a-path main-module-path
+                                     bytecode-ip)
+  (let* ([translated-compilation-top (parse-and-translate bytecode-ip)]
          [translated-jsexp
           (translate-top 
            (rewrite-module-locations/compilation-top translated-compilation-top
@@ -155,10 +156,14 @@
          [unimplemented-primvals
           (collect-unimplemented-primvals translated-jsexp)]
          [permissions
-          (permissions:query `(file ,(path->string a-path)))]
+          (if a-path 
+              (permissions:query `(file ,(path->string a-path)))
+              '())]
          [provides
           (collect-provided-names translated-compilation-top)])
-    (make-module-record (munge-resolved-module-path-to-symbol a-path main-module-path)
+    (make-module-record (if a-path
+                            (munge-resolved-module-path-to-symbol a-path main-module-path)
+                            #f)
                         a-path
                         translated-program 
                         provides
@@ -265,8 +270,10 @@
                   result)))))
 
 
-;; parse-module/path: path -> compilation-top
-(define parse-module/path
+
+;; get-module-bytecode/path: path -> input-port
+;; Returns an input port with the bytecode of the module.
+(define get-module-bytecode/path
   (memoize/parameter
    compilation-top-cache
    (lambda (a-path)
@@ -274,20 +281,23 @@
        (write (parameterize ([current-namespace ns])
                 (get-module-code a-path))
               op)
-       (translate-compilation-top
-        (internal:zo-parse (open-input-bytes (get-output-bytes op))))))))
+       (open-input-bytes (get-output-bytes op))))))
 
 
-;; parse-module/input-port: any input-port -> compilation-top
-(define (parse-module/input-port name ip)
+;; get-module-bytecode/port: any input-port -> input-port
+;; Returns an input port with the bytecode of the module.
+(define (get-module-bytecode/port name ip)
   (parameterize ([current-namespace ns])
     (namespace-require 'racket/base)
     (let ([stx (read-syntax name ip)]
           [op (open-output-bytes)])
       (write (compile stx) op)
-      (translate-compilation-top
-       (internal:zo-parse (open-input-bytes (get-output-bytes op)))))))
+      (open-input-bytes (get-output-bytes op)))))
 
+
+(define (parse-and-translate ip)
+  (translate-compilation-top
+   (internal:zo-parse ip)))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
