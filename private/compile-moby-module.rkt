@@ -96,7 +96,7 @@
          '()]
         [else
          (let* ([translated-compilation-top
-                 (lookup&parse-module a-path)]
+                 (parse-module/path a-path)]
                 [neighbors 
                  (get-module-phase-0-requires
                   translated-compilation-top a-path)])
@@ -131,7 +131,7 @@
 
 ;; compile-js-conditional-module: path path -> module-record
 (define (compile-js-conditional-module a-path main-module-path)
-  (let* ([translated-compilation-top (lookup&parse-module a-path)]
+  (let* ([translated-compilation-top (parse-module/path a-path)]
          [exports (collect-provided-names translated-compilation-top)])
     (make-js-module-record (munge-resolved-module-path-to-symbol a-path main-module-path)
                            a-path
@@ -144,7 +144,7 @@
 ;; compile-plain-racket-module: path main-module-path -> module-record
 (define (compile-plain-racket-module a-path main-module-path)
   (let* ([translated-compilation-top
-          (lookup&parse-module a-path)]
+          (parse-module/path a-path)]
          [translated-jsexp
           (translate-top 
            (rewrite-module-locations/compilation-top translated-compilation-top
@@ -165,7 +165,7 @@
                         (map (lambda (a-path) 
                                (munge-resolved-module-path-to-symbol a-path main-module-path)) 
                              (filter (negate known-hardcoded-module-path?)
-                                     (module-neighbors a-path)))
+                                     (get-module-phase-0-requires translated-compilation-top a-path)))
                         permissions
                         unimplemented-primvals)))
 
@@ -264,8 +264,9 @@
                   (hash-set! (ht-param) x result)
                   result)))))
 
-;; lookup&parse: path -> compilation-top
-(define lookup&parse-module
+
+;; parse-module/path: path -> compilation-top
+(define parse-module/path
   (memoize/parameter
    compilation-top-cache
    (lambda (a-path)
@@ -275,6 +276,18 @@
               op)
        (translate-compilation-top
         (internal:zo-parse (open-input-bytes (get-output-bytes op))))))))
+
+
+;; parse-module/input-port: any input-port -> compilation-top
+(define (parse-module/input-port name ip)
+  (parameterize ([current-namespace ns])
+    (namespace-require 'racket/base)
+    (let ([stx (read-syntax name ip)]
+          [op (open-output-bytes)])
+      (write (compile stx) op)
+      (translate-compilation-top
+       (internal:zo-parse (open-input-bytes (get-output-bytes op)))))))
+
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

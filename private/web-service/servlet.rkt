@@ -91,7 +91,13 @@
        
        ;; compile-module: -> void
        (define (for-module)
-         (fprintf output-port "({\"type\":\"module\", \"code\":'???'})"))
+         (let* ([stx
+                 (read-syntax name (open-input-string text))]
+                [interaction-record (compile-module a-path main-module-path)]
+                [code (encode-interaction-record interaction-record)])
+           (fprintf output-port 
+                    "{\"type\":\"module\", \"code\":~s}"
+                    code)))
        ;;;;
        
        (cond [(false? lang)
