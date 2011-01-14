@@ -50,9 +50,13 @@
 
 (provide/contract [compile-moby-modules
                    (path? . -> . (listof module-record?))]
-
+                  
                   [compile-module
-                   (path? path? compilation-top? . -> . module-record?)]
+                   (path? path? . -> . module-record?)]
+
+                  [compile-plain-racket-module
+                   (path? path? input-port? . -> . module-record?)]
+                  
                   [compile-interaction
                    (module-path? any/c . -> . interaction-record?)])
 
@@ -62,7 +66,7 @@
 ;; and generate the javascript module modules.
 (define (compile-moby-modules main-module-path)
   (parameterize ([compilation-top-cache (make-hash)])
-    (let*-values ([(a-path) (normalize-path main-module-path)])    
+    (let ([a-path (normalize-path main-module-path)])
       (let loop ([to-visit (list a-path)]
                  [module-records empty]
                  [visited-paths empty])
@@ -78,7 +82,7 @@
           [else
            (let* ([record (compile-module 
                            (first to-visit) 
-                           (normalize-path main-module-path))]
+                           a-path)]
                   [neighbors (filter-already-visited-modules+hardcodeds
                               (module-neighbors (first to-visit))
                               visited-paths)])
@@ -96,7 +100,7 @@
          '()]
         [else
          (let* ([translated-compilation-top
-                 (get-module-bytecode/path a-path)]
+                 (parse-and-translate (get-module-bytecode/path a-path))]
                 [neighbors 
                  (get-module-phase-0-requires
                   translated-compilation-top a-path)])
@@ -132,7 +136,8 @@
 
 ;; compile-js-conditional-module: path path -> module-record
 (define (compile-js-conditional-module a-path main-module-path)
-  (let* ([translated-compilation-top (get-module-bytecode/path a-path)]
+  (let* ([translated-compilation-top (parse-and-translate
+                                      (get-module-bytecode/path a-path))]
          [exports (collect-provided-names translated-compilation-top)])
     (make-js-module-record (munge-resolved-module-path-to-symbol a-path main-module-path)
                            a-path
@@ -142,8 +147,10 @@
                            (list)
                            (list))))
 
-;; compile-plain-racket-module: (or path #f) main-module-path input-port -> module-record
-(define (compile-plain-racket-module a-path main-module-path
+
+;; compile-plain-racket-module: (or path #f) (or path #f) input-port -> module-record
+(define (compile-plain-racket-module a-path
+                                     main-module-path
                                      bytecode-ip)
   (let* ([translated-compilation-top (parse-and-translate bytecode-ip)]
          [translated-jsexp
@@ -160,17 +167,23 @@
               (permissions:query `(file ,(path->string a-path)))
               '())]
          [provides
-          (collect-provided-names translated-compilation-top)])
-    (make-module-record (if a-path
-                            (munge-resolved-module-path-to-symbol a-path main-module-path)
-                            #f)
+          (collect-provided-names translated-compilation-top)]
+         
+         [name (if a-path
+                   (munge-resolved-module-path-to-symbol 
+                    a-path 
+                    main-module-path)
+                   #f)]
+         [requires
+          (map (lambda (a-path) 
+                 (munge-resolved-module-path-to-symbol a-path main-module-path)) 
+               (filter (negate known-hardcoded-module-path?)
+                       (get-module-phase-0-requires translated-compilation-top a-path)))])
+    (make-module-record name
                         a-path
                         translated-program 
                         provides
-                        (map (lambda (a-path) 
-                               (munge-resolved-module-path-to-symbol a-path main-module-path)) 
-                             (filter (negate known-hardcoded-module-path?)
-                                     (get-module-phase-0-requires translated-compilation-top a-path)))
+                        requires
                         permissions
                         unimplemented-primvals)))
 
@@ -274,20 +287,23 @@
 ;; get-module-bytecode/path: path -> input-port
 ;; Returns an input port with the bytecode of the module.
 (define get-module-bytecode/path
-  (memoize/parameter
-   compilation-top-cache
-   (lambda (a-path)
-     (let ([op (open-output-bytes)])
-       (write (parameterize ([current-namespace ns])
-                (get-module-code a-path))
-              op)
-       (open-input-bytes (get-output-bytes op))))))
+  (let ([code-lookup
+         (memoize/parameter
+          compilation-top-cache
+          (lambda (a-path)
+            (parameterize ([current-namespace ns])
+              (get-module-code a-path))))])
+    (lambda (a-path)
+      (let ([op (open-output-bytes)])
+        (write (code-lookup a-path) op)
+        (open-input-bytes (get-output-bytes op))))))
 
 
 ;; get-module-bytecode/port: any input-port -> input-port
 ;; Returns an input port with the bytecode of the module.
 (define (get-module-bytecode/port name ip)
-  (parameterize ([current-namespace ns])
+  (parameterize ([read-accept-reader #t]
+                 [current-namespace ns])
     (namespace-require 'racket/base)
     (let ([stx (read-syntax name ip)]
           [op (open-output-bytes)])
@@ -295,6 +311,8 @@
       (open-input-bytes (get-output-bytes op)))))
 
 
+
+;; parse-and-translate: input-port -> compilation-top
 (define (parse-and-translate ip)
   (translate-compilation-top
    (internal:zo-parse ip)))
@@ -303,10 +321,16 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-;; munge-resolve-module-path-to-symbol path path -> symbol 
+;; munge-resolve-module-path-to-symbol path (or path #f) -> symbol 
 ;; We rewrite module indexes all to symbolic path references.
 (define (munge-resolved-module-path-to-symbol a-resolved-module-path main-module-path)
-  (let-values ([(base file dir?) (split-path (normalize-path main-module-path))])
+  (let-values ([(base file dir?) (if main-module-path
+                                     (split-path
+                                      (normalize-path main-module-path))
+                                     (values (or (current-load-relative-directory)
+                                                 (current-directory))
+                                             #f
+                                             #f))])
     (cond
       [(symbol? a-resolved-module-path)
        a-resolved-module-path]
