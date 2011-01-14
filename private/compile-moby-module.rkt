@@ -198,7 +198,10 @@
             (open-input-bytes bytecode-bytes)))]
          [translated-jsexp
           (translate-top
-           translated-compilation-top)]
+           (rewrite-module-locations/compilation-top 
+            translated-compilation-top
+            #f
+            #f))]
          [translated-program
           (jsexp->js translated-jsexp)])
     (make-interaction-record translated-program)))

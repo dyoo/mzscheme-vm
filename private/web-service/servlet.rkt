@@ -16,10 +16,11 @@
 ;;
 ;; Parameters
 ;;
+;;    ismodule (one-of "t" "f")
 ;;    version  (one-of "1")
 ;;    name
 ;;    text
-;;    lang  [optional]
+;;    lang
 ;;
 ;; If lang is provided, then text is an interaction.
 ;; Otherwise, text is assumed to be a module. 
@@ -35,7 +36,7 @@
 (define-runtime-path htdocs "htdocs")
 
 (define-struct compilation-request
-  (version name lang text) #:transparent)
+  (version module? name lang text) #:transparent)
 
 ;; Web service consuming programs and producing bytecode.
 (define (start request)
@@ -57,11 +58,12 @@
           [else
            #f]))
   (let ([version (lookup 'version)]
+        [module? (lookup 'ismodule)]
         [name (lookup 'name)]
         [lang (lookup 'lang)]
         [text (lookup 'text)])
     ;; TODO: check validity of the compilation request.
-    (make-compilation-request version name lang text)))
+    (make-compilation-request version module? name lang text)))
 
 
 
@@ -80,7 +82,7 @@
 (define (compile-1 a-compilation-request)
   
   (match a-compilation-request
-    [(struct compilation-request (version name lang text))
+    [(struct compilation-request (version module? name lang text))
      (let-values  ([(response output-port) 
                     (make-port-response #:mime-type #"text/plain")])
        ;;;
@@ -89,7 +91,9 @@
          (let* ([mapped-lang
                  (cond
                    [(string=? lang "wescheme-interaction")
-                    `(file ,(path->string wescheme-interaction-language-module))])]
+                    `(file ,(path->string wescheme-interaction-language-module))]
+                   [else
+                    (error 'compile "unknown language ~e" lang)])]
                 [stx
                  (read-syntax name (open-input-string text))]
                 [interaction-record (compile-interaction 
@@ -107,7 +111,7 @@
                    [(string=? lang "wescheme")
                     (path->string wescheme-language-module)]
                    [else
-                    (error 'compile "unknown language ~s" lang)])]
+                    (error 'compile "unknown language ~e" lang)])]
                 [text (format "#lang s-exp (file ~s)\n~a" mapped-lang text)]
                 [interaction-record (compile-module #f #f (open-input-string text))]
                 [code (encode-interaction-record interaction-record)])
@@ -116,7 +120,7 @@
                     code)))
        ;;;;
        
-       (cond [(false? lang)
+       (cond [module?
               (for-module)]
              [else
               (for-interaction)])
