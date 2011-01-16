@@ -62,7 +62,11 @@
                     module-record?)]
                   
                   [compile-interaction
-                   (module-path? any/c . -> . interaction-record?)])
+                   (module-path? any/c . -> . interaction-record?)]
+                  
+                  
+                  [get-module-bytecode/port
+                   (any/c input-port? . -> . input-port?)])
 
 
 ;; compile-module-modules: path -> (listof module-record)
