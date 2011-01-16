@@ -25,6 +25,8 @@
 ;; If lang is provided, then text is an interaction.
 ;; Otherwise, text is assumed to be a module. 
 
+(define-runtime-path self-path "servlet.rkt")
+
 (define-runtime-path wescheme-language-module 
   "../../lang/wescheme.rkt")
 
@@ -117,7 +119,8 @@
                               name
                               (open-input-string text))]
                 [module-record 
-                 (compile-plain-racket-module #f #f 
+                 (compile-plain-racket-module self-path
+                                              self-path
                                               bytecode-ip)]
                 [code (encode-module-record module-record)])
            (fprintf output-port 
@@ -136,7 +139,6 @@
 
 ;; handle-exception-response: exn -> response
 (define (handle-exception-response a-compilation-request exn)
-  (raise exn)
   (make-response/full 500 
                       #"Internal Server Error"
                       (current-seconds)
