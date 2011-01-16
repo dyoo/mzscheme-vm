@@ -55,7 +55,11 @@
                    (path? path? . -> . module-record?)]
 
                   [compile-plain-racket-module
-                   (path? path? input-port? . -> . module-record?)]
+                   ((or/c path? false/c)
+                    (or/c path? false/c) 
+                    input-port?
+                    . -> . 
+                    module-record?)]
                   
                   [compile-interaction
                    (module-path? any/c . -> . interaction-record?)])

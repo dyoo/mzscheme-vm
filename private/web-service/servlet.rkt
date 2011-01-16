@@ -58,7 +58,7 @@
           [else
            #f]))
   (let ([version (lookup 'version)]
-        [module? (lookup 'ismodule)]
+        [module? (equal? (lookup 'ismodule) "t")]
         [name (lookup 'name)]
         [lang (lookup 'lang)]
         [text (lookup 'text)])
@@ -113,8 +113,13 @@
                    [else
                     (error 'compile "unknown language ~e" lang)])]
                 [text (format "#lang s-exp (file ~s)\n~a" mapped-lang text)]
-                [interaction-record (compile-module #f #f (open-input-string text))]
-                [code (encode-interaction-record interaction-record)])
+                [bytecode-ip (get-module-bytecode/port
+                              name
+                              (open-input-string text))]
+                [module-record 
+                 (compile-plain-racket-module #f #f 
+                                              bytecode-ip)]
+                [code (encode-module-record module-record)])
            (fprintf output-port 
                     "{\"type\":\"module\", \"code\":~s}"
                     code)))
@@ -131,6 +136,7 @@
 
 ;; handle-exception-response: exn -> response
 (define (handle-exception-response a-compilation-request exn)
+  (raise exn)
   (make-response/full 500 
                       #"Internal Server Error"
                       (current-seconds)
