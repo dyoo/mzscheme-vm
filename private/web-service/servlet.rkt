@@ -7,6 +7,7 @@
          racket/bool
          "../write-module-records.rkt"
          "../compile-moby-module.rkt"
+         "module-resolver.rkt"
          "port-response.rkt"
          "json.rkt")
 
@@ -81,9 +82,12 @@
        (define (for-interaction)
          (let* ([stx
                  (read-syntax name (open-input-string text))]
-                [interaction-record (compile-interaction 
-                                     'racket ;; fixme: choose the right language!
-                                     stx)]
+                [interaction-record 
+                 (parameterize ([current-module-name-resolver
+                                 module-resolver])
+                   (compile-interaction 
+                    'racket ;; fixme: choose the right language!
+                    stx))]
                 [code (encode-interaction-record interaction-record)])
            (fprintf output-port 
                     "{\"type\":\"interaction\", \"code\":~s}"
