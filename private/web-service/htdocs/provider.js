@@ -18,7 +18,7 @@ var installProvider = function() {
 		    onSuccess('ping');
 		},
 
-		compile: function(version, name, lang, text,
+		compile: function(version, isModule, name, lang, text,
 				  onSuccess, onError) {
 		    var request = new XMLHttpRequest();
 		    request.open("POST", "/servlets/standalone.ss", true);
@@ -31,16 +31,11 @@ var installProvider = function() {
 			    }
 			}
 		    };
-		    if (lang) {
-			request.send(encodeHash({ version: version,
-						  name: name,
-						  lang: lang,
-						  text: text }));
-		    } else {
-			request.send(encodeHash({ version: version,
-						  name: name,
-						  text: text }));
-		    }
+		    request.send(encodeHash({ version: version,
+					      ismodule: isModule ? 't' : 'f',
+					      name: name,
+					      lang: lang,
+					      text: text }));
 		}
 	    },
 	    remote: {}

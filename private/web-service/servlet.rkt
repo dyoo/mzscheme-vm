@@ -17,19 +17,29 @@
 ;;
 ;; Parameters
 ;;
+;;    ismodule (one-of "t" "f")
 ;;    version  (one-of "1")
 ;;    name
 ;;    text
-;;    lang  [optional]
+;;    lang
 ;;
 ;; If lang is provided, then text is an interaction.
 ;; Otherwise, text is assumed to be a module. 
+
+(define-runtime-path self-path "servlet.rkt")
+
+(define-runtime-path wescheme-language-module 
+  "../../lang/wescheme.rkt")
+
+(define-runtime-path wescheme-interaction-language-module 
+  "../../lang/wescheme-interaction.rkt")
+
 
 
 (define-runtime-path htdocs "htdocs")
 
 (define-struct compilation-request
-  (version name lang text) #:transparent)
+  (version module? name lang text) #:transparent)
 
 ;; Web service consuming programs and producing bytecode.
 (define (start request)
@@ -51,11 +61,12 @@
           [else
            #f]))
   (let ([version (lookup 'version)]
+        [module? (equal? (lookup 'ismodule) "t")]
         [name (lookup 'name)]
         [lang (lookup 'lang)]
         [text (lookup 'text)])
     ;; TODO: check validity of the compilation request.
-    (make-compilation-request version name lang text)))
+    (make-compilation-request version module? name lang text)))
 
 
 
@@ -74,20 +85,23 @@
 (define (compile-1 a-compilation-request)
   
   (match a-compilation-request
-    [(struct compilation-request (version name lang text))
+    [(struct compilation-request (version module? name lang text))
      (let-values  ([(response output-port) 
                     (make-port-response #:mime-type #"text/plain")])
        ;;;
        ;; compile-interaction: -> void
        (define (for-interaction)
-         (let* ([stx
+         (let* ([mapped-lang
+                 (cond
+                   [(string=? lang "wescheme-interaction")
+                    `(file ,(path->string wescheme-interaction-language-module))]
+                   [else
+                    (error 'compile "unknown language ~e" lang)])]
+                [stx
                  (read-syntax name (open-input-string text))]
-                [interaction-record 
-                 (parameterize ([current-module-name-resolver
-                                 module-resolver])
-                   (compile-interaction 
-                    'racket ;; fixme: choose the right language!
-                    stx))]
+                [interaction-record (compile-interaction 
+                                     mapped-lang
+                                     stx)]
                 [code (encode-interaction-record interaction-record)])
            (fprintf output-port 
                     "{\"type\":\"interaction\", \"code\":~s}"
@@ -95,10 +109,27 @@
        
        ;; compile-module: -> void
        (define (for-module)
-         (fprintf output-port "({\"type\":\"module\", \"code\":'???'})"))
+         (let* ([mapped-lang
+                 (cond
+                   [(string=? lang "wescheme")
+                    (path->string wescheme-language-module)]
+                   [else
+                    (error 'compile "unknown language ~e" lang)])]
+                [text (format "#lang s-exp (file ~s)\n~a" mapped-lang text)]
+                [bytecode-ip (get-module-bytecode/port
+                              name
+                              (open-input-string text))]
+                [module-record 
+                 (compile-plain-racket-module self-path
+                                              self-path
+                                              bytecode-ip)]
+                [code (encode-module-record module-record)])
+           (fprintf output-port 
+                    "{\"type\":\"module\", \"code\":~s}"
+                    code)))
        ;;;;
        
-       (cond [(false? lang)
+       (cond [module?
               (for-module)]
              [else
               (for-interaction)])

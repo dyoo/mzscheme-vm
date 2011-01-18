@@ -9,28 +9,41 @@
     var rpc = new easyXDM.Rpc(
 	{ remote: "provider.html" },
 	{
-	    local: {compile : function(version, name, lang, text) {}},
+	    local: {compile : function(version, isModule, name, lang, text) {}},
 	    remote: { compile : {}}});
 
 
     var doCompilation = function() {
         rpc.compile('1',
+                    true, // false,
                     'my program',
-                    'wescheme',
+                    'wescheme', // 'wescheme-interaction',
                     document.getElementById("textarea").value,
                     function(response) {
-                         console.log(response.code);
+                         var transcript = document.getElementById("transcript");
+                         transcript.appendChild(document.createTextNode(document.getElementById("textarea").value));
+                         transcript.appendChild(document.createElement("br"));
+                         transcript.appendChild(document.createTextNode(String(response.code)));
+                         transcript.appendChild(document.createElement("hr"));
                     },
                     function(error) {
                          alert(error.message);
                     });
 
     };
-</script>
+    </script>
+
+
 <body>
+<div id="transcript"></div>
+
+
+<div>
 <textarea id="textarea">
 (printf "Hello world!\n")
 </textarea>
 <input type="button" value="compile" onclick="doCompilation()">
+</div>
+
 </body>
 </html>

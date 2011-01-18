@@ -5,17 +5,24 @@
 (provide/contract [get-interaction-bytecode
                    (any/c #:language-module module-path? . -> . bytes?)])
 
-;; Get the compiler to produce bytecode appropriate with interactive REPLs.
 
-(define ns (make-base-empty-namespace))
-
+(define language-namespace-cache (make-hash))
+;; lookup-language-namespace: module-path -> namespace
+;; Returns a namespace associated with the lang.
+(define (lookup-language-namespace lang)
+  (hash-ref language-namespace-cache lang
+            (lambda ()
+              (let ([ns (make-base-empty-namespace)])
+                (parameterize ([current-namespace ns])
+                  (namespace-require lang))
+                (hash-set! language-namespace-cache lang ns)
+                ns))))
+                    
 ;; get-interaction-bytecode: (or sexp syntax) -> bytes
 (define (get-interaction-bytecode x #:language-module 
                                   (language-module 'racket/base))
   (let ([module-namespace
-         (parameterize ([current-namespace ns])
-           (dynamic-require language-module #f)
-           (module->namespace language-module))])
+         (lookup-language-namespace language-module)])
     (parameterize ([current-namespace module-namespace])
       (serialize-compiled-code
        (compile (namespace-syntax-introduce 
