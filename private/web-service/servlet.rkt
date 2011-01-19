@@ -5,6 +5,7 @@
          racket/runtime-path
          racket/match
          "../write-module-records.rkt"
+         "../write-runtime.rkt"
          "../compile-moby-module.rkt"
          "module-resolver.rkt"
          "port-response.rkt")
@@ -33,8 +34,9 @@
   "../../lang/wescheme-interaction.rkt")
 
 
-
 (define-runtime-path htdocs "htdocs")
+(define-runtime-path support "../support")
+
 
 (define-struct compilation-request
   (version module? name lang text) #:transparent)
@@ -222,6 +224,17 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+
+;; At initialization time, write out the support files and then start
+;; up the web servlet.
+(call-with-output-file (build-path htdocs "runtime.js")
+  (lambda (op)
+    (write-runtime "browser" op))
+  #:exists 'replace)
+(let ([e (build-path htdocs "evaluator.js")])
+  (when (file-exists? e)
+    (delete-file e))
+  (copy-file (build-path support "evaluator.js") e))
 
 
 (serve/servlet start 

@@ -5,35 +5,9 @@
       easyXDM.DomHelper.requiresJSON("/json2.js");
     </script>
 
-    <script>
-    var rpc = new easyXDM.Rpc(
-	{ remote: "provider.html" },
-	{
-	    local: {compile : function(version, isModule, name, lang, text) {}},
-	    remote: { compile : {}}});
-
-
-    var doCompilation = function(isModule) {
-        var lang = isModule ? 'wescheme' : 'wescheme-interaction';
-        rpc.compile('1',
-                    isModule,
-                    'my program',
-                    lang,
-                    document.getElementById("textarea").value,
-                    function(response) {
-                         var transcript = document.getElementById("transcript");
-                         transcript.appendChild(document.createTextNode(document.getElementById("textarea").value));
-                         transcript.appendChild(document.createElement("br"));
-                         transcript.appendChild(document.createTextNode(String(response.code)));
-                         transcript.appendChild(document.createElement("hr"));
-                    },
-                    function(error) {
-                         alert(error.message);
-                    });
-
-    };
-    </script>
-
+    <script src="/runtime.js"></script>
+    <script src="/evaluator.js"></script>
+    <script src="/test.js"></script>
 
 <body>
 
