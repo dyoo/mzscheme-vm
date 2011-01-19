@@ -4,6 +4,7 @@
          web-server/servlet-env
          racket/runtime-path
          racket/match
+         "../module-record.rkt"
          "../write-module-records.rkt"
          "../write-runtime.rkt"
          "../compile-moby-module.rkt"
@@ -32,6 +33,9 @@
 
 (define-runtime-path wescheme-interaction-language-module 
   "../../lang/wescheme-interaction.rkt")
+
+(define-runtime-path bootstrap/bootstrap-teachpack
+  "../../bootstrap/bootstrap-teachpack.rkt")
 
 
 (define-runtime-path htdocs "htdocs")
@@ -236,6 +240,34 @@
     (delete-file e))
   (copy-file (build-path support "evaluator.js") e))
 
+
+(define (for-each/lazy f l)
+  (cond
+    [(null? l)
+     (void)]
+    [else
+     (f (car l))
+     (for-each/lazy f ((cdr l)))]))
+
+
+(let ([collection-roots
+       (list wescheme-language-module
+             wescheme-interaction-language-module
+             bootstrap/bootstrap-teachpack)])
+  (call-with-output-file (build-path htdocs "modules.js")
+    (lambda (op)
+      (fprintf op "var MODULES = {};\n")
+      (let loop ([module-records/lazy
+                  (compile-moby-modules/lazy collection-roots self-path)])
+        (for-each/lazy (lambda (module-record)
+                         (let ([code (encode-module-record module-record)])
+                           (fprintf op
+                                    "MODULES[~s]=~a;\n"
+                                    (symbol->string (module-record-name 
+                                                     module-record))
+                                    code)))
+                       module-records/lazy)))
+    #:exists 'replace))  
 
 (serve/servlet start 
                #:port 8000

@@ -48,8 +48,17 @@
 (define compilation-top-cache (make-parameter (make-hash)))
 
 
+(define (lazy-stream? x)
+  (or (empty? x)
+      (and (cons? x)
+           (procedure? (cdr x)))))
+
+
 (provide/contract [compile-moby-modules
                    (path? . -> . (listof module-record?))]
+                  
+                  [compile-moby-modules/lazy
+                   ((listof path?) path? . -> . lazy-stream?)]
                   
                   [compile-module
                    (path? path? . -> . module-record?)]
@@ -97,6 +106,35 @@
              (loop (append neighbors (rest to-visit))
                    (cons record module-records)
                    (cons (module-record-path record) visited-paths)))])))))
+
+
+;; compile-module-modules/lazy: (listof path) path -> (lazy-streamof module-record)
+(define (compile-moby-modules/lazy module-paths main-module-path)
+  (parameterize ([compilation-top-cache (make-hash)])
+    (let ([main-module-path (normalize-path main-module-path)]
+          [module-paths (map normalize-path module-paths)])
+      (let loop ([to-visit module-paths]
+                 [visited-paths empty])
+        (cond
+          [(empty? to-visit)
+           empty]
+          [(ormap (lambda (p)
+                    (same-module-record-path? p (first to-visit)))
+                  visited-paths)
+           (loop (rest to-visit)
+                 visited-paths)]
+          [else
+           (let* ([record (compile-module (first to-visit) main-module-path)]
+                  [neighbors (filter-already-visited-modules+hardcodeds
+                              (module-neighbors (first to-visit))
+                              visited-paths)])
+             (cons record
+                   (lambda ()
+                     (loop (append neighbors (rest to-visit))
+                           (cons (module-record-path record) visited-paths)))))])))))
+
+
+
 
 
 
