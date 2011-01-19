@@ -311,6 +311,18 @@ var Evaluator = (function() {
     };
 
 
+
+
+    // Hack.  Eventually we should properly support current-namespace.
+    Evaluator.prototype.absorbPrefixIntoNamespace = function(modulePrefix) {
+	var names = modulePrefix.getNames(), i;
+	for (i = 0; i < names.length; i++) {
+	    this.aState.globals[names[i]] = modulePrefix.lookup(names[i]);
+	}
+    };
+
+
+
     var encodeUrlParameters = function(hash) {
 	var chunks = [];
 	for (var key in hash) {

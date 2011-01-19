@@ -15,8 +15,14 @@ var doCompilation = function(isModule) {
                 function(response) {
 		    evaluator.executeCompiledProgram(
 			eval('(' + response.code + ')').bytecode,
-			function() {
-			    console.log('done');
+			function(resultOrPrefix) {
+			    if (isModule) {
+				evaluator.absorbPrefixIntoNamespace(resultOrPrefix);
+			    } else {
+				if (types.VOID !== resultOrPrefix) {
+				    writeToInteractions(resultOrPrefix);
+				}
+			    }
 			},
 			function(err) {
 			    console.log('error');
