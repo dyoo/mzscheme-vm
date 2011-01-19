@@ -13,11 +13,15 @@ var doCompilation = function(isModule) {
                 lang,
                 document.getElementById("textarea").value,
                 function(response) {
-                    var transcript = document.getElementById("transcript");
-                    transcript.appendChild(document.createTextNode(document.getElementById("textarea").value));
-                    transcript.appendChild(document.createElement("br"));
-                    transcript.appendChild(document.createTextNode(String(response.code)));
-                    transcript.appendChild(document.createElement("hr"));
+		    evaluator.executeCompiledProgram(
+			eval('(' + response.code + ')').bytecode,
+			function() {
+			    console.log('done');
+			},
+			function(err) {
+			    console.log('error');
+			    console.log(err);
+			});
                 },
                 function(error) {
                     alert(error.message);
@@ -36,19 +40,6 @@ var evaluator = new Evaluator(
 
 
 
-var executeButtonPressed = function() {
-    evaluator.compilationServletUrl = document.getElementById('compilationServletUrl').value;
-    var interactionText = document.getElementById('textarea');
-    writeToInteractions(interactionText.value);
-    blockInput();
-    evaluator.executeProgram("interactions",
-			     interactionText.value,
-			     function() {
-				 unblockInput() },
-			     function(exn) { reportError(exn);
-					     unblockInput() });
-};
-
 
 var breakButtonPressed = function() {
     evaluator.requestBreak();
@@ -56,7 +47,7 @@ var breakButtonPressed = function() {
 
 
 var writeToInteractions = function(thing) {
-    var history = document.getElementById('history');
+    var history = document.getElementById('transcript');
     if (typeof thing === 'string' || typeof thing === 'number') {
 	var dom = document.createElement('div');
 	dom.style['white-space'] = 'pre';
