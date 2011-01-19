@@ -1,6 +1,5 @@
 #lang racket/base
-(require racket/runtime-path
-         racket/path)
+(require racket/runtime-path)
 
 (provide module-resolver)
 
@@ -26,7 +25,9 @@
 
 ;; redirect-path: symbol -> path
 (define (redirect-path a-path)
-  (apply build-path base (regexp-split rx"/" (symbol->string a-path))))
+  (apply build-path base (regexp-split #rx"/" (string-append 
+                                               (symbol->string a-path)
+                                               ".rkt"))))
 
 
 (define module-resolver
@@ -36,10 +37,13 @@
     [(resolved-module-name)
      (the-module-name-resolver resolved-module-name)]
     
+    ;; Otherwise, look at the module-path.  If it's symbolic and one
+    ;; of the ones we care about, we'll redirect the name resolver 
+    ;; to the appropriate module.
     [(module-path source-module should-load?)
      (cond [(symbol? module-path)
             (cond 
-              [(overriden-module-path? a-path)
+              [(overridden-module-path? module-path)
                (the-module-name-resolver (redirect-path module-path)
                                          source-module
                                          should-load?)]
@@ -52,10 +56,21 @@
 
     [(module-path source-module stx should-load?)
      (cond [(symbol? module-path)
-            (cond 
+            (cond
+              [(overridden-module-path? module-path)
+               (the-module-name-resolver (redirect-path module-path)
+                                         source-module
+                                         stx
+                                         should-load?)]
               [else
-               (the-module-name-resolver module-path source-module stx should-load?)])]
+               (the-module-name-resolver module-path
+                                         source-module 
+                                         stx 
+                                         should-load?)])]
            [else
-            (the-module-name-resolver module-path source-module stx should-load?)])]))
+            (the-module-name-resolver module-path 
+                                      source-module
+                                      stx
+                                      should-load?)])]))
 
 

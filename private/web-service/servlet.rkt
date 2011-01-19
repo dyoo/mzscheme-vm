@@ -4,12 +4,10 @@
          web-server/servlet-env
          racket/runtime-path
          racket/match
-         racket/bool
          "../write-module-records.rkt"
          "../compile-moby-module.rkt"
          "module-resolver.rkt"
-         "port-response.rkt"
-         "json.rkt")
+         "port-response.rkt")
 
 ;; Compiler service.  Requests pass in either a module or an interaction,
 ;; and this service responds with the compiled module or interaction
@@ -82,8 +80,12 @@
             (compilation-request-version a-compilation-request))]))
 
 
-(define (compile-1 a-compilation-request)
-  
+(define (with-custom-module-name-resolver thunk)
+  (parameterize ([current-module-name-resolver module-resolver])
+    (thunk)))
+
+
+(define (compile-1 a-compilation-request) 
   (match a-compilation-request
     [(struct compilation-request (version module? name lang text))
      (let-values  ([(response output-port) 
@@ -99,9 +101,10 @@
                     (error 'compile "unknown language ~e" lang)])]
                 [stx
                  (read-syntax name (open-input-string text))]
-                [interaction-record (compile-interaction 
-                                     mapped-lang
-                                     stx)]
+                [interaction-record 
+                 (compile-interaction 
+                  mapped-lang
+                  stx)]
                 [code (encode-interaction-record interaction-record)])
            (fprintf output-port 
                     "{\"type\":\"interaction\", \"code\":~s}"
@@ -129,10 +132,12 @@
                     code)))
        ;;;;
        
-       (cond [module?
-              (for-module)]
-             [else
-              (for-interaction)])
+       (with-custom-module-name-resolver
+        (lambda ()
+          (cond [module?
+                 (for-module)]
+                [else
+                 (for-interaction)])))
        (close-output-port output-port)
        response)]))
 
@@ -216,6 +221,7 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 
 
 (serve/servlet start 

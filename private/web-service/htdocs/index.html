@@ -11,18 +11,17 @@
     </p>
 
     <h2>Instructions</h2>
-    <!-- FILL ME IN with the protocol. -->
     <blockquote>
     <pre>
     var rpc = new easyXDM.Rpc(
 	{ remote: "provider.html" },
 	{
-	    local: {compile : function(version, name, lang, text) {}},
+	    local: {compile : function(version, isModule, name, lang, text) {}},
 	    remote: { compile : {}}});
 
     //
     var compiledProgram = 
-        rpc.compile(1, 'my program', 'wescheme', '(printf "hello world\n")');
+        rpc.compile(1, true, 'my program', 'wescheme', '(printf "hello world\n")');
     </pre>
     </blockquote>
   </body>

@@ -13,11 +13,12 @@
 	    remote: { compile : {}}});
 
 
-    var doCompilation = function() {
+    var doCompilation = function(isModule) {
+        var lang = isModule ? 'wescheme' : 'wescheme-interaction';
         rpc.compile('1',
-                    true, // false,
+                    isModule,
                     'my program',
-                    'wescheme', // 'wescheme-interaction',
+                    lang,
                     document.getElementById("textarea").value,
                     function(response) {
                          var transcript = document.getElementById("transcript");
@@ -35,15 +36,18 @@
 
 
 <body>
-<div id="transcript"></div>
+
 
 
 <div>
-<textarea id="textarea">
+<textarea id="textarea" rows="20" cols="80">
 (printf "Hello world!\n")
 </textarea>
-<input type="button" value="compile" onclick="doCompilation()">
+<br/>
+<input type="button" value="compile as module definition" onclick="doCompilation(true)">
+<input type="button" value="compile as interaction" onclick="doCompilation(false)">
 </div>
 
+<div id="transcript"></div>
 </body>
 </html>
