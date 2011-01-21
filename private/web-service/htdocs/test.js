@@ -20,7 +20,9 @@ var doCompilation = function(isModule) {
 				evaluator.absorbPrefixIntoNamespace(resultOrPrefix);
 			    } else {
 				if (types.VOID !== resultOrPrefix) {
-				    writeToInteractions(resultOrPrefix);
+				    writeToInteractions(
+					types.toDomNode(
+					    resultOrPrefix));
 				}
 			    }
 			},
@@ -59,8 +61,10 @@ var writeToInteractions = function(thing) {
 	dom.style['white-space'] = 'pre';
 	dom.appendChild(document.createTextNode(thing + ''));
 	history.appendChild(dom);
+	helpers.maybeCallAfterAttach(dom);
     } else {
 	history.appendChild(thing);
+	helpers.maybeCallAfterAttach(thing);
     }
 };
 

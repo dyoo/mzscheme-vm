@@ -24,6 +24,12 @@
   (format "{ type: 'interaction', bytecode : ~a }"
           (interaction-record-impl r)))
 
+(define (write-interaction-record r op)
+  (fprintf op 
+           "{ type: 'interaction', bytecode : ~a }"
+           (interaction-record-impl r)))
+
+
 
 ;; encode-module-record: module-record path -> string
 (define (encode-module-record r)
@@ -53,5 +59,8 @@
   (((listof module-record?) output-port?) (#:assign-into string?) . ->* . any)]
  [encode-module-record
   (module-record? . -> . string?)]
+
  [encode-interaction-record
-  (interaction-record? . -> . string?)])
+  (interaction-record? . -> . string?)]
+ [write-interaction-record
+  (interaction-record? output-port? . -> . any)])

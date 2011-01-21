@@ -4,12 +4,14 @@
          web-server/servlet-env
          racket/runtime-path
          racket/match
+         racket/port
          "../module-record.rkt"
          "../write-module-records.rkt"
          "../write-runtime.rkt"
          "../compile-moby-module.rkt"
          "module-resolver.rkt"
-         "port-response.rkt")
+         "port-response.rkt"
+         "json.rkt")
 
 ;; Compiler service.  Requests pass in either a module or an interaction,
 ;; and this service responds with the compiled module or interaction
@@ -124,10 +126,10 @@
                     (path->string wescheme-language-module)]
                    [else
                     (error 'compile "unknown language ~e" lang)])]
-                [text (format "#lang s-exp (file ~s)\n~a" mapped-lang text)]
+                [lang-line (format "#lang s-exp (file ~s)\n" mapped-lang)]
                 [bytecode-ip (get-module-bytecode/port
                               name
-                              (open-input-string text))]
+                              (make-module-input-port lang-line text))]
                 [module-record 
                  (compile-plain-racket-module self-path
                                               self-path
@@ -136,6 +138,29 @@
            (fprintf output-port 
                     "{\"type\":\"module\", \"code\":~s}"
                     code)))
+       
+
+       
+       (define (make-module-input-port lang-line text)
+         (let ([ip (open-input-string (string-append lang-line text))])
+           (port-count-lines! ip)
+           (let ([ip2
+                  (transplant-input-port 
+                   ip
+                   (lambda ()
+                     (let-values ([(l c p)
+                                   (port-next-location ip)])
+                       (cond
+                         [(<= p (string-length lang-line))
+                          (values l c p)]
+                         [else
+                          (values (sub1 l)
+                                  c
+                                  (- p (string-length lang-line)))])))
+                   1)])
+             (port-count-lines! ip2)
+             ip2)))  
+       
        ;;;;
        
        (with-custom-module-name-resolver
@@ -151,12 +176,40 @@
 
 ;; handle-exception-response: exn -> response
 (define (handle-exception-response a-compilation-request exn)
-  (make-response/full 500 
-                      #"Internal Server Error"
-                      (current-seconds)
-                      #"application/octet-stream"
-                      (list)
-                      (list (string->bytes/utf-8 (exn-message exn)))))
+  (let ([msg (exn-message exn)])
+    (make-response/full 500 
+                        #"Internal Server Error"
+                        (current-seconds)
+                        #"application/octet-stream"
+                        (list)
+                        (list (string->bytes/utf-8 msg)))))
+
+(define-struct Loc (id offset line column span))
+
+(define (add-toplevel-dom-error-wrapper loc a-dom)
+  `(span ((class "Error"))
+         ,a-dom
+         (span ((class "Error.location"))
+               ,(Loc->dom-sexp loc))))
+
+(define (Loc->dom-sexp a-loc)
+  `(span ((class "location-reference")
+          (style "display:none"))
+         (span ((class "location-offset")) ,(number->string (Loc-offset a-loc)))
+         (span ((class "location-line")) ,(number->string (Loc-line a-loc)))
+         (span ((class "location-column")) ,(number->string (Loc-column a-loc)))
+         (span ((class "location-span")) ,(number->string (Loc-span a-loc)))
+         (span ((class "location-id")) ,(Loc-id a-loc))))
+
+;; srcloc->Loc: srcloc -> Loc
+;; Converts a source location (as stored in exceptions) into one that we can
+;; store in error structure values.
+(define (srcloc->Loc a-srcloc)
+  (make-Loc (format "~a" (srcloc-source a-srcloc))
+            (srcloc-position a-srcloc)
+            (srcloc-line a-srcloc)
+            (srcloc-column a-srcloc)
+            (srcloc-span a-srcloc)))
 
 
 ;
@@ -268,6 +321,8 @@
                                     code)))
                        module-records/lazy)))
     #:exists 'replace))  
+
+
 
 (serve/servlet start 
                #:port 8000
