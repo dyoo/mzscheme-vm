@@ -1,4 +1,4 @@
-#lang racket/base
+#lang s-exp "profiled-base.rkt"
 (require racket/contract)
 
 ;; a jsexp is either a ht, a vec, an int, or a datum.

@@ -1,4 +1,4 @@
-#lang racket/base
+#lang s-exp "profiled-base.rkt"
 (require racket/gui/base
          racket/class
          racket/contract)

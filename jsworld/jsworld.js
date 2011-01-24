@@ -120,6 +120,12 @@ EXPORTS['key=?'] =
 		 2,
 		 false, false,
 		 function(key1, key2) {
+		     if (types.isChar(key1)) {
+			 key1 = key1.getValue();
+		     }
+		     if (types.isChar(key2)) {
+			 key2 = key2.getValue();
+		     }
 		     return (String(key1).toLowerCase() === 
 			     String(key2).toLowerCase());
 		 });

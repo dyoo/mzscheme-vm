@@ -1,8 +1,7 @@
-#lang racket/base
+#lang s-exp "profiled-base.rkt"
 (require racket/contract
          racket/list
-         racket/match
-        )
+         racket/match)
 
 #| Unresolved issues
 

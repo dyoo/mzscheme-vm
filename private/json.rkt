@@ -1,4 +1,4 @@
-#lang scheme/base
+#lang s-exp "profiled-base.rkt"
 
 ;; NOTE: this is a fork of
 ;;

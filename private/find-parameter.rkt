@@ -1,4 +1,4 @@
-#lang racket
+#lang s-exp "profiled-base.rkt"
 
 
 (define *HEAT-CUTOFF* 1)

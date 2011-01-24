@@ -1,4 +1,4 @@
-#lang scheme/base
+#lang s-exp "profiled-base.rkt"
 
 (require compiler/zo-parse
          scheme/pretty)

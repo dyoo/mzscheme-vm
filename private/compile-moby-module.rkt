@@ -1,4 +1,4 @@
-#lang racket/base
+#lang s-exp "profiled-base.rkt"
 
 (require "bytecode-translator.rkt"
          "bytecode-structs.rkt"
@@ -17,6 +17,7 @@
          racket/contract
          racket/runtime-path
          racket/match
+	 racket/string
          syntax/modcode
          syntax/modresolve)
 
@@ -171,7 +172,7 @@
   (make-js-module-record 
    (munge-resolved-module-path-to-symbol a-path main-module-path)
    a-path
-   (apply string-append (js-impl:js-module-impls a-js-impl-record))
+   (string-join (js-impl:js-module-impls a-js-impl-record) "")
    (js-impl:js-module-exports a-js-impl-record)
    (map (lambda (a-path) 
           (munge-resolved-module-path-to-symbol a-path main-module-path)) 

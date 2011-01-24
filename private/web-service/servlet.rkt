@@ -1,4 +1,4 @@
-#lang racket/base
+#lang s-exp "../profiled-base.rkt"
 
 (require web-server/servlet
          web-server/servlet-env

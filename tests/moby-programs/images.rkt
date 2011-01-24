@@ -613,3 +613,27 @@
 
 "(step-count? 0)"
 (step-count? 0)
+
+
+
+;; Alignment tests
+"left top"
+(overlay/align "left" "top" (square 20 'solid 'blue) (square 50 'solid 'green))
+"left middle"
+(overlay/align "left" "middle" (square 20 'solid 'blue) (square 50 'solid 'green))
+"left bottom"
+(overlay/align "left" "bottom" (square 20 'solid 'blue) (square 50 'solid 'green))
+
+"middle top"
+(overlay/align "middle" "top" (square 20 'solid 'blue) (square 50 'solid 'green))
+"middle middle"
+(overlay/align "middle" "middle" (square 20 'solid 'blue) (square 50 'solid 'green))
+"middle bottom"
+(overlay/align "middle" "bottom" (square 20 'solid 'blue) (square 50 'solid 'green))
+
+"right top"
+(overlay/align "right" "top" (square 20 'solid 'blue) (square 50 'solid 'green))
+"right middle"
+(overlay/align "right" "middle" (square 20 'solid 'blue) (square 50 'solid 'green))
+"right bottom"
+(overlay/align "right" "bottom" (square 20 'solid 'blue) (square 50 'solid 'green))
