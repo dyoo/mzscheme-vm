@@ -25,6 +25,7 @@ var doCompilation = function(isModule) {
 					    resultOrPrefix));
 				}
 			    }
+			    scrollToBottom();
 			},
 			function(err) {
 			    console.log('error');
@@ -35,6 +36,12 @@ var doCompilation = function(isModule) {
                     alert(error.message);
                 });
 
+};
+
+
+var scrollToBottom = function() {
+    window.scrollTo(0, 
+		    document.body.scrollHeight - document.body.clientHeight);
 };
 
 
