@@ -48,8 +48,7 @@
 ;; In stxs of prefix:
 (define-form-struct stx ([encoded wrapped?]))
 
-(define-form-struct prefix ([num-lifts exact-nonnegative-integer?] 
-                            [toplevels (listof (or/c #f symbol? global-bucket? module-variable?))] 
+(define-form-struct prefix ([toplevels (listof (or/c #f symbol? global-bucket? module-variable?))] 
                             [stxs list?]))   ; should be (listof stx?) sets up top-level and syntax-object array
 
 (define-form-struct form ())
@@ -58,7 +57,7 @@
 ;; A static closure can refer directly to itself, creating a cycle
 (define-struct indirect ([v #:mutable]) #:transparent)
 
-(define-form-struct compilation-top ([max-let-depth exact-nonnegative-integer?] [prefix prefix?] [code (or/c form? indirect? any/c)])) ; compiled code always wrapped with this
+(define-form-struct compilation-top ([prefix prefix?] [code (or/c form? indirect? any/c)])) ; compiled code always wrapped with this
 
 ;; A provided identifier
 (define-form-struct provided ([name symbol?] 

@@ -24,15 +24,14 @@
 (define (translate-top a-top)
   (parameterize ([seen-indirects (make-hasheq)])
     (match a-top
-      [(struct compilation-top (max-let-depth prefix code))
+      [(struct compilation-top (prefix code))
        (let* ([compiled-code (compile-at-form-position code)]
               ;; WARNING: Order dependent!  We need compile-code to run first
               ;; since it initializes the seen-indirects parameter.
               [compiled-indirects (emit-indirects)])
          (void)
          (make-ht 'compilation-top
-                  `(#;(max-let-depth ,(make-int max-let-depth))
-                    (prefix ,(compile-prefix prefix))
+                  `((prefix ,(compile-prefix prefix))
                     (compiled-indirects ,compiled-indirects)
                     (code ,compiled-code))))])))
 
@@ -73,11 +72,10 @@
 ;; compile-prefix: prefix -> jsexp
 (define (compile-prefix a-prefix)
   (match a-prefix
-    [(struct prefix (num-lifts toplevels stxs))
+    [(struct prefix (toplevels stxs))
      ;; FIXME: handle stxs?
      (make-ht 'prefix 
-              `(#;(num-lifts ,(make-int num-lifts))
-                (toplevels ,(compile-toplevels toplevels))
+              `((toplevels ,(compile-toplevels toplevels))
                 (stxs ,(compile-stxs stxs))))]))
 
 
@@ -116,17 +114,6 @@
                    (make-lit (format "~s" stxs)))
                  stxs)))
 
-
-;; compile-code: code -> jsexp
-(define (compile-code a-code)
-  (match a-code
-    [(? form?)
-     (compile-form a-code)]
-    [(? indirect?)
-     (compile-indirect a-code)]
-    [else
-     ;; literal value is self-evaluating
-     (compile-constant a-code)]))
 
 
 ;; compile-constant: datum -> jsexp

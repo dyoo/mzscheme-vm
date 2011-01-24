@@ -15,7 +15,8 @@
   (parameterize ([current-indirect-map (make-hasheq)])
     (match a-top
       [(struct internal:compilation-top (max-let-depth prefix code))
-       (make-compilation-top max-let-depth (translate-prefix prefix) (translate-code code))])))
+       (make-compilation-top (translate-prefix prefix)
+                             (translate-code code))])))
   
 
 (define (translate-code a-code)
@@ -31,8 +32,7 @@
 (define (translate-prefix a-prefix)
   (match a-prefix
     [(struct internal:prefix (num-lifts toplevels stxs))
-     (make-prefix num-lifts 
-                  (map (lambda (x)
+     (make-prefix (map (lambda (x)
                          (match x
                            ['#f
                              #f]
