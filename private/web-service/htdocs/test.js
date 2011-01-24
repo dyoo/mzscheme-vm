@@ -7,12 +7,21 @@ var rpc = new easyXDM.Rpc(
 
 var doCompilation = function(isModule) {
     var lang = isModule ? 'wescheme' : 'wescheme-interaction';
+    var startTime = new Date();
+    writeToInteractions(document.createElement("br"));
+
     rpc.compile('1',
                 isModule,
                 'my program',
                 lang,
                 document.getElementById("textarea").value,
                 function(response) {
+		    var endTime = new Date();
+		    var afterEvaluation = function() {
+			noteCompilationTime(endTime - startTime);
+			scrollToBottom();
+		    };
+		    
 		    evaluator.executeCompiledProgram(
 			eval('(' + response.code + ')').bytecode,
 			function(resultOrPrefix) {
@@ -25,19 +34,27 @@ var doCompilation = function(isModule) {
 					    resultOrPrefix));
 				}
 			    }
-			    scrollToBottom();
+			    afterEvaluation();
 			},
 			function(err) {
-			    console.log('error');
-			    console.log(err);
+			    // Error at runtime
+			    alert('error:', err);
+			    afterEvaluation();
 			});
                 },
                 function(error) {
+		    // Error at compile time
                     alert(error.message);
                 });
 
 };
 
+
+var noteCompilationTime = function(n) { 
+    writeToInteractions("(Compilation took " +
+			n + 
+			" milliseconds)");
+};
 
 var scrollToBottom = function() {
     window.scrollTo(0, 
