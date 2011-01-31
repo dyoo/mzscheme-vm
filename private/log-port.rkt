@@ -1,4 +1,4 @@
-#lang racket/base
+#lang s-exp "profiled-base.rkt"
 
 
 (provide current-log-port log-warning log-info)

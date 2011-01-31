@@ -1333,9 +1333,14 @@ var toDomNode = function(x, cache) {
 	    }
     }
 
-    if (x == undefined || x == null) {
+    if (x == undefined || x == null || x === UNDEFINED_VALUE) {
 	var node = document.createElement("span");
 	node.appendChild(document.createTextNode("#<undefined>"));
+	return node;
+    }
+    if (x === VOID_VALUE) {
+	var node = document.createElement("span");
+	node.appendChild(document.createTextNode("#<void"));
 	return node;
     }
     if (typeof(x) == 'string') {
@@ -1604,7 +1609,6 @@ var VoidValue = function() {};
 VoidValue.prototype.toString = function() {
 	return "#<void>";
 };
-
 var VOID_VALUE = new VoidValue();
 
 
@@ -1731,6 +1735,21 @@ PrefixValue.prototype.ref = function(n) {
 	}
     }
 };
+
+
+// Returns the list of names in the prefix.
+PrefixValue.prototype.getNames = function() {
+    var names = [], i;
+    for (i = 0; i < this.slots.length; i++) {
+	if (this.slots[i] instanceof NamedSlot) {
+	    names.push(this.slots[i].name);
+	} else if (this.slots[i] instanceof GlobalBucket) {
+	    names.push(this.slots[i].name);
+	}
+    };
+    return names;
+};
+
 
 PrefixValue.prototype.lookup = function(name) {
     for (var i = 0; i < this.slots.length; i++) {

@@ -1,4 +1,4 @@
-#lang s-exp "profiled-base.rkt"
+#lang s-exp "../profiled-base.rkt"
 
 ;; NOTE: this is a fork of
 ;;

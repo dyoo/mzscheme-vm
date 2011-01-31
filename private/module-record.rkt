@@ -1,4 +1,4 @@
-#lang racket/base
+#lang s-exp "profiled-base.rkt"
 
 (require racket/contract)
 
@@ -10,6 +10,13 @@
 ;; That Javascript presumes a EXPORTS variable that's used to bind
 ;; its definitions.
 (define-struct (js-module-record module-record) () #:transparent)
+
+
+
+;; An interaction-record is a compiled interaction.
+(define-struct interaction-record (impl) #:transparent)
+
+
 
 (provide/contract 
  [struct module-record [(name symbol?)
@@ -25,6 +32,8 @@
                                            (provides (listof symbol?))
                                            (requires (listof symbol?))
                                            (permissions (listof string?))
-                                           (unimplemented-primval-references (listof symbol?))]])
+                                           (unimplemented-primval-references (listof symbol?))]]
+ 
+ [struct interaction-record [(impl string?)]])
 
 

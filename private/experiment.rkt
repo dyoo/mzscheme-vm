@@ -1,4 +1,4 @@
-#lang racket
+#lang s-exp "profiled-base.rkt"
 
 (require compiler/decompile
          compiler/zo-parse

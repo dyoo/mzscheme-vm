@@ -1,4 +1,4 @@
-#lang racket/base
+#lang s-exp "profiled-base.rkt"
 
 (require "bytecode-translator.rkt"
          "bytecode-structs.rkt"
@@ -7,6 +7,7 @@
          "module-record.rkt"
          "collect-unimplemented-primvals.rkt"
          "path-helpers.rkt"
+         "get-interaction-bytecode.rkt"
          (prefix-in permissions: "../permissions/query.rkt")
          (prefix-in js-impl: "../lang/js-impl/query.rkt")
          (prefix-in js-conditional: "../lang/js-conditional/query.rkt")
@@ -16,6 +17,7 @@
          racket/contract
          racket/runtime-path
          racket/match
+	 racket/string
          syntax/modcode
          syntax/modresolve)
 
@@ -47,8 +49,34 @@
 (define compilation-top-cache (make-parameter (make-hash)))
 
 
+(define (lazy-stream? x)
+  (or (empty? x)
+      (and (cons? x)
+           (procedure? (cdr x)))))
+
+
 (provide/contract [compile-moby-modules
-                   (path? . -> . (listof module-record?))])
+                   (path? . -> . (listof module-record?))]
+                  
+                  [compile-moby-modules/lazy
+                   ((listof path?) path? . -> . lazy-stream?)]
+                  
+                  [compile-module
+                   (path? path? . -> . module-record?)]
+
+                  [compile-plain-racket-module
+                   ((or/c path? false/c)
+                    (or/c path? false/c) 
+                    input-port?
+                    . -> . 
+                    module-record?)]
+                  
+                  [compile-interaction
+                   (module-path? any/c . -> . interaction-record?)]
+                  
+                  
+                  [get-module-bytecode/port
+                   (any/c input-port? . -> . input-port?)])
 
 
 ;; compile-module-modules: path -> (listof module-record)
@@ -56,7 +84,7 @@
 ;; and generate the javascript module modules.
 (define (compile-moby-modules main-module-path)
   (parameterize ([compilation-top-cache (make-hash)])
-    (let*-values ([(a-path) (normalize-path main-module-path)])    
+    (let ([a-path (normalize-path main-module-path)])
       (let loop ([to-visit (list a-path)]
                  [module-records empty]
                  [visited-paths empty])
@@ -64,21 +92,51 @@
           [(empty? to-visit)
            module-records]
           [(ormap (lambda (p)
-                    (same-path? p (first to-visit)))
+                    (same-module-record-path? p (first to-visit)))
                   visited-paths)
            (loop (rest to-visit)
                  module-records
                  visited-paths)]
           [else
-           (let* ([record (compile-moby-module 
+           (let* ([record (compile-module 
                            (first to-visit) 
-                           (normalize-path main-module-path))]
+                           a-path)]
                   [neighbors (filter-already-visited-modules+hardcodeds
                               (module-neighbors (first to-visit))
                               visited-paths)])
              (loop (append neighbors (rest to-visit))
                    (cons record module-records)
                    (cons (module-record-path record) visited-paths)))])))))
+
+
+;; compile-module-modules/lazy: (listof path) path -> (lazy-streamof module-record)
+(define (compile-moby-modules/lazy module-paths main-module-path)
+  (parameterize ([compilation-top-cache (make-hash)])
+    (let ([main-module-path (normalize-path main-module-path)]
+          [module-paths (map normalize-path module-paths)])
+      (let loop ([to-visit module-paths]
+                 [visited-paths empty])
+        (cond
+          [(empty? to-visit)
+           empty]
+          [(ormap (lambda (p)
+                    (same-module-record-path? p (first to-visit)))
+                  visited-paths)
+           (loop (rest to-visit)
+                 visited-paths)]
+          [else
+           (let* ([record (compile-module (first to-visit) main-module-path)]
+                  [neighbors (filter-already-visited-modules+hardcodeds
+                              (module-neighbors (first to-visit))
+                              visited-paths)])
+             (cons record
+                   (lambda ()
+                     (loop (append neighbors (rest to-visit))
+                           (cons (module-record-path record) visited-paths)))))])))))
+
+
+
+
 
 
 
@@ -89,65 +147,114 @@
          '()]
         [else
          (let* ([translated-compilation-top
-                 (lookup&parse a-path)]
+                 (parse-and-translate (get-module-bytecode/path a-path))]
                 [neighbors 
                  (get-module-phase-0-requires
                   translated-compilation-top a-path)])
            neighbors)]))
 
 
-;; compile-moby-module: path path -> module-record
-(define (compile-moby-module a-path main-module-path)
+;; compile-module: path path -> module-record
+(define (compile-module a-path main-module-path)
   (cond
     [(looks-like-js-implemented-module? a-path)
      =>
      (lambda (a-js-impl-record)
-       (make-js-module-record (munge-resolved-module-path-to-symbol a-path main-module-path)
-                              a-path
-                              (apply string-append (js-impl:js-module-impls a-js-impl-record))
-                              (js-impl:js-module-exports a-js-impl-record)
-                              (map (lambda (a-path) 
-                                     (munge-resolved-module-path-to-symbol a-path main-module-path)) 
-                                   (filter (negate known-hardcoded-module-path?) 
-                                           (module-neighbors a-path)))
-                              '()
-                              '()))]
+       (compile-js-implementation a-path main-module-path a-js-impl-record))]
     [(looks-like-js-conditional-module? a-path)
-     (let* ([translated-compilation-top (lookup&parse a-path)]
-            [exports (collect-provided-names translated-compilation-top)])
-       (make-js-module-record (munge-resolved-module-path-to-symbol a-path main-module-path)
-                              a-path
-                              (js-conditional:query `(file ,(path->string a-path)))
-                              exports
-                              (list)
-                              (list)
-                              (list)))]
+     (compile-js-conditional-module a-path main-module-path)]
     [else
-     (let* ([translated-compilation-top
-             (lookup&parse a-path)]
-            [translated-jsexp
-             (translate-top 
-              (rewrite-module-locations/compilation-top translated-compilation-top
-                                                        a-path
-                                                        main-module-path))]
-            [translated-program
-             (jsexp->js translated-jsexp)]
-            [unimplemented-primvals
-             (collect-unimplemented-primvals translated-jsexp)]
-            [permissions
-             (permissions:query `(file ,(path->string a-path)))]
-            [provides
-             (collect-provided-names translated-compilation-top)])
-       (make-module-record (munge-resolved-module-path-to-symbol a-path main-module-path)
+     (compile-plain-racket-module a-path main-module-path 
+                                  (get-module-bytecode/path a-path))]))
+
+;; compile-js-implementation: path path -> module-record
+(define (compile-js-implementation a-path main-module-path a-js-impl-record)
+  (make-js-module-record 
+   (munge-resolved-module-path-to-symbol a-path main-module-path)
+   a-path
+   (string-join (js-impl:js-module-impls a-js-impl-record) "")
+   (js-impl:js-module-exports a-js-impl-record)
+   (map (lambda (a-path) 
+          (munge-resolved-module-path-to-symbol a-path main-module-path)) 
+        (filter (negate known-hardcoded-module-path?) 
+                (module-neighbors a-path)))
+   '()
+   '()))
+
+;; compile-js-conditional-module: path path -> module-record
+(define (compile-js-conditional-module a-path main-module-path)
+  (let* ([translated-compilation-top (parse-and-translate
+                                      (get-module-bytecode/path a-path))]
+         [exports (collect-provided-names translated-compilation-top)])
+    (make-js-module-record (munge-resolved-module-path-to-symbol a-path main-module-path)
                            a-path
-                           translated-program 
-                           provides
-                           (map (lambda (a-path) 
-                                  (munge-resolved-module-path-to-symbol a-path main-module-path)) 
-                                (filter (negate known-hardcoded-module-path?)
-                                        (module-neighbors a-path)))
-                           permissions
-                           unimplemented-primvals))]))
+                           (js-conditional:query `(file ,(path->string a-path)))
+                           exports
+                           (list)
+                           (list)
+                           (list))))
+
+
+;; compile-plain-racket-module: (or path #f) (or path #f) input-port -> module-record
+(define (compile-plain-racket-module a-path
+                                     main-module-path
+                                     bytecode-ip)
+  (let* ([translated-compilation-top (parse-and-translate bytecode-ip)]
+         [translated-jsexp
+          (translate-top 
+           (rewrite-module-locations/compilation-top translated-compilation-top
+                                                     a-path
+                                                     main-module-path))]
+         [translated-program
+          (jsexp->js translated-jsexp)]
+         [unimplemented-primvals
+          (collect-unimplemented-primvals translated-jsexp)]
+         [permissions
+          (if a-path 
+              (permissions:query `(file ,(path->string a-path)))
+              '())]
+         [provides
+          (collect-provided-names translated-compilation-top)]
+         
+         [name (if a-path
+                   (munge-resolved-module-path-to-symbol 
+                    a-path 
+                    main-module-path)
+                   #f)]
+         [requires
+          (map (lambda (a-path) 
+                 (munge-resolved-module-path-to-symbol a-path main-module-path)) 
+               (filter (negate known-hardcoded-module-path?)
+                       (get-module-phase-0-requires translated-compilation-top a-path)))])
+    (make-module-record name
+                        a-path
+                        translated-program 
+                        provides
+                        requires
+                        permissions
+                        unimplemented-primvals)))
+
+
+;; compile-interaction: path input-port -> interaction-record
+(define (compile-interaction lang stx)
+  (let* ([bytecode-bytes (get-interaction-bytecode stx
+                                                   #:language-module lang)]
+         [translated-compilation-top
+          (translate-compilation-top 
+           (internal:zo-parse 
+            (open-input-bytes bytecode-bytes)))]
+         [translated-jsexp
+          (translate-top
+           (rewrite-module-locations/compilation-top 
+            translated-compilation-top
+            #f
+            #f))]
+         [translated-program
+          (jsexp->js translated-jsexp)])
+    (make-interaction-record translated-program)))
+
+
+
 
 ;; negate: (X -> boolean) -> (X -> boolean)
 ;; Negates a predicate.
@@ -171,7 +278,7 @@
   (let ([result
          (filter (lambda (p1)
                    (cond
-                     [(findf (lambda (p2) (same-path? p1 p2)) visited-paths)
+                     [(findf (lambda (p2) (same-module-record-path? p1 p2)) visited-paths)
                       #f]
                      [(known-hardcoded-module-path? p1)
                       #f]
@@ -194,17 +301,17 @@
                hardcoded-js-impl-path
                hardcoded-js-conditional-path)])
     (ormap (lambda (h)
-             (same-path? p h))
+             (same-module-record-path? p h))
            hardcoded-modules)))
 
 
-  
+
 
 
 
 ;; same-path?: path path -> boolean
 ;; Produces true if both paths are pointing to the same file.
-(define (same-path? p1 p2)
+(define (same-module-record-path? p1 p2)
   (= (file-or-directory-identity p1)
      (file-or-directory-identity p2)))
 
@@ -225,26 +332,55 @@
                   (hash-set! (ht-param) x result)
                   result)))))
 
-;; lookup&parse: path -> compilation-top
-(define lookup&parse
-  (memoize/parameter
-   compilation-top-cache
-   (lambda (a-path)
-     (let ([op (open-output-bytes)])
-       (write (parameterize ([current-namespace ns])
-                (get-module-code a-path))
-              op)
-       (translate-compilation-top
-        (internal:zo-parse (open-input-bytes (get-output-bytes op))))))))
+
+
+;; get-module-bytecode/path: path -> input-port
+;; Returns an input port with the bytecode of the module.
+(define get-module-bytecode/path
+  (let ([code-lookup
+         (memoize/parameter
+          compilation-top-cache
+          (lambda (a-path)
+            (parameterize ([current-namespace ns])
+              (get-module-code a-path))))])
+    (lambda (a-path)
+      (let ([op (open-output-bytes)])
+        (write (code-lookup a-path) op)
+        (open-input-bytes (get-output-bytes op))))))
+
+
+;; get-module-bytecode/port: any input-port -> input-port
+;; Returns an input port with the bytecode of the module.
+(define (get-module-bytecode/port name ip)
+  (parameterize ([read-accept-reader #t]
+                 [current-namespace ns])
+    (namespace-require 'racket/base)
+    (let ([stx (read-syntax name ip)]
+          [op (open-output-bytes)])
+      (write (compile stx) op)
+      (open-input-bytes (get-output-bytes op)))))
+
+
+
+;; parse-and-translate: input-port -> compilation-top
+(define (parse-and-translate ip)
+  (translate-compilation-top
+   (internal:zo-parse ip)))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-;; munge-resolve-module-path-to-symbol path path -> symbol 
+;; munge-resolve-module-path-to-symbol path (or path #f) -> symbol 
 ;; We rewrite module indexes all to symbolic path references.
 (define (munge-resolved-module-path-to-symbol a-resolved-module-path main-module-path)
-  (let-values ([(base file dir?) (split-path (normalize-path main-module-path))])
+  (let-values ([(base file dir?) (if main-module-path
+                                     (split-path
+                                      (normalize-path main-module-path))
+                                     (values (or (current-load-relative-directory)
+                                                 (current-directory))
+                                             #f
+                                             #f))])
     (cond
       [(symbol? a-resolved-module-path)
        a-resolved-module-path]
@@ -372,8 +508,8 @@ letter, digit, -, +, or _.
      a-toplevel]
     [(module-variable? a-toplevel)
      (rewrite-module-locations/module-variable a-toplevel self-path main-module-path)]))
-  
-          
+
+
 (define (rewrite-module-locations/module-variable a-module-variable self-path main-module-path)
   (match a-module-variable
     [(struct module-variable (modidx sym pos phase))
@@ -390,32 +526,32 @@ letter, digit, -, +, or _.
       [(symbol? resolved-path)
        a-modidx]
       
-      [(same-path? resolved-path hardcoded-moby-kernel-path)
+      [(same-module-record-path? resolved-path hardcoded-moby-kernel-path)
        ;; rewrite to a (possibly fictional) collection named moby/moby-lang
        ;; The runtime will recognize this collection.
        (module-path-index-join 'moby/kernel
                                (module-path-index-join #f #f))]
-      [(same-path? resolved-path hardcoded-moby-paramz-path)
+      [(same-module-record-path? resolved-path hardcoded-moby-paramz-path)
        ;; rewrite to a (possibly fictional) collection named moby/paramz
        ;; The runtime will recognize this collection.
        (module-path-index-join 'moby/paramz
                                (module-path-index-join #f #f))]
-
-      [(same-path? resolved-path hardcoded-js-impl-path)
+      
+      [(same-module-record-path? resolved-path hardcoded-js-impl-path)
        ;; rewrite to a (possibly fictional) collection named moby/js-impl
        ;; The runtime will recognize this collection.
        (module-path-index-join 'moby/js-impl
                                (module-path-index-join #f #f))]
-      [(same-path? resolved-path hardcoded-js-conditional-path)
+      [(same-module-record-path? resolved-path hardcoded-js-conditional-path)
        (module-path-index-join 'moby/js-conditional
                                (module-path-index-join #f #f))]
       
       ;; KLUDGE!!! We should NOT be reusing the private implementation of module
       ;; begin.  I have to fix this as soon as I have time and priority.
-      [(same-path? resolved-path racket-private-modbeg-path)
+      [(same-module-record-path? resolved-path racket-private-modbeg-path)
        (module-path-index-join 'moby/kernel
                                (module-path-index-join #f #f))]
-                   
+      
       [else
        (let* ([renamed-path-symbol 
                (munge-resolved-module-path-to-symbol resolved-path main-module-path)])
@@ -463,7 +599,7 @@ letter, digit, -, +, or _.
                     src-phase 
                     protected? 
                     insp)]))
-                                          
+
 
 
 

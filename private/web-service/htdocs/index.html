@@ -1,0 +1,29 @@
+<html>
+  <head>
+    <title>Compiler</title>
+  </head>
+  <body>
+    <h1>Compiler service</h1>
+
+    <p>This should not be accessed by hand, but should be accessed
+      programmatically
+      through <a href="http://easyxdm.net">easyXDM</a>.
+    </p>
+
+    <h2>Instructions</h2>
+    <blockquote>
+    <pre>
+    var rpc = new easyXDM.Rpc(
+	{ remote: "provider.html" },
+	{
+	    local: {compile : function(version, isModule, name, lang, text) {}},
+	    remote: { compile : {}}});
+
+    //
+    var compiledProgram = 
+        rpc.compile(1, true, 'my program', 'wescheme', '(printf "hello world\n")');
+    </pre>
+    </blockquote>
+  <p>A rudimentary evaluator can be found here: <a href="/test.html">test.html</a></p>
+  </body>
+</html>

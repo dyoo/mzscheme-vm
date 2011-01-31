@@ -1,0 +1,27 @@
+<html>
+<head>
+    <script type="text/javascript" src="/easyXDM.min.js"></script>
+    <script type="text/javascript">
+      easyXDM.DomHelper.requiresJSON("/json2.js");
+    </script>
+
+    <script src="/runtime.js"></script>
+    <script src="/evaluator.js"></script>
+    <script src="/modules.js"></script>
+    <script src="/test.js"></script>
+
+<body>
+
+
+
+<div id="transcript"></div>
+<div id="controls">
+<textarea id="textarea" rows="20" cols="80">
+(printf "Hello world!\n")
+</textarea>
+<br/>
+<input type="button" value="compile as module definition" onclick="doCompilation(true)">
+<input type="button" value="compile as interaction" onclick="doCompilation(false)">
+</div>
+</body>
+</html>
