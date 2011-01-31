@@ -1,93 +1,58 @@
-#lang s-exp "profiled-base.rkt"
-(require racket/match
-         racket/contract)
+#lang typed/racket/base
 
+(provide (all-defined-out))
 
-(define (label? x)
-  (symbol? x))
-
-(define (register? x)
-  (symbol? x))
-
-
-(define-struct instruction ())
-
+;; An instruction is one of the following:
+(define-type instruction (U assignment
+                            primitive-application/assignment
+                            primitive-application
+                            test
+                            branch
+                            goto
+                            instruction-sequence))
 
 ;; Instructions:
 
 ;; Assign a value from a where? into a register.
-(define-struct (assign instruction) (name avalue))
-
+(define-struct: assignment ([name : Symbol]
+                            [value : (U reg const label)]))
 
 ;; An assign-value can be either a reg, a const.
-(define-struct avalue ())
-(define-struct (avalue:reg avalue) (name))
-(define-struct (avalue:const avalue) (value))
-(define-struct (avalue:label avalue) (label))
+(define-struct: reg ([name : Symbol]))
+(define-struct: const ([value : Any]))
+(define-struct: label ([label : Symbol]))
+
+
+;; An instruction sequence sequentially appends instructions together.
+(define-struct: instruction-sequence ([seq1 : instruction]
+                                      [seq2 : instruction]))
+
+
+(: instruction-sequence-append (instruction instruction -> instruction))
+;; Append two instructions together.
+(define (instruction-sequence-append seq1 seq2)
+  (make-instruction-sequence seq1 seq2))
+
+
+(define-type Primitive (U #;... ))
 
 
 ;; Apply a primitive operation and install it into a register.
-(define-struct (primitive-apply/assign instruction) (name op rands))
+(define-struct: primitive-application/assignment ([name : Symbol]
+                                                  [op : Primitive]
+                                                  [rands : (Listof Any)]))
 
 ;; Apply a primitive operation for it's side effect.
-(define-struct (primitive-apply instruction) (op rands))
+(define-struct: primitive-application ([op : Primitive]
+                                       [rands : (Listof Any)]))
 
 ;; Do a primitive test.  This must be immediately followed with a branch.
-(define-struct (test instruction) (op rands))
+(define-struct: test ([op : Primitive] 
+                      [rands : (Listof Any)]))
 
 ;; Conditionally jump if the preceding test is true.
-(define-struct (branch instruction) (label))
+(define-struct: branch ([label : Symbol]))
 
 ;; An unconditional jump to a particular location.
 ;; 
-(define-struct (goto instruction) (gtarget))
-;; A gtarget is the target of a goto, and is either stored as a value
-;; in a register, or a literal label.
-(define-struct gtarget ())
-(define-struct (gtarget:reg gtarget) (name))
-(define-struct (gtarget:label gtarget) (label))
-
-
-  
-
-
-
-
-(define-struct instruction-pair (f r))
-
-
-
-
-(define (append-instructions seq1 seq2)
-  (make-instruction-pair seq1 seq2))
-
-
-
-(provide/contract
- 
- [struct (assign instruction) ([name register?]
-                               [avalue avalue?])]
- [struct avalue ()]
- [struct (avalue:reg avalue) ([name register?])]
- [struct (avalue:const avalue) ([value any/c])]
- [struct (avalue:label avalue) ([label label?])]
- 
- 
- [struct (primitive-apply/assign instruction) ([name register?]
-                                               [op symbol?]
-                                               [rands (listof any/c)])]
- [struct (primitive-apply instruction) ([op symbol?]
-                                        [rands (listof any/c)])]
- 
- [struct (test instruction) ([op symbol?]
-                             [rands (listof any/c)])]
-
- [struct (branch instruction) ([label label?])]
- 
- [struct (goto instruction) ([gtarget gtarget?])]
- [struct gtarget ()]
- [struct (gtarget:reg gtarget) ([name register?])]
- [struct (gtarget:label gtarget) ([label label?])]
- 
- 
- [make-instruction-pair (instruction? instruction? . -> . instruction?)])
+(define-struct: goto ([target : (U reg label)]))
