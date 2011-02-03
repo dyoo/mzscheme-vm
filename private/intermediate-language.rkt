@@ -4,55 +4,75 @@
 
 ;; An instruction is one of the following:
 (define-type instruction (U assignment
-                            primitive-application/assignment
-                            primitive-application
-                            test
-                            branch
                             goto
-                            instruction-sequence))
+                            label
+                            no-op
+                            install-prefix
+                            instructions))
+
+
+
+
+;; The linkage between instructions can be one of these:
+(define-type linkage (U 'return
+                        'next
+                        label))
+                        
+
 
 ;; Instructions:
 
 ;; Assign a value from a where? into a register.
 (define-struct: assignment ([name : Symbol]
-                            [value : (U reg const label)]))
+                            [value : (U reg const label)])
+  #:transparent)
 
 ;; An assign-value can be either a reg, a const.
-(define-struct: reg ([name : Symbol]))
-(define-struct: const ([value : Any]))
-(define-struct: label ([label : Symbol]))
+(define-struct: reg ([name : Symbol]) #:transparent)
+(define-struct: const ([value : Any]) #:transparent)
+(define-type label Symbol)
 
 
 ;; An instruction sequence sequentially appends instructions together.
-(define-struct: instruction-sequence ([seq1 : instruction]
-                                      [seq2 : instruction]))
+(define-struct: instructions ([seqs : (Listof instruction)])
+  #:transparent)
 
 
-(: instruction-sequence-append (instruction instruction -> instruction))
-;; Append two instructions together.
-(define (instruction-sequence-append seq1 seq2)
-  (make-instruction-sequence seq1 seq2))
+(: instruction-append (instruction * -> instruction))
+;; Append instructions together into one thing.
+(define (instruction-append . seqs)
+  (cond [(null? seqs)
+         (make-no-op)]
+        [else
+         (make-instructions seqs)]))
 
 
-(define-type Primitive (U #;... ))
-
-
-;; Apply a primitive operation and install it into a register.
-(define-struct: primitive-application/assignment ([name : Symbol]
-                                                  [op : Primitive]
-                                                  [rands : (Listof Any)]))
-
-;; Apply a primitive operation for it's side effect.
-(define-struct: primitive-application ([op : Primitive]
-                                       [rands : (Listof Any)]))
-
-;; Do a primitive test.  This must be immediately followed with a branch.
-(define-struct: test ([op : Primitive] 
-                      [rands : (Listof Any)]))
-
-;; Conditionally jump if the preceding test is true.
-(define-struct: branch ([label : Symbol]))
 
 ;; An unconditional jump to a particular location.
 ;; 
-(define-struct: goto ([target : (U reg label)]))
+(define-struct: goto ([target : (U reg label)])
+  #:transparent)
+
+
+;; no-op: do nothing instruction.
+(define-struct: no-op ()
+  #:transparent)
+
+
+(define-struct: install-prefix ([tops : (Listof Toplevel)])
+  #:transparent)
+
+(define-type Toplevel (U #f
+                         Symbol
+                         GlobalBucket
+                         ModuleVariable))
+(define-struct: GlobalBucket ([name : Symbol])
+  #:transparent)
+(define-struct: ModuleVariable ([name : Symbol]
+                                [modidx : Any]
+                                [pos : Any]
+                                [phase : Any])
+  #:transparent)
+
+
+(define-predicate instruction? instruction)

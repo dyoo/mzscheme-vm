@@ -1,0 +1,21 @@
+Notes on what the compiler's doing for each bytecode.
+
+
+During compilation, we need to keep a mapping from indirect names to
+the lambda values.  An indirect is a lambda without closed variables.
+The compiler needs to generate labels on-the-fly.
+
+
+
+
+
+(compilation-top prefix form)
+
+
+What this needs to do:
+
+    Write out the indirects.
+
+    Install the prefix onto the value stack.
+
+    Emit the code for the body.

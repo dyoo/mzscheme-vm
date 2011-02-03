@@ -1,0 +1,32 @@
+A description of the virtual machine.
+----------------------------------------------------------------------
+
+The VM has the following registers, accessed from the MACHINE global
+variable:
+
+
+    MACHINE.control: the control stack
+
+    MACHINE.data: the data stack
+
+    MACHINE.val: the value register
+
+    MACHINE.namespace: the global namespace
+
+    MACHINE.parameters: other parameters that control hooks and other behavior
+
+
+----------------------------------------------------------------------
+
+A Lambda has components:
+
+    name: the procedure name
+    arity: the arity of the procedure
+    closureVals: the array of closure values
+    text: a label pointing to the source code
+
+
+A CaseLambda has components:
+
+    name: the procedure name
+    closures: an array of lambdas.
