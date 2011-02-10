@@ -14,7 +14,8 @@
 (define-runtime-path base "../../")
 
 (define overridden-modules
-  '(bootstrap/bootstrap-teachpack))
+  '(bootstrap/bootstrap-teachpack
+    bootstrap/cage-teachpack))
 
 
 ;; overriden-module-path?: module-path -> boolean

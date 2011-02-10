@@ -485,16 +485,14 @@ letter, digit, -, +, or _.
 ;; rewrite-module-locations: compilation-top -> compilation-top
 (define (rewrite-module-locations/compilation-top a-top self-path main-module-path)
   (match a-top
-    [(struct compilation-top (max-let-depth prefix code))
-     (make-compilation-top max-let-depth 
-                           (rewrite-module-locations/prefix prefix self-path main-module-path)
+    [(struct compilation-top (prefix code))
+     (make-compilation-top (rewrite-module-locations/prefix prefix self-path main-module-path)
                            (rewrite-module-locations/code code self-path main-module-path))]))
 
 (define (rewrite-module-locations/prefix a-prefix self-path main-module-path)
   (match a-prefix
-    [(struct prefix (num-lifts toplevels stxs))
-     (make-prefix num-lifts 
-                  (map (lambda (t) (rewrite-module-locations/toplevel t self-path main-module-path))
+    [(struct prefix (toplevels stxs))
+     (make-prefix (map (lambda (t) (rewrite-module-locations/toplevel t self-path main-module-path))
                        toplevels)
                   stxs)]))
 

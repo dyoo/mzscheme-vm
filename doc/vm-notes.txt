@@ -4,36 +4,38 @@ Here are things that I've figured out about the Racket VM.
 
 
 
-* In an evaluator, getting fast access to variables is important.
-  For variables that are locally scoped, it's fairly easy to
-  generate a static lexical address that allows constant-time
-  access.  However, global variable access can be more
-  problematic: it can slow things down to look up a name in an
-  associative array, at least compared to doing lookup with a
+* In an evaluator, getting fast access to variables is important.  For
+  variables that are locally scoped, it's fairly easy to generate a
+  static lexical address that allows constant-time access.  However,
+  global variable access can be slow if it looks up a name in an
+  associative array, at least compared to doing lookup directly with a
   lexical address.
 
-  Racket's VM deals with global access by assigning lexical
-  addresses to global variables.  Before any evaluation begins,
-  there is a toplevel instruction called the "compilation-top"
-  that creates an array called the "prefix".  The prefix lists
-  out all of the global variables that rest of the code assumes.
-  In essense, the prefix closes over the free variables of the
-  rest of the program, which allows subsequent access to those
-  globals to be done by lexical addressing, just like any other
-  variable.
+  Racket's VM deals with global access by assigning lexical addresses
+  to global variables.  At the beginning of evaluation, there is a
+  toplevel instruction called the "compilation-top" that creates an
+  array called the "prefix".  In essense, the prefix closes over the
+  free variables of the rest of the program.  This allows subsequent
+  access to those globals to be done by lexical addressing, just like
+  any other variable.
+
+
+* Mutable variables, those that are targets of set!, are automatically
+  boxed and the set! instructions become set-box!  instructions.  This
+  seems to simplify the bytecode instructions, and it also has a
+  positive interaction with the way that closures capture variables.
+
+
+* Closures capture exactly the free variables they need, rather than
+  capture the whole lexical environment at closure time.  This works
+  in part because all mutable variable access is done through boxes.
+  Without the box trick, set!-ing a free variable in a closure
+  wouldn't do the right thing.
 
 
 
-* Mutable variables, those that are targets of set!, are
-  automatically boxed and the set! instructions become set-box!
-  instructions.  This seems to simplify the bytecode
-  instructions, and it also has a positive interaction with the
-  way that closures capture variables.
+* The racket machine uses a two-stack design, one for data and the
+  other for holding control addresses.
 
-
-* Closures only capture exactly the free variables they need.
-  Rather than capturing the whole lexical environment at closure
-  time, Racket's closures hold only onto the free variables of
-  its body.  This trick only works because all mutable variable
-  access is done through boxes.  Without the box trick, set!-ing
-  a free variable in a closure wouldn't do the right thing.
+  I haven't quite figured out why there's a separate value vs control
+  stack yet.
