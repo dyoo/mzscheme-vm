@@ -46,15 +46,19 @@
          (cond
            [(hash-has-key? directory-cache (path->string a-path))
             (let* ([content 
-                    (hash-ref directory-cache (path->string a-path))]
-                   [a-response
-                    (list (path->mime-type a-path)
-                          content)])
-              a-response)]
+                    (hash-ref directory-cache (path->string a-path))])
+              (make-response/basic
+               200
+               #"Ok"
+               content
+               (current-seconds)
+               (path->mime-type a-path)
+               (list)))]
            [else
             (make-response/basic
              404 
              #"Not found"
+             #""
              (current-seconds)
              TEXT/HTML-MIME-TYPE (list))]))))))
   

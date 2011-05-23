@@ -389,7 +389,7 @@
   (match a-lam
     [(struct internal:lam 
              (name flags num-params param-types rest? closure-map closure-types max-let-depth body))
-     (make-lam name flags num-params param-types rest? closure-map closure-types max-let-depth (translate-at-expression-position body))]))
+     (make-lam name '() num-params param-types rest? closure-map closure-types max-let-depth (translate-at-expression-position body))]))
                       
 
 (define (translate-primval a-primval)
@@ -493,6 +493,8 @@
                     (map (lambda (a-clause) 
                            (cond [(internal:lam? a-clause)
                                   (translate-lam a-clause)]
+                                 [(internal:closure? a-clause)
+                                  (translate-closure a-clause)]
                                  [else
                                   (error 'translate-case-lam "~s" a-clause)]))
                          clauses))]))
