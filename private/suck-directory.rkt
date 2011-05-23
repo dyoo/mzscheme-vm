@@ -7,7 +7,7 @@
          (prefix-in lift: web-server/dispatchers/dispatch-lift)
          
          web-server/http/request-structs
-         web-server/http/response-structs
+         "make-http-response.rkt"
          web-server/private/mime-types
          racket/runtime-path)
 

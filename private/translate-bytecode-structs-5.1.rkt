@@ -6,13 +6,13 @@
          racket/list
          (prefix-in internal: compiler/zo-structs))
 
-;; Translation from mzscheme 5.0.1 bytecode structures to our own.
+;; Translation from mzscheme 5.1 bytecode structures to our own.
 
-(define current-indirect-map (make-parameter (make-hasheq)))
+(define current-closure-map (make-parameter (make-hasheq)))
 
 
 (define (translate-compilation-top a-top)
-  (parameterize ([current-indirect-map (make-hasheq)])
+  (parameterize ([current-closure-map (make-hasheq)])
     (match a-top
       [(struct internal:compilation-top (max-let-depth prefix code))
        (make-compilation-top max-let-depth (translate-prefix prefix) (translate-code code))])))
@@ -22,8 +22,6 @@
   (match a-code
     [(? internal:form?)
      (translate-form a-code)]
-    [(? internal:indirect?)
-     (translate-indirect a-code)]
     [else
      a-code]))
      
@@ -191,24 +189,6 @@
 
 
 
-
-(define (translate-indirect an-indirect)
-  (match an-indirect
-    [(struct internal:indirect (v))
-     (cond
-       [(hash-ref (current-indirect-map) an-indirect #f)
-        (hash-ref (current-indirect-map) an-indirect)]
-       [else
-        (begin
-          ;; Make the shell, and continue the copy.
-          (let ([partial-result (make-indirect #f)])
-            (hash-set! (current-indirect-map) an-indirect partial-result)
-            (let* ([translated-closure (translate-closure v)])
-              ;; Fix the shell.
-              (set-indirect-v! partial-result translated-closure)
-              partial-result)))])]))
-
-
 (define (translate-form a-form)
   (match a-form
     [(? internal:def-values?)
@@ -247,8 +227,6 @@
      (translate-expr x)]
     [(? internal:seq?)
      (translate-seq x)]
-    [(? internal:indirect?)
-     (translate-indirect x)]
     [else
      x]))
 
@@ -342,8 +320,6 @@
   (match x
     [(? internal:form?)
      (translate-form x)]
-    [(? internal:indirect?)
-     (translate-indirect x)]
     [else
      x]))
 
@@ -351,7 +327,20 @@
 (define (translate-closure a-closure)
   (match a-closure
     [(struct internal:closure (code gen-id))
-     (make-closure (translate-lam code) gen-id)]))
+     (cond
+       [(hash-ref (current-closure-map) gen-id #f)
+        => (lambda (id) id)]
+       [else
+        (let* ([partial-result
+                (make-indirect #f)])
+          (hash-set! (current-closure-map) gen-id partial-result)
+          (let* ([translated-lam (translate-lam code)])
+            (set-indirect-v! partial-result (make-closure translated-lam
+                                                          gen-id))
+            partial-result))])]))
+
+
+
 
 
 (define (translate-expr an-expr)
@@ -360,8 +349,6 @@
      (translate-lam an-expr)]
     [(? internal:closure?)
      (translate-closure an-expr)]
-    [(? internal:indirect?)
-     (translate-indirect an-expr)]
     [(? internal:case-lam?)
      (translate-case-lam an-expr)]
     [(? internal:let-one?)
@@ -506,8 +493,6 @@
                     (map (lambda (a-clause) 
                            (cond [(internal:lam? a-clause)
                                   (translate-lam a-clause)]
-                                 [(internal:indirect? a-clause)
-                                  (translate-indirect a-clause)]
                                  [else
                                   (error 'translate-case-lam "~s" a-clause)]))
                          clauses))]))
