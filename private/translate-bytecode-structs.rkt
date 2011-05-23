@@ -15,10 +15,5 @@
     (require "translate-bytecode-structs-5.1.rkt")
     (provide (all-from-out
 	      "translate-bytecode-structs-5.1.rkt")))]
- #;[(version<= (version) "5.1.1")
-  (begin
-    (require "translate-bytecode-structs-5.1.1.rkt")
-    (provide (all-from-out
-	      "translate-bytecode-structs-5.1.1.rkt")))]
  [else
   (error 'js-vm "Currently unsupported version of Racket: ~s" (version))])

@@ -1,7 +1,10 @@
 #lang scribble/manual
 
-@(require (for-label (planet dyoo/js-vm/ffi/ffi))
-          unstable/scribble)
+@(require planet/scribble))
+
+
+@(require (for-label (planet dyoo/js-vm/ffi/ffi)))
+
 
 
 

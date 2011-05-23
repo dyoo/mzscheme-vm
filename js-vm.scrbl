@@ -1,6 +1,6 @@
 #lang scribble/manual
-@(require unstable/scribble)
 
+@(require planet/scribble planet/version)
 
 @(require (for-label (planet dyoo/js-vm/image/image))
           (for-label (planet dyoo/js-vm/jsworld/jsworld))
@@ -51,7 +51,7 @@ Once the program is saved, create a new file called @filepath{run.rkt} in the sa
 following contents:
 
 @racketmod[racket
-           (require #,(schememodname/this-package))
+           (require #,(racketmodname/this-package main))
            (run-in-browser "test.rkt")
 ]
 
@@ -125,7 +125,7 @@ functional event-driven programming library.
 
 Again, to run this in the browser, we use @racket[run-in-browser]:
 @racketmod[racket
-           (require #,(schememodname/this-package))
+           (require #,(racketmodname/this-package main))
            (run-in-browser "falling-ball.rkt")
 ]
 
@@ -133,14 +133,14 @@ Again, to run this in the browser, we use @racket[run-in-browser]:
 
 
 @section{Running @js-vm[]}
-@defmodule/this-package[]
+@defmodule/this-package[main]
 @defproc[(run-in-browser [input-file path-string?]) void]{
 Consumes the given program, translates it so it can run on the browser,
 and brings up the default browser.
 
 At the moment, @js-vm[] currently supports programs written in the
-@schememodname/this-package[lang/wescheme] and
-@schememodname/this-package[lang/base] languages; further development
+@racketmodname/this-package[lang/wescheme] and
+@racketmodname/this-package[lang/base] languages; further development
 on @js-vm[] will work toward supporting modules written in full
 Racket.  @racket[require] should work as long as the required modules,
 too, are in the supported languages.
@@ -167,11 +167,11 @@ and is the language used when @racket[planet #,(this-package-version-symbol)] is
 the module language.
 
 It provides the bindings from 
-@schememodname/this-package[lang/base],
-@schememodname/this-package[lang/posn],
-@schememodname/this-package[image/image],
-@schememodname/this-package[jsworld/jsworld], and
-@schememodname/this-package[check-expect/check-expect].
+@racketmodname/this-package[lang/base],
+@racketmodname/this-package[lang/posn],
+@racketmodname/this-package[image/image],
+@racketmodname/this-package[jsworld/jsworld], and
+@racketmodname/this-package[check-expect/check-expect].
 It also adds @racket[open-image-url] and @racket[js-big-bang]
 as aliases for @racket[image-url]
 and @racket[big-bang] respectively.
@@ -819,7 +819,7 @@ EXPORTS['double'] =
 }
 
 Any module implemented with 
-@schememodname/this-package[lang/js-impl/js-impl]
+@racketmodname/this-package[lang/js-impl/js-impl]
 will provide bindings that require a Javascript context.
 
 
@@ -829,7 +829,7 @@ will provide bindings that require a Javascript context.
 
 
 Any module implemented with 
-@schememodname/this-package[lang/js-conditional/js-conditional]
+@racketmodname/this-package[lang/js-conditional/js-conditional]
 can run either in a Racket or Javascript context.
 
 
