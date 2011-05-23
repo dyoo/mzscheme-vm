@@ -535,9 +535,9 @@ var helpers = {};
 
 
     // Inheritance.
-    var heir = function(p) {
+    var heir = function(parentPrototype) {
 	var f = function() {}
-	f.prototype = p;
+	f.prototype = parentPrototype;
 	return new f();
     };
 
