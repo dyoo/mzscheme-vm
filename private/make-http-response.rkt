@@ -5,7 +5,7 @@
 
 (version-case
  
- [(and (version<= (version) "5.0.1")
+ [(and (version<= "5.0.1" (version))
        (version< (version) "5.1"))
   (begin
     (require web-server/http/response-structs)
@@ -25,8 +25,8 @@
     (provide (rename-out (my-make-response/basic make-response/basic))
              make-response/sexp
              TEXT/HTML-MIME-TYPE))]
-
- [(and (version<= (version) "5.1")
+ 
+ [(and (version<= "5.1" (version))
        (version<= (version) "5.1.1"))
   (begin
     (require web-server/http/response-structs
@@ -45,4 +45,4 @@
  [else
   (error 'js-vm)])
 
- 
+
