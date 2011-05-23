@@ -26,8 +26,7 @@
              make-response/sexp
              TEXT/HTML-MIME-TYPE))]
  
- [(and (version<= "5.1" (version))
-       (version<= (version) "5.1.1"))
+ [(version<= "5.1" (version))
   (begin
     (require web-server/http/response-structs
              web-server/http/xexpr)
@@ -43,6 +42,6 @@
              make-response/sexp
              TEXT/HTML-MIME-TYPE))]
  [else
-  (error 'js-vm)])
+  (error 'js-vm "Unsupported Racket version ~s" (version))])
 
 
