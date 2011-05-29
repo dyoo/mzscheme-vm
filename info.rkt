@@ -11,10 +11,10 @@
 (define categories '(devtools))
 (define can-be-loaded-with 'all)
 (define required-core-version "5.0.1")
-(define version "1.13")
+(define version "1.14")
 (define repositories '("4.x"))
 (define blurb 
   '("Provides support for compiling Racket programs to run as Javascript on the browser."))
 
 (define release-notes
-  '())
+  '("Applied version-case to compile cleanly under Racket 5.1.1"))
