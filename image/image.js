@@ -29,6 +29,17 @@ var isNonNegativeReal = function(x) {
 	return isReal(x) && jsnums.greaterThanOrEqual(x, 0);
 };
 
+var isAngle = function(x) {
+	return isReal(x) && jsnums.greaterThanOrEqual(x, 0) && jsnums.lessThan(x, 360);
+};
+
+var isSideCount = function(x) {
+	return isInteger(x) && jsnums.greaterThanOrEqual(x, 3);
+};
+var isStepCount = function(x) {
+	return isInteger(x) && jsnums.greaterThanOrEqual(x, 1);
+};
+
 var isSymbol = types.isSymbol;
 var isChar = types.isChar;
 var isString = types.isString;
@@ -74,12 +85,56 @@ var isEqv = function(x, y) {
 var isImage = world.Kernel.isImage;
 var isScene = world.Kernel.isScene;
 var isColor = world.Kernel.isColor;
+var isFontFamily = function(x){
+	return ((isString(x) || isSymbol(x)) &&
+			(x.toString().toLowerCase() == "default" ||
+			 x.toString().toLowerCase() == "decorative" ||
+			 x.toString().toLowerCase() == "roman" ||
+			 x.toString().toLowerCase() == "script" ||
+			 x.toString().toLowerCase() == "swiss" ||
+			 x.toString().toLowerCase() == "modern" ||
+			 x.toString().toLowerCase() == "symbol" ||
+			 x.toString().toLowerCase() == "system"))
+	|| !x;		// false is also acceptable
+};
+var isFontStyle = function(x){
+	return ((isString(x) || isSymbol(x)) &&
+			(x.toString().toLowerCase() == "normal" ||
+			 x.toString().toLowerCase() == "italic" ||
+			 x.toString().toLowerCase() == "slant"))
+	|| !x;		// false is also acceptable
+};
+var isFontWeight = function(x){
+	return ((isString(x) || isSymbol(x)) &&
+			(x.toString().toLowerCase() == "normal" ||
+			 x.toString().toLowerCase() == "bold" ||
+			 x.toString().toLowerCase() == "light"))
+	|| !x;		// false is also acceptable
+};
 var colorDb = world.Kernel.colorDb;
-var isStyle = function(x) {
+var isMode = function(x) {
 	return ((isString(x) || isSymbol(x)) &&
 		(x.toString().toLowerCase() == "solid" ||
 		 x.toString().toLowerCase() == "outline"));
 };
+
+var isPlaceX = function(x) {
+	return ((isString(x) || isSymbol(x)) &&
+			(x.toString().toLowerCase() == "left"  ||
+			 x.toString().toLowerCase() == "right" ||
+			 x.toString().toLowerCase() == "center" ||
+			 x.toString().toLowerCase() == "middle"));
+};
+
+var isPlaceY = function(x) {
+	return ((isString(x) || isSymbol(x)) &&
+			(x.toString().toLowerCase() == "top"	  ||
+			 x.toString().toLowerCase() == "bottom"   ||
+			 x.toString().toLowerCase() == "baseline" ||
+			 x.toString().toLowerCase() == "center"   ||
+			 x.toString().toLowerCase() == "middle"));
+};
+
 
 var isAssocList = function(x) {
 	return isPair(x) && isPair(x.rest()) && isEmpty(x.rest().rest());
@@ -253,6 +308,68 @@ EXPORTS['place-image'] =
 		 });
 
 
+EXPORTS['place-image/align'] =
+new PrimProc('place-image/align',
+			 6,
+			 false, false,
+			 function(img, x, y, placeX, placeY, background) {
+			 check(img,		isImage,	"place-image/align", "image",	1, arguments);
+			 check(x,		isReal,		"place-image/align", "real",	2, arguments);
+			 check(y,		isReal,		"place-image/align", "real",	3, arguments);
+			 check(placeX,	isPlaceX,	"place-image/align", "x-place", 4, arguments);
+			 check(placeY,	isPlaceY,	"place-image/align", "y-place", 5, arguments);
+			 check(background, function(x) { return isScene(x) || isImage(x) },
+										"place-image/align", "image",	6, arguments);
+			 
+			 // calculate x and y based on placeX and placeY
+			 if		 (placeX == "left"  ) x = x + img.pinholeX;
+			 else if (placeX == "right" ) x = x - img.pinholeX;
+			 if		 (placeY == "top"   ) y = y + img.pinholeY;
+			 else if (placeY == "bottom") y = y - img.pinholeY;
+
+			 if (isScene(background)) {
+			 return background.add(img, jsnums.toFixnum(x), jsnums.toFixnum(y));
+			 } else {
+			 var newScene = world.Kernel.sceneImage(background.getWidth(),
+													background.getHeight(),
+													[], 
+													false);
+			 newScene = newScene.add(background.updatePinhole(0, 0), 0, 0);
+			 newScene = newScene.add(img, jsnums.toFixnum(x), jsnums.toFixnum(y));
+			 return newScene;
+			 }
+			 });
+
+
+EXPORTS['scene+line'] =
+new PrimProc('scene+line',
+			 6,
+			 false, false,
+			 function(img, x1, y1, x2, y2, c) {
+			 check(img,		isImage,	"scene+line", "image",				1, arguments);
+			 check(x1,		isReal,		"scene+line", "finite real number", 2, arguments);
+			 check(y1,		isReal,		"scene+line", "finite real number", 3, arguments);
+			 check(x2,		isReal,		"scene+line", "finite real number", 4, arguments);
+			 check(y2,		isReal,		"scene+line", "finite real number", 5, arguments);
+			 check(c,		isColor,	"scene+line", "color",				6, arguments);
+			 if (colorDb.get(c)) {
+			 c = colorDb.get(c);
+			 }
+			 // make a scene containing the image
+		     newScene = world.Kernel.sceneImage(jsnums.toFixnum(img.getWidth()), 
+												jsnums.toFixnum(img.getHeight()), 
+												[],
+												true);
+			 newScene = newScene.add(img.updatePinhole(0, 0), 0, 0);
+			 // make an image containing the line
+			 line = world.Kernel.lineImage(jsnums.toFixnum(x2-x1),
+										   jsnums.toFixnum(y2-y1),
+										   c,
+										   false);
+			 // add the line to scene, offset by the original amount
+			 return newScene.add(line, jsnums.toFixnum(x1), jsnums.toFixnum(y1));
+			 });
+
 EXPORTS['put-pinhole'] =
     new PrimProc('put-pinhole',
 		 3,
@@ -271,7 +388,7 @@ EXPORTS['circle'] =
 		 false, false,
 		 function(aRadius, aStyle, aColor) {
 			check(aRadius, isNonNegativeReal, "circle", "non-negative number", 1, arguments);
-			check(aStyle, isStyle, "circle", "style", 2, arguments);
+			check(aStyle, isMode, "circle", "style", 2, arguments);
 			check(aColor, isColor, "circle", "color", 3, arguments);
 
 
@@ -284,27 +401,67 @@ EXPORTS['circle'] =
 
 EXPORTS['star'] =
     new PrimProc('star',
-		 5,
-		 false, false,
-		 function(aPoints, anOuter, anInner, aStyle, aColor) {
-			check(aPoints, function(x) { return isNatural(x) && jsnums.greaterThanOrEqual(x, 3); },
-			      "star", "positive integer greater than or equal to 3", 1, arguments);
-			check(anOuter, function(x) { return isReal(x) && jsnums.greaterThan(x, 0); },
-			      "star", "positive number", 2, arguments);
-			check(anInner, function(x) { return isReal(x) && jsnums.greaterThan(x, 0); },
-			      "star", "positive number", 2, arguments);
-			check(aStyle, isStyle, "star", "style", 4, arguments);
-			check(aColor, isColor, "star", "color", 5, arguments);
+		 0,
+		 true, false,
+		 function(arguments) {
+				if(arguments.length == 5){			// implementation to match htdp/image
+				check(arguments[0], isSideCount, "star", "positive integer greater than or equal to 3", 1, arguments);
+				check(arguments[1], function(x) { return isReal(x) && jsnums.greaterThan(x, 0); },
+					  "star", "positive number", 2, arguments);
+				check(arguments[2], function(x) { return isReal(x) && jsnums.greaterThan(x, 0); },
+					  "star", "positive number", 2, arguments);
+				check(arguments[3], isMode, "star", "style", 4, arguments);
+				check(arguments[4], isColor, "star", "color", 5, arguments);
 
-			if (colorDb.get(aColor)) {
-				aColor = colorDb.get(aColor);
-			}
-			return world.Kernel.starImage(jsnums.toFixnum(aPoints),
-						      jsnums.toFixnum(anOuter),
-						      jsnums.toFixnum(anInner),
-						      aStyle.toString(),
-						      aColor);
-		 });
+				if (colorDb.get(arguments[4])) {
+					arguments[4] = colorDb.get(arguments[4]);
+				}
+				return world.Kernel.starImage(jsnums.toFixnum(arguments[0]),
+											  jsnums.toFixnum(arguments[1]),
+											  jsnums.toFixnum(arguments[2]),
+											  arguments[3].toString(),
+											  arguments[4]);
+				 
+			} else if(arguments.length == 3){		// implementation to match 2htdp/image
+				 check(arguments[0],	isNonNegativeReal,  "star", "non-negative number", 1, arguments);
+				 check(arguments[1],	isMode,	"star", "style", 4, arguments);
+				 check(arguments[2],	isColor,	"star", "color", 5, arguments);
+				 
+				 if (colorDb.get(arguments[2])) {
+					arguments[2] = colorDb.get(arguments[2]);
+				 }
+				 return world.Kernel.polygonImage(jsnums.toFixnum(arguments[0]), 
+												  jsnums.toFixnum(5), 
+												  jsnums.toFixnum(2), 
+												  arguments[1].toString(), 
+												  arguments[2]);
+			 }
+			});
+
+
+EXPORTS['radial-star'] =
+new PrimProc('radial-star',
+			 5,
+			 false, false,
+			 function(aPoints, anOuter, anInner, aStyle, aColor) {
+			 check(aPoints, function(x) { return isNatural(x) && jsnums.greaterThanOrEqual(x, 2); },
+									"radial-star", "positive integer greater than or equal to 2", 1, arguments);
+			 check(anOuter, function(x) { return isReal(x) && jsnums.greaterThan(x, 0); },
+									"radial-star", "positive number", 2, arguments);
+			 check(anInner, function(x) { return isReal(x) && jsnums.greaterThan(x, 0); },
+									"radial-star", "positive number", 2, arguments);
+			 check(aStyle, isMode, "radial-star", "style", 4, arguments);
+			 check(aColor, isColor, "radial-star", "color", 5, arguments);
+			 
+			 if (colorDb.get(aColor)) {
+			 aColor = colorDb.get(aColor);
+			 }
+			 return world.Kernel.starImage(jsnums.toFixnum(aPoints),
+										   jsnums.toFixnum(anOuter),
+										   jsnums.toFixnum(anInner),
+										   aStyle.toString(),
+										   aColor);
+			 });
 
 
 EXPORTS['nw:rectangle'] =
@@ -314,7 +471,7 @@ EXPORTS['nw:rectangle'] =
 		 function(w, h, s, c) {
 			check(w, isNonNegativeReal, "nw:rectangle", "non-negative number", 1, arguments);
 			check(h, isNonNegativeReal, "nw:rectangle", "non-negative number", 2, arguments);
-			check(s, isStyle, "nw:rectangle", "style", 3, arguments);
+			check(s, isMode, "nw:rectangle", "style", 3, arguments);
 			check(c, isColor, "nw:rectangle", "color", 4, arguments);
 
 			if (colorDb.get(c)) {
@@ -334,7 +491,7 @@ EXPORTS['rectangle'] =
 		 function(w, h, s, c) {
 			check(w, isNonNegativeReal, "rectangle", "non-negative number", 1, arguments);
 			check(h, isNonNegativeReal, "rectangle", "non-negative number", 2, arguments);
-			check(s, isStyle, "rectangle", "style", 3, arguments);
+			check(s, isMode, "rectangle", "style", 3, arguments);
 			check(c, isColor, "rectangle", "color", 4, arguments);
 
 			if (colorDb.get(c)) {
@@ -345,20 +502,123 @@ EXPORTS['rectangle'] =
 							   s.toString(), c);
 		 });
 
+EXPORTS['regular-polygon'] =
+new PrimProc('regular-polygon',
+			 4,
+			 false, false,
+			 function(length, count, s, c) {
+			 check(length,	isNonNegativeReal,	"regular-polygon", "non-negative number", 1, arguments);
+			 check(count,	isSideCount,		"regular-polygon", "positive integer greater than or equal to 3", 2, arguments);
+			 check(s,		isMode, "regular-polygon", "style", 3, arguments);
+			 check(c,		isColor, "regular-polygon", "color", 4, arguments);
+			 
+			 if (colorDb.get(c)) {
+			 c = colorDb.get(c);
+			 }
+			 return world.Kernel.polygonImage(jsnums.toFixnum(length), 
+											  jsnums.toFixnum(count), 
+											  jsnums.toFixnum(1), 
+											  s.toString(), 
+											  c);
+			 });
+
+EXPORTS['star-polygon'] =
+new PrimProc('star-polygon',
+			 5,
+			 false, false,
+			 function(length, count, step, s, c) {
+			 check(length,	isNonNegativeReal,	"star-polygon", "non-negative number", 1, arguments);
+			 check(count,	isSideCount,		"star-polygon", "positive integer greater than or equal to 3", 2, arguments);
+			 check(step,	isStepCount,		"star-polygon", "positive integer greater than or equal to 1", 3, arguments);
+			 check(s,		isMode,				"star-polygon", "style", 4, arguments);
+			 check(c,		isColor,			"star-polygon", "color", 5, arguments);
+			 
+			 if (colorDb.get(c)) {
+				c = colorDb.get(c);
+			 }
+			 return world.Kernel.polygonImage(jsnums.toFixnum(length), 
+											  jsnums.toFixnum(count), 
+											  jsnums.toFixnum(step), 
+											  s.toString(), 
+											  c);
+			 });
+
+EXPORTS['rhombus'] =
+new PrimProc('rhombus',
+			 4,
+			 false, false,
+			 function(l, a, s, c) {
+			 check(l, isNonNegativeReal, "rhombus", "non-negative number", 1, arguments);
+			 check(a, isNonNegativeReal, "rhombus", "non-negative number", 2, arguments);
+			 check(s, isMode, "rhombus", "style", 3, arguments);
+			 check(c, isColor, "rhombus", "color", 4, arguments);
+			 
+			 if (colorDb.get(c)) {
+			 c = colorDb.get(c);
+			 }
+			 return world.Kernel.rhombusImage(jsnums.toFixnum(l), jsnums.toFixnum(a), s.toString(), c);
+			 });
+
+EXPORTS['square'] =
+new PrimProc('square',
+			 3,
+			 false, false,
+			 function(l, s, c) {
+			 check(l, isNonNegativeReal, "square", "non-negative number", 1, arguments);
+			 check(s, isMode, "square", "style", 3, arguments);
+			 check(c, isColor, "square", "color", 4, arguments);
+			 
+			 if (colorDb.get(c)) {
+			 c = colorDb.get(c);
+			 }
+			 return world.Kernel.squareImage(jsnums.toFixnum(l), s.toString(), c);
+			 });
 
 EXPORTS['triangle'] =
     new PrimProc('triangle',
 		 3,
 		 false, false,
-		 function(r, s, c) {
-			check(r, isNonNegativeReal, "triangle", "non-negative number", 1, arguments);
-			check(s, isStyle, "triangle", "style", 2, arguments);
+		 function(s, m, c) {
+			check(s, isNonNegativeReal, "triangle", "non-negative number", 1, arguments);
+			check(m, isMode, "triangle", "style", 2, arguments);
 			check(c, isColor, "triangle", "color", 3, arguments);
 			if (colorDb.get(c)) {
 				c = colorDb.get(c);
 			}
-		     return world.Kernel.triangleImage(jsnums.toFixnum(r), s.toString(), c);
+		     return world.Kernel.triangleImage(jsnums.toFixnum(s), 60, s.toString(), c);
 		 });
+
+
+EXPORTS['right-triangle'] =
+new PrimProc('right-triangle',
+			 4,
+			 false, false,
+			 function(side1, side2, s, c) {
+			 check(side1, isNonNegativeReal, "right-triangle", "non-negative number", 1, arguments);
+			 check(side2, isNonNegativeReal, "right-triangle", "non-negative number", 2, arguments);
+			 check(s, isMode, "right-triangle", "style", 3, arguments);
+			 check(c, isColor, "right-triangle", "color", 4, arguments);
+			 if (colorDb.get(c)) {
+			 c = colorDb.get(c);
+			 }
+		     return world.Kernel.rightTriangleImage(jsnums.toFixnum(side1), jsnums.toFixnum(side2), s.toString(), c);
+			 });
+
+
+EXPORTS['isosceles-triangle'] =
+new PrimProc('isosceles-triangle',
+			 4,
+			 false, false,
+			 function(side, angle, s, c) {
+			 check(side, isNonNegativeReal, "isosceles-triangle", "non-negative number", 1, arguments);
+			 check(angle, isAngle, "isosceles-triangle", "finite real number between 0 and 360", 2, arguments);
+			 check(s, isMode, "isosceles-triangle", "style", 3, arguments);
+			 check(c, isColor, "isosceles-triangle", "color", 4, arguments);
+			 if (colorDb.get(c)) {
+			 c = colorDb.get(c);
+			 }
+		     return world.Kernel.triangleImage(jsnums.toFixnum(side), jsnums.toFixnum(angle), s.toString(), c);
+			 });
 
 
 EXPORTS['ellipse'] =
@@ -368,7 +628,7 @@ EXPORTS['ellipse'] =
 		 function(w, h, s, c) {
 			check(w, isNonNegativeReal, "ellipse", "non-negative number", 1, arguments);
 			check(h, isNonNegativeReal, "ellipse", "non-negative number", 2, arguments);
-			check(s, isStyle, "ellipse", "string", 3, arguments);
+			check(s, isMode, "ellipse", "string", 3, arguments);
 			check(c, isColor, "ellipse", "color", 4, arguments);
 			
 			if (colorDb.get(c)) {
@@ -399,6 +659,28 @@ EXPORTS['line'] =
 		 });
 
 
+EXPORTS['add-line'] =
+new PrimProc('add-line',
+			 6,
+			 false, false,
+			 function(img, x1, y1, x2, y2, c) {
+			 check(img, isImage,	"add-line", "image",			  1, arguments);
+			 check(x1,	isReal,		"add-line", "finite real number", 2, arguments);
+			 check(y1,	isReal,		"add-line", "finite real number", 3, arguments);
+			 check(x2,	isReal,		"add-line", "finite real number", 4, arguments);
+			 check(y2,	isReal,		"add-line", "finite real number", 5, arguments);
+			 check(c,	isColor,	"add-line", "color",			  6, arguments);
+			 if (colorDb.get(c)) {
+				c = colorDb.get(c);
+			 }
+			 line = world.Kernel.lineImage(jsnums.toFixnum(x2-x1),
+										   jsnums.toFixnum(y2-y1),
+										   c,
+										   true);
+			 return world.Kernel.overlayImage(line, img, "middle", "middle");
+			 });
+
+
 EXPORTS['overlay'] =
     new PrimProc('overlay',
 		 2,
@@ -408,9 +690,9 @@ EXPORTS['overlay'] =
 			check(img2, isImage, "overlay", "image", 2, arguments);
 			arrayEach(restImages, function(x, i) { check(x, isImage, "overlay", "image", i+3); }, arguments);
 
-			var img = world.Kernel.overlayImage(img1, img2, 0, 0);
+			var img = world.Kernel.overlayImage(img1, img2, "middle", "middle");
 			for (var i = 0; i < restImages.length; i++) {
-				img = world.Kernel.overlayImage(img, restImages[i], 0, 0);
+				img = world.Kernel.overlayImage(img, restImages[i], "middle", "middle");
 			}
 			return img;
 		 });
@@ -427,11 +709,36 @@ EXPORTS['overlay/xy'] =
 			check(img2, isImage, "overlay/xy", "image", 4, arguments);
 
 		     return world.Kernel.overlayImage(img1.updatePinhole(0, 0),
-						      img2.updatePinhole(0, 0),
-						      jsnums.toFixnum(deltaX),
-						      jsnums.toFixnum(deltaY));
+											  img2.updatePinhole(0, 0),
+											  jsnums.toFixnum(deltaX),
+											  jsnums.toFixnum(deltaY));
 		 });
 
+
+EXPORTS['overlay/align'] =
+new PrimProc('overlay/align',
+			 4,
+			 true, false,
+			 function(placeX, placeY, img1, img2, restImages) {
+			 check(placeX, isPlaceX, "overlay/align", "x-place", 1, arguments);
+			 check(placeY, isPlaceY, "overlay/align", "y-place", 2, arguments);
+			 check(img1, isImage, "overlay/align", "image", 3, arguments);
+			 check(img2, isImage, "overlay/align", "image", 4, arguments);
+			 arrayEach(restImages, function(x, i) { check(x, isImage, "overlay/align", "image", i+4); }, arguments);
+			 
+			 var img = world.Kernel.overlayImage(img1,
+												 img2,
+												 placeX.toString(),
+												 placeY.toString());
+			 
+			 for (var i = 0; i < restImages.length; i++)
+				img = world.Kernel.overlayImage(img,
+												restImages[i], 
+												placeX.toString(), 
+												placeY.toString());
+
+		     return img;
+			 });
 
 EXPORTS['underlay'] =
     new PrimProc('underlay',
@@ -467,15 +774,132 @@ EXPORTS['underlay/xy'] =
 		 });
 
 
+EXPORTS['underlay/align'] =
+new PrimProc('underlay/align',
+			 4,
+			 true, false,
+			 function(placeX, placeY, img1, img2, restImages) {
+			 check(placeX, isPlaceX, "underlay/align", "x-place", 1, arguments);
+			 check(placeY, isPlaceY, "underlay/align", "y-place", 2, arguments);
+			 check(img1, isImage, "underlay/align", "image", 3, arguments);
+			 check(img2, isImage, "underlay/align", "image", 4, arguments);
+			 arrayEach(restImages, function(x, i) { check(x, isImage, "underlay/align", "image", i+4); }, arguments);
+			 
+			 var img = world.Kernel.overlayImage(img2,
+												  img1,
+												  placeX.toString(),
+												  placeY.toString());
+			 
+			 for (var i = 0; i < restImages.length; i++)
+			 img = world.Kernel.overlayImage(restImages[i], 
+											  img,
+											  placeX.toString(), 
+											  placeY.toString());
+			 
+		     return img;
+			 });
+
+
+EXPORTS['beside'] =
+new PrimProc('beside',
+			 2,
+			 true, false,
+			 function(img1, img2, restImages) {
+			 check(img1, isImage, "beside", "image", 1, arguments);
+			 check(img2, isImage, "beside", "image", 2, arguments);
+			 arrayEach(restImages, function(x, i) { check(x, isImage, "beside", "image", i+4); }, arguments);
+			 
+			 var img = world.Kernel.overlayImage(img1,
+												 img2,
+												 "beside",
+												 "middle");
+			 
+			 for (var i = 0; i < restImages.length; i++)
+			 img = world.Kernel.overlayImage(img,restImages[i], "beside", "middle");
+			 
+		     return img;
+			 });
+
+EXPORTS['beside/align'] =
+new PrimProc('beside/align',
+			 3,
+			 true, false,
+			 function(placeY, img1, img2, restImages) {
+			 check(placeY, isPlaceY, "beside/align", "y-place", 1, arguments);
+			 check(img1, isImage, "beside/align", "image", 2, arguments);
+			 check(img2, isImage, "beside/align", "image", 3, arguments);
+			 arrayEach(restImages, function(x, i) { check(x, isImage, "beside", "image", i+3); }, arguments);
+			 
+			 var img = world.Kernel.overlayImage(img1,
+												 img2,
+												 "beside",
+												 placeY.toString());
+			 
+			 for (var i = 0; i < restImages.length; i++)
+			 img = world.Kernel.overlayImage(img,
+											 restImages[i], 
+											 "beside",
+											 placeY.toString());
+			 
+		     return img;
+			 });
+
+EXPORTS['above'] =
+new PrimProc('above',
+			 2,
+			 true, false,
+			 function(img1, img2, restImages) {
+			 check(img1, isImage, "above", "image", 1, arguments);
+			 check(img2, isImage, "above", "image", 2, arguments);
+			 arrayEach(restImages, function(x, i) { check(x, isImage, "above", "image", i+4); }, arguments);
+			 
+			 var img = world.Kernel.overlayImage(img1,
+												 img2,
+												 "middle",
+												 "above");
+			 
+			 for (var i = 0; i < restImages.length; i++)
+			 img = world.Kernel.overlayImage(img,
+											 restImages[i], 
+											 "middle",
+											 "above");
+			 
+		     return img;
+			 });
+
+EXPORTS['above/align'] =
+new PrimProc('above/align',
+			 3,
+			 true, false,
+			 function(placeX, img1, img2, restImages) {
+			 check(placeX, isPlaceX, "above/align", "x-place", 1, arguments);
+			 check(img1, isImage, "above/align", "image", 1, arguments);
+			 check(img2, isImage, "above/align", "image", 2, arguments);
+			 arrayEach(restImages, function(x, i) { check(x, isImage, "above/align", "image", i+4); }, arguments);
+			 
+			 var img = world.Kernel.overlayImage(img1,
+												 img2,
+												 placeX.toString(),
+												 "above");
+			 
+			 for (var i = 0; i < restImages.length; i++)
+			 img = world.Kernel.overlayImage(img,
+											 restImages[i], 
+											 placeX.toString(),
+											 "above");
+			 
+		     return img;
+			 });
+
 EXPORTS['rotate'] =
 new PrimProc('rotate',
 			 2,
 			 false, false,
 			 function(angle, img) {
-			 check(angle, isReal, "rotate", "finite real number", 1, arguments);
+			 check(angle, isAngle, "rotate", "finite real number between 0 and 360", 1, arguments);
 			 check(img, isImage, "rotate", "image", 2, arguments);
-			 
-			     return world.Kernel.rotateImage(jsnums.toFixnum(angle), img);
+				 // negate the angle, to make it a counterclockwise rotation
+			     return world.Kernel.rotateImage(jsnums.toFixnum(-angle), img);
 			 });
 
 EXPORTS['scale/xy'] =
@@ -502,8 +926,53 @@ new PrimProc('scale',
 			 check(img, isImage, "scale", "image", 2, arguments);
 			 
 			 return world.Kernel.scaleImage(jsnums.toFixnum(factor),
-							jsnums.toFixnum(factor),
-							img);
+											jsnums.toFixnum(factor),
+											img);
+			 });
+
+EXPORTS['crop'] =
+new PrimProc('crop',
+			 5,
+			 false, false,
+			 function(x, y, width, height, img) {
+			 check(x,	  isReal, "crop", "finite real number", 1, arguments);
+			 check(y,	  isReal, "crop", "finite real number", 2, arguments);
+			 check(width, isNonNegativeReal, "crop", "positive real number", 3, arguments);
+			 check(height,isNonNegativeReal, "crop", "positive real number", 4, arguments);
+			 check(img,   isImage,"crop", "image", 5, arguments);
+			 return world.Kernel.cropImage(jsnums.toFixnum(x),
+										   jsnums.toFixnum(y),
+										   jsnums.toFixnum(width),
+										   jsnums.toFixnum(height),
+										   img);
+			 });
+
+EXPORTS['frame'] =
+new PrimProc('frame',
+			 1,
+			 false, false,
+			 function(img) {
+			 check(img,   isImage,"frame", "image", 1, arguments);
+			 return world.Kernel.frameImage(img);
+			 });
+
+EXPORTS['flip-vertical'] =
+new PrimProc('flip-vertical',
+			 1,
+			 false, false,
+			 function(img) {
+			 check(img, isImage, "flip-vertical", "image", 1, arguments);
+			 return world.Kernel.flipImage(img, "vertical");
+			 });
+
+
+EXPORTS['flip-horizontal'] =
+new PrimProc('flip-horizontal',
+			 1,
+			 false, false,
+			 function(img) {
+			 check(img, isImage, "flip-horizontal", "image", 1, arguments);
+			 return world.Kernel.flipImage(img, "horizontal");
 			 });
 
 
@@ -520,9 +989,34 @@ EXPORTS['text'] =
 			if (colorDb.get(aColor)) {
 				aColor = colorDb.get(aColor);
 			}
-		        return world.Kernel.textImage(aString.toString(), jsnums.toFixnum(aSize), aColor);
+		        return world.Kernel.textImage(aString.toString(), jsnums.toFixnum(aSize), aColor,
+											  "normal", "Optimer","","",false);
 		 });
 
+
+EXPORTS['text/font'] =
+new PrimProc('text/font',
+			 8,
+			 false, false,
+			 function(aString, aSize, aColor, aFace, aFamily, aStyle, aWeight, aUnderline) {
+			 check(aString, isString,		"text/font", "string",	1, arguments);
+		     check(aSize,	function(x) { return isNatural(x) && jsnums.greaterThan(x, 0) && isByte(x); },
+				   "text/font", "exact integer between 1 and 255",	2, arguments);
+			 check(aColor,	isColor,		"text/font", "color",	3, arguments);
+			 check(aFace,	function(x) {return isString(x) || !x;},		
+											"text/font", "face",	4, arguments);
+			 check(aFamily,	isFontFamily,	"text/font", "family",	5, arguments);
+			 check(aStyle,	isFontStyle,	"text/font", "style",	6, arguments);
+			 check(aWeight,	isFontWeight,	"text/font", "weight",	7, arguments);
+			 check(aUnderline,isBoolean,	"text/font", "underline?",8, arguments);
+			 
+			 if (colorDb.get(aColor)) {
+			 aColor = colorDb.get(aColor);
+			 }
+			 return world.Kernel.textImage(aString.toString(), jsnums.toFixnum(aSize), aColor,
+										   aFace.toString(), aFamily.toString(), aStyle.toString(),
+										   aWeight.toString(), aUnderline);
+			 });
 
 EXPORTS['image-url'] =
     new PrimProc('image-url',
@@ -548,6 +1042,29 @@ EXPORTS['image-url'] =
 		 });
 
 
+EXPORTS['video-url'] =
+new PrimProc('video-url',
+			 1,
+			 false, true,
+			 function(state, path) {
+		     check(path, isString, "video-url", "string", 1);
+			 return types.internalPause(function(caller, success, fail) {
+										var rawVideo = document.createElement('video');
+										rawVideo.src = path.toString();
+										rawVideo.addEventListener('canplay', function() {
+										success(world.Kernel.videoImage(path.toString(), rawVideo));
+										});
+										rawVideo.addEventListener('error', function(e) {
+										fail(types.schemeError(types.incompleteExn(
+																				   types.exnFail,
+																				   " (unable to load: " + path + ")",
+																				   [])));
+										});
+										rawVideo.src = path.toString();
+										});
+			 });
+
+
 EXPORTS['image-width'] =
     new PrimProc('image-width',
 		 1,
@@ -568,4 +1085,19 @@ EXPORTS['image-height'] =
 		 });
 
 
+EXPORTS['image-baseline'] =
+new PrimProc('image-baseline',
+			 1,
+			 false, false,
+			 function(img) {
+			 check(img, isImage, 'image-baseline', 'image', 1);
+			 return img.getBaseline();
+			 });
 
+EXPORTS['mode?']		= new PrimProc('mode?', 1, false, false, isMode);
+EXPORTS['image-color?'] = new PrimProc('image-color?', 1, false, false, isColor);
+EXPORTS['x-place?']		= new PrimProc('x-place?', 1, false, false, isPlaceX);
+EXPORTS['y-place?']		= new PrimProc('y-place?', 1, false, false, isPlaceY);
+EXPORTS['angle?']		= new PrimProc('angle?', 1, false, false, isAngle);
+EXPORTS['side-count?']	= new PrimProc('side-count?', 1, false, false, isSideCount);
+EXPORTS['step-count?']	= new PrimProc('step-count?', 1, false, false, isStepCount);
